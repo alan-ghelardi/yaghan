@@ -1,0 +1,84 @@
+syntax = "proto3";
+
+package nuinfra.control_plane.v1alpha1;
+
+import "buf/validate/validate.proto";
+import "google/protobuf/timestamp.proto";
+import "google/rpc/status.proto";
+import "nuinfra/control_plane/v1alpha1/sandbox.proto";
+
+message Node {
+  NodeMeta metadata = 1 [(buf.validate.field).required = true];
+
+  NodeResources resources = 2 [(buf.validate.field).required = true];
+}
+
+message NodeMeta {
+  string id = 1 [(buf.validate.field).required = true];
+
+  int64 version = 2;
+
+  google.protobuf.Timestamp created_at = 4;
+
+  google.protobuf.Timestamp last_modified_at = 5;
+}
+
+message NodeResources {
+  uint32 vcpu_count = 1 [(buf.validate.field).uint32.gte = 1];
+
+  uint64 memory_mib = 2 [(buf.validate.field).uint64.gte = 128];
+}
+
+message EstablishSessionRequest {
+  oneof operation {
+    ConnectionRequest connect = 1;
+    UpdateSandboxRequest update_sandbox = 2;
+  }
+}
+
+message ConnectionRequest {
+  // Identifier of the session. This value is optional. If omitted by the client,
+  // the server will auto-generate a unique identifier and return it in the response.
+  // If the client crashes and later reconnects to the API, it may send the same identifier
+  // to attempt resuming events from where it left off. Note, however, that there is no
+  // guarantee all missed events will be available after reconnecting, as some events
+  // may have been discarded if the retention thresholds were reached.
+  int64 session_id = 1;
+
+  Node node = 2;
+}
+
+message UpdateSandboxRequest {
+  Sandbox sandbox = 1 [(buf.validate.field).required = true];
+}
+
+message EstablishSessionResponse {
+  oneof message {
+    ConnectionResponse acknowledge = 1;
+    Event event = 2;
+    google.rpc.Status error = 3;
+  }
+}
+
+message ConnectionResponse {
+  int64 session_id = 1;
+}
+
+// Event represents an activity in the system to which clients may subscribe.
+// It provides enough context for consumers to react, audit, or replicate the change.
+message Event {
+  // A unique identifier for this event.
+  string id = 1;
+
+  // The timestamp at which this event was emitted by the system.
+  google.protobuf.Timestamp emitted_at = 2;
+
+  // The object that was involved in this event.
+  oneof involved_object {
+    Sandbox sandbox = 3;
+  }
+}
+
+service ClusterService {
+  rpc EstablishSession(stream EstablishSessionRequest) returns (stream EstablishSessionResponse);
+}

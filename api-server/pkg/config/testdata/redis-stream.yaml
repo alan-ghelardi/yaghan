@@ -1,0 +1,7 @@
+---
+watch-stream:
+  redis:
+    address: localhost:6379
+database:
+  aws:
+    sandboxes-table-name: sandboxes

@@ -1,0 +1,59 @@
+---
+# Local development configuration for the api-server.
+#
+# Brought up by api-server/dev/start.sh. Values here mirror the
+# canonical schema declared by api-server/pkg/config; extend the
+# struct first if you need a new knob.
+
+grpc-port: 9090
+rest-port: 9092
+
+keep-alive:
+  min-time: 30s
+  interval: 30s
+  timeout: 20s
+
+max-concurrent-streams: 4294967295
+
+logger:
+  log-level: debug
+  zap-config:
+    development: true
+    encoding: console
+    outputPaths:
+      - stdout
+    errorOutputPaths:
+      - stderr
+    disableCaller: false
+    disableStacktrace: false
+    sampling:
+    encoderConfig:
+      messageKey: msg
+      levelKey: level
+      timeKey: ts
+      nameKey: logger
+      callerKey: caller
+      functionKey: ""
+      stacktraceKey: stacktrace
+      lineEnding: "\n"
+      levelEncoder: capitalColor
+      timeEncoder: iso8601
+      durationEncoder: string
+      callerEncoder: short
+
+database:
+  aws:
+    sandboxes-table-name: sandboxes
+    # DynamoDB Local listener brought up by docker-compose.yml.
+    endpoint-url: http://localhost:8000
+
+watch-stream:
+  event-delivery-timeout: 30s
+  redis:
+    address: localhost:6379
+    stream-name: nuinfra
+    stream-key: nuinfra
+    max-stream-length: 1000
+    key-ttl: 24h
+    timeout: 30s
+    stream-readiness-timeout: 1m

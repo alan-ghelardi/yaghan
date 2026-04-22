@@ -1,0 +1,4 @@
+---
+auth:
+  signing-keys:
+    remote-key-url: https://example.dev/oauth2/v1/keys

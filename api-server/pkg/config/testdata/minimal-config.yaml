@@ -1,0 +1,4 @@
+---
+database:
+  aws:
+    sandboxes-table-name: sandboxes

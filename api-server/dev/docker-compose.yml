@@ -1,0 +1,27 @@
+---
+# Docker compose stack for local development of the api-server.
+#
+# - dynamodb-local: AWS-provided in-memory DynamoDB on tcp/8000.
+#   `-sharedDb` keeps a single, shared backing store regardless of
+#   credentials/region — matters because the SDK's Config{Endpoint}
+#   path doesn't pin a region by default. The image is a thin
+#   Corretto JRE + jar with no curl/wget/nc, so we don't declare a
+#   container-internal healthcheck — start.sh polls readiness with
+#   `aws dynamodb list-tables` instead.
+# - redis: stock image on tcp/6379, used by the WatchStream backend.
+services:
+  dynamodb-local:
+    image: amazon/dynamodb-local:latest
+    command: ["-jar", "DynamoDBLocal.jar", "-inMemory", "-sharedDb"]
+    ports:
+      - "8000:8000"
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 1s
+      timeout: 1s
+      retries: 30

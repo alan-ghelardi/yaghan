@@ -1,0 +1,37 @@
+---
+version: v2
+managed:
+  enabled: true
+  disable:
+    - file_option: go_package
+      module: buf.build/bufbuild/protovalidate
+    - file_option: go_package
+      module: buf.build/googleapis/googleapis
+  override:
+    - file_option: go_package_prefix
+      value: golang.nuinfra.net/apis/gen
+plugins:
+  - remote: buf.build/protocolbuffers/go
+    out: gen
+    opt: paths=source_relative
+  - remote: buf.build/grpc/go:v1.5.1
+    out: gen
+    opt: [paths=source_relative]
+  - remote: buf.build/community/pseudomuto-doc:v1.5.1
+    out: gen
+    opt: markdown,docs.md
+  - remote: buf.build/grpc-ecosystem/gateway:v2.22.0
+    out: gen
+    opt: [paths=source_relative]
+  - remote: buf.build/grpc-ecosystem/openapiv2:v2.22.0
+    out: gen
+  - remote: buf.build/bufbuild/es:v2.11.0
+    out: gen
+    opt: target=js+dts
+    include_imports: true
+  - remote: buf.build/protocolbuffers/java:v33.2
+    out: gen
+  - remote: buf.build/grpc/java:v1.78.0
+    out: gen
+inputs:
+  - directory: proto

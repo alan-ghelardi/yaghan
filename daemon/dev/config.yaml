@@ -1,0 +1,75 @@
+---
+# Local development configuration for the daemon.
+#
+# Brought up by daemon/dev/start.sh, which expects firecracker, jailer,
+# vmlinux, and rootfs.ext4 in ./assets — see the script's preflight
+# checks. All values here mirror the canonical schema in
+# daemon/pkg/config; defaults are applied by viper, so most knobs are
+# optional and only listed for documentation.
+
+grpc-port: 9091
+
+keep-alive:
+  min-time: 30s
+  interval: 30s
+  timeout: 20s
+
+max-concurrent-streams: 4294967295
+
+logger:
+  log-level: debug
+  zap-config:
+    development: true
+    encoding: console
+    outputPaths:
+      - stdout
+    errorOutputPaths:
+      - stderr
+    disableCaller: false
+    disableStacktrace: false
+    sampling:
+    encoderConfig:
+      messageKey: msg
+      levelKey: level
+      timeKey: ts
+      nameKey: logger
+      callerKey: caller
+      functionKey: ""
+      stacktraceKey: stacktrace
+      lineEnding: "\n"
+      levelEncoder: capitalColor
+      timeEncoder: iso8601
+      durationEncoder: string
+      callerEncoder: short
+
+# Path containing firecracker, jailer, vmlinux, rootfs.ext4. Required.
+assets-dir: ../assets
+
+api-server:
+  # The daemon dials this address to open the EstablishSession stream.
+  address: localhost:9090
+
+firecracker:
+  binary-name: firecracker
+  jailer-binary-name: jailer
+  jail-uid: 1001
+  jail-gid: 1001
+  attach-console: true
+  chroot-base-dir: /srv/jailer
+
+microvm:
+  kernel-file: vmlinux
+  rootfs-file: rootfs.ext4
+  kernel-jail-path: /vmlinux
+  rootfs-jail-path: /rootfs.ext4
+  log-jail-path: /firecracker.log
+  vsock-uds-jail-path: /v.sock
+  agent-init-path: /init
+  agent-vsock-port: 1024
+  guest-cid: 3
+  guest-mac: "06:00:AC:10:00:02"
+
+controller:
+  session-id-file: /var/lib/nuinfra/daemon/session.id
+  max-retries: 10
+  reconnect-max-interval: 2m

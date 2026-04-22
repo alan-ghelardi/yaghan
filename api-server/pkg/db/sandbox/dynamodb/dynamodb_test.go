@@ -1,0 +1,486 @@
+package dynamodb
+
+import (
+	"bytes"
+	"context"
+	"errors"
+	"testing"
+	"time"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	dynamodbservice "github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	sandboxdb "golang.nuinfra.api-server/pkg/db/sandbox"
+	cpv1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
+	awsconfig "golang.nuinfra.net/commons/pkg/aws/config"
+	"golang.nuinfra.net/commons/pkg/aws/dynamodb"
+	awstesting "golang.nuinfra.net/commons/pkg/aws/testing"
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/timestamppb"
+)
+
+const sandboxesSchemaPath = "../../../../../dynamodb-tables/sandboxes.json"
+
+func setupDB(t *testing.T) (*dynamoDB, context.Context) {
+	t.Helper()
+
+	endpointURL := awstesting.StartEmulator(t)
+	tableName := awstesting.CreateTable(t, endpointURL, sandboxesSchemaPath)
+
+	ctx := t.Context()
+	awsCfg := awsconfig.New(ctx)
+	ctx = awsconfig.With(ctx, awsCfg)
+	client := dynamodb.New(ctx, dynamodb.Config{Endpoint: endpointURL})
+
+	return &dynamoDB{client: client, tableName: tableName}, ctx
+}
+
+func newFixture(opts ...func(*cpv1.Sandbox)) *cpv1.Sandbox {
+	now := time.Date(2026, 4, 27, 10, 30, 45, 123456789, time.UTC)
+	// Version is zero by default — the DB stamps initialVersion in Create.
+	sb := &cpv1.Sandbox{
+		Metadata: &cpv1.SandboxMeta{
+			Id:             "sb-001",
+			Namespace:      "team-alpha",
+			CreatedAt:      timestamppb.New(now),
+			LastModifiedAt: timestamppb.New(now),
+			Labels:         map[string]string{"app": "demo", "env": "test"},
+		},
+		Resources: &cpv1.Resources{
+			VcpuCount: 2,
+			MemoryMib: 1024,
+		},
+		Intent: &cpv1.Intent{
+			Phase: cpv1.SandboxStatus_PHASE_RUNNING,
+		},
+		Status: &cpv1.SandboxStatus{
+			Phase: cpv1.SandboxStatus_PHASE_PENDING,
+		},
+	}
+	for _, opt := range opts {
+		opt(sb)
+	}
+	return sb
+}
+
+func withID(id string) func(*cpv1.Sandbox) {
+	return func(sb *cpv1.Sandbox) { sb.Metadata.Id = id }
+}
+
+func withNode(id string) func(*cpv1.Sandbox) {
+	return func(sb *cpv1.Sandbox) { sb.Node = &cpv1.NodeRef{Id: id} }
+}
+
+func withVCPU(n uint32) func(*cpv1.Sandbox) {
+	return func(sb *cpv1.Sandbox) { sb.Resources.VcpuCount = n }
+}
+
+func withLastModified(t time.Time) func(*cpv1.Sandbox) {
+	return func(sb *cpv1.Sandbox) { sb.Metadata.LastModifiedAt = timestamppb.New(t) }
+}
+
+func withVersion(v int64) func(*cpv1.Sandbox) {
+	return func(sb *cpv1.Sandbox) { sb.Metadata.Version = v }
+}
+
+func withSavedPhase(p cpv1.SandboxStatus_Phase) func(*cpv1.Sandbox) {
+	return func(sb *cpv1.Sandbox) { sb.Status.Phase = p }
+}
+
+func withIntentPhase(p cpv1.SandboxStatus_Phase) func(*cpv1.Sandbox) {
+	return func(sb *cpv1.Sandbox) { sb.Intent.Phase = p }
+}
+
+func getItem(ctx context.Context, t *testing.T, db *dynamoDB, id string) map[string]types.AttributeValue {
+	t.Helper()
+	out, err := db.client.GetItem(ctx, &dynamodbservice.GetItemInput{
+		TableName:      aws.String(db.tableName),
+		Key:            map[string]types.AttributeValue{attrSandboxID: &types.AttributeValueMemberS{Value: id}},
+		ConsistentRead: aws.Bool(true),
+	})
+	require.NoError(t, err)
+	require.NotEmpty(t, out.Item, "expected sandbox %q to be present", id)
+	return out.Item
+}
+
+func attrS(t *testing.T, item map[string]types.AttributeValue, name string) string {
+	t.Helper()
+	av, ok := item[name]
+	require.True(t, ok, "attribute %q is missing", name)
+	s, ok := av.(*types.AttributeValueMemberS)
+	require.True(t, ok, "attribute %q is not a string", name)
+	return s.Value
+}
+
+// attrVersion reads the numeric sandbox_version attribute. It is the only
+// numeric column on the sandboxes table, so a dedicated reader is clearer
+// than a generic attrN helper at the call sites.
+func attrVersion(t *testing.T, item map[string]types.AttributeValue) string {
+	t.Helper()
+	av, ok := item[attrSandboxVersion]
+	require.True(t, ok, "attribute %q is missing", attrSandboxVersion)
+	n, ok := av.(*types.AttributeValueMemberN)
+	require.True(t, ok, "attribute %q is not a number", attrSandboxVersion)
+	return n.Value
+}
+
+func attrB(t *testing.T, item map[string]types.AttributeValue, name string) []byte {
+	t.Helper()
+	av, ok := item[name]
+	require.True(t, ok, "attribute %q is missing", name)
+	b, ok := av.(*types.AttributeValueMemberB)
+	require.True(t, ok, "attribute %q is not bytes", name)
+	return b.Value
+}
+
+func TestCreate_HappyPath(t *testing.T) {
+	db, ctx := setupDB(t)
+	sb := newFixture()
+
+	require.NoError(t, db.Create(ctx, sb))
+
+	item := getItem(ctx, t, db, sb.Metadata.Id)
+
+	assert.Equal(t, "sb-001", attrS(t, item, attrSandboxID))
+	assert.Equal(t, "team-alpha", attrS(t, item, attrSandboxNamespace))
+	assert.Equal(t, "PHASE_PENDING", attrS(t, item, attrSandboxStatusPhase))
+	assert.Equal(t, "1", attrVersion(t, item))
+	assert.Equal(t, "team-alpha#2026-04-27T10:30:45.123456789Z#sb-001", attrS(t, item, attrGSINamespaceLmtSK))
+
+	assert.NotContains(t, item, attrNodeRefID, "node_ref_id must be absent when Node is unset (sparse GSI)")
+
+	storedDigest := attrB(t, item, attrSandboxContentDigest)
+	assert.Len(t, storedDigest, 32)
+	expected, err := contentDigest(sb)
+	require.NoError(t, err)
+	assert.True(t, bytes.Equal(expected, storedDigest), "digest stored on the row must equal the digest of the input")
+
+	storedPB := attrB(t, item, attrSandboxPB)
+	roundTripped := &cpv1.Sandbox{}
+	require.NoError(t, proto.Unmarshal(storedPB, roundTripped))
+	assert.True(t, proto.Equal(sb, roundTripped), "stored sandbox_pb must round-trip back to the input")
+}
+
+func TestCreate_IncludesNodeRefIDWhenSet(t *testing.T) {
+	db, ctx := setupDB(t)
+	sb := newFixture(withID("sb-002"), withNode("node-1"))
+
+	require.NoError(t, db.Create(ctx, sb))
+
+	item := getItem(ctx, t, db, sb.Metadata.Id)
+	assert.Equal(t, "node-1", attrS(t, item, attrNodeRefID))
+}
+
+func TestCreate_IdempotentOnEquivalentRetry(t *testing.T) {
+	db, ctx := setupDB(t)
+
+	first := newFixture(withID("sb-003"))
+	require.NoError(t, db.Create(ctx, first))
+
+	// Simulate a retry: the gRPC handler re-stamps LastModifiedAt before
+	// re-issuing the call. Body is otherwise identical, so the digest must
+	// match and the call must be a no-op.
+	retry := proto.Clone(first).(*cpv1.Sandbox)
+	withLastModified(first.Metadata.LastModifiedAt.AsTime().Add(5 * time.Second))(retry)
+	require.NoError(t, db.Create(ctx, retry))
+
+	// The stored row must reflect the FIRST write — no overwrite occurred.
+	item := getItem(ctx, t, db, "sb-003")
+	storedPB := attrB(t, item, attrSandboxPB)
+	stored := &cpv1.Sandbox{}
+	require.NoError(t, proto.Unmarshal(storedPB, stored))
+	assert.True(t,
+		first.Metadata.LastModifiedAt.AsTime().Equal(stored.Metadata.LastModifiedAt.AsTime()),
+		"idempotent retry must not overwrite the existing row",
+	)
+}
+
+func TestCreate_ConflictOnDifferentBody(t *testing.T) {
+	db, ctx := setupDB(t)
+
+	original := newFixture(withID("sb-004"), withVCPU(2))
+	require.NoError(t, db.Create(ctx, original))
+
+	conflicting := proto.Clone(original).(*cpv1.Sandbox)
+	withVCPU(4)(conflicting)
+	err := db.Create(ctx, conflicting)
+	require.Error(t, err)
+	assert.True(t, errors.Is(err, sandboxdb.ErrAlreadyExists),
+		"different body for same id must wrap sandboxdb.ErrAlreadyExists, got: %v", err)
+}
+
+func TestCreate_ConflictAfterPhaseTransition(t *testing.T) {
+	db, ctx := setupDB(t)
+
+	original := newFixture(withID("sb-005"))
+	require.NoError(t, db.Create(ctx, original))
+
+	// Simulate the next iteration's Update method: phase moves PENDING ->
+	// RUNNING and the digest is recomputed/overwritten. We just write a
+	// different digest directly, since the test only cares that the digest
+	// no longer matches the input's.
+	_, err := db.client.UpdateItem(ctx, &dynamodbservice.UpdateItemInput{
+		TableName:        aws.String(db.tableName),
+		Key:              map[string]types.AttributeValue{attrSandboxID: &types.AttributeValueMemberS{Value: "sb-005"}},
+		UpdateExpression: aws.String("SET #d = :d, #p = :p"),
+		ExpressionAttributeNames: map[string]string{
+			"#d": attrSandboxContentDigest,
+			"#p": attrSandboxStatusPhase,
+		},
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":d": &types.AttributeValueMemberB{Value: bytes.Repeat([]byte{0xAA}, 32)},
+			":p": &types.AttributeValueMemberS{Value: cpv1.SandboxStatus_PHASE_RUNNING.String()},
+		},
+	})
+	require.NoError(t, err)
+
+	retry := proto.Clone(original).(*cpv1.Sandbox)
+	err = db.Create(ctx, retry)
+	require.Error(t, err)
+	assert.True(t, errors.Is(err, sandboxdb.ErrAlreadyExists),
+		"retry after a server-side phase transition must surface as conflict, got: %v", err)
+}
+
+func TestContentDigest_IsDeterministic(t *testing.T) {
+	// Map iteration order is randomised in Go; running the digest many
+	// times exercises that randomness and guards against future drift if
+	// someone removes the Deterministic marshal option.
+	sb := newFixture(withID("sb-det"))
+	want, err := contentDigest(sb)
+	require.NoError(t, err)
+	require.Len(t, want, 32)
+
+	for i := 0; i < 100; i++ {
+		got, err := contentDigest(sb)
+		require.NoError(t, err)
+		require.True(t, bytes.Equal(want, got), "digest must be stable across calls (iteration %d)", i)
+	}
+}
+
+func TestContentDigest_IgnoresWallClockFields(t *testing.T) {
+	a := newFixture(withID("sb-clock"))
+	b := proto.Clone(a).(*cpv1.Sandbox)
+	withLastModified(a.Metadata.LastModifiedAt.AsTime().Add(1 * time.Hour))(b)
+	b.Metadata.CreatedAt = timestamppb.New(b.Metadata.CreatedAt.AsTime().Add(2 * time.Hour))
+
+	da, err := contentDigest(a)
+	require.NoError(t, err)
+	db, err := contentDigest(b)
+	require.NoError(t, err)
+
+	assert.True(t, bytes.Equal(da, db), "digest must ignore CreatedAt and LastModifiedAt")
+}
+
+func TestContentDigest_IgnoresVersion(t *testing.T) {
+	// Update idempotency depends on the digest being stable across the
+	// version bump that a successful Update applies to the stored row.
+	a := newFixture(withID("sb-ver"), withVersion(1))
+	b := proto.Clone(a).(*cpv1.Sandbox)
+	withVersion(2)(b)
+
+	da, err := contentDigest(a)
+	require.NoError(t, err)
+	db, err := contentDigest(b)
+	require.NoError(t, err)
+
+	assert.True(t, bytes.Equal(da, db), "digest must ignore Metadata.Version")
+}
+
+func TestGet_HappyPath(t *testing.T) {
+	db, ctx := setupDB(t)
+	sb := newFixture(withID("sb-get-1"), withNode("node-7"))
+	require.NoError(t, db.Create(ctx, sb))
+
+	got, err := db.Get(ctx, "sb-get-1")
+	require.NoError(t, err)
+	require.NotNil(t, got)
+	assert.True(t, proto.Equal(sb, got), "Get must round-trip the stored sandbox")
+}
+
+func TestGet_NotFound(t *testing.T) {
+	db, ctx := setupDB(t)
+
+	got, err := db.Get(ctx, "no-such-sandbox")
+	require.Error(t, err)
+	assert.Nil(t, got)
+	assert.True(t, errors.Is(err, sandboxdb.ErrNotFound),
+		"missing sandbox must wrap sandboxdb.ErrNotFound, got: %v", err)
+}
+
+func TestUpdate_HappyPath(t *testing.T) {
+	db, ctx := setupDB(t)
+
+	original := newFixture(withID("sb-upd-1"), withVCPU(2))
+	require.NoError(t, db.Create(ctx, original))
+
+	updated := proto.Clone(original).(*cpv1.Sandbox)
+	withVCPU(4)(updated)
+	withLastModified(original.Metadata.LastModifiedAt.AsTime().Add(time.Minute))(updated)
+	require.NoError(t, db.Update(ctx, updated))
+
+	item := getItem(ctx, t, db, "sb-upd-1")
+	assert.Equal(t, "2", attrVersion(t, item),
+		"successful Update must increment the stored version")
+
+	storedPB := attrB(t, item, attrSandboxPB)
+	stored := &cpv1.Sandbox{}
+	require.NoError(t, proto.Unmarshal(storedPB, stored))
+	assert.Equal(t, uint32(4), stored.Resources.VcpuCount,
+		"stored row must reflect the updated body")
+	assert.Equal(t, int64(2), stored.Metadata.Version,
+		"sandbox_pb's version must agree with the sandbox_version column")
+
+	expectedSK := "team-alpha#" + updated.Metadata.LastModifiedAt.AsTime().UTC().Format(time.RFC3339Nano) + "#sb-upd-1"
+	assert.Equal(t, expectedSK, attrS(t, item, attrGSINamespaceLmtSK),
+		"GSI sort key must reflect the new last-modified timestamp")
+}
+
+func TestUpdate_VersionConflict(t *testing.T) {
+	db, ctx := setupDB(t)
+
+	original := newFixture(withID("sb-upd-conflict"))
+	require.NoError(t, db.Create(ctx, original))
+
+	// First update bumps stored version 1 -> 2.
+	first := proto.Clone(original).(*cpv1.Sandbox)
+	withVCPU(8)(first)
+	require.NoError(t, db.Update(ctx, first))
+
+	// Second update reuses the stale version 1 with a *different* body, so
+	// the digest cannot rescue it as an idempotent retry.
+	stale := proto.Clone(original).(*cpv1.Sandbox)
+	withVCPU(16)(stale)
+	err := db.Update(ctx, stale)
+	require.Error(t, err)
+	assert.True(t, errors.Is(err, sandboxdb.ErrVersionConflict),
+		"stale version with a different body must wrap ErrVersionConflict, got: %v", err)
+}
+
+func TestUpdate_NotFound(t *testing.T) {
+	db, ctx := setupDB(t)
+
+	sb := newFixture(withID("sb-missing"))
+	err := db.Update(ctx, sb)
+	require.Error(t, err)
+	assert.True(t, errors.Is(err, sandboxdb.ErrNotFound),
+		"update on missing sandbox must wrap ErrNotFound, got: %v", err)
+}
+
+func TestUpdate_IdempotentOnEquivalentRetry(t *testing.T) {
+	db, ctx := setupDB(t)
+
+	original := newFixture(withID("sb-upd-idem"), withVCPU(2))
+	require.NoError(t, db.Create(ctx, original))
+
+	first := proto.Clone(original).(*cpv1.Sandbox)
+	withVCPU(4)(first)
+
+	// Clone the request body BEFORE the first Update — Update mutates
+	// Metadata.Version on success, and the retry must replay the version
+	// the caller originally read (the version the gRPC client would
+	// re-send on a network error), not the bumped value.
+	retry := proto.Clone(first).(*cpv1.Sandbox)
+	withLastModified(first.Metadata.LastModifiedAt.AsTime().Add(10 * time.Second))(retry)
+
+	require.NoError(t, db.Update(ctx, first))
+	originalLastModified := first.Metadata.LastModifiedAt.AsTime()
+
+	// Retry the same logical Update. Body is identical and the supplied
+	// version is still the one the caller originally read. The stored row
+	// is now at version 2, but the digest matches, so the call must be a
+	// no-op success.
+	require.NoError(t, db.Update(ctx, retry))
+
+	// Stored version must remain 2 — no second mutation occurred.
+	item := getItem(ctx, t, db, "sb-upd-idem")
+	assert.Equal(t, "2", attrVersion(t, item),
+		"idempotent retry must not bump the version a second time")
+
+	storedPB := attrB(t, item, attrSandboxPB)
+	stored := &cpv1.Sandbox{}
+	require.NoError(t, proto.Unmarshal(storedPB, stored))
+	assert.True(t,
+		originalLastModified.Equal(stored.Metadata.LastModifiedAt.AsTime()),
+		"idempotent retry must not overwrite LastModifiedAt on the stored row")
+}
+
+func TestUpdate_PauseRequiresRunning_OK(t *testing.T) {
+	db, ctx := setupDB(t)
+
+	original := newFixture(
+		withID("sb-pause-ok"),
+		withSavedPhase(cpv1.SandboxStatus_PHASE_RUNNING),
+		withIntentPhase(cpv1.SandboxStatus_PHASE_RUNNING),
+	)
+	require.NoError(t, db.Create(ctx, original))
+
+	intent := proto.Clone(original).(*cpv1.Sandbox)
+	// Pause writes both the in-progress marker (status=PAUSING) and the
+	// terminal target (intent=PAUSED) atomically.
+	withSavedPhase(cpv1.SandboxStatus_PHASE_PAUSING)(intent)
+	withIntentPhase(cpv1.SandboxStatus_PHASE_PAUSED)(intent)
+	require.NoError(t, db.Update(ctx, intent),
+		"pausing from saved phase RUNNING must succeed")
+
+	item := getItem(ctx, t, db, "sb-pause-ok")
+	assert.Equal(t, "2", attrVersion(t, item))
+}
+
+func TestUpdate_PauseRequiresRunning_Fails(t *testing.T) {
+	db, ctx := setupDB(t)
+
+	original := newFixture(
+		withID("sb-pause-bad"),
+		withSavedPhase(cpv1.SandboxStatus_PHASE_PENDING),
+	)
+	require.NoError(t, db.Create(ctx, original))
+
+	intent := proto.Clone(original).(*cpv1.Sandbox)
+	withSavedPhase(cpv1.SandboxStatus_PHASE_PAUSING)(intent)
+	withIntentPhase(cpv1.SandboxStatus_PHASE_PAUSED)(intent)
+	err := db.Update(ctx, intent)
+	require.Error(t, err)
+	assert.True(t, errors.Is(err, sandboxdb.ErrInvalidPhaseTransition),
+		"pausing from non-running must wrap ErrInvalidPhaseTransition, got: %v", err)
+}
+
+func TestUpdate_ResumeRequiresPaused_OK(t *testing.T) {
+	db, ctx := setupDB(t)
+
+	original := newFixture(
+		withID("sb-resume-ok"),
+		withSavedPhase(cpv1.SandboxStatus_PHASE_PAUSED),
+		withIntentPhase(cpv1.SandboxStatus_PHASE_PAUSED),
+	)
+	require.NoError(t, db.Create(ctx, original))
+
+	intent := proto.Clone(original).(*cpv1.Sandbox)
+	// Resume writes status=RESUMING + intent=RUNNING. There is no separate
+	// PHASE_RESUMED — once the reconciler closes the loop, status converges
+	// to RUNNING.
+	withSavedPhase(cpv1.SandboxStatus_PHASE_RESUMING)(intent)
+	withIntentPhase(cpv1.SandboxStatus_PHASE_RUNNING)(intent)
+	require.NoError(t, db.Update(ctx, intent),
+		"resuming from saved phase PAUSED must succeed")
+}
+
+func TestUpdate_ResumeRequiresPaused_Fails(t *testing.T) {
+	db, ctx := setupDB(t)
+
+	original := newFixture(
+		withID("sb-resume-bad"),
+		withSavedPhase(cpv1.SandboxStatus_PHASE_RUNNING),
+		withIntentPhase(cpv1.SandboxStatus_PHASE_RUNNING),
+	)
+	require.NoError(t, db.Create(ctx, original))
+
+	intent := proto.Clone(original).(*cpv1.Sandbox)
+	withSavedPhase(cpv1.SandboxStatus_PHASE_RESUMING)(intent)
+	withIntentPhase(cpv1.SandboxStatus_PHASE_RUNNING)(intent)
+	err := db.Update(ctx, intent)
+	require.Error(t, err)
+	assert.True(t, errors.Is(err, sandboxdb.ErrInvalidPhaseTransition),
+		"resuming from non-paused must wrap ErrInvalidPhaseTransition, got: %v", err)
+}

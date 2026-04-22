@@ -1,0 +1,21 @@
+---
+grpc-port: 3000
+rest-port: 8080
+open-api-v2-path: /etc/open-api.json
+auth:
+  allowed-audience: foo
+  scope-key: scp
+  remove-scope-prefix: default/
+  signing-keys:
+    local-key-path: /etc/jwk.json
+tls:
+  self-signed-cert: true
+logger:
+  log-level: debug
+  zap-config:
+    development: true
+keep-alive:
+  min-time: 1s
+  interval: 5s
+  timeout: 1m
+max-concurrent-streams: 10

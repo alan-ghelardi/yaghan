@@ -1,0 +1,24 @@
+{
+  "level": "info",
+  "development": false,
+  "outputPaths": [
+    "stdout"
+  ],
+  "errorOutputPaths": [
+    "stderr"
+  ],
+  "encoding": "json",
+  "encoderConfig": {
+    "timeKey": "time",
+    "levelKey": "level",
+    "nameKey": "logger",
+    "callerKey": "caller",
+    "messageKey": "msg",
+    "stacktraceKey": "stacktrace",
+    "lineEnding": "",
+    "levelEncoder": "",
+    "timeEncoder": "iso8601",
+    "durationEncoder": "string",
+    "callerEncoder": ""
+  }
+}

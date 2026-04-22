@@ -1,0 +1,27 @@
+package create
+
+import (
+	"github.com/spf13/cobra"
+	"golang.nuinfra.net/ctl/pkg/machinery"
+)
+
+const (
+	flagNamespace = "namespace"
+)
+
+func New(ctx *machinery.Context) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:     "create",
+		Aliases: []string{"new"},
+		Short:   "FIXME!",
+		Long:    `FIXME!`,
+		Example: `FIXME!`,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			return nil
+		},
+	}
+
+	cmd.Flags().StringP(flagNamespace, "n", "", "FIXME!")
+
+	return cmd
+}

@@ -1,0 +1,37 @@
+---
+grpc-port: 3000
+rest-port: 8080
+open-api-v2-path: /etc/open-api.json
+auth:
+  allowed-audience: foo
+  scope-key: scp
+  remove-scope-prefix: default/
+  signing-keys:
+    local-key-path: /etc/jwk.json
+tls:
+  self-signed-cert: true
+logger:
+  log-level: debug
+  zap-config:
+    development: true
+keep-alive:
+  min-time: 1s
+  interval: 5s
+  timeout: 1m
+max-concurrent-streams: 10
+watch-stream:
+  event-delivery-timeout: 15s
+  redis:
+    address: localhost:6379
+    stream-name: my-stream
+    stream-key: my-key
+    max-stream-length: 100
+    database: 1
+    key-ttl: 15m
+    timeout: 15s
+    stream-readiness-timeout: 15s
+    tls:
+      insecure-skip-verify: false
+database:
+  aws:
+    sandboxes-table-name: sandboxes

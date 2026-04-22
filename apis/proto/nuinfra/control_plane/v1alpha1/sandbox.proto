@@ -1,0 +1,152 @@
+syntax = "proto3";
+
+package nuinfra.control_plane.v1alpha1;
+
+import "buf/validate/validate.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+message Sandbox {
+  SandboxMeta metadata = 1 [(buf.validate.field).required = true];
+
+  Resources resources = 2 [(buf.validate.field).required = true];
+
+  NodeRef node = 3;
+
+  Intent intent = 4;
+
+  SandboxStatus status = 5;
+}
+
+message SandboxMeta {
+  string id = 1 [(buf.validate.field).required = true];
+
+  string namespace = 2 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.pattern = "^[a-z][a-z0-9-]{0,61}[a-z0-9]$"
+  ];
+
+  int64 version = 3;
+
+  google.protobuf.Timestamp created_at = 4;
+
+  google.protobuf.Timestamp last_modified_at = 5;
+
+  // Arbitrary key/value labels for client-side grouping and
+  // filtering (e.g. "project=foo", "ci-run=123"). Keys are required
+  // to be 1-63 chars, lowercase alphanumeric with dots/dashes/
+  // underscores, starting and ending with an alphanumeric. Values
+  // may be empty or follow the same rules (uppercase permitted).
+  map<string, string> labels = 6 [(buf.validate.field).map = {
+    keys: {
+      string: {pattern: "^[a-z0-9]([-a-z0-9._]{0,61}[a-z0-9])?$"}
+    }
+    values: {
+      string: {pattern: "^([a-zA-Z0-9]([-a-zA-Z0-9._]{0,61}[a-zA-Z0-9])?)?$"}
+    }
+  }];
+}
+
+message Resources {
+  uint32 vcpu_count = 1 [
+    (buf.validate.field).uint32.gte = 1,
+    (buf.validate.field).uint32.lte = 32
+  ];
+
+  // Memory in MiB. Lower bound matches the smallest useful
+  // Firecracker VM; upper bound leaves room for 128 GiB sandboxes.
+  uint64 memory_mib = 2 [
+    (buf.validate.field).uint64.gte = 128,
+    (buf.validate.field).uint64.lte = 131072
+  ];
+}
+
+message NodeRef {
+  string id = 1;
+}
+
+message Intent {
+  SandboxStatus.Phase phase = 1;
+  Resources resources = 2;
+  bool create_snapshot = 3;
+}
+
+message SandboxStatus {
+  enum Phase {
+    PHASE_UNSPECIFIED = 0;
+    PHASE_PENDING = 1;
+    PHASE_RUNNING = 2;
+    PHASE_PAUSING = 3;
+    PHASE_PAUSED = 4;
+    PHASE_RESUMING = 5;
+    PHASE_DELETING = 6;
+    PHASE_DELETED = 7;
+    PHASE_FAILED = 8;
+  }
+
+  Phase phase = 1;
+
+  string message = 2;
+}
+
+message CreateSandboxRequest {
+  Sandbox sandbox = 1 [(buf.validate.field).required = true];
+}
+
+message CreateSandboxResponse {
+  Sandbox sandbox = 1 [(buf.validate.field).required = true];
+}
+
+message GetSandboxRequest {
+  string sandbox_id = 1 [(buf.validate.field).required = true];
+}
+
+message GetSandboxResponse {
+  Sandbox sandbox = 1;
+}
+
+message PauseSandboxRequest {
+  string sandbox_id = 1 [(buf.validate.field).required = true];
+  int64 version = 2 [(buf.validate.field).required = true];
+}
+
+message PauseSandboxResponse {}
+
+message ResumeSandboxRequest {
+  string sandbox_id = 1 [(buf.validate.field).required = true];
+  int64 version = 2 [(buf.validate.field).required = true];
+}
+
+message ResumeSandboxResponse {}
+
+message DeleteSandboxRequest {
+  string sandbox_id = 1 [(buf.validate.field).required = true];
+  int64 version = 2 [(buf.validate.field).required = true];
+}
+
+message DeleteSandboxResponse {}
+
+service SandboxService {
+  rpc CreateSandbox(CreateSandboxRequest) returns (CreateSandboxResponse) {
+    option (google.api.http) = {
+      post: "/v1alpha1/sandboxes"
+      body: "*"
+    };
+  }
+
+  rpc GetSandbox(GetSandboxRequest) returns (GetSandboxResponse) {
+    option (google.api.http) = {get: "/v1alpha1/sandboxes/{sandbox_id}"};
+  }
+
+  rpc PauseSandbox(PauseSandboxRequest) returns (PauseSandboxResponse) {
+    option (google.api.http) = {put: "/v1alpha1/sandboxes/{sandbox_id}/pause"};
+  }
+
+  rpc ResumeSandbox(ResumeSandboxRequest) returns (ResumeSandboxResponse) {
+    option (google.api.http) = {put: "/v1alpha1/sandboxes/{sandbox_id}/resume"};
+  }
+
+  rpc DeleteSandbox(DeleteSandboxRequest) returns (DeleteSandboxResponse) {
+    option (google.api.http) = {delete: "/v1alpha1/sandboxes/{sandbox_id}"};
+  }
+}
