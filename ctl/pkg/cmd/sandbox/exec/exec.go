@@ -5,19 +5,29 @@
 package exec
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
 	"os"
+	"os/signal"
 	"regexp"
 	"strings"
 	"sync"
+	"syscall"
 
 	"github.com/spf13/cobra"
 	dataplanev1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/data_plane/v1alpha1"
 	"golang.nuinfra.net/ctl/pkg/machinery"
 	"golang.org/x/term"
 )
+
+// execStreamSender is the minimal Send surface the resize helpers need.
+// Both *grpc.BidiStreamingClient[ExecRequest, ExecResponse] and the
+// hand-rolled fakeExecStream in tests satisfy it implicitly.
+type execStreamSender interface {
+	Send(*dataplanev1alpha1.ExecRequest) error
+}
 
 const (
 	flagEnv         = "env"
@@ -154,9 +164,21 @@ func run(ctx *machinery.Context, cmd *cobra.Command, args []string) error {
 	// Put the local terminal into raw mode when -t is set AND we
 	// actually have a tty on stdin. In tests stdin is a strings.Reader,
 	// not a *os.File, so this branch is naturally skipped.
+	//
+	// While we're here, also send the initial size and install a
+	// SIGWINCH watcher so the guest TTY tracks the local terminal as
+	// the user resizes their window.
 	if tty {
-		if restore, ok := maybeRawMode(ctx.IOStreams.Stdin); ok {
-			defer restore()
+		if fd, isTerm := terminalFD(ctx.IOStreams.Stdin); isTerm {
+			if restore, err := makeRaw(fd); err == nil {
+				defer restore()
+			}
+			if cols, rows, err := term.GetSize(fd); err == nil {
+				_ = sendResize(stream, id, uint32(cols), uint32(rows))
+			}
+			watchCtx, cancelWatch := context.WithCancel(cmd.Context())
+			defer cancelWatch()
+			watchTerminalSize(watchCtx, fd, stream, id)
 		}
 	}
 
@@ -299,29 +321,75 @@ func pumpStdin(
 	}
 }
 
-// maybeRawMode flips the local terminal into raw mode if stdin is a
-// TTY (a *os.File whose fd is a terminal). The returned restore
-// closure undoes the change. A second return value of false means
-// stdin is not a terminal — the caller should leave the terminal
-// alone (this is the test path).
-//
-// Wrapped with sync.Once defensively so a deferred-then-explicit
-// restore can't double-call into the term package.
-func maybeRawMode(stdin io.Reader) (restore func(), ok bool) {
+// terminalFD returns the file descriptor of stdin when it's a real
+// terminal (`*os.File` whose fd passes `term.IsTerminal`). Tests pass
+// a `strings.Reader`, which never satisfies the type assertion, so
+// the second return value is `false` and the caller naturally skips
+// every TTY-only branch.
+func terminalFD(stdin io.Reader) (fd int, ok bool) {
 	f, isFile := stdin.(*os.File)
 	if !isFile {
-		return nil, false
+		return 0, false
 	}
-	fd := int(f.Fd())
+	fd = int(f.Fd())
 	if !term.IsTerminal(fd) {
-		return nil, false
+		return 0, false
 	}
+	return fd, true
+}
+
+// makeRaw puts fd into raw mode and returns a restore closure. Wrapped
+// with sync.Once defensively so a deferred-then-explicit restore can't
+// double-call into the term package.
+func makeRaw(fd int) (restore func(), err error) {
 	state, err := term.MakeRaw(fd)
 	if err != nil {
-		return nil, false
+		return nil, err
 	}
 	var once sync.Once
 	return func() {
 		once.Do(func() { _ = term.Restore(fd, state) })
-	}, true
+	}, nil
+}
+
+// sendResize forwards a single ResizePTY frame on the stream.
+// Extracted so unit tests can drive it directly against the
+// fakeExecStream without going through the cobra wiring or worrying
+// about real terminals.
+func sendResize(stream execStreamSender, sandboxID string, cols, rows uint32) error {
+	return stream.Send(&dataplanev1alpha1.ExecRequest{
+		SandboxId: sandboxID,
+		Payload: &dataplanev1alpha1.ExecRequest_Resize{
+			Resize: &dataplanev1alpha1.ResizePTY{Cols: cols, Rows: rows},
+		},
+	})
+}
+
+// watchTerminalSize installs a SIGWINCH handler that re-reads the
+// local terminal size and forwards it as a ResizePTY frame on every
+// signal until ctx is cancelled. fd must already be a terminal — the
+// caller gates this behind terminalFD.
+//
+// The handler runs in its own goroutine and exits when ctx is
+// cancelled (the typical path is the deferred cancel in the exec run
+// flow); signal.Stop is called to release the channel registration so
+// the runtime stops delivering SIGWINCH after the watcher tears down.
+func watchTerminalSize(ctx context.Context, fd int, stream execStreamSender, sandboxID string) {
+	ch := make(chan os.Signal, 1)
+	signal.Notify(ch, syscall.SIGWINCH)
+	go func() {
+		defer signal.Stop(ch)
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ch:
+				cols, rows, err := term.GetSize(fd)
+				if err != nil {
+					continue
+				}
+				_ = sendResize(stream, sandboxID, uint32(cols), uint32(rows))
+			}
+		}
+	}()
 }

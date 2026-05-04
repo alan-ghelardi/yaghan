@@ -480,6 +480,30 @@ func TestExec_AgentClosesWithoutResult(t *testing.T) {
 	assert.Contains(t, err.Error(), "did not return a process result")
 }
 
+// --- resize --------------------------------------------------------------
+
+func TestSendResize_ForwardsFrame(t *testing.T) {
+	fake := newFakeExecStream(t.Context(), 1)
+
+	require.NoError(t, exec.SendResizeForTest(fake, "sb-1", 120, 40))
+
+	sent := fake.sentFrames()
+	require.Len(t, sent, 1)
+	assert.Equal(t, "sb-1", sent[0].GetSandboxId())
+	resize := sent[0].GetResize()
+	require.NotNil(t, resize, "frame must carry a Resize payload")
+	assert.Equal(t, uint32(120), resize.GetCols())
+	assert.Equal(t, uint32(40), resize.GetRows())
+}
+
+// Note: TestExec_TTYSendsInitialResizeWhenTerminal is intentionally
+// omitted. The initial-resize and SIGWINCH-watcher paths live behind
+// the terminalFD guard, which requires stdin to be a real *os.File on
+// a TTY. Test stdin is a strings.Reader, so those branches are
+// unreachable here — same reason raw-mode toggling is untested. The
+// underlying frame translation is covered by TestSendResize_ForwardsFrame
+// above, and the daemon-side forwarding by TestExec_ForwardsResizeFrames.
+
 // --- Exec dial-time error -----------------------------------------------
 
 func TestExec_DialErrorPropagates(t *testing.T) {
