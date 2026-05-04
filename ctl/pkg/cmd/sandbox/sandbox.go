@@ -4,6 +4,7 @@ import (
 	"github.com/spf13/cobra"
 	"golang.nuinfra.net/ctl/pkg/cmd/sandbox/create"
 	deletecmd "golang.nuinfra.net/ctl/pkg/cmd/sandbox/delete"
+	"golang.nuinfra.net/ctl/pkg/cmd/sandbox/exec"
 	"golang.nuinfra.net/ctl/pkg/cmd/sandbox/get"
 	"golang.nuinfra.net/ctl/pkg/cmd/sandbox/pause"
 	"golang.nuinfra.net/ctl/pkg/cmd/sandbox/resume"
@@ -23,6 +24,7 @@ func New(ctx *machinery.Context) *cobra.Command {
 	cmd.AddCommand(pause.New(ctx))
 	cmd.AddCommand(resume.New(ctx))
 	cmd.AddCommand(deletecmd.New(ctx))
+	cmd.AddCommand(exec.New(ctx))
 
 	return cmd
 }

@@ -2,6 +2,7 @@ package machinery
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -76,15 +77,60 @@ func newClientSet() *ClientSet {
 	}
 }
 
+// ExitCodeError carries an exit code that should be propagated as the
+// CLI's own exit status. `sandbox exec` returns this so the host shell
+// observes the same code the guest command did.
+type ExitCodeError struct {
+	// Code is the exit status the CLI terminates with.
+	Code int
+	// Err is an optional underlying error for chaining via errors.Is /
+	// errors.As. May be nil for a plain status-code propagation.
+	Err error
+}
+
+func (e *ExitCodeError) Error() string {
+	if e.Err != nil {
+		return fmt.Sprintf("command exited with status %d: %v", e.Code, e.Err)
+	}
+	return fmt.Sprintf("command exited with status %d", e.Code)
+}
+
+func (e *ExitCodeError) Unwrap() error { return e.Err }
+
+// errorExitCode maps an error to the exit code the CLI should
+// terminate with. Honors *ExitCodeError; falls back to 1 for any other
+// non-nil err, and 0 for nil. Pure function so tests don't need to
+// invoke os.Exit.
+func errorExitCode(err error) int {
+	if err == nil {
+		return 0
+	}
+	var ec *ExitCodeError
+	if errors.As(err, &ec) {
+		return ec.Code
+	}
+	return 1
+}
+
 // defaultErrorHandler prints the error to stderr and exits.
 func defaultErrorHandler(err error) {
 	if err == nil {
 		return
 	}
-	if status.Code(err) == codes.Unauthenticated {
+	switch {
+	case status.Code(err) == codes.Unauthenticated:
 		fmt.Fprintln(os.Stderr, "Authentication required. Run `sindri auth login`, then try again.")
-	} else {
+	case isExitCodeError(err):
+		// The guest already wrote its own stdout/stderr; the CLI just
+		// propagates the status code. Quiet exit.
+	default:
 		fmt.Fprintln(os.Stderr, "Error:", err.Error())
 	}
-	os.Exit(1)
+	os.Exit(errorExitCode(err))
+}
+
+// isExitCodeError reports whether err wraps an *ExitCodeError.
+func isExitCodeError(err error) bool {
+	var ec *ExitCodeError
+	return errors.As(err, &ec)
 }
