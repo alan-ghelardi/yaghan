@@ -19,6 +19,7 @@ import (
 	control_planev1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
 	"golang.nuinfra.net/commons/pkg/aws/dynamodb"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 // Top-level item attribute names. Kept in sync with
@@ -61,6 +62,11 @@ func New(ctx context.Context, config *config.Bundle) sandboxdb.DB {
 // successful return — including the idempotent-retry no-op — the input
 // reflects the stored version.
 //
+// Wall clock: the DB also owns Metadata.CreatedAt and
+// Metadata.LastModifiedAt. Both are stamped with the server's current
+// time, overwriting whatever the caller supplied. The digest
+// computation zeroes them, so idempotency is unaffected.
+//
 // Idempotency: the input is canonicalised (server-set wall-clock fields and
 // version zeroed) and hashed; the resulting digest is stored alongside the
 // row. On a conditional-check failure, the stored digest is compared to the
@@ -68,6 +74,10 @@ func New(ctx context.Context, config *config.Bundle) sandboxdb.DB {
 // preserved). If they differ, [sandbox.ErrAlreadyExists] is returned.
 func (d *dynamoDB) Create(ctx context.Context, sb *control_planev1alpha1.Sandbox) error {
 	id := sb.GetMetadata().GetId()
+
+	now := timestamppb.Now()
+	sb.Metadata.CreatedAt = now
+	sb.Metadata.LastModifiedAt = now
 
 	digest, err := contentDigest(sb)
 	if err != nil {
@@ -179,6 +189,12 @@ func (d *dynamoDB) Update(ctx context.Context, sb *control_planev1alpha1.Sandbox
 	id := sb.GetMetadata().GetId()
 	expectedVersion := sb.GetMetadata().GetVersion()
 	targetStatus := sb.GetStatus().GetPhase()
+
+	// The DB owns Metadata.LastModifiedAt: every successful Update bumps
+	// it. CreatedAt is preserved from the input (which the caller will
+	// have read via Get). The digest computation zeroes both wall-clock
+	// fields, so the stamp doesn't affect idempotency.
+	sb.Metadata.LastModifiedAt = timestamppb.Now()
 
 	// contentDigest strips Version, so the digest is identical before and
 	// after the bump. Compute it once here and reuse it for both the

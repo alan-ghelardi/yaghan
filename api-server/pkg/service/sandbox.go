@@ -4,23 +4,20 @@ import (
 	"context"
 
 	cpv1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 // CreateSandbox implements [cpv1.SandboxServiceServer].
 //
-// Server-owned fields (CreatedAt, LastModifiedAt, Status, Intent, Node, and
-// Version) are set or zeroed regardless of what the client sends. Intent.Phase
-// is always PHASE_RUNNING on creation; transitioning to other phases is the
-// job of Pause/Resume. Validation has already run in the interceptor by the
-// time control reaches here.
+// Server-owned fields are set or zeroed regardless of what the client sends:
+// the DB layer stamps Version, CreatedAt and LastModifiedAt itself, and we
+// reset Node/Status/Intent here. Intent.Phase is always PHASE_RUNNING on
+// creation; transitioning to other phases is the job of Pause/Resume.
+// Validation has already run in the interceptor by the time control reaches
+// here.
 func (a *apiServer) CreateSandbox(ctx context.Context, req *cpv1.CreateSandboxRequest) (*cpv1.CreateSandboxResponse, error) {
 	sb := req.GetSandbox()
-	now := timestamppb.Now()
 
 	sb.Metadata.Version = 0 // db.Create stamps the initial version
-	sb.Metadata.CreatedAt = now
-	sb.Metadata.LastModifiedAt = now
 	sb.Node = nil
 	sb.Status = &cpv1.SandboxStatus{Phase: cpv1.SandboxStatus_PHASE_PENDING}
 	sb.Intent = &cpv1.Intent{Phase: cpv1.SandboxStatus_PHASE_RUNNING}
@@ -84,7 +81,6 @@ func (a *apiServer) transitionPhase(
 	}
 
 	sb.Metadata.Version = version
-	sb.Metadata.LastModifiedAt = timestamppb.Now()
 	sb.Status = &cpv1.SandboxStatus{Phase: targetStatus}
 	sb.Intent = &cpv1.Intent{Phase: targetIntent}
 

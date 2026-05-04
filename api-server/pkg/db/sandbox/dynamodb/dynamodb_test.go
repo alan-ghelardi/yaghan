@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"strings"
 	"testing"
 	"time"
 
@@ -135,6 +136,28 @@ func attrB(t *testing.T, item map[string]types.AttributeValue, name string) []by
 	return b.Value
 }
 
+// assertGSISortKey asserts the GSI sort key has the canonical
+// `<namespace>#<rfc3339nano-timestamp>#<id>` shape and that the embedded
+// timestamp is within a few seconds of now. The DB layer owns
+// LastModifiedAt, so tests can no longer assert against a literal
+// caller-supplied value.
+func assertGSISortKey(t *testing.T, item map[string]types.AttributeValue, namespace, id string) time.Time {
+	t.Helper()
+	sk := attrS(t, item, attrGSINamespaceLmtSK)
+	prefix := namespace + "#"
+	suffix := "#" + id
+	require.True(t, strings.HasPrefix(sk, prefix),
+		"GSI sort key %q must start with %q", sk, prefix)
+	require.True(t, strings.HasSuffix(sk, suffix),
+		"GSI sort key %q must end with %q", sk, suffix)
+	tsPart := strings.TrimSuffix(strings.TrimPrefix(sk, prefix), suffix)
+	ts, err := time.Parse(time.RFC3339Nano, tsPart)
+	require.NoError(t, err, "GSI timestamp segment %q must parse as RFC3339Nano", tsPart)
+	assert.WithinDuration(t, time.Now(), ts, 5*time.Second,
+		"GSI timestamp segment must be a recent server-stamped time")
+	return ts
+}
+
 func TestCreate_HappyPath(t *testing.T) {
 	db, ctx := setupDB(t)
 	sb := newFixture()
@@ -147,7 +170,9 @@ func TestCreate_HappyPath(t *testing.T) {
 	assert.Equal(t, "team-alpha", attrS(t, item, attrSandboxNamespace))
 	assert.Equal(t, "PHASE_PENDING", attrS(t, item, attrSandboxStatusPhase))
 	assert.Equal(t, "1", attrVersion(t, item))
-	assert.Equal(t, "team-alpha#2026-04-27T10:30:45.123456789Z#sb-001", attrS(t, item, attrGSINamespaceLmtSK))
+	// The DB stamps LastModifiedAt itself, so the GSI sort key is built
+	// from a server-recent timestamp; assert the shape and freshness.
+	assertGSISortKey(t, item, "team-alpha", "sb-001")
 
 	assert.NotContains(t, item, attrNodeRefID, "node_ref_id must be absent when Node is unset (sparse GSI)")
 
@@ -179,11 +204,11 @@ func TestCreate_IdempotentOnEquivalentRetry(t *testing.T) {
 	first := newFixture(withID("sb-003"))
 	require.NoError(t, db.Create(ctx, first))
 
-	// Simulate a retry: the gRPC handler re-stamps LastModifiedAt before
-	// re-issuing the call. Body is otherwise identical, so the digest must
-	// match and the call must be a no-op.
+	// Simulate a retry. Create stamps LastModifiedAt internally on every
+	// call, so the retry's stamped timestamp differs from the first
+	// call's — but the digest excludes wall-clock fields, so the digest
+	// still matches the stored row and the call is a no-op success.
 	retry := proto.Clone(first).(*cpv1.Sandbox)
-	withLastModified(first.Metadata.LastModifiedAt.AsTime().Add(5 * time.Second))(retry)
 	require.NoError(t, db.Create(ctx, retry))
 
 	// The stored row must reflect the FIRST write — no overwrite occurred.
@@ -314,10 +339,14 @@ func TestUpdate_HappyPath(t *testing.T) {
 
 	original := newFixture(withID("sb-upd-1"), withVCPU(2))
 	require.NoError(t, db.Create(ctx, original))
+	createdLmt := original.Metadata.LastModifiedAt.AsTime()
 
 	updated := proto.Clone(original).(*cpv1.Sandbox)
 	withVCPU(4)(updated)
-	withLastModified(original.Metadata.LastModifiedAt.AsTime().Add(time.Minute))(updated)
+	// Sleep enough to guarantee a strictly later timestamp on Update —
+	// the DB stamps LastModifiedAt with wall-clock precision, so two
+	// calls in the same nanosecond would tie.
+	time.Sleep(2 * time.Millisecond)
 	require.NoError(t, db.Update(ctx, updated))
 
 	item := getItem(ctx, t, db, "sb-upd-1")
@@ -332,9 +361,9 @@ func TestUpdate_HappyPath(t *testing.T) {
 	assert.Equal(t, int64(2), stored.Metadata.Version,
 		"sandbox_pb's version must agree with the sandbox_version column")
 
-	expectedSK := "team-alpha#" + updated.Metadata.LastModifiedAt.AsTime().UTC().Format(time.RFC3339Nano) + "#sb-upd-1"
-	assert.Equal(t, expectedSK, attrS(t, item, attrGSINamespaceLmtSK),
-		"GSI sort key must reflect the new last-modified timestamp")
+	updatedLmt := assertGSISortKey(t, item, "team-alpha", "sb-upd-1")
+	assert.True(t, updatedLmt.After(createdLmt),
+		"a successful Update must advance the LastModifiedAt timestamp")
 }
 
 func TestUpdate_VersionConflict(t *testing.T) {
@@ -382,15 +411,17 @@ func TestUpdate_IdempotentOnEquivalentRetry(t *testing.T) {
 	// the caller originally read (the version the gRPC client would
 	// re-send on a network error), not the bumped value.
 	retry := proto.Clone(first).(*cpv1.Sandbox)
-	withLastModified(first.Metadata.LastModifiedAt.AsTime().Add(10 * time.Second))(retry)
 
 	require.NoError(t, db.Update(ctx, first))
-	originalLastModified := first.Metadata.LastModifiedAt.AsTime()
+	firstWriteLmt := first.Metadata.LastModifiedAt.AsTime()
 
-	// Retry the same logical Update. Body is identical and the supplied
-	// version is still the one the caller originally read. The stored row
-	// is now at version 2, but the digest matches, so the call must be a
-	// no-op success.
+	// Retry the same logical Update. The DB stamps a fresh LMT
+	// internally on the retry, so the retry's `retry.LastModifiedAt`
+	// will differ from the first call's — but the digest excludes
+	// wall-clock fields, so the digest still matches the stored row
+	// and the call must be a no-op success. The stored LMT therefore
+	// stays at firstWriteLmt.
+	time.Sleep(2 * time.Millisecond)
 	require.NoError(t, db.Update(ctx, retry))
 
 	// Stored version must remain 2 — no second mutation occurred.
@@ -402,7 +433,7 @@ func TestUpdate_IdempotentOnEquivalentRetry(t *testing.T) {
 	stored := &cpv1.Sandbox{}
 	require.NoError(t, proto.Unmarshal(storedPB, stored))
 	assert.True(t,
-		originalLastModified.Equal(stored.Metadata.LastModifiedAt.AsTime()),
+		firstWriteLmt.Equal(stored.Metadata.LastModifiedAt.AsTime()),
 		"idempotent retry must not overwrite LastModifiedAt on the stored row")
 }
 
@@ -483,4 +514,61 @@ func TestUpdate_ResumeRequiresPaused_Fails(t *testing.T) {
 	require.Error(t, err)
 	assert.True(t, errors.Is(err, sandboxdb.ErrInvalidPhaseTransition),
 		"resuming from non-paused must wrap ErrInvalidPhaseTransition, got: %v", err)
+}
+
+// TestUpdate_StampsLastModifiedAtRegardlessOfInput is the regression
+// guard for the original EstablishSession bug: a daemon-side caller
+// that forwards a stale (or zeroed) LastModifiedAt must still see the
+// stored row's timestamp advance to a recent server time. The DB owns
+// the field, so the caller's value is irrelevant.
+func TestUpdate_StampsLastModifiedAtRegardlessOfInput(t *testing.T) {
+	db, ctx := setupDB(t)
+
+	original := newFixture(withID("sb-lmt-bug"))
+	require.NoError(t, db.Create(ctx, original))
+
+	updated := proto.Clone(original).(*cpv1.Sandbox)
+	withVCPU(4)(updated)
+	// Force a stale timestamp on the input. The bug being guarded
+	// against is "DB doesn't stamp; stored LMT keeps this stale value."
+	stale := time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
+	withLastModified(stale)(updated)
+
+	require.NoError(t, db.Update(ctx, updated))
+
+	item := getItem(ctx, t, db, "sb-lmt-bug")
+	gotLmt := assertGSISortKey(t, item, "team-alpha", "sb-lmt-bug")
+	assert.True(t, gotLmt.After(stale),
+		"stored LMT must advance past the caller-supplied stale value")
+
+	storedPB := attrB(t, item, attrSandboxPB)
+	stored := &cpv1.Sandbox{}
+	require.NoError(t, proto.Unmarshal(storedPB, stored))
+	assert.True(t, stored.Metadata.LastModifiedAt.AsTime().After(stale),
+		"stored Metadata.LastModifiedAt must advance past the caller's stale value")
+}
+
+// TestUpdate_PreservesCreatedAt locks in the invariant that Update
+// never touches CreatedAt — only LastModifiedAt. CreatedAt belongs to
+// Create.
+func TestUpdate_PreservesCreatedAt(t *testing.T) {
+	db, ctx := setupDB(t)
+
+	original := newFixture(withID("sb-created-at"))
+	require.NoError(t, db.Create(ctx, original))
+	createdAt := original.Metadata.CreatedAt.AsTime()
+
+	updated := proto.Clone(original).(*cpv1.Sandbox)
+	withVCPU(4)(updated)
+	time.Sleep(2 * time.Millisecond)
+	require.NoError(t, db.Update(ctx, updated))
+
+	stored, err := db.Get(ctx, "sb-created-at")
+	require.NoError(t, err)
+	assert.True(t, createdAt.Equal(stored.Metadata.CreatedAt.AsTime()),
+		"Update must not mutate CreatedAt — got %v, want %v",
+		stored.Metadata.CreatedAt.AsTime(), createdAt)
+	assert.True(t,
+		stored.Metadata.LastModifiedAt.AsTime().After(createdAt),
+		"LastModifiedAt should have advanced past CreatedAt")
 }
