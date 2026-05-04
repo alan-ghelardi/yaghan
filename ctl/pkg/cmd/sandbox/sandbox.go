@@ -2,6 +2,7 @@ package sandbox
 
 import (
 	"github.com/spf13/cobra"
+	"golang.nuinfra.net/ctl/pkg/cmd/sandbox/cp"
 	"golang.nuinfra.net/ctl/pkg/cmd/sandbox/create"
 	deletecmd "golang.nuinfra.net/ctl/pkg/cmd/sandbox/delete"
 	"golang.nuinfra.net/ctl/pkg/cmd/sandbox/exec"
@@ -25,6 +26,7 @@ func New(ctx *machinery.Context) *cobra.Command {
 	cmd.AddCommand(resume.New(ctx))
 	cmd.AddCommand(deletecmd.New(ctx))
 	cmd.AddCommand(exec.New(ctx))
+	cmd.AddCommand(cp.New(ctx))
 
 	return cmd
 }
