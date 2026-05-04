@@ -115,6 +115,19 @@
         }
       }
     },
+    "v1alpha1ResizePTY": {
+      "type": "object",
+      "properties": {
+        "cols": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "rows": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
     "v1alpha1StdinChunk": {
       "type": "object",
       "properties": {

@@ -712,6 +712,7 @@ It provides enough context for consumers to react, audit, or replicate the chang
 | sandbox_id | [string](#string) |  |  |
 | exec_process | [ExecProcess](#nuinfra-data_plane-v1alpha1-ExecProcess) |  |  |
 | stdin | [StdinChunk](#nuinfra-data_plane-v1alpha1-StdinChunk) |  |  |
+| resize | [ResizePTY](#nuinfra-data_plane-v1alpha1-ResizePTY) |  |  |
 
 
 

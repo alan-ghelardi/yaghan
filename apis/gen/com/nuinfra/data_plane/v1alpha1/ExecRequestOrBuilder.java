@@ -52,5 +52,20 @@ public interface ExecRequestOrBuilder extends
    */
   com.nuinfra.data_plane.v1alpha1.StdinChunkOrBuilder getStdinOrBuilder();
 
+  /**
+   * <code>.nuinfra.data_plane.v1alpha1.ResizePTY resize = 4 [json_name = "resize"];</code>
+   * @return Whether the resize field is set.
+   */
+  boolean hasResize();
+  /**
+   * <code>.nuinfra.data_plane.v1alpha1.ResizePTY resize = 4 [json_name = "resize"];</code>
+   * @return The resize.
+   */
+  com.nuinfra.data_plane.v1alpha1.ResizePTY getResize();
+  /**
+   * <code>.nuinfra.data_plane.v1alpha1.ResizePTY resize = 4 [json_name = "resize"];</code>
+   */
+  com.nuinfra.data_plane.v1alpha1.ResizePTYOrBuilder getResizeOrBuilder();
+
   com.nuinfra.data_plane.v1alpha1.ExecRequest.PayloadCase getPayloadCase();
 }

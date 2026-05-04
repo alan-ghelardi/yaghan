@@ -34,6 +34,12 @@ export declare type ExecRequest = Message<"nuinfra.data_plane.v1alpha1.ExecReque
      */
     value: StdinChunk;
     case: "stdin";
+  } | {
+    /**
+     * @generated from field: nuinfra.data_plane.v1alpha1.ResizePTY resize = 4;
+     */
+    value: ResizePTY;
+    case: "resize";
   } | { case: undefined; value?: undefined };
 };
 

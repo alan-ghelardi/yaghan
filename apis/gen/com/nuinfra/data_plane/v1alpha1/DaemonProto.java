@@ -102,56 +102,57 @@ public final class DaemonProto extends com.google.protobuf.GeneratedFile {
     java.lang.String[] descriptorData = {
       "\n(nuinfra/data_plane/v1alpha1/daemon.pro" +
       "to\022\033nuinfra.data_plane.v1alpha1\032\033buf/val" +
-      "idate/validate.proto\"\317\001\n\013ExecRequest\022%\n\n" +
+      "idate/validate.proto\"\221\002\n\013ExecRequest\022%\n\n" +
       "sandbox_id\030\001 \001(\tB\006\272H\003\310\001\001R\tsandboxId\022M\n\014e" +
       "xec_process\030\002 \001(\0132(.nuinfra.data_plane.v" +
       "1alpha1.ExecProcessH\000R\013execProcess\022?\n\005st" +
       "din\030\003 \001(\0132\'.nuinfra.data_plane.v1alpha1." +
-      "StdinChunkH\000R\005stdinB\t\n\007payload\"2\n\nStdinC" +
-      "hunk\022\022\n\004data\030\001 \001(\014R\004data\022\020\n\003eof\030\002 \001(\010R\003e" +
-      "of\"\334\001\n\013ExecProcess\022\030\n\007command\030\001 \001(\tR\007com" +
-      "mand\022\022\n\004args\030\002 \003(\tR\004args\022C\n\003env\030\003 \003(\01321." +
-      "nuinfra.data_plane.v1alpha1.ExecProcess." +
-      "EnvEntryR\003env\022\020\n\003cwd\030\004 \001(\tR\003cwd\022\020\n\003tty\030\005" +
-      " \001(\010R\003tty\0326\n\010EnvEntry\022\020\n\003key\030\001 \001(\tR\003key\022" +
-      "\024\n\005value\030\002 \001(\tR\005value:\0028\001\"\275\001\n\014ExecRespon" +
-      "se\022S\n\016process_result\030\001 \001(\0132*.nuinfra.dat" +
-      "a_plane.v1alpha1.ProcessResultH\000R\rproces" +
-      "sResult\022M\n\014stream_chunk\030\002 \001(\0132(.nuinfra." +
-      "data_plane.v1alpha1.StreamChunkH\000R\013strea" +
-      "mChunkB\t\n\007payload\",\n\rProcessResult\022\033\n\tex" +
-      "it_code\030\001 \001(\005R\010exitCode\"\355\001\n\013StreamChunk\022" +
-      "\020\n\003pid\030\001 \001(\005R\003pid\022K\n\006stream\030\002 \001(\01623.nuin" +
-      "fra.data_plane.v1alpha1.StreamChunk.Stre" +
-      "amTypeR\006stream\022\022\n\004data\030\003 \001(\014R\004data\022\020\n\003eo" +
-      "f\030\004 \001(\010R\003eof\"Y\n\nStreamType\022\033\n\027STREAM_TYP" +
-      "E_UNSPECIFIED\020\000\022\026\n\022STREAM_TYPE_STDOUT\020\001\022" +
-      "\026\n\022STREAM_TYPE_STDERR\020\002\"\017\n\rCancelRequest" +
-      "\"3\n\tResizePTY\022\022\n\004cols\030\001 \001(\rR\004cols\022\022\n\004row" +
-      "s\030\002 \001(\rR\004rows\"v\n\021UploadFileRequest\022%\n\nsa" +
-      "ndbox_id\030\001 \001(\tB\006\272H\003\310\001\001R\tsandboxId\022\036\n\006sou" +
-      "rce\030\002 \001(\014B\006\272H\003\310\001\001R\006source\022\032\n\004dest\030\003 \001(\tB" +
-      "\006\272H\003\310\001\001R\004dest\"\024\n\022UploadFileResponse\"\\\n\023D" +
-      "ownloadFileRequest\022%\n\nsandbox_id\030\001 \001(\tB\006" +
-      "\272H\003\310\001\001R\tsandboxId\022\036\n\006source\030\002 \001(\tB\006\272H\003\310\001" +
-      "\001R\006source\"9\n\024DownloadFileResponse\022!\n\014fil" +
-      "e_content\030\001 \001(\014R\013fileContent2\324\002\n\rDaemonS" +
-      "ervice\022_\n\004Exec\022(.nuinfra.data_plane.v1al" +
-      "pha1.ExecRequest\032).nuinfra.data_plane.v1" +
-      "alpha1.ExecResponse(\0010\001\022m\n\nUploadFile\022.." +
-      "nuinfra.data_plane.v1alpha1.UploadFileRe" +
-      "quest\032/.nuinfra.data_plane.v1alpha1.Uplo" +
-      "adFileResponse\022s\n\014DownloadFile\0220.nuinfra" +
-      ".data_plane.v1alpha1.DownloadFileRequest" +
-      "\0321.nuinfra.data_plane.v1alpha1.DownloadF" +
-      "ileResponseB\204\002\n\037com.nuinfra.data_plane.v" +
-      "1alpha1B\013DaemonProtoP\001ZJgolang.nuinfra.n" +
-      "et/apis/gen/nuinfra/data_plane/v1alpha1;" +
-      "data_planev1alpha1\242\002\003NDX\252\002\032Nuinfra.DataP" +
-      "lane.V1alpha1\312\002\032Nuinfra\\DataPlane\\V1alph" +
-      "a1\342\002&Nuinfra\\DataPlane\\V1alpha1\\GPBMetad" +
-      "ata\352\002\034Nuinfra::DataPlane::V1alpha1b\006prot" +
-      "o3"
+      "StdinChunkH\000R\005stdin\022@\n\006resize\030\004 \001(\0132&.nu" +
+      "infra.data_plane.v1alpha1.ResizePTYH\000R\006r" +
+      "esizeB\t\n\007payload\"2\n\nStdinChunk\022\022\n\004data\030\001" +
+      " \001(\014R\004data\022\020\n\003eof\030\002 \001(\010R\003eof\"\334\001\n\013ExecPro" +
+      "cess\022\030\n\007command\030\001 \001(\tR\007command\022\022\n\004args\030\002" +
+      " \003(\tR\004args\022C\n\003env\030\003 \003(\01321.nuinfra.data_p" +
+      "lane.v1alpha1.ExecProcess.EnvEntryR\003env\022" +
+      "\020\n\003cwd\030\004 \001(\tR\003cwd\022\020\n\003tty\030\005 \001(\010R\003tty\0326\n\010E" +
+      "nvEntry\022\020\n\003key\030\001 \001(\tR\003key\022\024\n\005value\030\002 \001(\t" +
+      "R\005value:\0028\001\"\275\001\n\014ExecResponse\022S\n\016process_" +
+      "result\030\001 \001(\0132*.nuinfra.data_plane.v1alph" +
+      "a1.ProcessResultH\000R\rprocessResult\022M\n\014str" +
+      "eam_chunk\030\002 \001(\0132(.nuinfra.data_plane.v1a" +
+      "lpha1.StreamChunkH\000R\013streamChunkB\t\n\007payl" +
+      "oad\",\n\rProcessResult\022\033\n\texit_code\030\001 \001(\005R" +
+      "\010exitCode\"\355\001\n\013StreamChunk\022\020\n\003pid\030\001 \001(\005R\003" +
+      "pid\022K\n\006stream\030\002 \001(\01623.nuinfra.data_plane" +
+      ".v1alpha1.StreamChunk.StreamTypeR\006stream" +
+      "\022\022\n\004data\030\003 \001(\014R\004data\022\020\n\003eof\030\004 \001(\010R\003eof\"Y" +
+      "\n\nStreamType\022\033\n\027STREAM_TYPE_UNSPECIFIED\020" +
+      "\000\022\026\n\022STREAM_TYPE_STDOUT\020\001\022\026\n\022STREAM_TYPE" +
+      "_STDERR\020\002\"\017\n\rCancelRequest\"3\n\tResizePTY\022" +
+      "\022\n\004cols\030\001 \001(\rR\004cols\022\022\n\004rows\030\002 \001(\rR\004rows\"" +
+      "v\n\021UploadFileRequest\022%\n\nsandbox_id\030\001 \001(\t" +
+      "B\006\272H\003\310\001\001R\tsandboxId\022\036\n\006source\030\002 \001(\014B\006\272H\003" +
+      "\310\001\001R\006source\022\032\n\004dest\030\003 \001(\tB\006\272H\003\310\001\001R\004dest\"" +
+      "\024\n\022UploadFileResponse\"\\\n\023DownloadFileReq" +
+      "uest\022%\n\nsandbox_id\030\001 \001(\tB\006\272H\003\310\001\001R\tsandbo" +
+      "xId\022\036\n\006source\030\002 \001(\tB\006\272H\003\310\001\001R\006source\"9\n\024D" +
+      "ownloadFileResponse\022!\n\014file_content\030\001 \001(" +
+      "\014R\013fileContent2\324\002\n\rDaemonService\022_\n\004Exec" +
+      "\022(.nuinfra.data_plane.v1alpha1.ExecReque" +
+      "st\032).nuinfra.data_plane.v1alpha1.ExecRes" +
+      "ponse(\0010\001\022m\n\nUploadFile\022..nuinfra.data_p" +
+      "lane.v1alpha1.UploadFileRequest\032/.nuinfr" +
+      "a.data_plane.v1alpha1.UploadFileResponse" +
+      "\022s\n\014DownloadFile\0220.nuinfra.data_plane.v1" +
+      "alpha1.DownloadFileRequest\0321.nuinfra.dat" +
+      "a_plane.v1alpha1.DownloadFileResponseB\204\002" +
+      "\n\037com.nuinfra.data_plane.v1alpha1B\013Daemo" +
+      "nProtoP\001ZJgolang.nuinfra.net/apis/gen/nu" +
+      "infra/data_plane/v1alpha1;data_planev1al" +
+      "pha1\242\002\003NDX\252\002\032Nuinfra.DataPlane.V1alpha1\312" +
+      "\002\032Nuinfra\\DataPlane\\V1alpha1\342\002&Nuinfra\\D" +
+      "ataPlane\\V1alpha1\\GPBMetadata\352\002\034Nuinfra:" +
+      ":DataPlane::V1alpha1b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -163,7 +164,7 @@ public final class DaemonProto extends com.google.protobuf.GeneratedFile {
     internal_static_nuinfra_data_plane_v1alpha1_ExecRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_nuinfra_data_plane_v1alpha1_ExecRequest_descriptor,
-        new java.lang.String[] { "SandboxId", "ExecProcess", "Stdin", "Payload", });
+        new java.lang.String[] { "SandboxId", "ExecProcess", "Stdin", "Resize", "Payload", });
     internal_static_nuinfra_data_plane_v1alpha1_StdinChunk_descriptor =
       getDescriptor().getMessageType(1);
     internal_static_nuinfra_data_plane_v1alpha1_StdinChunk_fieldAccessorTable = new

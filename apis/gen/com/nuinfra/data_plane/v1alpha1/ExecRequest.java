@@ -52,6 +52,7 @@ private static final long serialVersionUID = 0L;
           com.google.protobuf.AbstractMessage.InternalOneOfEnum {
     EXEC_PROCESS(2),
     STDIN(3),
+    RESIZE(4),
     PAYLOAD_NOT_SET(0);
     private final int value;
     private PayloadCase(int value) {
@@ -71,6 +72,7 @@ private static final long serialVersionUID = 0L;
       switch (value) {
         case 2: return EXEC_PROCESS;
         case 3: return STDIN;
+        case 4: return RESIZE;
         case 0: return PAYLOAD_NOT_SET;
         default: return null;
       }
@@ -187,6 +189,37 @@ private static final long serialVersionUID = 0L;
     return com.nuinfra.data_plane.v1alpha1.StdinChunk.getDefaultInstance();
   }
 
+  public static final int RESIZE_FIELD_NUMBER = 4;
+  /**
+   * <code>.nuinfra.data_plane.v1alpha1.ResizePTY resize = 4 [json_name = "resize"];</code>
+   * @return Whether the resize field is set.
+   */
+  @java.lang.Override
+  public boolean hasResize() {
+    return payloadCase_ == 4;
+  }
+  /**
+   * <code>.nuinfra.data_plane.v1alpha1.ResizePTY resize = 4 [json_name = "resize"];</code>
+   * @return The resize.
+   */
+  @java.lang.Override
+  public com.nuinfra.data_plane.v1alpha1.ResizePTY getResize() {
+    if (payloadCase_ == 4) {
+       return (com.nuinfra.data_plane.v1alpha1.ResizePTY) payload_;
+    }
+    return com.nuinfra.data_plane.v1alpha1.ResizePTY.getDefaultInstance();
+  }
+  /**
+   * <code>.nuinfra.data_plane.v1alpha1.ResizePTY resize = 4 [json_name = "resize"];</code>
+   */
+  @java.lang.Override
+  public com.nuinfra.data_plane.v1alpha1.ResizePTYOrBuilder getResizeOrBuilder() {
+    if (payloadCase_ == 4) {
+       return (com.nuinfra.data_plane.v1alpha1.ResizePTY) payload_;
+    }
+    return com.nuinfra.data_plane.v1alpha1.ResizePTY.getDefaultInstance();
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -210,6 +243,9 @@ private static final long serialVersionUID = 0L;
     if (payloadCase_ == 3) {
       output.writeMessage(3, (com.nuinfra.data_plane.v1alpha1.StdinChunk) payload_);
     }
+    if (payloadCase_ == 4) {
+      output.writeMessage(4, (com.nuinfra.data_plane.v1alpha1.ResizePTY) payload_);
+    }
     getUnknownFields().writeTo(output);
   }
 
@@ -229,6 +265,10 @@ private static final long serialVersionUID = 0L;
     if (payloadCase_ == 3) {
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(3, (com.nuinfra.data_plane.v1alpha1.StdinChunk) payload_);
+    }
+    if (payloadCase_ == 4) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(4, (com.nuinfra.data_plane.v1alpha1.ResizePTY) payload_);
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -257,6 +297,10 @@ private static final long serialVersionUID = 0L;
         if (!getStdin()
             .equals(other.getStdin())) return false;
         break;
+      case 4:
+        if (!getResize()
+            .equals(other.getResize())) return false;
+        break;
       case 0:
       default:
     }
@@ -281,6 +325,10 @@ private static final long serialVersionUID = 0L;
       case 3:
         hash = (37 * hash) + STDIN_FIELD_NUMBER;
         hash = (53 * hash) + getStdin().hashCode();
+        break;
+      case 4:
+        hash = (37 * hash) + RESIZE_FIELD_NUMBER;
+        hash = (53 * hash) + getResize().hashCode();
         break;
       case 0:
       default:
@@ -423,6 +471,9 @@ private static final long serialVersionUID = 0L;
       if (stdinBuilder_ != null) {
         stdinBuilder_.clear();
       }
+      if (resizeBuilder_ != null) {
+        resizeBuilder_.clear();
+      }
       payloadCase_ = 0;
       payload_ = null;
       return this;
@@ -475,6 +526,10 @@ private static final long serialVersionUID = 0L;
           stdinBuilder_ != null) {
         result.payload_ = stdinBuilder_.build();
       }
+      if (payloadCase_ == 4 &&
+          resizeBuilder_ != null) {
+        result.payload_ = resizeBuilder_.build();
+      }
     }
 
     @java.lang.Override
@@ -501,6 +556,10 @@ private static final long serialVersionUID = 0L;
         }
         case STDIN: {
           mergeStdin(other.getStdin());
+          break;
+        }
+        case RESIZE: {
+          mergeResize(other.getResize());
           break;
         }
         case PAYLOAD_NOT_SET: {
@@ -552,6 +611,13 @@ private static final long serialVersionUID = 0L;
               payloadCase_ = 3;
               break;
             } // case 26
+            case 34: {
+              input.readMessage(
+                  internalGetResizeFieldBuilder().getBuilder(),
+                  extensionRegistry);
+              payloadCase_ = 4;
+              break;
+            } // case 34
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -938,6 +1004,148 @@ private static final long serialVersionUID = 0L;
       payloadCase_ = 3;
       onChanged();
       return stdinBuilder_;
+    }
+
+    private com.google.protobuf.SingleFieldBuilder<
+        com.nuinfra.data_plane.v1alpha1.ResizePTY, com.nuinfra.data_plane.v1alpha1.ResizePTY.Builder, com.nuinfra.data_plane.v1alpha1.ResizePTYOrBuilder> resizeBuilder_;
+    /**
+     * <code>.nuinfra.data_plane.v1alpha1.ResizePTY resize = 4 [json_name = "resize"];</code>
+     * @return Whether the resize field is set.
+     */
+    @java.lang.Override
+    public boolean hasResize() {
+      return payloadCase_ == 4;
+    }
+    /**
+     * <code>.nuinfra.data_plane.v1alpha1.ResizePTY resize = 4 [json_name = "resize"];</code>
+     * @return The resize.
+     */
+    @java.lang.Override
+    public com.nuinfra.data_plane.v1alpha1.ResizePTY getResize() {
+      if (resizeBuilder_ == null) {
+        if (payloadCase_ == 4) {
+          return (com.nuinfra.data_plane.v1alpha1.ResizePTY) payload_;
+        }
+        return com.nuinfra.data_plane.v1alpha1.ResizePTY.getDefaultInstance();
+      } else {
+        if (payloadCase_ == 4) {
+          return resizeBuilder_.getMessage();
+        }
+        return com.nuinfra.data_plane.v1alpha1.ResizePTY.getDefaultInstance();
+      }
+    }
+    /**
+     * <code>.nuinfra.data_plane.v1alpha1.ResizePTY resize = 4 [json_name = "resize"];</code>
+     */
+    public Builder setResize(com.nuinfra.data_plane.v1alpha1.ResizePTY value) {
+      if (resizeBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        payload_ = value;
+        onChanged();
+      } else {
+        resizeBuilder_.setMessage(value);
+      }
+      payloadCase_ = 4;
+      return this;
+    }
+    /**
+     * <code>.nuinfra.data_plane.v1alpha1.ResizePTY resize = 4 [json_name = "resize"];</code>
+     */
+    public Builder setResize(
+        com.nuinfra.data_plane.v1alpha1.ResizePTY.Builder builderForValue) {
+      if (resizeBuilder_ == null) {
+        payload_ = builderForValue.build();
+        onChanged();
+      } else {
+        resizeBuilder_.setMessage(builderForValue.build());
+      }
+      payloadCase_ = 4;
+      return this;
+    }
+    /**
+     * <code>.nuinfra.data_plane.v1alpha1.ResizePTY resize = 4 [json_name = "resize"];</code>
+     */
+    public Builder mergeResize(com.nuinfra.data_plane.v1alpha1.ResizePTY value) {
+      if (resizeBuilder_ == null) {
+        if (payloadCase_ == 4 &&
+            payload_ != com.nuinfra.data_plane.v1alpha1.ResizePTY.getDefaultInstance()) {
+          payload_ = com.nuinfra.data_plane.v1alpha1.ResizePTY.newBuilder((com.nuinfra.data_plane.v1alpha1.ResizePTY) payload_)
+              .mergeFrom(value).buildPartial();
+        } else {
+          payload_ = value;
+        }
+        onChanged();
+      } else {
+        if (payloadCase_ == 4) {
+          resizeBuilder_.mergeFrom(value);
+        } else {
+          resizeBuilder_.setMessage(value);
+        }
+      }
+      payloadCase_ = 4;
+      return this;
+    }
+    /**
+     * <code>.nuinfra.data_plane.v1alpha1.ResizePTY resize = 4 [json_name = "resize"];</code>
+     */
+    public Builder clearResize() {
+      if (resizeBuilder_ == null) {
+        if (payloadCase_ == 4) {
+          payloadCase_ = 0;
+          payload_ = null;
+          onChanged();
+        }
+      } else {
+        if (payloadCase_ == 4) {
+          payloadCase_ = 0;
+          payload_ = null;
+        }
+        resizeBuilder_.clear();
+      }
+      return this;
+    }
+    /**
+     * <code>.nuinfra.data_plane.v1alpha1.ResizePTY resize = 4 [json_name = "resize"];</code>
+     */
+    public com.nuinfra.data_plane.v1alpha1.ResizePTY.Builder getResizeBuilder() {
+      return internalGetResizeFieldBuilder().getBuilder();
+    }
+    /**
+     * <code>.nuinfra.data_plane.v1alpha1.ResizePTY resize = 4 [json_name = "resize"];</code>
+     */
+    @java.lang.Override
+    public com.nuinfra.data_plane.v1alpha1.ResizePTYOrBuilder getResizeOrBuilder() {
+      if ((payloadCase_ == 4) && (resizeBuilder_ != null)) {
+        return resizeBuilder_.getMessageOrBuilder();
+      } else {
+        if (payloadCase_ == 4) {
+          return (com.nuinfra.data_plane.v1alpha1.ResizePTY) payload_;
+        }
+        return com.nuinfra.data_plane.v1alpha1.ResizePTY.getDefaultInstance();
+      }
+    }
+    /**
+     * <code>.nuinfra.data_plane.v1alpha1.ResizePTY resize = 4 [json_name = "resize"];</code>
+     */
+    private com.google.protobuf.SingleFieldBuilder<
+        com.nuinfra.data_plane.v1alpha1.ResizePTY, com.nuinfra.data_plane.v1alpha1.ResizePTY.Builder, com.nuinfra.data_plane.v1alpha1.ResizePTYOrBuilder> 
+        internalGetResizeFieldBuilder() {
+      if (resizeBuilder_ == null) {
+        if (!(payloadCase_ == 4)) {
+          payload_ = com.nuinfra.data_plane.v1alpha1.ResizePTY.getDefaultInstance();
+        }
+        resizeBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+            com.nuinfra.data_plane.v1alpha1.ResizePTY, com.nuinfra.data_plane.v1alpha1.ResizePTY.Builder, com.nuinfra.data_plane.v1alpha1.ResizePTYOrBuilder>(
+                (com.nuinfra.data_plane.v1alpha1.ResizePTY) payload_,
+                getParentForChildren(),
+                isClean());
+        payload_ = null;
+      }
+      payloadCase_ = 4;
+      onChanged();
+      return resizeBuilder_;
     }
 
     // @@protoc_insertion_point(builder_scope:nuinfra.data_plane.v1alpha1.ExecRequest)

@@ -78,6 +78,7 @@ type ExecRequest struct {
 	//
 	//	*ExecRequest_ExecProcess
 	//	*ExecRequest_Stdin
+	//	*ExecRequest_Resize
 	Payload       isExecRequest_Payload `protobuf_oneof:"payload"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -145,6 +146,15 @@ func (x *ExecRequest) GetStdin() *StdinChunk {
 	return nil
 }
 
+func (x *ExecRequest) GetResize() *ResizePTY {
+	if x != nil {
+		if x, ok := x.Payload.(*ExecRequest_Resize); ok {
+			return x.Resize
+		}
+	}
+	return nil
+}
+
 type isExecRequest_Payload interface {
 	isExecRequest_Payload()
 }
@@ -157,9 +167,15 @@ type ExecRequest_Stdin struct {
 	Stdin *StdinChunk `protobuf:"bytes,3,opt,name=stdin,proto3,oneof"`
 }
 
+type ExecRequest_Resize struct {
+	Resize *ResizePTY `protobuf:"bytes,4,opt,name=resize,proto3,oneof"`
+}
+
 func (*ExecRequest_ExecProcess) isExecRequest_Payload() {}
 
 func (*ExecRequest_Stdin) isExecRequest_Payload() {}
+
+func (*ExecRequest_Resize) isExecRequest_Payload() {}
 
 type StdinChunk struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -767,12 +783,13 @@ var File_nuinfra_data_plane_v1alpha1_daemon_proto protoreflect.FileDescriptor
 
 const file_nuinfra_data_plane_v1alpha1_daemon_proto_rawDesc = "" +
 	"\n" +
-	"(nuinfra/data_plane/v1alpha1/daemon.proto\x12\x1bnuinfra.data_plane.v1alpha1\x1a\x1bbuf/validate/validate.proto\"\xcf\x01\n" +
+	"(nuinfra/data_plane/v1alpha1/daemon.proto\x12\x1bnuinfra.data_plane.v1alpha1\x1a\x1bbuf/validate/validate.proto\"\x91\x02\n" +
 	"\vExecRequest\x12%\n" +
 	"\n" +
 	"sandbox_id\x18\x01 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\tsandboxId\x12M\n" +
 	"\fexec_process\x18\x02 \x01(\v2(.nuinfra.data_plane.v1alpha1.ExecProcessH\x00R\vexecProcess\x12?\n" +
-	"\x05stdin\x18\x03 \x01(\v2'.nuinfra.data_plane.v1alpha1.StdinChunkH\x00R\x05stdinB\t\n" +
+	"\x05stdin\x18\x03 \x01(\v2'.nuinfra.data_plane.v1alpha1.StdinChunkH\x00R\x05stdin\x12@\n" +
+	"\x06resize\x18\x04 \x01(\v2&.nuinfra.data_plane.v1alpha1.ResizePTYH\x00R\x06resizeB\t\n" +
 	"\apayload\"2\n" +
 	"\n" +
 	"StdinChunk\x12\x12\n" +
@@ -859,21 +876,22 @@ var file_nuinfra_data_plane_v1alpha1_daemon_proto_goTypes = []any{
 var file_nuinfra_data_plane_v1alpha1_daemon_proto_depIdxs = []int32{
 	3,  // 0: nuinfra.data_plane.v1alpha1.ExecRequest.exec_process:type_name -> nuinfra.data_plane.v1alpha1.ExecProcess
 	2,  // 1: nuinfra.data_plane.v1alpha1.ExecRequest.stdin:type_name -> nuinfra.data_plane.v1alpha1.StdinChunk
-	13, // 2: nuinfra.data_plane.v1alpha1.ExecProcess.env:type_name -> nuinfra.data_plane.v1alpha1.ExecProcess.EnvEntry
-	5,  // 3: nuinfra.data_plane.v1alpha1.ExecResponse.process_result:type_name -> nuinfra.data_plane.v1alpha1.ProcessResult
-	6,  // 4: nuinfra.data_plane.v1alpha1.ExecResponse.stream_chunk:type_name -> nuinfra.data_plane.v1alpha1.StreamChunk
-	0,  // 5: nuinfra.data_plane.v1alpha1.StreamChunk.stream:type_name -> nuinfra.data_plane.v1alpha1.StreamChunk.StreamType
-	1,  // 6: nuinfra.data_plane.v1alpha1.DaemonService.Exec:input_type -> nuinfra.data_plane.v1alpha1.ExecRequest
-	9,  // 7: nuinfra.data_plane.v1alpha1.DaemonService.UploadFile:input_type -> nuinfra.data_plane.v1alpha1.UploadFileRequest
-	11, // 8: nuinfra.data_plane.v1alpha1.DaemonService.DownloadFile:input_type -> nuinfra.data_plane.v1alpha1.DownloadFileRequest
-	4,  // 9: nuinfra.data_plane.v1alpha1.DaemonService.Exec:output_type -> nuinfra.data_plane.v1alpha1.ExecResponse
-	10, // 10: nuinfra.data_plane.v1alpha1.DaemonService.UploadFile:output_type -> nuinfra.data_plane.v1alpha1.UploadFileResponse
-	12, // 11: nuinfra.data_plane.v1alpha1.DaemonService.DownloadFile:output_type -> nuinfra.data_plane.v1alpha1.DownloadFileResponse
-	9,  // [9:12] is the sub-list for method output_type
-	6,  // [6:9] is the sub-list for method input_type
-	6,  // [6:6] is the sub-list for extension type_name
-	6,  // [6:6] is the sub-list for extension extendee
-	0,  // [0:6] is the sub-list for field type_name
+	8,  // 2: nuinfra.data_plane.v1alpha1.ExecRequest.resize:type_name -> nuinfra.data_plane.v1alpha1.ResizePTY
+	13, // 3: nuinfra.data_plane.v1alpha1.ExecProcess.env:type_name -> nuinfra.data_plane.v1alpha1.ExecProcess.EnvEntry
+	5,  // 4: nuinfra.data_plane.v1alpha1.ExecResponse.process_result:type_name -> nuinfra.data_plane.v1alpha1.ProcessResult
+	6,  // 5: nuinfra.data_plane.v1alpha1.ExecResponse.stream_chunk:type_name -> nuinfra.data_plane.v1alpha1.StreamChunk
+	0,  // 6: nuinfra.data_plane.v1alpha1.StreamChunk.stream:type_name -> nuinfra.data_plane.v1alpha1.StreamChunk.StreamType
+	1,  // 7: nuinfra.data_plane.v1alpha1.DaemonService.Exec:input_type -> nuinfra.data_plane.v1alpha1.ExecRequest
+	9,  // 8: nuinfra.data_plane.v1alpha1.DaemonService.UploadFile:input_type -> nuinfra.data_plane.v1alpha1.UploadFileRequest
+	11, // 9: nuinfra.data_plane.v1alpha1.DaemonService.DownloadFile:input_type -> nuinfra.data_plane.v1alpha1.DownloadFileRequest
+	4,  // 10: nuinfra.data_plane.v1alpha1.DaemonService.Exec:output_type -> nuinfra.data_plane.v1alpha1.ExecResponse
+	10, // 11: nuinfra.data_plane.v1alpha1.DaemonService.UploadFile:output_type -> nuinfra.data_plane.v1alpha1.UploadFileResponse
+	12, // 12: nuinfra.data_plane.v1alpha1.DaemonService.DownloadFile:output_type -> nuinfra.data_plane.v1alpha1.DownloadFileResponse
+	10, // [10:13] is the sub-list for method output_type
+	7,  // [7:10] is the sub-list for method input_type
+	7,  // [7:7] is the sub-list for extension type_name
+	7,  // [7:7] is the sub-list for extension extendee
+	0,  // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_nuinfra_data_plane_v1alpha1_daemon_proto_init() }
@@ -884,6 +902,7 @@ func file_nuinfra_data_plane_v1alpha1_daemon_proto_init() {
 	file_nuinfra_data_plane_v1alpha1_daemon_proto_msgTypes[0].OneofWrappers = []any{
 		(*ExecRequest_ExecProcess)(nil),
 		(*ExecRequest_Stdin)(nil),
+		(*ExecRequest_Resize)(nil),
 	}
 	file_nuinfra_data_plane_v1alpha1_daemon_proto_msgTypes[3].OneofWrappers = []any{
 		(*ExecResponse_ProcessResult)(nil),

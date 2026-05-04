@@ -9,6 +9,7 @@ message ExecRequest {
   oneof payload {
     ExecProcess exec_process = 2;
     StdinChunk stdin = 3;
+    ResizePTY resize = 4;
   }
 }
 
