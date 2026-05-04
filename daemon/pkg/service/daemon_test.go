@@ -502,6 +502,79 @@ func TestExec_ForwardsStdinFrames(t *testing.T) {
 		"client CloseSend must produce a terminal Stdin{Eof: true}")
 }
 
+// TestExec_ForwardsResizeFrames verifies that a ResizePTY frame sent
+// after the initial ExecProcess is repackaged as AgentRequest.Resize
+// and forwarded over the conversation. The agent's PTY-resize ioctl is
+// out of scope for the daemon-layer test — we only assert the
+// daemon's frame translation.
+func TestExec_ForwardsResizeFrames(t *testing.T) {
+	h := newHarness(t)
+	conv, recvCh := h.expectMicroVMConversation("sb-resize")
+
+	var (
+		mu       sync.Mutex
+		captured []*dataplanev1alpha1.AgentRequest
+	)
+	resizeSeen := make(chan struct{})
+	conv.EXPECT().
+		Send(gomock.Any(), gomock.Any()).
+		DoAndReturn(func(_ context.Context, req *dataplanev1alpha1.AgentRequest) error {
+			mu.Lock()
+			captured = append(captured, req)
+			mu.Unlock()
+			if req.GetResize() != nil {
+				select {
+				case <-resizeSeen:
+				default:
+					close(resizeSeen)
+				}
+			}
+			return nil
+		}).
+		AnyTimes()
+
+	stream, err := h.client.Exec(t.Context())
+	require.NoError(t, err)
+	require.NoError(t, stream.Send(&dataplanev1alpha1.ExecRequest{
+		SandboxId: "sb-resize",
+		Payload: &dataplanev1alpha1.ExecRequest_ExecProcess{
+			ExecProcess: &dataplanev1alpha1.ExecProcess{Command: "/bin/sh", Tty: true},
+		},
+	}))
+	require.NoError(t, stream.Send(&dataplanev1alpha1.ExecRequest{
+		SandboxId: "sb-resize",
+		Payload: &dataplanev1alpha1.ExecRequest_Resize{
+			Resize: &dataplanev1alpha1.ResizePTY{Cols: 120, Rows: 40},
+		},
+	}))
+
+	// Synchronise on the daemon having actually seen the Resize.
+	select {
+	case <-resizeSeen:
+	case <-time.After(2 * time.Second):
+		t.Fatal("daemon did not forward Resize within 2s")
+	}
+
+	// Tear the stream down cleanly so the test fixture exits.
+	recvCh <- processResult(0)
+	require.NoError(t, stream.CloseSend())
+	_ = drainExecResponses(t, stream)
+
+	mu.Lock()
+	defer mu.Unlock()
+	require.NotNil(t, captured[0].GetExecRequest(),
+		"first forwarded frame must be ExecRequest")
+	resizeFrames := []*dataplanev1alpha1.ResizePTY{}
+	for _, c := range captured[1:] {
+		if r := c.GetResize(); r != nil {
+			resizeFrames = append(resizeFrames, r)
+		}
+	}
+	require.Len(t, resizeFrames, 1, "expected exactly one forwarded Resize frame")
+	assert.Equal(t, uint32(120), resizeFrames[0].GetCols())
+	assert.Equal(t, uint32(40), resizeFrames[0].GetRows())
+}
+
 func TestExec_PropagatesAgentError(t *testing.T) {
 	h := newHarness(t)
 	conv, recvCh := h.expectMicroVMConversation("sb-bad")

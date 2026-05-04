@@ -54,22 +54,25 @@ func (d *daemon) Exec(stream dataplanev1alpha1.DaemonService_ExecServer) error {
 		return status.Errorf(codes.Internal, "forward Exec to agent: %v", err)
 	}
 
-	// Spawn the stdin forwarder fire-and-forget: its lifetime is bound
-	// to the conversation, which the deferred Close above tears down on
-	// return. Run the response loop synchronously so the handler does
-	// not return — and tear the conversation down — before every
-	// pending agent response has been forwarded to the client.
+	// Spawn the client-frame forwarder fire-and-forget: its lifetime
+	// is bound to the conversation, which the deferred Close above
+	// tears down on return. Run the response loop synchronously so the
+	// handler does not return — and tear the conversation down —
+	// before every pending agent response has been forwarded to the
+	// client.
 	go func() {
-		_ = d.forwardExecStdin(ctx, stream, conv, first.GetSandboxId())
+		_ = d.forwardExecClientFrames(ctx, stream, conv, first.GetSandboxId())
 	}()
 	return d.forwardExecResponses(ctx, stream, conv)
 }
 
-// forwardExecStdin reads further client frames after the initial
-// ExecProcess and routes them to the agent. The client half-closing
-// the stream is forwarded as a final Stdin{Eof: true} so commands
-// blocking on stdin observe a clean EOF.
-func (d *daemon) forwardExecStdin(
+// forwardExecClientFrames reads further client frames after the
+// initial ExecProcess and routes them to the agent. Two non-initial
+// payloads are accepted: StdinChunk (forwarded as AgentRequest.Stdin)
+// and ResizePTY (forwarded as AgentRequest.Resize). The client
+// half-closing the stream is reported to the agent as a final
+// Stdin{Eof: true} so commands blocking on stdin observe a clean EOF.
+func (d *daemon) forwardExecClientFrames(
 	ctx context.Context,
 	stream dataplanev1alpha1.DaemonService_ExecServer,
 	conv transport.Conversation,
@@ -93,15 +96,22 @@ func (d *daemon) forwardExecStdin(
 			return status.Errorf(codes.InvalidArgument,
 				"sandbox_id %q does not match initial frame %q", got, sandboxID)
 		}
-		stdin := req.GetStdin()
-		if stdin == nil {
+		switch {
+		case req.GetStdin() != nil:
+			if err := conv.Send(ctx, &dataplanev1alpha1.AgentRequest{
+				Payload: &dataplanev1alpha1.AgentRequest_Stdin{Stdin: req.GetStdin()},
+			}); err != nil {
+				return status.Errorf(codes.Internal, "forward stdin: %v", err)
+			}
+		case req.GetResize() != nil:
+			if err := conv.Send(ctx, &dataplanev1alpha1.AgentRequest{
+				Payload: &dataplanev1alpha1.AgentRequest_Resize{Resize: req.GetResize()},
+			}); err != nil {
+				return status.Errorf(codes.Internal, "forward resize: %v", err)
+			}
+		default:
 			return status.Error(codes.InvalidArgument,
-				"non-initial Exec frame must carry a StdinChunk")
-		}
-		if err := conv.Send(ctx, &dataplanev1alpha1.AgentRequest{
-			Payload: &dataplanev1alpha1.AgentRequest_Stdin{Stdin: stdin},
-		}); err != nil {
-			return status.Errorf(codes.Internal, "forward stdin: %v", err)
+				"non-initial Exec frame must carry a StdinChunk or ResizePTY")
 		}
 	}
 }
