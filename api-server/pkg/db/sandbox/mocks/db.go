@@ -14,7 +14,8 @@ import (
 	reflect "reflect"
 
 	gomock "go.uber.org/mock/gomock"
-	v1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
+	sandbox "golang.nuinfra.api-server/pkg/db/sandbox"
+	control_planev1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
 )
 
 // MockDB is a mock of DB interface.
@@ -42,24 +43,24 @@ func (m *MockDB) EXPECT() *MockDBMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockDB) Create(ctx context.Context, sandbox *v1alpha1.Sandbox) error {
+func (m *MockDB) Create(ctx context.Context, arg1 *control_planev1alpha1.Sandbox) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, sandbox)
+	ret := m.ctrl.Call(m, "Create", ctx, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockDBMockRecorder) Create(ctx, sandbox any) *gomock.Call {
+func (mr *MockDBMockRecorder) Create(ctx, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockDB)(nil).Create), ctx, sandbox)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockDB)(nil).Create), ctx, arg1)
 }
 
 // Get mocks base method.
-func (m *MockDB) Get(ctx context.Context, id string) (*v1alpha1.Sandbox, error) {
+func (m *MockDB) Get(ctx context.Context, id string) (*control_planev1alpha1.Sandbox, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Get", ctx, id)
-	ret0, _ := ret[0].(*v1alpha1.Sandbox)
+	ret0, _ := ret[0].(*control_planev1alpha1.Sandbox)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -70,16 +71,32 @@ func (mr *MockDBMockRecorder) Get(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockDB)(nil).Get), ctx, id)
 }
 
-// Update mocks base method.
-func (m *MockDB) Update(ctx context.Context, sandbox *v1alpha1.Sandbox) error {
+// List mocks base method.
+func (m *MockDB) List(ctx context.Context, opts sandbox.ListOptions) ([]*control_planev1alpha1.Sandbox, string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", ctx, sandbox)
+	ret := m.ctrl.Call(m, "List", ctx, opts)
+	ret0, _ := ret[0].([]*control_planev1alpha1.Sandbox)
+	ret1, _ := ret[1].(string)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// List indicates an expected call of List.
+func (mr *MockDBMockRecorder) List(ctx, opts any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockDB)(nil).List), ctx, opts)
+}
+
+// Update mocks base method.
+func (m *MockDB) Update(ctx context.Context, arg1 *control_planev1alpha1.Sandbox) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", ctx, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Update indicates an expected call of Update.
-func (mr *MockDBMockRecorder) Update(ctx, sandbox any) *gomock.Call {
+func (mr *MockDBMockRecorder) Update(ctx, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockDB)(nil).Update), ctx, sandbox)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockDB)(nil).Update), ctx, arg1)
 }

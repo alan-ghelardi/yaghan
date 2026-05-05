@@ -91,6 +91,11 @@ func (w *WatchableDB) Get(ctx context.Context, id string) (*controlplanev1alpha1
 	return w.db.Get(ctx, id)
 }
 
+// List implements [sandbox.DB]. Read-only — no events are emitted.
+func (w *WatchableDB) List(ctx context.Context, opts sandboxdb.ListOptions) ([]*controlplanev1alpha1.Sandbox, string, error) {
+	return w.db.List(ctx, opts)
+}
+
 // Update implements [sandbox.DB].
 func (w *WatchableDB) Update(ctx context.Context, sandbox *controlplanev1alpha1.Sandbox) error {
 	if err := w.db.Update(ctx, sandbox); err != nil {
