@@ -136,7 +136,7 @@ func TestController_ConnectSendsConnectionRequestAndPersistsSessionID(t *testing
 	stream := newFakeStream(ctx)
 	client.EXPECT().EstablishSession(gomock.Any()).Return(stream, nil)
 
-	c := New(client, rec, bundle)
+	c := New(client, nil, rec, bundle)
 
 	// Pre-load the server's acknowledgement so connect() returns.
 	stream.push(&cpv1.EstablishSessionResponse{
@@ -174,7 +174,7 @@ func TestController_ConnectResumesWithPersistedSessionID(t *testing.T) {
 	stream := newFakeStream(ctx)
 	client.EXPECT().EstablishSession(gomock.Any()).Return(stream, nil)
 
-	c := New(client, &fakeReconciler{}, bundle)
+	c := New(client, nil, &fakeReconciler{}, bundle)
 
 	stream.push(&cpv1.EstablishSessionResponse{
 		Message: &cpv1.EstablishSessionResponse_Acknowledge{
@@ -195,7 +195,7 @@ func TestController_DispatchEnqueuesNewerEventsOnly(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	bundle := newFixtureBundle(t)
 	client := cpmocks.NewMockClusterServiceClient(ctrl)
-	c := New(client, &fakeReconciler{}, bundle)
+	c := New(client, nil, &fakeReconciler{}, bundle)
 
 	c.dispatch(&cpv1.Event{
 		InvolvedObject: &cpv1.Event_Sandbox{Sandbox: sandboxFor("sb-1", 1, cpv1.SandboxStatus_PHASE_PENDING)},
@@ -237,7 +237,7 @@ func TestController_ProcessItemSendsUpdateOnDiff(t *testing.T) {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	c := New(client, rec, bundle)
+	c := New(client, nil, rec, bundle)
 	c.indexer.Put(sandboxFor("sb-1", 1, cpv1.SandboxStatus_PHASE_PENDING))
 	c.setStream(newFakeStream(ctx))
 
@@ -261,7 +261,7 @@ func TestController_ProcessItemSkipsUpdateWhenNoDiff(t *testing.T) {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	c := New(client, rec, bundle)
+	c := New(client, nil, rec, bundle)
 	c.indexer.Put(sandboxFor("sb-1", 1, cpv1.SandboxStatus_PHASE_RUNNING))
 	stream := newFakeStream(ctx)
 	c.setStream(stream)
@@ -285,7 +285,7 @@ func TestController_ProcessItemSurfacesReconcilerError(t *testing.T) {
 		fn: func(context.Context, *cpv1.Sandbox) error { return wantErr },
 	}
 
-	c := New(client, rec, bundle)
+	c := New(client, nil, rec, bundle)
 	c.indexer.Put(sandboxFor("sb-err", 1, cpv1.SandboxStatus_PHASE_PENDING))
 
 	err := c.processItem(context.Background(), "sb-err")
@@ -304,7 +304,7 @@ func TestController_GiveUpSendsPhaseFailed(t *testing.T) {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	c := New(client, rec, bundle)
+	c := New(client, nil, rec, bundle)
 	c.indexer.Put(sandboxFor("sb-fail", 1, cpv1.SandboxStatus_PHASE_PENDING))
 	stream := newFakeStream(ctx)
 	c.setStream(stream)
@@ -335,7 +335,7 @@ func TestController_GiveUpSendsPhaseFailed(t *testing.T) {
 
 func TestController_DispatchIgnoresEventWithoutSandbox(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	c := New(cpmocks.NewMockClusterServiceClient(ctrl), &fakeReconciler{}, newFixtureBundle(t))
+	c := New(cpmocks.NewMockClusterServiceClient(ctrl), nil, &fakeReconciler{}, newFixtureBundle(t))
 
 	c.dispatch(&cpv1.Event{}) // no Sandbox oneof
 
@@ -344,7 +344,7 @@ func TestController_DispatchIgnoresEventWithoutSandbox(t *testing.T) {
 
 func TestController_SendUpdateFailsWhenStreamMissing(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	c := New(cpmocks.NewMockClusterServiceClient(ctrl), &fakeReconciler{}, newFixtureBundle(t))
+	c := New(cpmocks.NewMockClusterServiceClient(ctrl), nil, &fakeReconciler{}, newFixtureBundle(t))
 	// stream is nil by default — sendUpdate must fail without dialing.
 	err := c.sendUpdate(sandboxFor("sb", 1, cpv1.SandboxStatus_PHASE_RUNNING))
 	require.Error(t, err)

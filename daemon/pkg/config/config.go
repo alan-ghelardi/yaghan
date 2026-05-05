@@ -33,6 +33,7 @@ const (
 	defaultSessionIDFile        = "/var/lib/nuinfra/daemon/session.id"
 	defaultControllerMaxRetries = 10
 	defaultReconnectMaxInterval = 2 * time.Minute
+	defaultResyncInterval       = 5 * time.Minute
 )
 
 // Bundle is the daemon's top-level configuration. It embeds the gRPC
@@ -89,6 +90,15 @@ type Controller struct {
 	// used when re-establishing the EstablishSession stream after a
 	// disconnect. Defaults to 2 minutes.
 	ReconnectMaxInterval time.Duration `mapstructure:"reconnect-max-interval"`
+
+	// ResyncInterval is the cadence at which the controller calls
+	// SandboxService.ListSandboxes against the api-server to recover
+	// from missed events. The first tick is staggered by a small
+	// jitter to avoid fleet-wide thundering herds; each subsequent
+	// tick is offset by ±10% of this interval. Setting it to 0
+	// disables the resync goroutine entirely (useful in tests and
+	// when narrowing down api-server load). Defaults to 5 minutes.
+	ResyncInterval time.Duration `mapstructure:"resync-interval"`
 }
 
 // Firecracker collects settings that apply to every MicroVM the daemon
@@ -198,4 +208,5 @@ func applyDefaults(v *viper.Viper) {
 	v.SetDefault("controller.session-id-file", defaultSessionIDFile)
 	v.SetDefault("controller.max-retries", defaultControllerMaxRetries)
 	v.SetDefault("controller.reconnect-max-interval", defaultReconnectMaxInterval)
+	v.SetDefault("controller.resync-interval", defaultResyncInterval)
 }

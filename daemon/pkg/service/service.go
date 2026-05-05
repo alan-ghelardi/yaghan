@@ -27,6 +27,7 @@ type daemon struct {
 	networkDriver network.Driver
 
 	clusterServiceClient controlplanev1alpha1.ClusterServiceClient
+	sandboxServiceClient controlplanev1alpha1.SandboxServiceClient
 
 	// config is a bundle containing the server configurations.
 	config *config.Bundle
@@ -35,11 +36,12 @@ type daemon struct {
 var _ server.Service = (*daemon)(nil)
 
 // New returns a new [server.Service] instance.
-func New(firecracker firecracker.Provider, networkDriver network.Driver, clusterServiceClient controlplanev1alpha1.ClusterServiceClient, config *config.Bundle) server.Service {
+func New(firecracker firecracker.Provider, networkDriver network.Driver, clusterServiceClient controlplanev1alpha1.ClusterServiceClient, sandboxServiceClient controlplanev1alpha1.SandboxServiceClient, config *config.Bundle) server.Service {
 	return &daemon{
 		firecracker:          firecracker,
 		networkDriver:        networkDriver,
 		clusterServiceClient: clusterServiceClient,
+		sandboxServiceClient: sandboxServiceClient,
 		config:               config,
 	}
 }
@@ -64,7 +66,7 @@ func (d *daemon) RegisterRESTGateway(context.Context, *runtime.ServeMux, *grpc.C
 func (d *daemon) Setup(ctx context.Context) error {
 	reconciler := reconciler.New(d.firecracker, d.networkDriver, d.config)
 
-	controller := controller.New(d.clusterServiceClient, reconciler, d.config)
+	controller := controller.New(d.clusterServiceClient, d.sandboxServiceClient, reconciler, d.config)
 	go func() {
 		err := controller.Run(ctx)
 		if err != nil {

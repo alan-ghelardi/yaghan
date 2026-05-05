@@ -76,11 +76,50 @@ type ListOptions struct {
 	ContinuationToken string
 }
 
+// DB is the persistence contract the api-server uses to store sandboxes.
+// Implementations are expected to be safe for concurrent use; the
+// optimistic-locking and idempotency semantics declared on each method
+// are the contract callers rely on.
+//
+// The DB owns three fields on every Sandbox proto it accepts:
+// Metadata.Version, Metadata.CreatedAt and Metadata.LastModifiedAt.
+// Callers must pass a zeroed Version to Create and the previously read
+// Version to Update; CreatedAt and LastModifiedAt are stamped server-side
+// and any caller-supplied values are overwritten.
 type DB interface {
+	// Create persists a new sandbox under sb.Metadata.Id. On success, the
+	// input proto is mutated in place: Metadata.Version is set to the
+	// initial version, and Metadata.CreatedAt and Metadata.LastModifiedAt
+	// are stamped with the server's current time.
+	//
+	// Idempotency: a retry whose canonical content (everything except the
+	// DB-owned wall-clock and version fields) matches the stored row is a
+	// no-op success. A retry with a different body returns
+	// [ErrAlreadyExists].
 	Create(ctx context.Context, sandbox *controlplanev1alpha1.Sandbox) error
 
+	// Update applies the supplied sandbox to the row identified by
+	// sb.Metadata.Id. The caller passes the version they read; the DB
+	// rejects the call with [ErrVersionConflict] when the stored row has
+	// since advanced. On success, Metadata.Version is bumped and
+	// Metadata.LastModifiedAt is stamped server-side, both reflected on
+	// the input proto.
+	//
+	// State-machine guard: transitions whose target Status.Phase implies
+	// a precondition on the saved phase (e.g. PAUSING requires RUNNING)
+	// are enforced atomically; violations return
+	// [ErrInvalidPhaseTransition].
+	//
+	// Idempotency mirrors Create: a retry whose canonical content matches
+	// the stored row is a no-op success even if the version has already
+	// advanced from the first attempt. [ErrNotFound] is returned when the
+	// row does not exist.
 	Update(ctx context.Context, sandbox *controlplanev1alpha1.Sandbox) error
 
+	// Get returns the sandbox identified by id. Reads are strongly
+	// consistent so callers observe their own writes — including writes
+	// made by Create and Update on the same node. [ErrNotFound] is
+	// returned when no row with that id exists.
 	Get(ctx context.Context, id string) (*controlplanev1alpha1.Sandbox, error)
 
 	// List returns a page of sandboxes matching opts plus an opaque

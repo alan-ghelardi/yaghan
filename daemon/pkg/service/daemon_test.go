@@ -117,7 +117,7 @@ func newHarness(t *testing.T) *harness {
 		AnyTimes()
 
 	ctx = commonsserver.WithListener(ctx, listener)
-	servertesting.StartServer(ctx, t, service.New(provider, driver, clusterClient, bundle))
+	servertesting.StartServer(ctx, t, service.New(provider, driver, clusterClient, nil, bundle))
 
 	conn, err := grpc.NewClient(
 		fmt.Sprintf("127.0.0.1:%d", port),

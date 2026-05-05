@@ -27,7 +27,7 @@ require (
 	golang.nuinfra.net/apis v0.0.0-00010101000000-000000000000
 	golang.nuinfra.net/commons v0.0.0-00010101000000-000000000000
 	golang.nuinfra.net/firecracker-client v0.0.0-00010101000000-000000000000
-	golang.org/x/sys v0.41.0
+	golang.org/x/sys v0.42.0
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250528174236-200df99c418a
 	google.golang.org/grpc v1.73.0
 	google.golang.org/protobuf v1.36.12-0.20260120151049-f2248ac996af

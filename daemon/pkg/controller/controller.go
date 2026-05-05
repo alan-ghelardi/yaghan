@@ -38,9 +38,10 @@ type Reconciler interface {
 // methods coordinate the stream reader, the indexer, the work queue,
 // and the reconciliation worker.
 type Controller struct {
-	client     controlplanev1alpha1.ClusterServiceClient
-	reconciler Reconciler
-	config     *config.Bundle
+	client        controlplanev1alpha1.ClusterServiceClient
+	sandboxClient controlplanev1alpha1.SandboxServiceClient
+	reconciler    Reconciler
+	config        *config.Bundle
 
 	indexer *indexer
 	queue   workqueue.TypedRateLimitingInterface[string]
@@ -54,15 +55,18 @@ type Controller struct {
 	stream   controlplanev1alpha1.ClusterService_EstablishSessionClient
 }
 
-// New constructs a Controller bound to the given client, reconciler
+// New constructs a Controller bound to the given clients, reconciler
 // and configuration. The session-id file is read lazily on the first
-// connect attempt; constructing the Controller does no I/O.
-func New(client controlplanev1alpha1.ClusterServiceClient, reconciler Reconciler, config *config.Bundle) *Controller {
+// connect attempt; constructing the Controller does no I/O. The
+// sandboxClient is used by the periodic resync loop to recover from
+// missed events; pass nil only in tests that do not exercise resync.
+func New(client controlplanev1alpha1.ClusterServiceClient, sandboxClient controlplanev1alpha1.SandboxServiceClient, reconciler Reconciler, config *config.Bundle) *Controller {
 	return &Controller{
-		client:     client,
-		reconciler: reconciler,
-		config:     config,
-		indexer:    newIndexer(),
+		client:        client,
+		sandboxClient: sandboxClient,
+		reconciler:    reconciler,
+		config:        config,
+		indexer:       newIndexer(),
 		queue: workqueue.NewTypedRateLimitingQueue(
 			workqueue.DefaultTypedControllerRateLimiter[string](),
 		),
@@ -82,6 +86,10 @@ func (c *Controller) Run(ctx context.Context) error {
 		defer close(workerDone)
 		c.runWorker(ctx)
 	}()
+
+	if c.config.Controller.ResyncInterval > 0 {
+		go c.runResyncLoop(ctx)
+	}
 
 	defer func() {
 		c.queue.ShutDown()
