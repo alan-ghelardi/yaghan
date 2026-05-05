@@ -132,7 +132,7 @@ func startService(t *testing.T, opts ...harnessOption) *harness {
 		opt(&cfg)
 	}
 
-	endpoint := awstesting.StartEmulator(t)
+	endpoint := awstesting.StartDynamoDB(t)
 	tableName := awstesting.CreateTable(t, endpoint, sandboxesSchemaPath)
 
 	// Pre-bind the gRPC listener and pass it to server.Start via context.

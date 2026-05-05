@@ -27,7 +27,7 @@ const sandboxesSchemaPath = "../../../../../dynamodb-tables/sandboxes.json"
 func setupDB(t *testing.T) (*dynamoDB, context.Context) {
 	t.Helper()
 
-	endpointURL := awstesting.StartEmulator(t)
+	endpointURL := awstesting.StartDynamoDB(t)
 	tableName := awstesting.CreateTable(t, endpointURL, sandboxesSchemaPath)
 
 	ctx := t.Context()

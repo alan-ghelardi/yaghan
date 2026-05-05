@@ -16,10 +16,10 @@ import (
 )
 
 // listFixture creates and persists a sandbox with the supplied id, namespace,
-// node, and phase. CreateSandbox stamps server-time on LastModifiedAt so to
-// observe a deterministic order across rows the helper sleeps a short
-// interval between calls — DynamoDB only orders within an SK partition, and
-// the SK is timestamp-prefixed.
+// node, and phase. The DB stamps LastModifiedAt with wall-clock precision on
+// every Create; sleeping a short interval after each call guarantees a
+// strictly later timestamp on the next fixture so the gsi_lmt_sk-ordered
+// list results are deterministic across rows.
 func listFixture(ctx context.Context, t *testing.T, db *dynamoDB, id, namespace, nodeID string, phase cpv1.SandboxStatus_Phase) *cpv1.Sandbox {
 	t.Helper()
 	sb := newFixture(withID(id))
@@ -29,55 +29,8 @@ func listFixture(ctx context.Context, t *testing.T, db *dynamoDB, id, namespace,
 		sb.Node = &cpv1.NodeRef{Id: nodeID}
 	}
 	require.NoError(t, db.Create(ctx, sb))
-	// Server stamps LastModifiedAt with wall-clock precision; sleeping a
-	// short interval guarantees a strictly later timestamp on the next
-	// fixture so List ordering is deterministic.
 	time.Sleep(2 * time.Millisecond)
 	return sb
-}
-
-// uniqueListScope returns a per-test namespace and node-id pair, both
-// derived from the test name and constrained to the namespace regex
-// `^[a-z][a-z0-9-]{0,61}[a-z0-9]$`. The shared LocalStack table across
-// tests in this package means fixtures persist between tests; using a
-// distinct namespace per test isolates each test's view.
-func uniqueListScope(t *testing.T) (namespace, nodeID string) {
-	t.Helper()
-	slug := make([]byte, 0, len(t.Name()))
-	for _, r := range t.Name() {
-		switch {
-		case r >= 'a' && r <= 'z', r >= '0' && r <= '9':
-			slug = append(slug, byte(r))
-		case r >= 'A' && r <= 'Z':
-			slug = append(slug, byte(r-'A'+'a'))
-		default:
-			slug = append(slug, '-')
-		}
-	}
-	// Trim leading/trailing dashes; collapse consecutive dashes.
-	for len(slug) > 0 && slug[0] == '-' {
-		slug = slug[1:]
-	}
-	for len(slug) > 0 && slug[len(slug)-1] == '-' {
-		slug = slug[:len(slug)-1]
-	}
-	out := slug[:0]
-	prevDash := false
-	for _, b := range slug {
-		if b == '-' {
-			if prevDash {
-				continue
-			}
-			prevDash = true
-		} else {
-			prevDash = false
-		}
-		out = append(out, b)
-	}
-	if len(out) > 50 {
-		out = out[:50]
-	}
-	return "ns-" + string(out), "node-" + string(out)
 }
 
 func ids(sandboxes []*cpv1.Sandbox) []string {
@@ -102,10 +55,9 @@ func TestList_RejectsUnboundedQuery(t *testing.T) {
 
 func TestList_RejectsNonPositivePageSize(t *testing.T) {
 	db, ctx := setupDB(t)
-	ns, _ := uniqueListScope(t)
 
 	_, _, err := db.List(ctx, sandboxdb.ListOptions{
-		Namespace: ns,
+		Namespace: "team-alpha",
 		PageSize:  0,
 		SortOrder: cpv1.ListSandboxesRequest_ORDER_NEWEST_FIRST,
 	})
@@ -116,10 +68,9 @@ func TestList_RejectsNonPositivePageSize(t *testing.T) {
 
 func TestList_RejectsUnspecifiedSortOrder(t *testing.T) {
 	db, ctx := setupDB(t)
-	ns, _ := uniqueListScope(t)
 
 	_, _, err := db.List(ctx, sandboxdb.ListOptions{
-		Namespace: ns,
+		Namespace: "team-alpha",
 		PageSize:  10,
 		SortOrder: cpv1.ListSandboxesRequest_ORDER_UNSPECIFIED,
 	})
@@ -128,22 +79,15 @@ func TestList_RejectsUnspecifiedSortOrder(t *testing.T) {
 		"ORDER_UNSPECIFIED must wrap ErrInvalidListOptions, got: %v", err)
 }
 
-// The kumo emulator backing setupDB does not honour DynamoDB sort-key
-// ordering — it iterates a Go map and only reverses on
-// ScanIndexForward=false. The tests below therefore assert SET membership
-// (ElementsMatch) instead of order, and the order/pagination semantics that
-// require the real DynamoDB are exercised by [TestScanIndexForward] and
-// the continuation-token round-trip below.
-
 func TestList_ByNamespace_ReturnsAllRowsInNamespace(t *testing.T) {
 	db, ctx := setupDB(t)
-	ns, _ := uniqueListScope(t)
+	const ns = "team-alpha"
 
 	listFixture(ctx, t, db, "sb-bn-a", ns, "", cpv1.SandboxStatus_PHASE_PENDING)
 	listFixture(ctx, t, db, "sb-bn-b", ns, "", cpv1.SandboxStatus_PHASE_PENDING)
 	listFixture(ctx, t, db, "sb-bn-c", ns, "", cpv1.SandboxStatus_PHASE_PENDING)
 	// Different namespace — must NOT appear.
-	listFixture(ctx, t, db, "sb-bn-other", ns+"-x", "", cpv1.SandboxStatus_PHASE_PENDING)
+	listFixture(ctx, t, db, "sb-bn-other", "team-beta", "", cpv1.SandboxStatus_PHASE_PENDING)
 
 	got, next, err := db.List(ctx, sandboxdb.ListOptions{
 		Namespace: ns,
@@ -152,13 +96,49 @@ func TestList_ByNamespace_ReturnsAllRowsInNamespace(t *testing.T) {
 	})
 	require.NoError(t, err)
 	assert.Equal(t, "", next, "page smaller than PageSize must clear the continuation token")
-	assert.ElementsMatch(t, []string{"sb-bn-a", "sb-bn-b", "sb-bn-c"}, ids(got),
-		"by_namespace_index must include every sandbox in the namespace and exclude others")
+	assert.Equal(t, []string{"sb-bn-c", "sb-bn-b", "sb-bn-a"}, ids(got),
+		"by_namespace_index must include every sandbox in the namespace, newest-first")
+}
+
+func TestList_ByNamespace_NewestFirst(t *testing.T) {
+	db, ctx := setupDB(t)
+	const ns = "team-alpha"
+
+	listFixture(ctx, t, db, "sb-nf-a", ns, "", cpv1.SandboxStatus_PHASE_PENDING)
+	listFixture(ctx, t, db, "sb-nf-b", ns, "", cpv1.SandboxStatus_PHASE_PENDING)
+	listFixture(ctx, t, db, "sb-nf-c", ns, "", cpv1.SandboxStatus_PHASE_PENDING)
+
+	got, _, err := db.List(ctx, sandboxdb.ListOptions{
+		Namespace: ns,
+		PageSize:  10,
+		SortOrder: cpv1.ListSandboxesRequest_ORDER_NEWEST_FIRST,
+	})
+	require.NoError(t, err)
+	assert.Equal(t, []string{"sb-nf-c", "sb-nf-b", "sb-nf-a"}, ids(got),
+		"ORDER_NEWEST_FIRST must return rows in descending gsi_lmt_sk order")
+}
+
+func TestList_ByNamespace_OldestFirst(t *testing.T) {
+	db, ctx := setupDB(t)
+	const ns = "team-alpha"
+
+	listFixture(ctx, t, db, "sb-of-a", ns, "", cpv1.SandboxStatus_PHASE_PENDING)
+	listFixture(ctx, t, db, "sb-of-b", ns, "", cpv1.SandboxStatus_PHASE_PENDING)
+	listFixture(ctx, t, db, "sb-of-c", ns, "", cpv1.SandboxStatus_PHASE_PENDING)
+
+	got, _, err := db.List(ctx, sandboxdb.ListOptions{
+		Namespace: ns,
+		PageSize:  10,
+		SortOrder: cpv1.ListSandboxesRequest_ORDER_OLDEST_FIRST,
+	})
+	require.NoError(t, err)
+	assert.Equal(t, []string{"sb-of-a", "sb-of-b", "sb-of-c"}, ids(got),
+		"ORDER_OLDEST_FIRST must return rows in ascending gsi_lmt_sk order")
 }
 
 func TestList_ByNamespaceAndPhase_FiltersByPhase(t *testing.T) {
 	db, ctx := setupDB(t)
-	ns, _ := uniqueListScope(t)
+	const ns = "team-alpha"
 
 	listFixture(ctx, t, db, "sb-bnp-pending-1", ns, "", cpv1.SandboxStatus_PHASE_PENDING)
 	listFixture(ctx, t, db, "sb-bnp-running-1", ns, "", cpv1.SandboxStatus_PHASE_RUNNING)
@@ -172,19 +152,22 @@ func TestList_ByNamespaceAndPhase_FiltersByPhase(t *testing.T) {
 		SortOrder:   cpv1.ListSandboxesRequest_ORDER_NEWEST_FIRST,
 	})
 	require.NoError(t, err)
-	assert.ElementsMatch(t, []string{"sb-bnp-running-1", "sb-bnp-running-2"}, ids(got),
-		"phase filter must restrict results to the requested phase")
+	assert.Equal(t, []string{"sb-bnp-running-2", "sb-bnp-running-1"}, ids(got),
+		"phase filter must restrict results to the requested phase, newest-first")
 }
 
 func TestList_ByNamespaceAndNode_ScopesToNamespaceAndNode(t *testing.T) {
 	db, ctx := setupDB(t)
-	ns, node := uniqueListScope(t)
+	const (
+		ns   = "team-alpha"
+		node = "node-1"
+	)
 
 	listFixture(ctx, t, db, "sb-bnn-1a", ns, node, cpv1.SandboxStatus_PHASE_PENDING)
-	listFixture(ctx, t, db, "sb-bnn-2", ns, node+"-other", cpv1.SandboxStatus_PHASE_PENDING)
+	listFixture(ctx, t, db, "sb-bnn-2", ns, "node-2", cpv1.SandboxStatus_PHASE_PENDING)
 	listFixture(ctx, t, db, "sb-bnn-1b", ns, node, cpv1.SandboxStatus_PHASE_PENDING)
 	// Same node, different namespace — must NOT appear.
-	listFixture(ctx, t, db, "sb-bnn-other", ns+"-x", node, cpv1.SandboxStatus_PHASE_PENDING)
+	listFixture(ctx, t, db, "sb-bnn-other", "team-beta", node, cpv1.SandboxStatus_PHASE_PENDING)
 
 	got, _, err := db.List(ctx, sandboxdb.ListOptions{
 		Namespace: ns,
@@ -193,13 +176,16 @@ func TestList_ByNamespaceAndNode_ScopesToNamespaceAndNode(t *testing.T) {
 		SortOrder: cpv1.ListSandboxesRequest_ORDER_NEWEST_FIRST,
 	})
 	require.NoError(t, err)
-	assert.ElementsMatch(t, []string{"sb-bnn-1a", "sb-bnn-1b"}, ids(got),
-		"by_namespace_node_index must scope to the namespace+node tuple")
+	assert.Equal(t, []string{"sb-bnn-1b", "sb-bnn-1a"}, ids(got),
+		"by_namespace_node_index must scope to the namespace+node tuple, newest-first")
 }
 
 func TestList_ByNamespaceNodeAndPhase_AppliesInAppPhaseFilter(t *testing.T) {
 	db, ctx := setupDB(t)
-	ns, node := uniqueListScope(t)
+	const (
+		ns   = "team-alpha"
+		node = "node-1"
+	)
 
 	listFixture(ctx, t, db, "sb-bnnp-running", ns, node, cpv1.SandboxStatus_PHASE_RUNNING)
 	listFixture(ctx, t, db, "sb-bnnp-paused", ns, node, cpv1.SandboxStatus_PHASE_PAUSED)
@@ -213,17 +199,17 @@ func TestList_ByNamespaceNodeAndPhase_AppliesInAppPhaseFilter(t *testing.T) {
 		SortOrder:   cpv1.ListSandboxesRequest_ORDER_NEWEST_FIRST,
 	})
 	require.NoError(t, err)
-	assert.ElementsMatch(t, []string{"sb-bnnp-paused"}, ids(got),
+	assert.Equal(t, []string{"sb-bnnp-paused"}, ids(got),
 		"in-app filter must drop non-matching phases")
 }
 
 func TestList_ByNode_CrossesNamespaces(t *testing.T) {
 	db, ctx := setupDB(t)
-	ns, node := uniqueListScope(t)
+	const node = "node-1"
 
-	listFixture(ctx, t, db, "sb-bnode-a", ns, node, cpv1.SandboxStatus_PHASE_RUNNING)
-	listFixture(ctx, t, db, "sb-bnode-b", ns+"-x", node, cpv1.SandboxStatus_PHASE_RUNNING)
-	listFixture(ctx, t, db, "sb-bnode-c", ns, node+"-other", cpv1.SandboxStatus_PHASE_RUNNING)
+	listFixture(ctx, t, db, "sb-bnode-a", "team-alpha", node, cpv1.SandboxStatus_PHASE_RUNNING)
+	listFixture(ctx, t, db, "sb-bnode-b", "team-beta", node, cpv1.SandboxStatus_PHASE_RUNNING)
+	listFixture(ctx, t, db, "sb-bnode-c", "team-alpha", "node-2", cpv1.SandboxStatus_PHASE_RUNNING)
 
 	got, _, err := db.List(ctx, sandboxdb.ListOptions{
 		NodeID:    node,
@@ -231,17 +217,17 @@ func TestList_ByNode_CrossesNamespaces(t *testing.T) {
 		SortOrder: cpv1.ListSandboxesRequest_ORDER_OLDEST_FIRST,
 	})
 	require.NoError(t, err)
-	assert.ElementsMatch(t, []string{"sb-bnode-a", "sb-bnode-b"}, ids(got),
+	assert.Equal(t, []string{"sb-bnode-a", "sb-bnode-b"}, ids(got),
 		"by_node_index must span namespaces; sb-bnode-c on a different node must be excluded")
 }
 
 func TestList_ByNodeAndPhase_AppliesInAppPhaseFilter(t *testing.T) {
 	db, ctx := setupDB(t)
-	ns, node := uniqueListScope(t)
+	const node = "node-1"
 
-	listFixture(ctx, t, db, "sb-bnp-r-1", ns, node, cpv1.SandboxStatus_PHASE_RUNNING)
-	listFixture(ctx, t, db, "sb-bnp-p-1", ns, node, cpv1.SandboxStatus_PHASE_PAUSED)
-	listFixture(ctx, t, db, "sb-bnp-r-2", ns+"-x", node, cpv1.SandboxStatus_PHASE_RUNNING)
+	listFixture(ctx, t, db, "sb-bnp-r-1", "team-alpha", node, cpv1.SandboxStatus_PHASE_RUNNING)
+	listFixture(ctx, t, db, "sb-bnp-p-1", "team-alpha", node, cpv1.SandboxStatus_PHASE_PAUSED)
+	listFixture(ctx, t, db, "sb-bnp-r-2", "team-beta", node, cpv1.SandboxStatus_PHASE_RUNNING)
 
 	got, _, err := db.List(ctx, sandboxdb.ListOptions{
 		NodeID:      node,
@@ -250,16 +236,15 @@ func TestList_ByNodeAndPhase_AppliesInAppPhaseFilter(t *testing.T) {
 		SortOrder:   cpv1.ListSandboxesRequest_ORDER_OLDEST_FIRST,
 	})
 	require.NoError(t, err)
-	assert.ElementsMatch(t, []string{"sb-bnp-r-1", "sb-bnp-r-2"}, ids(got),
-		"in-app filter must keep only RUNNING and span namespaces")
+	assert.Equal(t, []string{"sb-bnp-r-1", "sb-bnp-r-2"}, ids(got),
+		"in-app filter must keep only RUNNING and span namespaces, oldest-first")
 }
 
 func TestList_EmptyResultSet(t *testing.T) {
 	db, ctx := setupDB(t)
-	ns, _ := uniqueListScope(t)
 
 	got, next, err := db.List(ctx, sandboxdb.ListOptions{
-		Namespace: ns,
+		Namespace: "team-alpha",
 		PageSize:  10,
 		SortOrder: cpv1.ListSandboxesRequest_ORDER_NEWEST_FIRST,
 	})
@@ -268,28 +253,44 @@ func TestList_EmptyResultSet(t *testing.T) {
 	assert.Equal(t, "", next)
 }
 
-func TestList_FirstPageEmitsContinuationTokenWhenMoreRowsExist(t *testing.T) {
+func TestList_PaginatesAcrossPages(t *testing.T) {
 	db, ctx := setupDB(t)
-	ns, _ := uniqueListScope(t)
+	const (
+		ns    = "team-alpha"
+		total = 5
+	)
 
-	for i := 0; i < 5; i++ {
+	for i := 0; i < total; i++ {
 		listFixture(ctx, t, db, fmt.Sprintf("sb-pg-%02d", i), ns, "", cpv1.SandboxStatus_PHASE_PENDING)
 	}
 
-	got, token, err := db.List(ctx, sandboxdb.ListOptions{
-		Namespace: ns,
-		PageSize:  2,
-		SortOrder: cpv1.ListSandboxesRequest_ORDER_NEWEST_FIRST,
-	})
-	require.NoError(t, err)
-	assert.LessOrEqual(t, len(got), 2, "page must not exceed PageSize")
-	assert.NotEmpty(t, token,
-		"a partial page (PageSize < total matches) must surface a continuation token")
+	var collected []string
+	var token string
+	for page := 0; page < total+2; page++ { // safety bound
+		got, next, err := db.List(ctx, sandboxdb.ListOptions{
+			Namespace:         ns,
+			PageSize:          2,
+			SortOrder:         cpv1.ListSandboxesRequest_ORDER_NEWEST_FIRST,
+			ContinuationToken: token,
+		})
+		require.NoError(t, err)
+		assert.LessOrEqual(t, len(got), 2, "page must not exceed PageSize")
+		collected = append(collected, ids(got)...)
+		if next == "" {
+			break
+		}
+		token = next
+	}
+
+	assert.Equal(t,
+		[]string{"sb-pg-04", "sb-pg-03", "sb-pg-02", "sb-pg-01", "sb-pg-00"},
+		collected,
+		"pagination must traverse rows newest-first with no duplicates or gaps")
 }
 
 func TestList_ContinuationTokenRejectedOnIndexMismatch(t *testing.T) {
 	db, ctx := setupDB(t)
-	ns, _ := uniqueListScope(t)
+	const ns = "team-alpha"
 
 	for i := 0; i < 3; i++ {
 		listFixture(ctx, t, db, fmt.Sprintf("sb-cti-%02d", i), ns, "", cpv1.SandboxStatus_PHASE_PENDING)
@@ -321,10 +322,9 @@ func TestList_ContinuationTokenRejectedOnIndexMismatch(t *testing.T) {
 
 func TestList_ContinuationTokenRejectedOnGarbledInput(t *testing.T) {
 	db, ctx := setupDB(t)
-	ns, _ := uniqueListScope(t)
 
 	_, _, err := db.List(ctx, sandboxdb.ListOptions{
-		Namespace:         ns,
+		Namespace:         "team-alpha",
 		PageSize:          1,
 		SortOrder:         cpv1.ListSandboxesRequest_ORDER_NEWEST_FIRST,
 		ContinuationToken: "this-is-not-a-valid-token!!!",
@@ -336,12 +336,11 @@ func TestList_ContinuationTokenRejectedOnGarbledInput(t *testing.T) {
 
 func TestList_RoundTripsSandboxProto(t *testing.T) {
 	db, ctx := setupDB(t)
-	ns, node := uniqueListScope(t)
 
-	original := listFixture(ctx, t, db, "sb-rt", ns, node, cpv1.SandboxStatus_PHASE_RUNNING)
+	original := listFixture(ctx, t, db, "sb-rt", "team-alpha", "node-1", cpv1.SandboxStatus_PHASE_RUNNING)
 
 	got, _, err := db.List(ctx, sandboxdb.ListOptions{
-		Namespace: ns,
+		Namespace: "team-alpha",
 		PageSize:  10,
 		SortOrder: cpv1.ListSandboxesRequest_ORDER_NEWEST_FIRST,
 	})
