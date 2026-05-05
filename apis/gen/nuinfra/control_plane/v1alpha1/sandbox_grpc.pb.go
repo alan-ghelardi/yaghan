@@ -21,6 +21,7 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	SandboxService_CreateSandbox_FullMethodName = "/nuinfra.control_plane.v1alpha1.SandboxService/CreateSandbox"
 	SandboxService_GetSandbox_FullMethodName    = "/nuinfra.control_plane.v1alpha1.SandboxService/GetSandbox"
+	SandboxService_ListSandbox_FullMethodName   = "/nuinfra.control_plane.v1alpha1.SandboxService/ListSandbox"
 	SandboxService_PauseSandbox_FullMethodName  = "/nuinfra.control_plane.v1alpha1.SandboxService/PauseSandbox"
 	SandboxService_ResumeSandbox_FullMethodName = "/nuinfra.control_plane.v1alpha1.SandboxService/ResumeSandbox"
 	SandboxService_DeleteSandbox_FullMethodName = "/nuinfra.control_plane.v1alpha1.SandboxService/DeleteSandbox"
@@ -32,6 +33,7 @@ const (
 type SandboxServiceClient interface {
 	CreateSandbox(ctx context.Context, in *CreateSandboxRequest, opts ...grpc.CallOption) (*CreateSandboxResponse, error)
 	GetSandbox(ctx context.Context, in *GetSandboxRequest, opts ...grpc.CallOption) (*GetSandboxResponse, error)
+	ListSandbox(ctx context.Context, in *ListSandboxRequest, opts ...grpc.CallOption) (*ListSandboxResponse, error)
 	PauseSandbox(ctx context.Context, in *PauseSandboxRequest, opts ...grpc.CallOption) (*PauseSandboxResponse, error)
 	ResumeSandbox(ctx context.Context, in *ResumeSandboxRequest, opts ...grpc.CallOption) (*ResumeSandboxResponse, error)
 	DeleteSandbox(ctx context.Context, in *DeleteSandboxRequest, opts ...grpc.CallOption) (*DeleteSandboxResponse, error)
@@ -59,6 +61,16 @@ func (c *sandboxServiceClient) GetSandbox(ctx context.Context, in *GetSandboxReq
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetSandboxResponse)
 	err := c.cc.Invoke(ctx, SandboxService_GetSandbox_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *sandboxServiceClient) ListSandbox(ctx context.Context, in *ListSandboxRequest, opts ...grpc.CallOption) (*ListSandboxResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListSandboxResponse)
+	err := c.cc.Invoke(ctx, SandboxService_ListSandbox_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -101,6 +113,7 @@ func (c *sandboxServiceClient) DeleteSandbox(ctx context.Context, in *DeleteSand
 type SandboxServiceServer interface {
 	CreateSandbox(context.Context, *CreateSandboxRequest) (*CreateSandboxResponse, error)
 	GetSandbox(context.Context, *GetSandboxRequest) (*GetSandboxResponse, error)
+	ListSandbox(context.Context, *ListSandboxRequest) (*ListSandboxResponse, error)
 	PauseSandbox(context.Context, *PauseSandboxRequest) (*PauseSandboxResponse, error)
 	ResumeSandbox(context.Context, *ResumeSandboxRequest) (*ResumeSandboxResponse, error)
 	DeleteSandbox(context.Context, *DeleteSandboxRequest) (*DeleteSandboxResponse, error)
@@ -119,6 +132,9 @@ func (UnimplementedSandboxServiceServer) CreateSandbox(context.Context, *CreateS
 }
 func (UnimplementedSandboxServiceServer) GetSandbox(context.Context, *GetSandboxRequest) (*GetSandboxResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetSandbox not implemented")
+}
+func (UnimplementedSandboxServiceServer) ListSandbox(context.Context, *ListSandboxRequest) (*ListSandboxResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListSandbox not implemented")
 }
 func (UnimplementedSandboxServiceServer) PauseSandbox(context.Context, *PauseSandboxRequest) (*PauseSandboxResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PauseSandbox not implemented")
@@ -182,6 +198,24 @@ func _SandboxService_GetSandbox_Handler(srv interface{}, ctx context.Context, de
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(SandboxServiceServer).GetSandbox(ctx, req.(*GetSandboxRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _SandboxService_ListSandbox_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListSandboxRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SandboxServiceServer).ListSandbox(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SandboxService_ListSandbox_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SandboxServiceServer).ListSandbox(ctx, req.(*ListSandboxRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -254,6 +288,10 @@ var SandboxService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetSandbox",
 			Handler:    _SandboxService_GetSandbox_Handler,
+		},
+		{
+			MethodName: "ListSandbox",
+			Handler:    _SandboxService_ListSandbox_Handler,
 		},
 		{
 			MethodName: "PauseSandbox",

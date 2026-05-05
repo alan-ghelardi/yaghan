@@ -17,6 +17,8 @@
     - [GetSandboxRequest](#nuinfra-control_plane-v1alpha1-GetSandboxRequest)
     - [GetSandboxResponse](#nuinfra-control_plane-v1alpha1-GetSandboxResponse)
     - [Intent](#nuinfra-control_plane-v1alpha1-Intent)
+    - [ListSandboxRequest](#nuinfra-control_plane-v1alpha1-ListSandboxRequest)
+    - [ListSandboxResponse](#nuinfra-control_plane-v1alpha1-ListSandboxResponse)
     - [NodeRef](#nuinfra-control_plane-v1alpha1-NodeRef)
     - [PauseSandboxRequest](#nuinfra-control_plane-v1alpha1-PauseSandboxRequest)
     - [PauseSandboxResponse](#nuinfra-control_plane-v1alpha1-PauseSandboxResponse)
@@ -28,6 +30,7 @@
     - [SandboxMeta.LabelsEntry](#nuinfra-control_plane-v1alpha1-SandboxMeta-LabelsEntry)
     - [SandboxStatus](#nuinfra-control_plane-v1alpha1-SandboxStatus)
   
+    - [ListSandboxRequest.Order](#nuinfra-control_plane-v1alpha1-ListSandboxRequest-Order)
     - [SandboxStatus.Phase](#nuinfra-control_plane-v1alpha1-SandboxStatus-Phase)
   
     - [SandboxService](#nuinfra-control_plane-v1alpha1-SandboxService)
@@ -249,6 +252,42 @@ InsufficientScopes provides further details on unauthorized errors.
 
 
 
+<a name="nuinfra-control_plane-v1alpha1-ListSandboxRequest"></a>
+
+### ListSandboxRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| namespace | [string](#string) |  |  |
+| node_id | [string](#string) |  |  |
+| phase | [SandboxStatus.Phase](#nuinfra-control_plane-v1alpha1-SandboxStatus-Phase) |  |  |
+| continuation_token | [string](#string) |  | A token used to paginate through results, allowing retrieval of additional pages after a previous request. |
+| results_per_page | [int32](#int32) |  | Specifies the number of results to retrieve for this request. Defaults to 30. Clients can request a maximum of 1000 results per request. |
+| order | [ListSandboxRequest.Order](#nuinfra-control_plane-v1alpha1-ListSandboxRequest-Order) |  |  |
+
+
+
+
+
+
+<a name="nuinfra-control_plane-v1alpha1-ListSandboxResponse"></a>
+
+### ListSandboxResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| sandbox | [Sandbox](#nuinfra-control_plane-v1alpha1-Sandbox) | repeated |  |
+| continuation_token | [string](#string) |  |  |
+
+
+
+
+
+
 <a name="nuinfra-control_plane-v1alpha1-NodeRef"></a>
 
 ### NodeRef
@@ -405,6 +444,19 @@ InsufficientScopes provides further details on unauthorized errors.
  
 
 
+<a name="nuinfra-control_plane-v1alpha1-ListSandboxRequest-Order"></a>
+
+### ListSandboxRequest.Order
+
+
+| Name | Number | Description |
+| ---- | ------ | ----------- |
+| ORDER_UNSPECIFIED | 0 |  |
+| ORDER_ASCENDING | 1 |  |
+| ORDER_DESCENDING | 2 |  |
+
+
+
 <a name="nuinfra-control_plane-v1alpha1-SandboxStatus-Phase"></a>
 
 ### SandboxStatus.Phase
@@ -437,6 +489,7 @@ InsufficientScopes provides further details on unauthorized errors.
 | ----------- | ------------ | ------------- | ------------|
 | CreateSandbox | [CreateSandboxRequest](#nuinfra-control_plane-v1alpha1-CreateSandboxRequest) | [CreateSandboxResponse](#nuinfra-control_plane-v1alpha1-CreateSandboxResponse) |  |
 | GetSandbox | [GetSandboxRequest](#nuinfra-control_plane-v1alpha1-GetSandboxRequest) | [GetSandboxResponse](#nuinfra-control_plane-v1alpha1-GetSandboxResponse) |  |
+| ListSandbox | [ListSandboxRequest](#nuinfra-control_plane-v1alpha1-ListSandboxRequest) | [ListSandboxResponse](#nuinfra-control_plane-v1alpha1-ListSandboxResponse) |  |
 | PauseSandbox | [PauseSandboxRequest](#nuinfra-control_plane-v1alpha1-PauseSandboxRequest) | [PauseSandboxResponse](#nuinfra-control_plane-v1alpha1-PauseSandboxResponse) |  |
 | ResumeSandbox | [ResumeSandboxRequest](#nuinfra-control_plane-v1alpha1-ResumeSandboxRequest) | [ResumeSandboxResponse](#nuinfra-control_plane-v1alpha1-ResumeSandboxResponse) |  |
 | DeleteSandbox | [DeleteSandboxRequest](#nuinfra-control_plane-v1alpha1-DeleteSandboxRequest) | [DeleteSandboxResponse](#nuinfra-control_plane-v1alpha1-DeleteSandboxResponse) |  |

@@ -17,6 +17,85 @@
   ],
   "paths": {
     "/v1alpha1/sandboxes": {
+      "get": {
+        "operationId": "SandboxService_ListSandbox",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1alpha1ListSandboxResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "namespace",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "nodeId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "phase",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "PHASE_UNSPECIFIED",
+              "PHASE_PENDING",
+              "PHASE_RUNNING",
+              "PHASE_PAUSING",
+              "PHASE_PAUSED",
+              "PHASE_RESUMING",
+              "PHASE_DELETING",
+              "PHASE_DELETED",
+              "PHASE_FAILED"
+            ],
+            "default": "PHASE_UNSPECIFIED"
+          },
+          {
+            "name": "continuationToken",
+            "description": "A token used to paginate through results, allowing retrieval of additional pages after a previous request.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "resultsPerPage",
+            "description": "Specifies the number of results to retrieve for this request. Defaults to 30.\nClients can request a maximum of 1000 results per request.",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "ORDER_UNSPECIFIED",
+              "ORDER_ASCENDING",
+              "ORDER_DESCENDING"
+            ],
+            "default": "ORDER_UNSPECIFIED"
+          }
+        ],
+        "tags": [
+          "SandboxService"
+        ]
+      },
       "post": {
         "operationId": "SandboxService_CreateSandbox",
         "responses": {
@@ -189,6 +268,15 @@
     }
   },
   "definitions": {
+    "ListSandboxRequestOrder": {
+      "type": "string",
+      "enum": [
+        "ORDER_UNSPECIFIED",
+        "ORDER_ASCENDING",
+        "ORDER_DESCENDING"
+      ],
+      "default": "ORDER_UNSPECIFIED"
+    },
     "SandboxStatusPhase": {
       "type": "string",
       "enum": [
@@ -276,6 +364,21 @@
         },
         "createSnapshot": {
           "type": "boolean"
+        }
+      }
+    },
+    "v1alpha1ListSandboxResponse": {
+      "type": "object",
+      "properties": {
+        "sandbox": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1alpha1Sandbox"
+          }
+        },
+        "continuationToken": {
+          "type": "string"
         }
       }
     },

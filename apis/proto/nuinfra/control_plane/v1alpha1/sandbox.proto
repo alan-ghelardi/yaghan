@@ -105,6 +105,43 @@ message GetSandboxResponse {
   Sandbox sandbox = 1;
 }
 
+message ListSandboxRequest {
+  string namespace = 1 [(buf.validate.field).string.pattern = "^[a-z][a-z0-9-]{0,61}[a-z0-9]$"];
+
+  string node_id = 2;
+
+  SandboxStatus.Phase phase = 3;
+
+  // A token used to paginate through results, allowing retrieval of additional pages after a previous request.
+  string continuation_token = 4;
+
+  // Specifies the number of results to retrieve for this request. Defaults to 30.
+  // Clients can request a maximum of 1000 results per request.
+  int32 results_per_page = 5 [
+    (buf.validate.field).int32.gte = 0,
+    (buf.validate.field).int32.lte = 1000
+  ];
+
+  enum Order {
+    ORDER_UNSPECIFIED = 0;
+    ORDER_ASCENDING = 1;
+    ORDER_DESCENDING = 2;
+  }
+
+  Order order = 6;
+
+  option (buf.validate.message).cel = {
+    id: "ListSandboxRequest.required_fields"
+    expression: "has(this.namespace) || has(this.node_id)"
+    message: "At least one of 'namespace' or 'node_id' must be provided to list sandboxes"
+  };
+}
+
+message ListSandboxResponse {
+  repeated Sandbox sandbox = 1;
+  string continuation_token = 2;
+}
+
 message PauseSandboxRequest {
   string sandbox_id = 1 [(buf.validate.field).required = true];
   int64 version = 2 [(buf.validate.field).required = true];
@@ -136,6 +173,10 @@ service SandboxService {
 
   rpc GetSandbox(GetSandboxRequest) returns (GetSandboxResponse) {
     option (google.api.http) = {get: "/v1alpha1/sandboxes/{sandbox_id}"};
+  }
+
+  rpc ListSandbox(ListSandboxRequest) returns (ListSandboxResponse) {
+    option (google.api.http) = {get: "/v1alpha1/sandboxes"};
   }
 
   rpc PauseSandbox(PauseSandboxRequest) returns (PauseSandboxResponse) {

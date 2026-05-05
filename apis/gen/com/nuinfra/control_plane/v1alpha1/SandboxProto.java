@@ -82,6 +82,16 @@ public final class SandboxProto extends com.google.protobuf.GeneratedFile {
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_nuinfra_control_plane_v1alpha1_GetSandboxResponse_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_nuinfra_control_plane_v1alpha1_ListSandboxRequest_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_nuinfra_control_plane_v1alpha1_ListSandboxRequest_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_nuinfra_control_plane_v1alpha1_ListSandboxResponse_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_nuinfra_control_plane_v1alpha1_ListSandboxResponse_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
     internal_static_nuinfra_control_plane_v1alpha1_PauseSandboxRequest_descriptor;
   static final 
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
@@ -170,45 +180,68 @@ public final class SandboxProto extends com.google.protobuf.GeneratedFile {
       "andbox\":\n\021GetSandboxRequest\022%\n\nsandbox_i" +
       "d\030\001 \001(\tB\006\272H\003\310\001\001R\tsandboxId\"W\n\022GetSandbox" +
       "Response\022A\n\007sandbox\030\001 \001(\0132\'.nuinfra.cont" +
-      "rol_plane.v1alpha1.SandboxR\007sandbox\"^\n\023P" +
-      "auseSandboxRequest\022%\n\nsandbox_id\030\001 \001(\tB\006" +
-      "\272H\003\310\001\001R\tsandboxId\022 \n\007version\030\002 \001(\003B\006\272H\003\310" +
-      "\001\001R\007version\"\026\n\024PauseSandboxResponse\"_\n\024R" +
-      "esumeSandboxRequest\022%\n\nsandbox_id\030\001 \001(\tB" +
-      "\006\272H\003\310\001\001R\tsandboxId\022 \n\007version\030\002 \001(\003B\006\272H\003" +
-      "\310\001\001R\007version\"\027\n\025ResumeSandboxResponse\"_\n" +
-      "\024DeleteSandboxRequest\022%\n\nsandbox_id\030\001 \001(" +
-      "\tB\006\272H\003\310\001\001R\tsandboxId\022 \n\007version\030\002 \001(\003B\006\272" +
-      "H\003\310\001\001R\007version\"\027\n\025DeleteSandboxResponse2" +
-      "\324\006\n\016SandboxService\022\234\001\n\rCreateSandbox\0224.n" +
-      "uinfra.control_plane.v1alpha1.CreateSand" +
-      "boxRequest\0325.nuinfra.control_plane.v1alp" +
-      "ha1.CreateSandboxResponse\"\036\202\323\344\223\002\030\"\023/v1al" +
-      "pha1/sandboxes:\001*\022\235\001\n\nGetSandbox\0221.nuinf" +
-      "ra.control_plane.v1alpha1.GetSandboxRequ" +
-      "est\0322.nuinfra.control_plane.v1alpha1.Get" +
-      "SandboxResponse\"(\202\323\344\223\002\"\022 /v1alpha1/sandb" +
-      "oxes/{sandbox_id}\022\251\001\n\014PauseSandbox\0223.nui" +
-      "nfra.control_plane.v1alpha1.PauseSandbox" +
-      "Request\0324.nuinfra.control_plane.v1alpha1" +
-      ".PauseSandboxResponse\".\202\323\344\223\002(\032&/v1alpha1" +
-      "/sandboxes/{sandbox_id}/pause\022\255\001\n\rResume" +
-      "Sandbox\0224.nuinfra.control_plane.v1alpha1" +
-      ".ResumeSandboxRequest\0325.nuinfra.control_" +
-      "plane.v1alpha1.ResumeSandboxResponse\"/\202\323" +
-      "\344\223\002)\032\'/v1alpha1/sandboxes/{sandbox_id}/r" +
-      "esume\022\246\001\n\rDeleteSandbox\0224.nuinfra.contro" +
-      "l_plane.v1alpha1.DeleteSandboxRequest\0325." +
-      "nuinfra.control_plane.v1alpha1.DeleteSan" +
-      "dboxResponse\"(\202\323\344\223\002\"* /v1alpha1/sandboxe" +
-      "s/{sandbox_id}B\232\002\n\"com.nuinfra.control_p" +
-      "lane.v1alpha1B\014SandboxProtoP\001ZPgolang.nu" +
-      "infra.net/apis/gen/nuinfra/control_plane" +
-      "/v1alpha1;control_planev1alpha1\242\002\003NCX\252\002\035" +
-      "Nuinfra.ControlPlane.V1alpha1\312\002\035Nuinfra\\" +
-      "ControlPlane\\V1alpha1\342\002)Nuinfra\\ControlP" +
-      "lane\\V1alpha1\\GPBMetadata\352\002\037Nuinfra::Con" +
-      "trolPlane::V1alpha1b\006proto3"
+      "rol_plane.v1alpha1.SandboxR\007sandbox\"\342\004\n\022" +
+      "ListSandboxRequest\022C\n\tnamespace\030\001 \001(\tB%\272" +
+      "H\"r 2\036^[a-z][a-z0-9-]{0,61}[a-z0-9]$R\tna" +
+      "mespace\022\027\n\007node_id\030\002 \001(\tR\006nodeId\022I\n\005phas" +
+      "e\030\003 \001(\01623.nuinfra.control_plane.v1alpha1" +
+      ".SandboxStatus.PhaseR\005phase\022-\n\022continuat" +
+      "ion_token\030\004 \001(\tR\021continuationToken\0224\n\020re" +
+      "sults_per_page\030\005 \001(\005B\n\272H\007\032\005\030\350\007(\000R\016result" +
+      "sPerPage\022N\n\005order\030\006 \001(\01628.nuinfra.contro" +
+      "l_plane.v1alpha1.ListSandboxRequest.Orde" +
+      "rR\005order\"I\n\005Order\022\025\n\021ORDER_UNSPECIFIED\020\000" +
+      "\022\023\n\017ORDER_ASCENDING\020\001\022\024\n\020ORDER_DESCENDIN" +
+      "G\020\002:\242\001\272H\236\001\032\233\001\n\"ListSandboxRequest.requir" +
+      "ed_fields\022KAt least one of \'namespace\' o" +
+      "r \'node_id\' must be provided to list san" +
+      "dboxes\032(has(this.namespace) || has(this." +
+      "node_id)\"\207\001\n\023ListSandboxResponse\022A\n\007sand" +
+      "box\030\001 \003(\0132\'.nuinfra.control_plane.v1alph" +
+      "a1.SandboxR\007sandbox\022-\n\022continuation_toke" +
+      "n\030\002 \001(\tR\021continuationToken\"^\n\023PauseSandb" +
+      "oxRequest\022%\n\nsandbox_id\030\001 \001(\tB\006\272H\003\310\001\001R\ts" +
+      "andboxId\022 \n\007version\030\002 \001(\003B\006\272H\003\310\001\001R\007versi" +
+      "on\"\026\n\024PauseSandboxResponse\"_\n\024ResumeSand" +
+      "boxRequest\022%\n\nsandbox_id\030\001 \001(\tB\006\272H\003\310\001\001R\t" +
+      "sandboxId\022 \n\007version\030\002 \001(\003B\006\272H\003\310\001\001R\007vers" +
+      "ion\"\027\n\025ResumeSandboxResponse\"_\n\024DeleteSa" +
+      "ndboxRequest\022%\n\nsandbox_id\030\001 \001(\tB\006\272H\003\310\001\001" +
+      "R\tsandboxId\022 \n\007version\030\002 \001(\003B\006\272H\003\310\001\001R\007ve" +
+      "rsion\"\027\n\025DeleteSandboxResponse2\352\007\n\016Sandb" +
+      "oxService\022\234\001\n\rCreateSandbox\0224.nuinfra.co" +
+      "ntrol_plane.v1alpha1.CreateSandboxReques" +
+      "t\0325.nuinfra.control_plane.v1alpha1.Creat" +
+      "eSandboxResponse\"\036\202\323\344\223\002\030\"\023/v1alpha1/sand" +
+      "boxes:\001*\022\235\001\n\nGetSandbox\0221.nuinfra.contro" +
+      "l_plane.v1alpha1.GetSandboxRequest\0322.nui" +
+      "nfra.control_plane.v1alpha1.GetSandboxRe" +
+      "sponse\"(\202\323\344\223\002\"\022 /v1alpha1/sandboxes/{san" +
+      "dbox_id}\022\223\001\n\013ListSandbox\0222.nuinfra.contr" +
+      "ol_plane.v1alpha1.ListSandboxRequest\0323.n" +
+      "uinfra.control_plane.v1alpha1.ListSandbo" +
+      "xResponse\"\033\202\323\344\223\002\025\022\023/v1alpha1/sandboxes\022\251" +
+      "\001\n\014PauseSandbox\0223.nuinfra.control_plane." +
+      "v1alpha1.PauseSandboxRequest\0324.nuinfra.c" +
+      "ontrol_plane.v1alpha1.PauseSandboxRespon" +
+      "se\".\202\323\344\223\002(\032&/v1alpha1/sandboxes/{sandbox" +
+      "_id}/pause\022\255\001\n\rResumeSandbox\0224.nuinfra.c" +
+      "ontrol_plane.v1alpha1.ResumeSandboxReque" +
+      "st\0325.nuinfra.control_plane.v1alpha1.Resu" +
+      "meSandboxResponse\"/\202\323\344\223\002)\032\'/v1alpha1/san" +
+      "dboxes/{sandbox_id}/resume\022\246\001\n\rDeleteSan" +
+      "dbox\0224.nuinfra.control_plane.v1alpha1.De" +
+      "leteSandboxRequest\0325.nuinfra.control_pla" +
+      "ne.v1alpha1.DeleteSandboxResponse\"(\202\323\344\223\002" +
+      "\"* /v1alpha1/sandboxes/{sandbox_id}B\232\002\n\"" +
+      "com.nuinfra.control_plane.v1alpha1B\014Sand" +
+      "boxProtoP\001ZPgolang.nuinfra.net/apis/gen/" +
+      "nuinfra/control_plane/v1alpha1;control_p" +
+      "lanev1alpha1\242\002\003NCX\252\002\035Nuinfra.ControlPlan" +
+      "e.V1alpha1\312\002\035Nuinfra\\ControlPlane\\V1alph" +
+      "a1\342\002)Nuinfra\\ControlPlane\\V1alpha1\\GPBMe" +
+      "tadata\352\002\037Nuinfra::ControlPlane::V1alpha1" +
+      "b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -283,38 +316,50 @@ public final class SandboxProto extends com.google.protobuf.GeneratedFile {
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_nuinfra_control_plane_v1alpha1_GetSandboxResponse_descriptor,
         new java.lang.String[] { "Sandbox", });
-    internal_static_nuinfra_control_plane_v1alpha1_PauseSandboxRequest_descriptor =
+    internal_static_nuinfra_control_plane_v1alpha1_ListSandboxRequest_descriptor =
       getDescriptor().getMessageType(10);
+    internal_static_nuinfra_control_plane_v1alpha1_ListSandboxRequest_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_nuinfra_control_plane_v1alpha1_ListSandboxRequest_descriptor,
+        new java.lang.String[] { "Namespace", "NodeId", "Phase", "ContinuationToken", "ResultsPerPage", "Order", });
+    internal_static_nuinfra_control_plane_v1alpha1_ListSandboxResponse_descriptor =
+      getDescriptor().getMessageType(11);
+    internal_static_nuinfra_control_plane_v1alpha1_ListSandboxResponse_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_nuinfra_control_plane_v1alpha1_ListSandboxResponse_descriptor,
+        new java.lang.String[] { "Sandbox", "ContinuationToken", });
+    internal_static_nuinfra_control_plane_v1alpha1_PauseSandboxRequest_descriptor =
+      getDescriptor().getMessageType(12);
     internal_static_nuinfra_control_plane_v1alpha1_PauseSandboxRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_nuinfra_control_plane_v1alpha1_PauseSandboxRequest_descriptor,
         new java.lang.String[] { "SandboxId", "Version", });
     internal_static_nuinfra_control_plane_v1alpha1_PauseSandboxResponse_descriptor =
-      getDescriptor().getMessageType(11);
+      getDescriptor().getMessageType(13);
     internal_static_nuinfra_control_plane_v1alpha1_PauseSandboxResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_nuinfra_control_plane_v1alpha1_PauseSandboxResponse_descriptor,
         new java.lang.String[] { });
     internal_static_nuinfra_control_plane_v1alpha1_ResumeSandboxRequest_descriptor =
-      getDescriptor().getMessageType(12);
+      getDescriptor().getMessageType(14);
     internal_static_nuinfra_control_plane_v1alpha1_ResumeSandboxRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_nuinfra_control_plane_v1alpha1_ResumeSandboxRequest_descriptor,
         new java.lang.String[] { "SandboxId", "Version", });
     internal_static_nuinfra_control_plane_v1alpha1_ResumeSandboxResponse_descriptor =
-      getDescriptor().getMessageType(13);
+      getDescriptor().getMessageType(15);
     internal_static_nuinfra_control_plane_v1alpha1_ResumeSandboxResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_nuinfra_control_plane_v1alpha1_ResumeSandboxResponse_descriptor,
         new java.lang.String[] { });
     internal_static_nuinfra_control_plane_v1alpha1_DeleteSandboxRequest_descriptor =
-      getDescriptor().getMessageType(14);
+      getDescriptor().getMessageType(16);
     internal_static_nuinfra_control_plane_v1alpha1_DeleteSandboxRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_nuinfra_control_plane_v1alpha1_DeleteSandboxRequest_descriptor,
         new java.lang.String[] { "SandboxId", "Version", });
     internal_static_nuinfra_control_plane_v1alpha1_DeleteSandboxResponse_descriptor =
-      getDescriptor().getMessageType(15);
+      getDescriptor().getMessageType(17);
     internal_static_nuinfra_control_plane_v1alpha1_DeleteSandboxResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_nuinfra_control_plane_v1alpha1_DeleteSandboxResponse_descriptor,
@@ -326,6 +371,7 @@ public final class SandboxProto extends com.google.protobuf.GeneratedFile {
     com.google.protobuf.ExtensionRegistry registry =
         com.google.protobuf.ExtensionRegistry.newInstance();
     registry.add(com.buf.validate.ValidateProto.field);
+    registry.add(com.buf.validate.ValidateProto.message);
     registry.add(com.google.api.AnnotationsProto.http);
     com.google.protobuf.Descriptors.FileDescriptor
         .internalUpdateFileDescriptor(descriptor, registry);

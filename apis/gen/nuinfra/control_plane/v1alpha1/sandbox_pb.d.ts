@@ -301,6 +301,98 @@ export declare type GetSandboxResponse = Message<"nuinfra.control_plane.v1alpha1
 export declare const GetSandboxResponseSchema: GenMessage<GetSandboxResponse>;
 
 /**
+ * @generated from message nuinfra.control_plane.v1alpha1.ListSandboxRequest
+ */
+export declare type ListSandboxRequest = Message<"nuinfra.control_plane.v1alpha1.ListSandboxRequest"> & {
+  /**
+   * @generated from field: string namespace = 1;
+   */
+  namespace: string;
+
+  /**
+   * @generated from field: string node_id = 2;
+   */
+  nodeId: string;
+
+  /**
+   * @generated from field: nuinfra.control_plane.v1alpha1.SandboxStatus.Phase phase = 3;
+   */
+  phase: SandboxStatus_Phase;
+
+  /**
+   * A token used to paginate through results, allowing retrieval of additional pages after a previous request.
+   *
+   * @generated from field: string continuation_token = 4;
+   */
+  continuationToken: string;
+
+  /**
+   * Specifies the number of results to retrieve for this request. Defaults to 30.
+   * Clients can request a maximum of 1000 results per request.
+   *
+   * @generated from field: int32 results_per_page = 5;
+   */
+  resultsPerPage: number;
+
+  /**
+   * @generated from field: nuinfra.control_plane.v1alpha1.ListSandboxRequest.Order order = 6;
+   */
+  order: ListSandboxRequest_Order;
+};
+
+/**
+ * Describes the message nuinfra.control_plane.v1alpha1.ListSandboxRequest.
+ * Use `create(ListSandboxRequestSchema)` to create a new message.
+ */
+export declare const ListSandboxRequestSchema: GenMessage<ListSandboxRequest>;
+
+/**
+ * @generated from enum nuinfra.control_plane.v1alpha1.ListSandboxRequest.Order
+ */
+export enum ListSandboxRequest_Order {
+  /**
+   * @generated from enum value: ORDER_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: ORDER_ASCENDING = 1;
+   */
+  ASCENDING = 1,
+
+  /**
+   * @generated from enum value: ORDER_DESCENDING = 2;
+   */
+  DESCENDING = 2,
+}
+
+/**
+ * Describes the enum nuinfra.control_plane.v1alpha1.ListSandboxRequest.Order.
+ */
+export declare const ListSandboxRequest_OrderSchema: GenEnum<ListSandboxRequest_Order>;
+
+/**
+ * @generated from message nuinfra.control_plane.v1alpha1.ListSandboxResponse
+ */
+export declare type ListSandboxResponse = Message<"nuinfra.control_plane.v1alpha1.ListSandboxResponse"> & {
+  /**
+   * @generated from field: repeated nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1;
+   */
+  sandbox: Sandbox[];
+
+  /**
+   * @generated from field: string continuation_token = 2;
+   */
+  continuationToken: string;
+};
+
+/**
+ * Describes the message nuinfra.control_plane.v1alpha1.ListSandboxResponse.
+ * Use `create(ListSandboxResponseSchema)` to create a new message.
+ */
+export declare const ListSandboxResponseSchema: GenMessage<ListSandboxResponse>;
+
+/**
  * @generated from message nuinfra.control_plane.v1alpha1.PauseSandboxRequest
  */
 export declare type PauseSandboxRequest = Message<"nuinfra.control_plane.v1alpha1.PauseSandboxRequest"> & {
@@ -418,6 +510,14 @@ export declare const SandboxService: GenService<{
     methodKind: "unary";
     input: typeof GetSandboxRequestSchema;
     output: typeof GetSandboxResponseSchema;
+  },
+  /**
+   * @generated from rpc nuinfra.control_plane.v1alpha1.SandboxService.ListSandbox
+   */
+  listSandbox: {
+    methodKind: "unary";
+    input: typeof ListSandboxRequestSchema;
+    output: typeof ListSandboxResponseSchema;
   },
   /**
    * @generated from rpc nuinfra.control_plane.v1alpha1.SandboxService.PauseSandbox

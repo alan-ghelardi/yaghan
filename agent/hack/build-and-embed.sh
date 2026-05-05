@@ -5,8 +5,6 @@
 #
 # Usage:
 #   sudo ./hack/build-and-embed.sh [--rootfs PATH] [--target PATH]
-#
-# Defaults mirror the paths used by daemon/main.go.
 
 set -euo pipefail
 

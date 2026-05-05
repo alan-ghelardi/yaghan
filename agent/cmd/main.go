@@ -42,6 +42,12 @@ const (
 	// logPrefix labels every line so mixed-source console dumps stay
 	// attributable.
 	logPrefix = "agent: "
+
+	// defaultPATH is the PATH we install on the agent process when the
+	// kernel boots us with an empty environment. Matches the
+	// systemd / Alpine /etc/profile convention so guest commands
+	// resolve the same way they would under a normal login shell.
+	defaultPATH = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 )
 
 func main() {
@@ -52,6 +58,7 @@ func main() {
 
 	mountPseudoFS(logger)
 	ensureBaseDirs(logger)
+	ensureDefaultPath(logger)
 
 	port := parseVsockPort(logger)
 	logger.Printf("vsock port %d", port)
@@ -133,6 +140,33 @@ func mountPseudoFS(logger *log.Logger) {
 			logger.Printf("mount %s → %s: %v", m.fstype, m.target, err)
 		}
 	}
+}
+
+// ensureDefaultPath sets PATH on the agent process when the kernel
+// hands us an empty environment. The agent runs as PID 1, so there is
+// no shell to source /etc/profile and seed PATH; without this, Go's
+// exec.Command resolves a bare program name (e.g. "ls") via LookPath
+// against the agent's own PATH, which is "" — and the spawn fails
+// before any guest env can apply.
+//
+// Two behaviours fall out of setting it here:
+//  1. LookPath finds the standard guest binaries (Alpine's BusyBox
+//     symlinks under /bin and /sbin).
+//  2. makeEnviron's os.Environ() snapshot now carries PATH, so spawned
+//     children inherit a sensible default unless the request overrides
+//     it.
+//
+// We never overwrite an explicit PATH the kernel cmdline (or a
+// hypothetical pre-init step) might have set.
+func ensureDefaultPath(logger *log.Logger) {
+	if os.Getenv("PATH") != "" {
+		return
+	}
+	if err := os.Setenv("PATH", defaultPATH); err != nil {
+		logger.Printf("setenv PATH: %v", err)
+		return
+	}
+	logger.Printf("PATH defaulted to %q", defaultPATH)
 }
 
 // ensureBaseDirs creates standard writable directories the guest
