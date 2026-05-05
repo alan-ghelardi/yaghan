@@ -799,7 +799,7 @@ func (x *ListSandboxesRequest) GetSortOrder() ListSandboxesRequest_Order {
 type ListSandboxesResponse struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// The list of sandboxes matching the request filters.
-	Sandbox []*Sandbox `protobuf:"bytes,1,rep,name=sandbox,proto3" json:"sandbox,omitempty"`
+	Sandboxes []*Sandbox `protobuf:"bytes,1,rep,name=sandboxes,proto3" json:"sandboxes,omitempty"`
 	// Token to retrieve the next page of results.
 	// Empty if there are no more results.
 	ContinuationToken string `protobuf:"bytes,2,opt,name=continuation_token,json=continuationToken,proto3" json:"continuation_token,omitempty"`
@@ -837,9 +837,9 @@ func (*ListSandboxesResponse) Descriptor() ([]byte, []int) {
 	return file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{11}
 }
 
-func (x *ListSandboxesResponse) GetSandbox() []*Sandbox {
+func (x *ListSandboxesResponse) GetSandboxes() []*Sandbox {
 	if x != nil {
-		return x.Sandbox
+		return x.Sandboxes
 	}
 	return nil
 }
@@ -1183,9 +1183,9 @@ const file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDesc = "" +
 	"\x11ORDER_UNSPECIFIED\x10\x00\x12\x16\n" +
 	"\x12ORDER_NEWEST_FIRST\x10\x01\x12\x16\n" +
 	"\x12ORDER_OLDEST_FIRST\x10\x02:\xa5\x01\xbaH\xa1\x01\x1a\x9e\x01\n" +
-	"$ListSandboxesRequest.required_fields\x12LAt least one of `namespace` or `node_id` must be provided to list sandboxes.\x1a(has(this.namespace) || has(this.node_id)\"\x89\x01\n" +
-	"\x15ListSandboxesResponse\x12A\n" +
-	"\asandbox\x18\x01 \x03(\v2'.nuinfra.control_plane.v1alpha1.SandboxR\asandbox\x12-\n" +
+	"$ListSandboxesRequest.required_fields\x12LAt least one of `namespace` or `node_id` must be provided to list sandboxes.\x1a(has(this.namespace) || has(this.node_id)\"\x8d\x01\n" +
+	"\x15ListSandboxesResponse\x12E\n" +
+	"\tsandboxes\x18\x01 \x03(\v2'.nuinfra.control_plane.v1alpha1.SandboxR\tsandboxes\x12-\n" +
 	"\x12continuation_token\x18\x02 \x01(\tR\x11continuationToken\"^\n" +
 	"\x13PauseSandboxRequest\x12%\n" +
 	"\n" +
@@ -1267,7 +1267,7 @@ var file_nuinfra_control_plane_v1alpha1_sandbox_proto_depIdxs = []int32{
 	2,  // 13: nuinfra.control_plane.v1alpha1.GetSandboxResponse.sandbox:type_name -> nuinfra.control_plane.v1alpha1.Sandbox
 	0,  // 14: nuinfra.control_plane.v1alpha1.ListSandboxesRequest.status_phase:type_name -> nuinfra.control_plane.v1alpha1.SandboxStatus.Phase
 	1,  // 15: nuinfra.control_plane.v1alpha1.ListSandboxesRequest.sort_order:type_name -> nuinfra.control_plane.v1alpha1.ListSandboxesRequest.Order
-	2,  // 16: nuinfra.control_plane.v1alpha1.ListSandboxesResponse.sandbox:type_name -> nuinfra.control_plane.v1alpha1.Sandbox
+	2,  // 16: nuinfra.control_plane.v1alpha1.ListSandboxesResponse.sandboxes:type_name -> nuinfra.control_plane.v1alpha1.Sandbox
 	8,  // 17: nuinfra.control_plane.v1alpha1.SandboxService.CreateSandbox:input_type -> nuinfra.control_plane.v1alpha1.CreateSandboxRequest
 	10, // 18: nuinfra.control_plane.v1alpha1.SandboxService.GetSandbox:input_type -> nuinfra.control_plane.v1alpha1.GetSandboxRequest
 	12, // 19: nuinfra.control_plane.v1alpha1.SandboxService.ListSandboxes:input_type -> nuinfra.control_plane.v1alpha1.ListSandboxesRequest

@@ -161,7 +161,7 @@ message ListSandboxesRequest {
 // Response message containing a page of sandboxes.
 message ListSandboxesResponse {
   // The list of sandboxes matching the request filters.
-  repeated Sandbox sandbox = 1;
+  repeated Sandbox sandboxes = 1;
 
   // Token to retrieve the next page of results.
   // Empty if there are no more results.

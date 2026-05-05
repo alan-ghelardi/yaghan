@@ -32,7 +32,7 @@ private static final long serialVersionUID = 0L;
     super(builder);
   }
   private ListSandboxesResponse() {
-    sandbox_ = java.util.Collections.emptyList();
+    sandboxes_ = java.util.Collections.emptyList();
     continuationToken_ = "";
   }
 
@@ -49,65 +49,65 @@ private static final long serialVersionUID = 0L;
             com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse.class, com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse.Builder.class);
   }
 
-  public static final int SANDBOX_FIELD_NUMBER = 1;
+  public static final int SANDBOXES_FIELD_NUMBER = 1;
   @SuppressWarnings("serial")
-  private java.util.List<com.nuinfra.control_plane.v1alpha1.Sandbox> sandbox_;
+  private java.util.List<com.nuinfra.control_plane.v1alpha1.Sandbox> sandboxes_;
   /**
    * <pre>
    * The list of sandboxes matching the request filters.
    * </pre>
    *
-   * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
+   * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandboxes = 1 [json_name = "sandboxes"];</code>
    */
   @java.lang.Override
-  public java.util.List<com.nuinfra.control_plane.v1alpha1.Sandbox> getSandboxList() {
-    return sandbox_;
+  public java.util.List<com.nuinfra.control_plane.v1alpha1.Sandbox> getSandboxesList() {
+    return sandboxes_;
   }
   /**
    * <pre>
    * The list of sandboxes matching the request filters.
    * </pre>
    *
-   * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
+   * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandboxes = 1 [json_name = "sandboxes"];</code>
    */
   @java.lang.Override
   public java.util.List<? extends com.nuinfra.control_plane.v1alpha1.SandboxOrBuilder> 
-      getSandboxOrBuilderList() {
-    return sandbox_;
+      getSandboxesOrBuilderList() {
+    return sandboxes_;
   }
   /**
    * <pre>
    * The list of sandboxes matching the request filters.
    * </pre>
    *
-   * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
+   * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandboxes = 1 [json_name = "sandboxes"];</code>
    */
   @java.lang.Override
-  public int getSandboxCount() {
-    return sandbox_.size();
+  public int getSandboxesCount() {
+    return sandboxes_.size();
   }
   /**
    * <pre>
    * The list of sandboxes matching the request filters.
    * </pre>
    *
-   * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
+   * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandboxes = 1 [json_name = "sandboxes"];</code>
    */
   @java.lang.Override
-  public com.nuinfra.control_plane.v1alpha1.Sandbox getSandbox(int index) {
-    return sandbox_.get(index);
+  public com.nuinfra.control_plane.v1alpha1.Sandbox getSandboxes(int index) {
+    return sandboxes_.get(index);
   }
   /**
    * <pre>
    * The list of sandboxes matching the request filters.
    * </pre>
    *
-   * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
+   * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandboxes = 1 [json_name = "sandboxes"];</code>
    */
   @java.lang.Override
-  public com.nuinfra.control_plane.v1alpha1.SandboxOrBuilder getSandboxOrBuilder(
+  public com.nuinfra.control_plane.v1alpha1.SandboxOrBuilder getSandboxesOrBuilder(
       int index) {
-    return sandbox_.get(index);
+    return sandboxes_.get(index);
   }
 
   public static final int CONTINUATION_TOKEN_FIELD_NUMBER = 2;
@@ -173,8 +173,8 @@ private static final long serialVersionUID = 0L;
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output)
                       throws java.io.IOException {
-    for (int i = 0; i < sandbox_.size(); i++) {
-      output.writeMessage(1, sandbox_.get(i));
+    for (int i = 0; i < sandboxes_.size(); i++) {
+      output.writeMessage(1, sandboxes_.get(i));
     }
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(continuationToken_)) {
       com.google.protobuf.GeneratedMessage.writeString(output, 2, continuationToken_);
@@ -188,9 +188,9 @@ private static final long serialVersionUID = 0L;
     if (size != -1) return size;
 
     size = 0;
-    for (int i = 0; i < sandbox_.size(); i++) {
+    for (int i = 0; i < sandboxes_.size(); i++) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(1, sandbox_.get(i));
+        .computeMessageSize(1, sandboxes_.get(i));
     }
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(continuationToken_)) {
       size += com.google.protobuf.GeneratedMessage.computeStringSize(2, continuationToken_);
@@ -210,8 +210,8 @@ private static final long serialVersionUID = 0L;
     }
     com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse other = (com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse) obj;
 
-    if (!getSandboxList()
-        .equals(other.getSandboxList())) return false;
+    if (!getSandboxesList()
+        .equals(other.getSandboxesList())) return false;
     if (!getContinuationToken()
         .equals(other.getContinuationToken())) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
@@ -225,9 +225,9 @@ private static final long serialVersionUID = 0L;
     }
     int hash = 41;
     hash = (19 * hash) + getDescriptor().hashCode();
-    if (getSandboxCount() > 0) {
-      hash = (37 * hash) + SANDBOX_FIELD_NUMBER;
-      hash = (53 * hash) + getSandboxList().hashCode();
+    if (getSandboxesCount() > 0) {
+      hash = (37 * hash) + SANDBOXES_FIELD_NUMBER;
+      hash = (53 * hash) + getSandboxesList().hashCode();
     }
     hash = (37 * hash) + CONTINUATION_TOKEN_FIELD_NUMBER;
     hash = (53 * hash) + getContinuationToken().hashCode();
@@ -366,11 +366,11 @@ private static final long serialVersionUID = 0L;
     public Builder clear() {
       super.clear();
       bitField0_ = 0;
-      if (sandboxBuilder_ == null) {
-        sandbox_ = java.util.Collections.emptyList();
+      if (sandboxesBuilder_ == null) {
+        sandboxes_ = java.util.Collections.emptyList();
       } else {
-        sandbox_ = null;
-        sandboxBuilder_.clear();
+        sandboxes_ = null;
+        sandboxesBuilder_.clear();
       }
       bitField0_ = (bitField0_ & ~0x00000001);
       continuationToken_ = "";
@@ -407,14 +407,14 @@ private static final long serialVersionUID = 0L;
     }
 
     private void buildPartialRepeatedFields(com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse result) {
-      if (sandboxBuilder_ == null) {
+      if (sandboxesBuilder_ == null) {
         if (((bitField0_ & 0x00000001) != 0)) {
-          sandbox_ = java.util.Collections.unmodifiableList(sandbox_);
+          sandboxes_ = java.util.Collections.unmodifiableList(sandboxes_);
           bitField0_ = (bitField0_ & ~0x00000001);
         }
-        result.sandbox_ = sandbox_;
+        result.sandboxes_ = sandboxes_;
       } else {
-        result.sandbox_ = sandboxBuilder_.build();
+        result.sandboxes_ = sandboxesBuilder_.build();
       }
     }
 
@@ -437,29 +437,29 @@ private static final long serialVersionUID = 0L;
 
     public Builder mergeFrom(com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse other) {
       if (other == com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse.getDefaultInstance()) return this;
-      if (sandboxBuilder_ == null) {
-        if (!other.sandbox_.isEmpty()) {
-          if (sandbox_.isEmpty()) {
-            sandbox_ = other.sandbox_;
+      if (sandboxesBuilder_ == null) {
+        if (!other.sandboxes_.isEmpty()) {
+          if (sandboxes_.isEmpty()) {
+            sandboxes_ = other.sandboxes_;
             bitField0_ = (bitField0_ & ~0x00000001);
           } else {
-            ensureSandboxIsMutable();
-            sandbox_.addAll(other.sandbox_);
+            ensureSandboxesIsMutable();
+            sandboxes_.addAll(other.sandboxes_);
           }
           onChanged();
         }
       } else {
-        if (!other.sandbox_.isEmpty()) {
-          if (sandboxBuilder_.isEmpty()) {
-            sandboxBuilder_.dispose();
-            sandboxBuilder_ = null;
-            sandbox_ = other.sandbox_;
+        if (!other.sandboxes_.isEmpty()) {
+          if (sandboxesBuilder_.isEmpty()) {
+            sandboxesBuilder_.dispose();
+            sandboxesBuilder_ = null;
+            sandboxes_ = other.sandboxes_;
             bitField0_ = (bitField0_ & ~0x00000001);
-            sandboxBuilder_ = 
+            sandboxesBuilder_ = 
               com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
-                 internalGetSandboxFieldBuilder() : null;
+                 internalGetSandboxesFieldBuilder() : null;
           } else {
-            sandboxBuilder_.addAllMessages(other.sandbox_);
+            sandboxesBuilder_.addAllMessages(other.sandboxes_);
           }
         }
       }
@@ -499,11 +499,11 @@ private static final long serialVersionUID = 0L;
                   input.readMessage(
                       com.nuinfra.control_plane.v1alpha1.Sandbox.parser(),
                       extensionRegistry);
-              if (sandboxBuilder_ == null) {
-                ensureSandboxIsMutable();
-                sandbox_.add(m);
+              if (sandboxesBuilder_ == null) {
+                ensureSandboxesIsMutable();
+                sandboxes_.add(m);
               } else {
-                sandboxBuilder_.addMessage(m);
+                sandboxesBuilder_.addMessage(m);
               }
               break;
             } // case 10
@@ -529,30 +529,30 @@ private static final long serialVersionUID = 0L;
     }
     private int bitField0_;
 
-    private java.util.List<com.nuinfra.control_plane.v1alpha1.Sandbox> sandbox_ =
+    private java.util.List<com.nuinfra.control_plane.v1alpha1.Sandbox> sandboxes_ =
       java.util.Collections.emptyList();
-    private void ensureSandboxIsMutable() {
+    private void ensureSandboxesIsMutable() {
       if (!((bitField0_ & 0x00000001) != 0)) {
-        sandbox_ = new java.util.ArrayList<com.nuinfra.control_plane.v1alpha1.Sandbox>(sandbox_);
+        sandboxes_ = new java.util.ArrayList<com.nuinfra.control_plane.v1alpha1.Sandbox>(sandboxes_);
         bitField0_ |= 0x00000001;
        }
     }
 
     private com.google.protobuf.RepeatedFieldBuilder<
-        com.nuinfra.control_plane.v1alpha1.Sandbox, com.nuinfra.control_plane.v1alpha1.Sandbox.Builder, com.nuinfra.control_plane.v1alpha1.SandboxOrBuilder> sandboxBuilder_;
+        com.nuinfra.control_plane.v1alpha1.Sandbox, com.nuinfra.control_plane.v1alpha1.Sandbox.Builder, com.nuinfra.control_plane.v1alpha1.SandboxOrBuilder> sandboxesBuilder_;
 
     /**
      * <pre>
      * The list of sandboxes matching the request filters.
      * </pre>
      *
-     * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
+     * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandboxes = 1 [json_name = "sandboxes"];</code>
      */
-    public java.util.List<com.nuinfra.control_plane.v1alpha1.Sandbox> getSandboxList() {
-      if (sandboxBuilder_ == null) {
-        return java.util.Collections.unmodifiableList(sandbox_);
+    public java.util.List<com.nuinfra.control_plane.v1alpha1.Sandbox> getSandboxesList() {
+      if (sandboxesBuilder_ == null) {
+        return java.util.Collections.unmodifiableList(sandboxes_);
       } else {
-        return sandboxBuilder_.getMessageList();
+        return sandboxesBuilder_.getMessageList();
       }
     }
     /**
@@ -560,13 +560,13 @@ private static final long serialVersionUID = 0L;
      * The list of sandboxes matching the request filters.
      * </pre>
      *
-     * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
+     * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandboxes = 1 [json_name = "sandboxes"];</code>
      */
-    public int getSandboxCount() {
-      if (sandboxBuilder_ == null) {
-        return sandbox_.size();
+    public int getSandboxesCount() {
+      if (sandboxesBuilder_ == null) {
+        return sandboxes_.size();
       } else {
-        return sandboxBuilder_.getCount();
+        return sandboxesBuilder_.getCount();
       }
     }
     /**
@@ -574,13 +574,13 @@ private static final long serialVersionUID = 0L;
      * The list of sandboxes matching the request filters.
      * </pre>
      *
-     * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
+     * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandboxes = 1 [json_name = "sandboxes"];</code>
      */
-    public com.nuinfra.control_plane.v1alpha1.Sandbox getSandbox(int index) {
-      if (sandboxBuilder_ == null) {
-        return sandbox_.get(index);
+    public com.nuinfra.control_plane.v1alpha1.Sandbox getSandboxes(int index) {
+      if (sandboxesBuilder_ == null) {
+        return sandboxes_.get(index);
       } else {
-        return sandboxBuilder_.getMessage(index);
+        return sandboxesBuilder_.getMessage(index);
       }
     }
     /**
@@ -588,19 +588,19 @@ private static final long serialVersionUID = 0L;
      * The list of sandboxes matching the request filters.
      * </pre>
      *
-     * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
+     * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandboxes = 1 [json_name = "sandboxes"];</code>
      */
-    public Builder setSandbox(
+    public Builder setSandboxes(
         int index, com.nuinfra.control_plane.v1alpha1.Sandbox value) {
-      if (sandboxBuilder_ == null) {
+      if (sandboxesBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
         }
-        ensureSandboxIsMutable();
-        sandbox_.set(index, value);
+        ensureSandboxesIsMutable();
+        sandboxes_.set(index, value);
         onChanged();
       } else {
-        sandboxBuilder_.setMessage(index, value);
+        sandboxesBuilder_.setMessage(index, value);
       }
       return this;
     }
@@ -609,16 +609,16 @@ private static final long serialVersionUID = 0L;
      * The list of sandboxes matching the request filters.
      * </pre>
      *
-     * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
+     * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandboxes = 1 [json_name = "sandboxes"];</code>
      */
-    public Builder setSandbox(
+    public Builder setSandboxes(
         int index, com.nuinfra.control_plane.v1alpha1.Sandbox.Builder builderForValue) {
-      if (sandboxBuilder_ == null) {
-        ensureSandboxIsMutable();
-        sandbox_.set(index, builderForValue.build());
+      if (sandboxesBuilder_ == null) {
+        ensureSandboxesIsMutable();
+        sandboxes_.set(index, builderForValue.build());
         onChanged();
       } else {
-        sandboxBuilder_.setMessage(index, builderForValue.build());
+        sandboxesBuilder_.setMessage(index, builderForValue.build());
       }
       return this;
     }
@@ -627,18 +627,18 @@ private static final long serialVersionUID = 0L;
      * The list of sandboxes matching the request filters.
      * </pre>
      *
-     * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
+     * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandboxes = 1 [json_name = "sandboxes"];</code>
      */
-    public Builder addSandbox(com.nuinfra.control_plane.v1alpha1.Sandbox value) {
-      if (sandboxBuilder_ == null) {
+    public Builder addSandboxes(com.nuinfra.control_plane.v1alpha1.Sandbox value) {
+      if (sandboxesBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
         }
-        ensureSandboxIsMutable();
-        sandbox_.add(value);
+        ensureSandboxesIsMutable();
+        sandboxes_.add(value);
         onChanged();
       } else {
-        sandboxBuilder_.addMessage(value);
+        sandboxesBuilder_.addMessage(value);
       }
       return this;
     }
@@ -647,19 +647,19 @@ private static final long serialVersionUID = 0L;
      * The list of sandboxes matching the request filters.
      * </pre>
      *
-     * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
+     * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandboxes = 1 [json_name = "sandboxes"];</code>
      */
-    public Builder addSandbox(
+    public Builder addSandboxes(
         int index, com.nuinfra.control_plane.v1alpha1.Sandbox value) {
-      if (sandboxBuilder_ == null) {
+      if (sandboxesBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
         }
-        ensureSandboxIsMutable();
-        sandbox_.add(index, value);
+        ensureSandboxesIsMutable();
+        sandboxes_.add(index, value);
         onChanged();
       } else {
-        sandboxBuilder_.addMessage(index, value);
+        sandboxesBuilder_.addMessage(index, value);
       }
       return this;
     }
@@ -668,16 +668,16 @@ private static final long serialVersionUID = 0L;
      * The list of sandboxes matching the request filters.
      * </pre>
      *
-     * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
+     * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandboxes = 1 [json_name = "sandboxes"];</code>
      */
-    public Builder addSandbox(
+    public Builder addSandboxes(
         com.nuinfra.control_plane.v1alpha1.Sandbox.Builder builderForValue) {
-      if (sandboxBuilder_ == null) {
-        ensureSandboxIsMutable();
-        sandbox_.add(builderForValue.build());
+      if (sandboxesBuilder_ == null) {
+        ensureSandboxesIsMutable();
+        sandboxes_.add(builderForValue.build());
         onChanged();
       } else {
-        sandboxBuilder_.addMessage(builderForValue.build());
+        sandboxesBuilder_.addMessage(builderForValue.build());
       }
       return this;
     }
@@ -686,16 +686,16 @@ private static final long serialVersionUID = 0L;
      * The list of sandboxes matching the request filters.
      * </pre>
      *
-     * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
+     * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandboxes = 1 [json_name = "sandboxes"];</code>
      */
-    public Builder addSandbox(
+    public Builder addSandboxes(
         int index, com.nuinfra.control_plane.v1alpha1.Sandbox.Builder builderForValue) {
-      if (sandboxBuilder_ == null) {
-        ensureSandboxIsMutable();
-        sandbox_.add(index, builderForValue.build());
+      if (sandboxesBuilder_ == null) {
+        ensureSandboxesIsMutable();
+        sandboxes_.add(index, builderForValue.build());
         onChanged();
       } else {
-        sandboxBuilder_.addMessage(index, builderForValue.build());
+        sandboxesBuilder_.addMessage(index, builderForValue.build());
       }
       return this;
     }
@@ -704,17 +704,17 @@ private static final long serialVersionUID = 0L;
      * The list of sandboxes matching the request filters.
      * </pre>
      *
-     * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
+     * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandboxes = 1 [json_name = "sandboxes"];</code>
      */
-    public Builder addAllSandbox(
+    public Builder addAllSandboxes(
         java.lang.Iterable<? extends com.nuinfra.control_plane.v1alpha1.Sandbox> values) {
-      if (sandboxBuilder_ == null) {
-        ensureSandboxIsMutable();
+      if (sandboxesBuilder_ == null) {
+        ensureSandboxesIsMutable();
         com.google.protobuf.AbstractMessageLite.Builder.addAll(
-            values, sandbox_);
+            values, sandboxes_);
         onChanged();
       } else {
-        sandboxBuilder_.addAllMessages(values);
+        sandboxesBuilder_.addAllMessages(values);
       }
       return this;
     }
@@ -723,15 +723,15 @@ private static final long serialVersionUID = 0L;
      * The list of sandboxes matching the request filters.
      * </pre>
      *
-     * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
+     * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandboxes = 1 [json_name = "sandboxes"];</code>
      */
-    public Builder clearSandbox() {
-      if (sandboxBuilder_ == null) {
-        sandbox_ = java.util.Collections.emptyList();
+    public Builder clearSandboxes() {
+      if (sandboxesBuilder_ == null) {
+        sandboxes_ = java.util.Collections.emptyList();
         bitField0_ = (bitField0_ & ~0x00000001);
         onChanged();
       } else {
-        sandboxBuilder_.clear();
+        sandboxesBuilder_.clear();
       }
       return this;
     }
@@ -740,15 +740,15 @@ private static final long serialVersionUID = 0L;
      * The list of sandboxes matching the request filters.
      * </pre>
      *
-     * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
+     * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandboxes = 1 [json_name = "sandboxes"];</code>
      */
-    public Builder removeSandbox(int index) {
-      if (sandboxBuilder_ == null) {
-        ensureSandboxIsMutable();
-        sandbox_.remove(index);
+    public Builder removeSandboxes(int index) {
+      if (sandboxesBuilder_ == null) {
+        ensureSandboxesIsMutable();
+        sandboxes_.remove(index);
         onChanged();
       } else {
-        sandboxBuilder_.remove(index);
+        sandboxesBuilder_.remove(index);
       }
       return this;
     }
@@ -757,24 +757,24 @@ private static final long serialVersionUID = 0L;
      * The list of sandboxes matching the request filters.
      * </pre>
      *
-     * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
+     * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandboxes = 1 [json_name = "sandboxes"];</code>
      */
-    public com.nuinfra.control_plane.v1alpha1.Sandbox.Builder getSandboxBuilder(
+    public com.nuinfra.control_plane.v1alpha1.Sandbox.Builder getSandboxesBuilder(
         int index) {
-      return internalGetSandboxFieldBuilder().getBuilder(index);
+      return internalGetSandboxesFieldBuilder().getBuilder(index);
     }
     /**
      * <pre>
      * The list of sandboxes matching the request filters.
      * </pre>
      *
-     * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
+     * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandboxes = 1 [json_name = "sandboxes"];</code>
      */
-    public com.nuinfra.control_plane.v1alpha1.SandboxOrBuilder getSandboxOrBuilder(
+    public com.nuinfra.control_plane.v1alpha1.SandboxOrBuilder getSandboxesOrBuilder(
         int index) {
-      if (sandboxBuilder_ == null) {
-        return sandbox_.get(index);  } else {
-        return sandboxBuilder_.getMessageOrBuilder(index);
+      if (sandboxesBuilder_ == null) {
+        return sandboxes_.get(index);  } else {
+        return sandboxesBuilder_.getMessageOrBuilder(index);
       }
     }
     /**
@@ -782,14 +782,14 @@ private static final long serialVersionUID = 0L;
      * The list of sandboxes matching the request filters.
      * </pre>
      *
-     * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
+     * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandboxes = 1 [json_name = "sandboxes"];</code>
      */
     public java.util.List<? extends com.nuinfra.control_plane.v1alpha1.SandboxOrBuilder> 
-         getSandboxOrBuilderList() {
-      if (sandboxBuilder_ != null) {
-        return sandboxBuilder_.getMessageOrBuilderList();
+         getSandboxesOrBuilderList() {
+      if (sandboxesBuilder_ != null) {
+        return sandboxesBuilder_.getMessageOrBuilderList();
       } else {
-        return java.util.Collections.unmodifiableList(sandbox_);
+        return java.util.Collections.unmodifiableList(sandboxes_);
       }
     }
     /**
@@ -797,10 +797,10 @@ private static final long serialVersionUID = 0L;
      * The list of sandboxes matching the request filters.
      * </pre>
      *
-     * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
+     * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandboxes = 1 [json_name = "sandboxes"];</code>
      */
-    public com.nuinfra.control_plane.v1alpha1.Sandbox.Builder addSandboxBuilder() {
-      return internalGetSandboxFieldBuilder().addBuilder(
+    public com.nuinfra.control_plane.v1alpha1.Sandbox.Builder addSandboxesBuilder() {
+      return internalGetSandboxesFieldBuilder().addBuilder(
           com.nuinfra.control_plane.v1alpha1.Sandbox.getDefaultInstance());
     }
     /**
@@ -808,11 +808,11 @@ private static final long serialVersionUID = 0L;
      * The list of sandboxes matching the request filters.
      * </pre>
      *
-     * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
+     * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandboxes = 1 [json_name = "sandboxes"];</code>
      */
-    public com.nuinfra.control_plane.v1alpha1.Sandbox.Builder addSandboxBuilder(
+    public com.nuinfra.control_plane.v1alpha1.Sandbox.Builder addSandboxesBuilder(
         int index) {
-      return internalGetSandboxFieldBuilder().addBuilder(
+      return internalGetSandboxesFieldBuilder().addBuilder(
           index, com.nuinfra.control_plane.v1alpha1.Sandbox.getDefaultInstance());
     }
     /**
@@ -820,25 +820,25 @@ private static final long serialVersionUID = 0L;
      * The list of sandboxes matching the request filters.
      * </pre>
      *
-     * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
+     * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandboxes = 1 [json_name = "sandboxes"];</code>
      */
     public java.util.List<com.nuinfra.control_plane.v1alpha1.Sandbox.Builder> 
-         getSandboxBuilderList() {
-      return internalGetSandboxFieldBuilder().getBuilderList();
+         getSandboxesBuilderList() {
+      return internalGetSandboxesFieldBuilder().getBuilderList();
     }
     private com.google.protobuf.RepeatedFieldBuilder<
         com.nuinfra.control_plane.v1alpha1.Sandbox, com.nuinfra.control_plane.v1alpha1.Sandbox.Builder, com.nuinfra.control_plane.v1alpha1.SandboxOrBuilder> 
-        internalGetSandboxFieldBuilder() {
-      if (sandboxBuilder_ == null) {
-        sandboxBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+        internalGetSandboxesFieldBuilder() {
+      if (sandboxesBuilder_ == null) {
+        sandboxesBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
             com.nuinfra.control_plane.v1alpha1.Sandbox, com.nuinfra.control_plane.v1alpha1.Sandbox.Builder, com.nuinfra.control_plane.v1alpha1.SandboxOrBuilder>(
-                sandbox_,
+                sandboxes_,
                 ((bitField0_ & 0x00000001) != 0),
                 getParentForChildren(),
                 isClean());
-        sandbox_ = null;
+        sandboxes_ = null;
       }
-      return sandboxBuilder_;
+      return sandboxesBuilder_;
     }
 
     private java.lang.Object continuationToken_ = "";

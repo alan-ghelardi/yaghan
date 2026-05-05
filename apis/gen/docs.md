@@ -280,7 +280,7 @@ Response message containing a page of sandboxes.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| sandbox | [Sandbox](#nuinfra-control_plane-v1alpha1-Sandbox) | repeated | The list of sandboxes matching the request filters. |
+| sandboxes | [Sandbox](#nuinfra-control_plane-v1alpha1-Sandbox) | repeated | The list of sandboxes matching the request filters. |
 | continuation_token | [string](#string) |  | Token to retrieve the next page of results. Empty if there are no more results. |
 
 

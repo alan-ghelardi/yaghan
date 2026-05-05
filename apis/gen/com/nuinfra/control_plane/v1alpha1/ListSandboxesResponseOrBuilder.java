@@ -15,43 +15,43 @@ public interface ListSandboxesResponseOrBuilder extends
    * The list of sandboxes matching the request filters.
    * </pre>
    *
-   * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
+   * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandboxes = 1 [json_name = "sandboxes"];</code>
    */
   java.util.List<com.nuinfra.control_plane.v1alpha1.Sandbox> 
-      getSandboxList();
+      getSandboxesList();
   /**
    * <pre>
    * The list of sandboxes matching the request filters.
    * </pre>
    *
-   * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
+   * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandboxes = 1 [json_name = "sandboxes"];</code>
    */
-  com.nuinfra.control_plane.v1alpha1.Sandbox getSandbox(int index);
+  com.nuinfra.control_plane.v1alpha1.Sandbox getSandboxes(int index);
   /**
    * <pre>
    * The list of sandboxes matching the request filters.
    * </pre>
    *
-   * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
+   * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandboxes = 1 [json_name = "sandboxes"];</code>
    */
-  int getSandboxCount();
+  int getSandboxesCount();
   /**
    * <pre>
    * The list of sandboxes matching the request filters.
    * </pre>
    *
-   * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
+   * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandboxes = 1 [json_name = "sandboxes"];</code>
    */
   java.util.List<? extends com.nuinfra.control_plane.v1alpha1.SandboxOrBuilder> 
-      getSandboxOrBuilderList();
+      getSandboxesOrBuilderList();
   /**
    * <pre>
    * The list of sandboxes matching the request filters.
    * </pre>
    *
-   * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
+   * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandboxes = 1 [json_name = "sandboxes"];</code>
    */
-  com.nuinfra.control_plane.v1alpha1.SandboxOrBuilder getSandboxOrBuilder(
+  com.nuinfra.control_plane.v1alpha1.SandboxOrBuilder getSandboxesOrBuilder(
       int index);
 
   /**

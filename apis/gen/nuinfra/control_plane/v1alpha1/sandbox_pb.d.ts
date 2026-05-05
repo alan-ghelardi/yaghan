@@ -405,9 +405,9 @@ export declare type ListSandboxesResponse = Message<"nuinfra.control_plane.v1alp
   /**
    * The list of sandboxes matching the request filters.
    *
-   * @generated from field: repeated nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1;
+   * @generated from field: repeated nuinfra.control_plane.v1alpha1.Sandbox sandboxes = 1;
    */
-  sandbox: Sandbox[];
+  sandboxes: Sandbox[];
 
   /**
    * Token to retrieve the next page of results.
