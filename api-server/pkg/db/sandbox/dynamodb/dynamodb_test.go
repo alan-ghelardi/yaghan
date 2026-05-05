@@ -136,21 +136,17 @@ func attrB(t *testing.T, item map[string]types.AttributeValue, name string) []by
 	return b.Value
 }
 
-// assertGSISortKey asserts the GSI sort key has the canonical
-// `<namespace>#<rfc3339nano-timestamp>#<id>` shape and that the embedded
-// timestamp is within a few seconds of now. The DB layer owns
-// LastModifiedAt, so tests can no longer assert against a literal
-// caller-supplied value.
-func assertGSISortKey(t *testing.T, item map[string]types.AttributeValue, namespace, id string) time.Time {
+// assertGSISortKey asserts the shared GSI sort key has the canonical
+// `<rfc3339nano-timestamp>#<id>` shape and that the embedded timestamp is
+// within a few seconds of now. The DB layer owns LastModifiedAt, so tests
+// cannot assert against a literal caller-supplied value.
+func assertGSISortKey(t *testing.T, item map[string]types.AttributeValue, id string) time.Time {
 	t.Helper()
-	sk := attrS(t, item, attrGSINamespaceLmtSK)
-	prefix := namespace + "#"
+	sk := attrS(t, item, attrGSILmtSK)
 	suffix := "#" + id
-	require.True(t, strings.HasPrefix(sk, prefix),
-		"GSI sort key %q must start with %q", sk, prefix)
 	require.True(t, strings.HasSuffix(sk, suffix),
 		"GSI sort key %q must end with %q", sk, suffix)
-	tsPart := strings.TrimSuffix(strings.TrimPrefix(sk, prefix), suffix)
+	tsPart := strings.TrimSuffix(sk, suffix)
 	ts, err := time.Parse(time.RFC3339Nano, tsPart)
 	require.NoError(t, err, "GSI timestamp segment %q must parse as RFC3339Nano", tsPart)
 	assert.WithinDuration(t, time.Now(), ts, 5*time.Second,
@@ -172,9 +168,14 @@ func TestCreate_HappyPath(t *testing.T) {
 	assert.Equal(t, "1", attrVersion(t, item))
 	// The DB stamps LastModifiedAt itself, so the GSI sort key is built
 	// from a server-recent timestamp; assert the shape and freshness.
-	assertGSISortKey(t, item, "team-alpha", "sb-001")
+	assertGSISortKey(t, item, "sb-001")
+
+	assert.Equal(t, "team-alpha#PHASE_PENDING", attrS(t, item, attrGSINamespacePhaseHK),
+		"gsi_namespace_phase_hk must be {namespace}#{phase}")
 
 	assert.NotContains(t, item, attrNodeRefID, "node_ref_id must be absent when Node is unset (sparse GSI)")
+	assert.NotContains(t, item, attrGSINamespaceNodeHK,
+		"gsi_namespace_node_hk must be absent when Node is unset (sparse GSI)")
 
 	storedDigest := attrB(t, item, attrSandboxContentDigest)
 	assert.Len(t, storedDigest, 32)
@@ -196,6 +197,8 @@ func TestCreate_IncludesNodeRefIDWhenSet(t *testing.T) {
 
 	item := getItem(ctx, t, db, sb.Metadata.Id)
 	assert.Equal(t, "node-1", attrS(t, item, attrNodeRefID))
+	assert.Equal(t, "team-alpha#node-1", attrS(t, item, attrGSINamespaceNodeHK),
+		"gsi_namespace_node_hk must be {namespace}#{node_id} when Node is set")
 }
 
 func TestCreate_IdempotentOnEquivalentRetry(t *testing.T) {
@@ -361,7 +364,7 @@ func TestUpdate_HappyPath(t *testing.T) {
 	assert.Equal(t, int64(2), stored.Metadata.Version,
 		"sandbox_pb's version must agree with the sandbox_version column")
 
-	updatedLmt := assertGSISortKey(t, item, "team-alpha", "sb-upd-1")
+	updatedLmt := assertGSISortKey(t, item, "sb-upd-1")
 	assert.True(t, updatedLmt.After(createdLmt),
 		"a successful Update must advance the LastModifiedAt timestamp")
 }
@@ -459,6 +462,35 @@ func TestUpdate_PauseRequiresRunning_OK(t *testing.T) {
 	assert.Equal(t, "2", attrVersion(t, item))
 }
 
+// TestUpdate_RecomputesNamespacePhaseHKOnPhaseTransition asserts that
+// gsi_namespace_phase_hk is recomputed on every Update so that the row is
+// always in the by_status_phase_index partition that matches its current
+// Status.Phase — list-by-phase queries must reflect the current state.
+func TestUpdate_RecomputesNamespacePhaseHKOnPhaseTransition(t *testing.T) {
+	db, ctx := setupDB(t)
+
+	original := newFixture(
+		withID("sb-phase-hk"),
+		withSavedPhase(cpv1.SandboxStatus_PHASE_RUNNING),
+		withIntentPhase(cpv1.SandboxStatus_PHASE_RUNNING),
+	)
+	require.NoError(t, db.Create(ctx, original))
+
+	item := getItem(ctx, t, db, "sb-phase-hk")
+	assert.Equal(t, "team-alpha#PHASE_RUNNING", attrS(t, item, attrGSINamespacePhaseHK),
+		"create must seed gsi_namespace_phase_hk from the initial phase")
+
+	intent := proto.Clone(original).(*cpv1.Sandbox)
+	withSavedPhase(cpv1.SandboxStatus_PHASE_PAUSING)(intent)
+	withIntentPhase(cpv1.SandboxStatus_PHASE_PAUSED)(intent)
+	time.Sleep(2 * time.Millisecond)
+	require.NoError(t, db.Update(ctx, intent))
+
+	item = getItem(ctx, t, db, "sb-phase-hk")
+	assert.Equal(t, "team-alpha#PHASE_PAUSING", attrS(t, item, attrGSINamespacePhaseHK),
+		"update must recompute gsi_namespace_phase_hk when the saved phase changes")
+}
+
 func TestUpdate_PauseRequiresRunning_Fails(t *testing.T) {
 	db, ctx := setupDB(t)
 
@@ -537,7 +569,7 @@ func TestUpdate_StampsLastModifiedAtRegardlessOfInput(t *testing.T) {
 	require.NoError(t, db.Update(ctx, updated))
 
 	item := getItem(ctx, t, db, "sb-lmt-bug")
-	gotLmt := assertGSISortKey(t, item, "team-alpha", "sb-lmt-bug")
+	gotLmt := assertGSISortKey(t, item, "sb-lmt-bug")
 	assert.True(t, gotLmt.After(stale),
 		"stored LMT must advance past the caller-supplied stale value")
 

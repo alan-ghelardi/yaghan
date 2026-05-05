@@ -6,13 +6,17 @@
 package com.nuinfra.control_plane.v1alpha1;
 
 /**
- * Protobuf type {@code nuinfra.control_plane.v1alpha1.ListSandboxResponse}
+ * <pre>
+ * Response message containing a page of sandboxes.
+ * </pre>
+ *
+ * Protobuf type {@code nuinfra.control_plane.v1alpha1.ListSandboxesResponse}
  */
 @com.google.protobuf.Generated
-public final class ListSandboxResponse extends
+public final class ListSandboxesResponse extends
     com.google.protobuf.GeneratedMessage implements
-    // @@protoc_insertion_point(message_implements:nuinfra.control_plane.v1alpha1.ListSandboxResponse)
-    ListSandboxResponseOrBuilder {
+    // @@protoc_insertion_point(message_implements:nuinfra.control_plane.v1alpha1.ListSandboxesResponse)
+    ListSandboxesResponseOrBuilder {
 private static final long serialVersionUID = 0L;
   static {
     com.google.protobuf.RuntimeVersion.validateProtobufGencodeVersion(
@@ -21,34 +25,38 @@ private static final long serialVersionUID = 0L;
       /* minor= */ 33,
       /* patch= */ 2,
       /* suffix= */ "",
-      "ListSandboxResponse");
+      "ListSandboxesResponse");
   }
-  // Use ListSandboxResponse.newBuilder() to construct.
-  private ListSandboxResponse(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+  // Use ListSandboxesResponse.newBuilder() to construct.
+  private ListSandboxesResponse(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
     super(builder);
   }
-  private ListSandboxResponse() {
+  private ListSandboxesResponse() {
     sandbox_ = java.util.Collections.emptyList();
     continuationToken_ = "";
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return com.nuinfra.control_plane.v1alpha1.SandboxProto.internal_static_nuinfra_control_plane_v1alpha1_ListSandboxResponse_descriptor;
+    return com.nuinfra.control_plane.v1alpha1.SandboxProto.internal_static_nuinfra_control_plane_v1alpha1_ListSandboxesResponse_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return com.nuinfra.control_plane.v1alpha1.SandboxProto.internal_static_nuinfra_control_plane_v1alpha1_ListSandboxResponse_fieldAccessorTable
+    return com.nuinfra.control_plane.v1alpha1.SandboxProto.internal_static_nuinfra_control_plane_v1alpha1_ListSandboxesResponse_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
-            com.nuinfra.control_plane.v1alpha1.ListSandboxResponse.class, com.nuinfra.control_plane.v1alpha1.ListSandboxResponse.Builder.class);
+            com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse.class, com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse.Builder.class);
   }
 
   public static final int SANDBOX_FIELD_NUMBER = 1;
   @SuppressWarnings("serial")
   private java.util.List<com.nuinfra.control_plane.v1alpha1.Sandbox> sandbox_;
   /**
+   * <pre>
+   * The list of sandboxes matching the request filters.
+   * </pre>
+   *
    * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
    */
   @java.lang.Override
@@ -56,6 +64,10 @@ private static final long serialVersionUID = 0L;
     return sandbox_;
   }
   /**
+   * <pre>
+   * The list of sandboxes matching the request filters.
+   * </pre>
+   *
    * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
    */
   @java.lang.Override
@@ -64,6 +76,10 @@ private static final long serialVersionUID = 0L;
     return sandbox_;
   }
   /**
+   * <pre>
+   * The list of sandboxes matching the request filters.
+   * </pre>
+   *
    * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
    */
   @java.lang.Override
@@ -71,6 +87,10 @@ private static final long serialVersionUID = 0L;
     return sandbox_.size();
   }
   /**
+   * <pre>
+   * The list of sandboxes matching the request filters.
+   * </pre>
+   *
    * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
    */
   @java.lang.Override
@@ -78,6 +98,10 @@ private static final long serialVersionUID = 0L;
     return sandbox_.get(index);
   }
   /**
+   * <pre>
+   * The list of sandboxes matching the request filters.
+   * </pre>
+   *
    * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
    */
   @java.lang.Override
@@ -90,6 +114,11 @@ private static final long serialVersionUID = 0L;
   @SuppressWarnings("serial")
   private volatile java.lang.Object continuationToken_ = "";
   /**
+   * <pre>
+   * Token to retrieve the next page of results.
+   * Empty if there are no more results.
+   * </pre>
+   *
    * <code>string continuation_token = 2 [json_name = "continuationToken"];</code>
    * @return The continuationToken.
    */
@@ -107,6 +136,11 @@ private static final long serialVersionUID = 0L;
     }
   }
   /**
+   * <pre>
+   * Token to retrieve the next page of results.
+   * Empty if there are no more results.
+   * </pre>
+   *
    * <code>string continuation_token = 2 [json_name = "continuationToken"];</code>
    * @return The bytes for continuationToken.
    */
@@ -171,10 +205,10 @@ private static final long serialVersionUID = 0L;
     if (obj == this) {
      return true;
     }
-    if (!(obj instanceof com.nuinfra.control_plane.v1alpha1.ListSandboxResponse)) {
+    if (!(obj instanceof com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse)) {
       return super.equals(obj);
     }
-    com.nuinfra.control_plane.v1alpha1.ListSandboxResponse other = (com.nuinfra.control_plane.v1alpha1.ListSandboxResponse) obj;
+    com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse other = (com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse) obj;
 
     if (!getSandboxList()
         .equals(other.getSandboxList())) return false;
@@ -202,44 +236,44 @@ private static final long serialVersionUID = 0L;
     return hash;
   }
 
-  public static com.nuinfra.control_plane.v1alpha1.ListSandboxResponse parseFrom(
+  public static com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse parseFrom(
       java.nio.ByteBuffer data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static com.nuinfra.control_plane.v1alpha1.ListSandboxResponse parseFrom(
+  public static com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse parseFrom(
       java.nio.ByteBuffer data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static com.nuinfra.control_plane.v1alpha1.ListSandboxResponse parseFrom(
+  public static com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse parseFrom(
       com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static com.nuinfra.control_plane.v1alpha1.ListSandboxResponse parseFrom(
+  public static com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static com.nuinfra.control_plane.v1alpha1.ListSandboxResponse parseFrom(byte[] data)
+  public static com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse parseFrom(byte[] data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static com.nuinfra.control_plane.v1alpha1.ListSandboxResponse parseFrom(
+  public static com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse parseFrom(
       byte[] data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static com.nuinfra.control_plane.v1alpha1.ListSandboxResponse parseFrom(java.io.InputStream input)
+  public static com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse parseFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessage
         .parseWithIOException(PARSER, input);
   }
-  public static com.nuinfra.control_plane.v1alpha1.ListSandboxResponse parseFrom(
+  public static com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse parseFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -247,26 +281,26 @@ private static final long serialVersionUID = 0L;
         .parseWithIOException(PARSER, input, extensionRegistry);
   }
 
-  public static com.nuinfra.control_plane.v1alpha1.ListSandboxResponse parseDelimitedFrom(java.io.InputStream input)
+  public static com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse parseDelimitedFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessage
         .parseDelimitedWithIOException(PARSER, input);
   }
 
-  public static com.nuinfra.control_plane.v1alpha1.ListSandboxResponse parseDelimitedFrom(
+  public static com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse parseDelimitedFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessage
         .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
   }
-  public static com.nuinfra.control_plane.v1alpha1.ListSandboxResponse parseFrom(
+  public static com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse parseFrom(
       com.google.protobuf.CodedInputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessage
         .parseWithIOException(PARSER, input);
   }
-  public static com.nuinfra.control_plane.v1alpha1.ListSandboxResponse parseFrom(
+  public static com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -279,7 +313,7 @@ private static final long serialVersionUID = 0L;
   public static Builder newBuilder() {
     return DEFAULT_INSTANCE.toBuilder();
   }
-  public static Builder newBuilder(com.nuinfra.control_plane.v1alpha1.ListSandboxResponse prototype) {
+  public static Builder newBuilder(com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
   @java.lang.Override
@@ -295,26 +329,30 @@ private static final long serialVersionUID = 0L;
     return builder;
   }
   /**
-   * Protobuf type {@code nuinfra.control_plane.v1alpha1.ListSandboxResponse}
+   * <pre>
+   * Response message containing a page of sandboxes.
+   * </pre>
+   *
+   * Protobuf type {@code nuinfra.control_plane.v1alpha1.ListSandboxesResponse}
    */
   public static final class Builder extends
       com.google.protobuf.GeneratedMessage.Builder<Builder> implements
-      // @@protoc_insertion_point(builder_implements:nuinfra.control_plane.v1alpha1.ListSandboxResponse)
-      com.nuinfra.control_plane.v1alpha1.ListSandboxResponseOrBuilder {
+      // @@protoc_insertion_point(builder_implements:nuinfra.control_plane.v1alpha1.ListSandboxesResponse)
+      com.nuinfra.control_plane.v1alpha1.ListSandboxesResponseOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return com.nuinfra.control_plane.v1alpha1.SandboxProto.internal_static_nuinfra_control_plane_v1alpha1_ListSandboxResponse_descriptor;
+      return com.nuinfra.control_plane.v1alpha1.SandboxProto.internal_static_nuinfra_control_plane_v1alpha1_ListSandboxesResponse_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return com.nuinfra.control_plane.v1alpha1.SandboxProto.internal_static_nuinfra_control_plane_v1alpha1_ListSandboxResponse_fieldAccessorTable
+      return com.nuinfra.control_plane.v1alpha1.SandboxProto.internal_static_nuinfra_control_plane_v1alpha1_ListSandboxesResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.nuinfra.control_plane.v1alpha1.ListSandboxResponse.class, com.nuinfra.control_plane.v1alpha1.ListSandboxResponse.Builder.class);
+              com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse.class, com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse.Builder.class);
     }
 
-    // Construct using com.nuinfra.control_plane.v1alpha1.ListSandboxResponse.newBuilder()
+    // Construct using com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse.newBuilder()
     private Builder() {
 
     }
@@ -342,17 +380,17 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return com.nuinfra.control_plane.v1alpha1.SandboxProto.internal_static_nuinfra_control_plane_v1alpha1_ListSandboxResponse_descriptor;
+      return com.nuinfra.control_plane.v1alpha1.SandboxProto.internal_static_nuinfra_control_plane_v1alpha1_ListSandboxesResponse_descriptor;
     }
 
     @java.lang.Override
-    public com.nuinfra.control_plane.v1alpha1.ListSandboxResponse getDefaultInstanceForType() {
-      return com.nuinfra.control_plane.v1alpha1.ListSandboxResponse.getDefaultInstance();
+    public com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse getDefaultInstanceForType() {
+      return com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse.getDefaultInstance();
     }
 
     @java.lang.Override
-    public com.nuinfra.control_plane.v1alpha1.ListSandboxResponse build() {
-      com.nuinfra.control_plane.v1alpha1.ListSandboxResponse result = buildPartial();
+    public com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse build() {
+      com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
       }
@@ -360,15 +398,15 @@ private static final long serialVersionUID = 0L;
     }
 
     @java.lang.Override
-    public com.nuinfra.control_plane.v1alpha1.ListSandboxResponse buildPartial() {
-      com.nuinfra.control_plane.v1alpha1.ListSandboxResponse result = new com.nuinfra.control_plane.v1alpha1.ListSandboxResponse(this);
+    public com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse buildPartial() {
+      com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse result = new com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse(this);
       buildPartialRepeatedFields(result);
       if (bitField0_ != 0) { buildPartial0(result); }
       onBuilt();
       return result;
     }
 
-    private void buildPartialRepeatedFields(com.nuinfra.control_plane.v1alpha1.ListSandboxResponse result) {
+    private void buildPartialRepeatedFields(com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse result) {
       if (sandboxBuilder_ == null) {
         if (((bitField0_ & 0x00000001) != 0)) {
           sandbox_ = java.util.Collections.unmodifiableList(sandbox_);
@@ -380,7 +418,7 @@ private static final long serialVersionUID = 0L;
       }
     }
 
-    private void buildPartial0(com.nuinfra.control_plane.v1alpha1.ListSandboxResponse result) {
+    private void buildPartial0(com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse result) {
       int from_bitField0_ = bitField0_;
       if (((from_bitField0_ & 0x00000002) != 0)) {
         result.continuationToken_ = continuationToken_;
@@ -389,16 +427,16 @@ private static final long serialVersionUID = 0L;
 
     @java.lang.Override
     public Builder mergeFrom(com.google.protobuf.Message other) {
-      if (other instanceof com.nuinfra.control_plane.v1alpha1.ListSandboxResponse) {
-        return mergeFrom((com.nuinfra.control_plane.v1alpha1.ListSandboxResponse)other);
+      if (other instanceof com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse) {
+        return mergeFrom((com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse)other);
       } else {
         super.mergeFrom(other);
         return this;
       }
     }
 
-    public Builder mergeFrom(com.nuinfra.control_plane.v1alpha1.ListSandboxResponse other) {
-      if (other == com.nuinfra.control_plane.v1alpha1.ListSandboxResponse.getDefaultInstance()) return this;
+    public Builder mergeFrom(com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse other) {
+      if (other == com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse.getDefaultInstance()) return this;
       if (sandboxBuilder_ == null) {
         if (!other.sandbox_.isEmpty()) {
           if (sandbox_.isEmpty()) {
@@ -504,6 +542,10 @@ private static final long serialVersionUID = 0L;
         com.nuinfra.control_plane.v1alpha1.Sandbox, com.nuinfra.control_plane.v1alpha1.Sandbox.Builder, com.nuinfra.control_plane.v1alpha1.SandboxOrBuilder> sandboxBuilder_;
 
     /**
+     * <pre>
+     * The list of sandboxes matching the request filters.
+     * </pre>
+     *
      * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
      */
     public java.util.List<com.nuinfra.control_plane.v1alpha1.Sandbox> getSandboxList() {
@@ -514,6 +556,10 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
+     * <pre>
+     * The list of sandboxes matching the request filters.
+     * </pre>
+     *
      * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
      */
     public int getSandboxCount() {
@@ -524,6 +570,10 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
+     * <pre>
+     * The list of sandboxes matching the request filters.
+     * </pre>
+     *
      * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
      */
     public com.nuinfra.control_plane.v1alpha1.Sandbox getSandbox(int index) {
@@ -534,6 +584,10 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
+     * <pre>
+     * The list of sandboxes matching the request filters.
+     * </pre>
+     *
      * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
      */
     public Builder setSandbox(
@@ -551,6 +605,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * The list of sandboxes matching the request filters.
+     * </pre>
+     *
      * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
      */
     public Builder setSandbox(
@@ -565,6 +623,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * The list of sandboxes matching the request filters.
+     * </pre>
+     *
      * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
      */
     public Builder addSandbox(com.nuinfra.control_plane.v1alpha1.Sandbox value) {
@@ -581,6 +643,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * The list of sandboxes matching the request filters.
+     * </pre>
+     *
      * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
      */
     public Builder addSandbox(
@@ -598,6 +664,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * The list of sandboxes matching the request filters.
+     * </pre>
+     *
      * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
      */
     public Builder addSandbox(
@@ -612,6 +682,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * The list of sandboxes matching the request filters.
+     * </pre>
+     *
      * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
      */
     public Builder addSandbox(
@@ -626,6 +700,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * The list of sandboxes matching the request filters.
+     * </pre>
+     *
      * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
      */
     public Builder addAllSandbox(
@@ -641,6 +719,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * The list of sandboxes matching the request filters.
+     * </pre>
+     *
      * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
      */
     public Builder clearSandbox() {
@@ -654,6 +736,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * The list of sandboxes matching the request filters.
+     * </pre>
+     *
      * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
      */
     public Builder removeSandbox(int index) {
@@ -667,6 +753,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * The list of sandboxes matching the request filters.
+     * </pre>
+     *
      * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
      */
     public com.nuinfra.control_plane.v1alpha1.Sandbox.Builder getSandboxBuilder(
@@ -674,6 +764,10 @@ private static final long serialVersionUID = 0L;
       return internalGetSandboxFieldBuilder().getBuilder(index);
     }
     /**
+     * <pre>
+     * The list of sandboxes matching the request filters.
+     * </pre>
+     *
      * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
      */
     public com.nuinfra.control_plane.v1alpha1.SandboxOrBuilder getSandboxOrBuilder(
@@ -684,6 +778,10 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
+     * <pre>
+     * The list of sandboxes matching the request filters.
+     * </pre>
+     *
      * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
      */
     public java.util.List<? extends com.nuinfra.control_plane.v1alpha1.SandboxOrBuilder> 
@@ -695,6 +793,10 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
+     * <pre>
+     * The list of sandboxes matching the request filters.
+     * </pre>
+     *
      * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
      */
     public com.nuinfra.control_plane.v1alpha1.Sandbox.Builder addSandboxBuilder() {
@@ -702,6 +804,10 @@ private static final long serialVersionUID = 0L;
           com.nuinfra.control_plane.v1alpha1.Sandbox.getDefaultInstance());
     }
     /**
+     * <pre>
+     * The list of sandboxes matching the request filters.
+     * </pre>
+     *
      * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
      */
     public com.nuinfra.control_plane.v1alpha1.Sandbox.Builder addSandboxBuilder(
@@ -710,6 +816,10 @@ private static final long serialVersionUID = 0L;
           index, com.nuinfra.control_plane.v1alpha1.Sandbox.getDefaultInstance());
     }
     /**
+     * <pre>
+     * The list of sandboxes matching the request filters.
+     * </pre>
+     *
      * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
      */
     public java.util.List<com.nuinfra.control_plane.v1alpha1.Sandbox.Builder> 
@@ -733,6 +843,11 @@ private static final long serialVersionUID = 0L;
 
     private java.lang.Object continuationToken_ = "";
     /**
+     * <pre>
+     * Token to retrieve the next page of results.
+     * Empty if there are no more results.
+     * </pre>
+     *
      * <code>string continuation_token = 2 [json_name = "continuationToken"];</code>
      * @return The continuationToken.
      */
@@ -749,6 +864,11 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
+     * <pre>
+     * Token to retrieve the next page of results.
+     * Empty if there are no more results.
+     * </pre>
+     *
      * <code>string continuation_token = 2 [json_name = "continuationToken"];</code>
      * @return The bytes for continuationToken.
      */
@@ -766,6 +886,11 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
+     * <pre>
+     * Token to retrieve the next page of results.
+     * Empty if there are no more results.
+     * </pre>
+     *
      * <code>string continuation_token = 2 [json_name = "continuationToken"];</code>
      * @param value The continuationToken to set.
      * @return This builder for chaining.
@@ -779,6 +904,11 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * Token to retrieve the next page of results.
+     * Empty if there are no more results.
+     * </pre>
+     *
      * <code>string continuation_token = 2 [json_name = "continuationToken"];</code>
      * @return This builder for chaining.
      */
@@ -789,6 +919,11 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * Token to retrieve the next page of results.
+     * Empty if there are no more results.
+     * </pre>
+     *
      * <code>string continuation_token = 2 [json_name = "continuationToken"];</code>
      * @param value The bytes for continuationToken to set.
      * @return This builder for chaining.
@@ -803,23 +938,23 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    // @@protoc_insertion_point(builder_scope:nuinfra.control_plane.v1alpha1.ListSandboxResponse)
+    // @@protoc_insertion_point(builder_scope:nuinfra.control_plane.v1alpha1.ListSandboxesResponse)
   }
 
-  // @@protoc_insertion_point(class_scope:nuinfra.control_plane.v1alpha1.ListSandboxResponse)
-  private static final com.nuinfra.control_plane.v1alpha1.ListSandboxResponse DEFAULT_INSTANCE;
+  // @@protoc_insertion_point(class_scope:nuinfra.control_plane.v1alpha1.ListSandboxesResponse)
+  private static final com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse DEFAULT_INSTANCE;
   static {
-    DEFAULT_INSTANCE = new com.nuinfra.control_plane.v1alpha1.ListSandboxResponse();
+    DEFAULT_INSTANCE = new com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse();
   }
 
-  public static com.nuinfra.control_plane.v1alpha1.ListSandboxResponse getDefaultInstance() {
+  public static com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
 
-  private static final com.google.protobuf.Parser<ListSandboxResponse>
-      PARSER = new com.google.protobuf.AbstractParser<ListSandboxResponse>() {
+  private static final com.google.protobuf.Parser<ListSandboxesResponse>
+      PARSER = new com.google.protobuf.AbstractParser<ListSandboxesResponse>() {
     @java.lang.Override
-    public ListSandboxResponse parsePartialFrom(
+    public ListSandboxesResponse parsePartialFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -838,17 +973,17 @@ private static final long serialVersionUID = 0L;
     }
   };
 
-  public static com.google.protobuf.Parser<ListSandboxResponse> parser() {
+  public static com.google.protobuf.Parser<ListSandboxesResponse> parser() {
     return PARSER;
   }
 
   @java.lang.Override
-  public com.google.protobuf.Parser<ListSandboxResponse> getParserForType() {
+  public com.google.protobuf.Parser<ListSandboxesResponse> getParserForType() {
     return PARSER;
   }
 
   @java.lang.Override
-  public com.nuinfra.control_plane.v1alpha1.ListSandboxResponse getDefaultInstanceForType() {
+  public com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 

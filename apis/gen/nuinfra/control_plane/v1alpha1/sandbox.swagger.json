@@ -18,12 +18,12 @@
   "paths": {
     "/v1alpha1/sandboxes": {
       "get": {
-        "operationId": "SandboxService_ListSandbox",
+        "operationId": "SandboxService_ListSandboxes",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1alpha1ListSandboxResponse"
+              "$ref": "#/definitions/v1alpha1ListSandboxesResponse"
             }
           },
           "default": {
@@ -36,18 +36,21 @@
         "parameters": [
           {
             "name": "namespace",
+            "description": "Filters sandboxes by namespace.\nMust match the format:\n- starts with a lowercase letter\n- contains only lowercase alphanumeric characters or hyphens\n- ends with an alphanumeric character\nExample: \"default\", \"team-a\"",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "nodeId",
+            "description": "Filters sandboxes by the ID of the node where they are scheduled or running.",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
-            "name": "phase",
+            "name": "statusPhase",
+            "description": "Filters sandboxes by their current lifecycle phase.\nIf unset, sandboxes in all phases are returned.",
             "in": "query",
             "required": false,
             "type": "string",
@@ -66,28 +69,29 @@
           },
           {
             "name": "continuationToken",
-            "description": "A token used to paginate through results, allowing retrieval of additional pages after a previous request.",
+            "description": "Token used for pagination.\nPass the value returned in a previous response to retrieve the next page of results.\nLeave empty to start listing from the beginning.",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
-            "name": "resultsPerPage",
-            "description": "Specifies the number of results to retrieve for this request. Defaults to 30.\nClients can request a maximum of 1000 results per request.",
+            "name": "pageSize",
+            "description": "Maximum number of sandboxes to return in this request.\nDefaults to 30 if not specified.\nThe maximum allowed value is 1000.",
             "in": "query",
             "required": false,
             "type": "integer",
             "format": "int32"
           },
           {
-            "name": "order",
+            "name": "sortOrder",
+            "description": "Sort order applied to the results based on last_modified_at.\n\n - ORDER_NEWEST_FIRST: Most recently modified sandboxes first.\n - ORDER_OLDEST_FIRST: Least recently modified sandboxes first.",
             "in": "query",
             "required": false,
             "type": "string",
             "enum": [
               "ORDER_UNSPECIFIED",
-              "ORDER_ASCENDING",
-              "ORDER_DESCENDING"
+              "ORDER_NEWEST_FIRST",
+              "ORDER_OLDEST_FIRST"
             ],
             "default": "ORDER_UNSPECIFIED"
           }
@@ -268,14 +272,15 @@
     }
   },
   "definitions": {
-    "ListSandboxRequestOrder": {
+    "ListSandboxesRequestOrder": {
       "type": "string",
       "enum": [
         "ORDER_UNSPECIFIED",
-        "ORDER_ASCENDING",
-        "ORDER_DESCENDING"
+        "ORDER_NEWEST_FIRST",
+        "ORDER_OLDEST_FIRST"
       ],
-      "default": "ORDER_UNSPECIFIED"
+      "default": "ORDER_UNSPECIFIED",
+      "description": "Controls how results are ordered by last modification time.\n\n - ORDER_NEWEST_FIRST: Most recently modified sandboxes first.\n - ORDER_OLDEST_FIRST: Least recently modified sandboxes first."
     },
     "SandboxStatusPhase": {
       "type": "string",
@@ -367,7 +372,7 @@
         }
       }
     },
-    "v1alpha1ListSandboxResponse": {
+    "v1alpha1ListSandboxesResponse": {
       "type": "object",
       "properties": {
         "sandbox": {
@@ -375,12 +380,15 @@
           "items": {
             "type": "object",
             "$ref": "#/definitions/v1alpha1Sandbox"
-          }
+          },
+          "description": "The list of sandboxes matching the request filters."
         },
         "continuationToken": {
-          "type": "string"
+          "type": "string",
+          "description": "Token to retrieve the next page of results.\nEmpty if there are no more results."
         }
-      }
+      },
+      "description": "Response message containing a page of sandboxes."
     },
     "v1alpha1NodeRef": {
       "type": "object",

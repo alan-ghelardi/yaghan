@@ -24,12 +24,18 @@ import (
 
 // Top-level item attribute names. Kept in sync with
 // api-server/dynamodb-tables/sandboxes.json.
+//
+// sandbox_status_phase is a non-indexed column used only by Update's
+// conditional expression and diagnoseUpdateConflict. The GSI partitioned
+// on phase keys off the composite gsi_namespace_phase_hk instead.
 const (
 	attrSandboxID            = "sandbox_id"
 	attrSandboxNamespace     = "sandbox_namespace"
 	attrSandboxStatusPhase   = "sandbox_status_phase"
 	attrNodeRefID            = "node_ref_id"
-	attrGSINamespaceLmtSK    = "gsi_namespace_lmt_sk"
+	attrGSILmtSK             = "gsi_lmt_sk"
+	attrGSINamespacePhaseHK  = "gsi_namespace_phase_hk"
+	attrGSINamespaceNodeHK   = "gsi_namespace_node_hk"
 	attrSandboxVersion       = "sandbox_version"
 	attrSandboxPB            = "sandbox_pb"
 	attrSandboxContentDigest = "sandbox_content_digest"
@@ -339,26 +345,47 @@ func toItem(sb *control_planev1alpha1.Sandbox, digest []byte) (map[string]types.
 		attrSandboxID:            &types.AttributeValueMemberS{Value: meta.GetId()},
 		attrSandboxNamespace:     &types.AttributeValueMemberS{Value: meta.GetNamespace()},
 		attrSandboxStatusPhase:   &types.AttributeValueMemberS{Value: sb.GetStatus().GetPhase().String()},
-		attrGSINamespaceLmtSK:    &types.AttributeValueMemberS{Value: gsiNamespaceLmtSK(sb)},
+		attrGSILmtSK:             &types.AttributeValueMemberS{Value: gsiLmtSK(sb)},
+		attrGSINamespacePhaseHK:  &types.AttributeValueMemberS{Value: gsiNamespacePhaseHK(sb)},
 		attrSandboxVersion:       &types.AttributeValueMemberN{Value: strconv.FormatInt(meta.GetVersion(), 10)},
 		attrSandboxPB:            &types.AttributeValueMemberB{Value: pb},
 		attrSandboxContentDigest: &types.AttributeValueMemberB{Value: digest},
 	}
 
+	// node_ref_id and gsi_namespace_node_hk are sparse: a row without an
+	// assigned node must be absent from both by_node_index and
+	// by_namespace_node_index. Gating both attributes on the same
+	// predicate keeps the two indexes consistent.
 	if nodeID := sb.GetNode().GetId(); nodeID != "" {
 		item[attrNodeRefID] = &types.AttributeValueMemberS{Value: nodeID}
+		item[attrGSINamespaceNodeHK] = &types.AttributeValueMemberS{Value: gsiNamespaceNodeHK(sb)}
 	}
 
 	return item, nil
 }
 
-// gsiNamespaceLmtSK builds the synthetic sort key used by all three GSIs:
-// "{namespace}#{last_modified_at_rfc3339_nano_utc}#{id}". The namespace prefix
-// is redundant on the by_namespace_index but keeps the shape uniform across
-// the other indexes, which need it to support optional namespace filtering.
-func gsiNamespaceLmtSK(sb *control_planev1alpha1.Sandbox) string {
+// gsiLmtSK builds the shared sort key used by all four GSIs:
+// "{last_modified_at_rfc3339_nano_utc}#{id}". LastModifiedAt is DB-stamped on
+// every Create/Update, so this attribute is always present and orders rows
+// monotonically within a partition.
+func gsiLmtSK(sb *control_planev1alpha1.Sandbox) string {
 	meta := sb.GetMetadata()
-	return meta.GetNamespace() + "#" + meta.GetLastModifiedAt().AsTime().UTC().Format(time.RFC3339Nano) + "#" + meta.GetId()
+	return meta.GetLastModifiedAt().AsTime().UTC().Format(time.RFC3339Nano) + "#" + meta.GetId()
+}
+
+// gsiNamespacePhaseHK builds the hash key of by_status_phase_index:
+// "{namespace}#{status_phase}". Embedding the namespace eliminates the hot
+// partition that a phase-only HK produces — every Query is implicitly bounded
+// to a single namespace, which matches the only access pattern callers need.
+func gsiNamespacePhaseHK(sb *control_planev1alpha1.Sandbox) string {
+	return sb.GetMetadata().GetNamespace() + "#" + sb.GetStatus().GetPhase().String()
+}
+
+// gsiNamespaceNodeHK builds the hash key of by_namespace_node_index:
+// "{namespace}#{node_ref_id}". Sparse: callers must only emit this attribute
+// when Node.Id is set, mirroring node_ref_id's sparseness.
+func gsiNamespaceNodeHK(sb *control_planev1alpha1.Sandbox) string {
+	return sb.GetMetadata().GetNamespace() + "#" + sb.GetNode().GetId()
 }
 
 // contentDigest returns the SHA-256 of a deterministic, canonicalised proto

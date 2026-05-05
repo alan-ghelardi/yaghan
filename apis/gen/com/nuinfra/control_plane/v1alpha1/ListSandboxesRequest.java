@@ -6,13 +6,17 @@
 package com.nuinfra.control_plane.v1alpha1;
 
 /**
- * Protobuf type {@code nuinfra.control_plane.v1alpha1.ListSandboxRequest}
+ * <pre>
+ * Request message for listing sandboxes with optional filtering and pagination.
+ * </pre>
+ *
+ * Protobuf type {@code nuinfra.control_plane.v1alpha1.ListSandboxesRequest}
  */
 @com.google.protobuf.Generated
-public final class ListSandboxRequest extends
+public final class ListSandboxesRequest extends
     com.google.protobuf.GeneratedMessage implements
-    // @@protoc_insertion_point(message_implements:nuinfra.control_plane.v1alpha1.ListSandboxRequest)
-    ListSandboxRequestOrBuilder {
+    // @@protoc_insertion_point(message_implements:nuinfra.control_plane.v1alpha1.ListSandboxesRequest)
+    ListSandboxesRequestOrBuilder {
 private static final long serialVersionUID = 0L;
   static {
     com.google.protobuf.RuntimeVersion.validateProtobufGencodeVersion(
@@ -21,35 +25,39 @@ private static final long serialVersionUID = 0L;
       /* minor= */ 33,
       /* patch= */ 2,
       /* suffix= */ "",
-      "ListSandboxRequest");
+      "ListSandboxesRequest");
   }
-  // Use ListSandboxRequest.newBuilder() to construct.
-  private ListSandboxRequest(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+  // Use ListSandboxesRequest.newBuilder() to construct.
+  private ListSandboxesRequest(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
     super(builder);
   }
-  private ListSandboxRequest() {
+  private ListSandboxesRequest() {
     namespace_ = "";
     nodeId_ = "";
-    phase_ = 0;
+    statusPhase_ = 0;
     continuationToken_ = "";
-    order_ = 0;
+    sortOrder_ = 0;
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return com.nuinfra.control_plane.v1alpha1.SandboxProto.internal_static_nuinfra_control_plane_v1alpha1_ListSandboxRequest_descriptor;
+    return com.nuinfra.control_plane.v1alpha1.SandboxProto.internal_static_nuinfra_control_plane_v1alpha1_ListSandboxesRequest_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return com.nuinfra.control_plane.v1alpha1.SandboxProto.internal_static_nuinfra_control_plane_v1alpha1_ListSandboxRequest_fieldAccessorTable
+    return com.nuinfra.control_plane.v1alpha1.SandboxProto.internal_static_nuinfra_control_plane_v1alpha1_ListSandboxesRequest_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
-            com.nuinfra.control_plane.v1alpha1.ListSandboxRequest.class, com.nuinfra.control_plane.v1alpha1.ListSandboxRequest.Builder.class);
+            com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest.class, com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest.Builder.class);
   }
 
   /**
-   * Protobuf enum {@code nuinfra.control_plane.v1alpha1.ListSandboxRequest.Order}
+   * <pre>
+   * Controls how results are ordered by last modification time.
+   * </pre>
+   *
+   * Protobuf enum {@code nuinfra.control_plane.v1alpha1.ListSandboxesRequest.Order}
    */
   public enum Order
       implements com.google.protobuf.ProtocolMessageEnum {
@@ -58,13 +66,21 @@ private static final long serialVersionUID = 0L;
      */
     ORDER_UNSPECIFIED(0),
     /**
-     * <code>ORDER_ASCENDING = 1;</code>
+     * <pre>
+     * Most recently modified sandboxes first.
+     * </pre>
+     *
+     * <code>ORDER_NEWEST_FIRST = 1;</code>
      */
-    ORDER_ASCENDING(1),
+    ORDER_NEWEST_FIRST(1),
     /**
-     * <code>ORDER_DESCENDING = 2;</code>
+     * <pre>
+     * Least recently modified sandboxes first.
+     * </pre>
+     *
+     * <code>ORDER_OLDEST_FIRST = 2;</code>
      */
-    ORDER_DESCENDING(2),
+    ORDER_OLDEST_FIRST(2),
     UNRECOGNIZED(-1),
     ;
 
@@ -82,13 +98,21 @@ private static final long serialVersionUID = 0L;
      */
     public static final int ORDER_UNSPECIFIED_VALUE = 0;
     /**
-     * <code>ORDER_ASCENDING = 1;</code>
+     * <pre>
+     * Most recently modified sandboxes first.
+     * </pre>
+     *
+     * <code>ORDER_NEWEST_FIRST = 1;</code>
      */
-    public static final int ORDER_ASCENDING_VALUE = 1;
+    public static final int ORDER_NEWEST_FIRST_VALUE = 1;
     /**
-     * <code>ORDER_DESCENDING = 2;</code>
+     * <pre>
+     * Least recently modified sandboxes first.
+     * </pre>
+     *
+     * <code>ORDER_OLDEST_FIRST = 2;</code>
      */
-    public static final int ORDER_DESCENDING_VALUE = 2;
+    public static final int ORDER_OLDEST_FIRST_VALUE = 2;
 
 
     public final int getNumber() {
@@ -116,8 +140,8 @@ private static final long serialVersionUID = 0L;
     public static Order forNumber(int value) {
       switch (value) {
         case 0: return ORDER_UNSPECIFIED;
-        case 1: return ORDER_ASCENDING;
-        case 2: return ORDER_DESCENDING;
+        case 1: return ORDER_NEWEST_FIRST;
+        case 2: return ORDER_OLDEST_FIRST;
         default: return null;
       }
     }
@@ -148,7 +172,7 @@ private static final long serialVersionUID = 0L;
     }
     public static com.google.protobuf.Descriptors.EnumDescriptor
         getDescriptor() {
-      return com.nuinfra.control_plane.v1alpha1.ListSandboxRequest.getDescriptor().getEnumTypes().get(0);
+      return com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest.getDescriptor().getEnumTypes().get(0);
     }
 
     private static final Order[] VALUES = values();
@@ -171,13 +195,22 @@ private static final long serialVersionUID = 0L;
       this.value = value;
     }
 
-    // @@protoc_insertion_point(enum_scope:nuinfra.control_plane.v1alpha1.ListSandboxRequest.Order)
+    // @@protoc_insertion_point(enum_scope:nuinfra.control_plane.v1alpha1.ListSandboxesRequest.Order)
   }
 
   public static final int NAMESPACE_FIELD_NUMBER = 1;
   @SuppressWarnings("serial")
   private volatile java.lang.Object namespace_ = "";
   /**
+   * <pre>
+   * Filters sandboxes by namespace.
+   * Must match the format:
+   * - starts with a lowercase letter
+   * - contains only lowercase alphanumeric characters or hyphens
+   * - ends with an alphanumeric character
+   * Example: "default", "team-a"
+   * </pre>
+   *
    * <code>string namespace = 1 [json_name = "namespace", (.buf.validate.field) = { ... }</code>
    * @return The namespace.
    */
@@ -195,6 +228,15 @@ private static final long serialVersionUID = 0L;
     }
   }
   /**
+   * <pre>
+   * Filters sandboxes by namespace.
+   * Must match the format:
+   * - starts with a lowercase letter
+   * - contains only lowercase alphanumeric characters or hyphens
+   * - ends with an alphanumeric character
+   * Example: "default", "team-a"
+   * </pre>
+   *
    * <code>string namespace = 1 [json_name = "namespace", (.buf.validate.field) = { ... }</code>
    * @return The bytes for namespace.
    */
@@ -217,6 +259,10 @@ private static final long serialVersionUID = 0L;
   @SuppressWarnings("serial")
   private volatile java.lang.Object nodeId_ = "";
   /**
+   * <pre>
+   * Filters sandboxes by the ID of the node where they are scheduled or running.
+   * </pre>
+   *
    * <code>string node_id = 2 [json_name = "nodeId"];</code>
    * @return The nodeId.
    */
@@ -234,6 +280,10 @@ private static final long serialVersionUID = 0L;
     }
   }
   /**
+   * <pre>
+   * Filters sandboxes by the ID of the node where they are scheduled or running.
+   * </pre>
+   *
    * <code>string node_id = 2 [json_name = "nodeId"];</code>
    * @return The bytes for nodeId.
    */
@@ -252,21 +302,31 @@ private static final long serialVersionUID = 0L;
     }
   }
 
-  public static final int PHASE_FIELD_NUMBER = 3;
-  private int phase_ = 0;
+  public static final int STATUS_PHASE_FIELD_NUMBER = 3;
+  private int statusPhase_ = 0;
   /**
-   * <code>.nuinfra.control_plane.v1alpha1.SandboxStatus.Phase phase = 3 [json_name = "phase"];</code>
-   * @return The enum numeric value on the wire for phase.
+   * <pre>
+   * Filters sandboxes by their current lifecycle phase.
+   * If unset, sandboxes in all phases are returned.
+   * </pre>
+   *
+   * <code>.nuinfra.control_plane.v1alpha1.SandboxStatus.Phase status_phase = 3 [json_name = "statusPhase"];</code>
+   * @return The enum numeric value on the wire for statusPhase.
    */
-  @java.lang.Override public int getPhaseValue() {
-    return phase_;
+  @java.lang.Override public int getStatusPhaseValue() {
+    return statusPhase_;
   }
   /**
-   * <code>.nuinfra.control_plane.v1alpha1.SandboxStatus.Phase phase = 3 [json_name = "phase"];</code>
-   * @return The phase.
+   * <pre>
+   * Filters sandboxes by their current lifecycle phase.
+   * If unset, sandboxes in all phases are returned.
+   * </pre>
+   *
+   * <code>.nuinfra.control_plane.v1alpha1.SandboxStatus.Phase status_phase = 3 [json_name = "statusPhase"];</code>
+   * @return The statusPhase.
    */
-  @java.lang.Override public com.nuinfra.control_plane.v1alpha1.SandboxStatus.Phase getPhase() {
-    com.nuinfra.control_plane.v1alpha1.SandboxStatus.Phase result = com.nuinfra.control_plane.v1alpha1.SandboxStatus.Phase.forNumber(phase_);
+  @java.lang.Override public com.nuinfra.control_plane.v1alpha1.SandboxStatus.Phase getStatusPhase() {
+    com.nuinfra.control_plane.v1alpha1.SandboxStatus.Phase result = com.nuinfra.control_plane.v1alpha1.SandboxStatus.Phase.forNumber(statusPhase_);
     return result == null ? com.nuinfra.control_plane.v1alpha1.SandboxStatus.Phase.UNRECOGNIZED : result;
   }
 
@@ -275,7 +335,9 @@ private static final long serialVersionUID = 0L;
   private volatile java.lang.Object continuationToken_ = "";
   /**
    * <pre>
-   * A token used to paginate through results, allowing retrieval of additional pages after a previous request.
+   * Token used for pagination.
+   * Pass the value returned in a previous response to retrieve the next page of results.
+   * Leave empty to start listing from the beginning.
    * </pre>
    *
    * <code>string continuation_token = 4 [json_name = "continuationToken"];</code>
@@ -296,7 +358,9 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * A token used to paginate through results, allowing retrieval of additional pages after a previous request.
+   * Token used for pagination.
+   * Pass the value returned in a previous response to retrieve the next page of results.
+   * Leave empty to start listing from the beginning.
    * </pre>
    *
    * <code>string continuation_token = 4 [json_name = "continuationToken"];</code>
@@ -317,38 +381,47 @@ private static final long serialVersionUID = 0L;
     }
   }
 
-  public static final int RESULTS_PER_PAGE_FIELD_NUMBER = 5;
-  private int resultsPerPage_ = 0;
+  public static final int PAGE_SIZE_FIELD_NUMBER = 5;
+  private int pageSize_ = 0;
   /**
    * <pre>
-   * Specifies the number of results to retrieve for this request. Defaults to 30.
-   * Clients can request a maximum of 1000 results per request.
+   * Maximum number of sandboxes to return in this request.
+   * Defaults to 30 if not specified.
+   * The maximum allowed value is 1000.
    * </pre>
    *
-   * <code>int32 results_per_page = 5 [json_name = "resultsPerPage", (.buf.validate.field) = { ... }</code>
-   * @return The resultsPerPage.
+   * <code>int32 page_size = 5 [json_name = "pageSize", (.buf.validate.field) = { ... }</code>
+   * @return The pageSize.
    */
   @java.lang.Override
-  public int getResultsPerPage() {
-    return resultsPerPage_;
+  public int getPageSize() {
+    return pageSize_;
   }
 
-  public static final int ORDER_FIELD_NUMBER = 6;
-  private int order_ = 0;
+  public static final int SORT_ORDER_FIELD_NUMBER = 6;
+  private int sortOrder_ = 0;
   /**
-   * <code>.nuinfra.control_plane.v1alpha1.ListSandboxRequest.Order order = 6 [json_name = "order"];</code>
-   * @return The enum numeric value on the wire for order.
+   * <pre>
+   * Sort order applied to the results based on last_modified_at.
+   * </pre>
+   *
+   * <code>.nuinfra.control_plane.v1alpha1.ListSandboxesRequest.Order sort_order = 6 [json_name = "sortOrder"];</code>
+   * @return The enum numeric value on the wire for sortOrder.
    */
-  @java.lang.Override public int getOrderValue() {
-    return order_;
+  @java.lang.Override public int getSortOrderValue() {
+    return sortOrder_;
   }
   /**
-   * <code>.nuinfra.control_plane.v1alpha1.ListSandboxRequest.Order order = 6 [json_name = "order"];</code>
-   * @return The order.
+   * <pre>
+   * Sort order applied to the results based on last_modified_at.
+   * </pre>
+   *
+   * <code>.nuinfra.control_plane.v1alpha1.ListSandboxesRequest.Order sort_order = 6 [json_name = "sortOrder"];</code>
+   * @return The sortOrder.
    */
-  @java.lang.Override public com.nuinfra.control_plane.v1alpha1.ListSandboxRequest.Order getOrder() {
-    com.nuinfra.control_plane.v1alpha1.ListSandboxRequest.Order result = com.nuinfra.control_plane.v1alpha1.ListSandboxRequest.Order.forNumber(order_);
-    return result == null ? com.nuinfra.control_plane.v1alpha1.ListSandboxRequest.Order.UNRECOGNIZED : result;
+  @java.lang.Override public com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest.Order getSortOrder() {
+    com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest.Order result = com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest.Order.forNumber(sortOrder_);
+    return result == null ? com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest.Order.UNRECOGNIZED : result;
   }
 
   private byte memoizedIsInitialized = -1;
@@ -371,17 +444,17 @@ private static final long serialVersionUID = 0L;
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(nodeId_)) {
       com.google.protobuf.GeneratedMessage.writeString(output, 2, nodeId_);
     }
-    if (phase_ != com.nuinfra.control_plane.v1alpha1.SandboxStatus.Phase.PHASE_UNSPECIFIED.getNumber()) {
-      output.writeEnum(3, phase_);
+    if (statusPhase_ != com.nuinfra.control_plane.v1alpha1.SandboxStatus.Phase.PHASE_UNSPECIFIED.getNumber()) {
+      output.writeEnum(3, statusPhase_);
     }
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(continuationToken_)) {
       com.google.protobuf.GeneratedMessage.writeString(output, 4, continuationToken_);
     }
-    if (resultsPerPage_ != 0) {
-      output.writeInt32(5, resultsPerPage_);
+    if (pageSize_ != 0) {
+      output.writeInt32(5, pageSize_);
     }
-    if (order_ != com.nuinfra.control_plane.v1alpha1.ListSandboxRequest.Order.ORDER_UNSPECIFIED.getNumber()) {
-      output.writeEnum(6, order_);
+    if (sortOrder_ != com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest.Order.ORDER_UNSPECIFIED.getNumber()) {
+      output.writeEnum(6, sortOrder_);
     }
     getUnknownFields().writeTo(output);
   }
@@ -398,20 +471,20 @@ private static final long serialVersionUID = 0L;
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(nodeId_)) {
       size += com.google.protobuf.GeneratedMessage.computeStringSize(2, nodeId_);
     }
-    if (phase_ != com.nuinfra.control_plane.v1alpha1.SandboxStatus.Phase.PHASE_UNSPECIFIED.getNumber()) {
+    if (statusPhase_ != com.nuinfra.control_plane.v1alpha1.SandboxStatus.Phase.PHASE_UNSPECIFIED.getNumber()) {
       size += com.google.protobuf.CodedOutputStream
-        .computeEnumSize(3, phase_);
+        .computeEnumSize(3, statusPhase_);
     }
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(continuationToken_)) {
       size += com.google.protobuf.GeneratedMessage.computeStringSize(4, continuationToken_);
     }
-    if (resultsPerPage_ != 0) {
+    if (pageSize_ != 0) {
       size += com.google.protobuf.CodedOutputStream
-        .computeInt32Size(5, resultsPerPage_);
+        .computeInt32Size(5, pageSize_);
     }
-    if (order_ != com.nuinfra.control_plane.v1alpha1.ListSandboxRequest.Order.ORDER_UNSPECIFIED.getNumber()) {
+    if (sortOrder_ != com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest.Order.ORDER_UNSPECIFIED.getNumber()) {
       size += com.google.protobuf.CodedOutputStream
-        .computeEnumSize(6, order_);
+        .computeEnumSize(6, sortOrder_);
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -423,21 +496,21 @@ private static final long serialVersionUID = 0L;
     if (obj == this) {
      return true;
     }
-    if (!(obj instanceof com.nuinfra.control_plane.v1alpha1.ListSandboxRequest)) {
+    if (!(obj instanceof com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest)) {
       return super.equals(obj);
     }
-    com.nuinfra.control_plane.v1alpha1.ListSandboxRequest other = (com.nuinfra.control_plane.v1alpha1.ListSandboxRequest) obj;
+    com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest other = (com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest) obj;
 
     if (!getNamespace()
         .equals(other.getNamespace())) return false;
     if (!getNodeId()
         .equals(other.getNodeId())) return false;
-    if (phase_ != other.phase_) return false;
+    if (statusPhase_ != other.statusPhase_) return false;
     if (!getContinuationToken()
         .equals(other.getContinuationToken())) return false;
-    if (getResultsPerPage()
-        != other.getResultsPerPage()) return false;
-    if (order_ != other.order_) return false;
+    if (getPageSize()
+        != other.getPageSize()) return false;
+    if (sortOrder_ != other.sortOrder_) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -453,57 +526,57 @@ private static final long serialVersionUID = 0L;
     hash = (53 * hash) + getNamespace().hashCode();
     hash = (37 * hash) + NODE_ID_FIELD_NUMBER;
     hash = (53 * hash) + getNodeId().hashCode();
-    hash = (37 * hash) + PHASE_FIELD_NUMBER;
-    hash = (53 * hash) + phase_;
+    hash = (37 * hash) + STATUS_PHASE_FIELD_NUMBER;
+    hash = (53 * hash) + statusPhase_;
     hash = (37 * hash) + CONTINUATION_TOKEN_FIELD_NUMBER;
     hash = (53 * hash) + getContinuationToken().hashCode();
-    hash = (37 * hash) + RESULTS_PER_PAGE_FIELD_NUMBER;
-    hash = (53 * hash) + getResultsPerPage();
-    hash = (37 * hash) + ORDER_FIELD_NUMBER;
-    hash = (53 * hash) + order_;
+    hash = (37 * hash) + PAGE_SIZE_FIELD_NUMBER;
+    hash = (53 * hash) + getPageSize();
+    hash = (37 * hash) + SORT_ORDER_FIELD_NUMBER;
+    hash = (53 * hash) + sortOrder_;
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
   }
 
-  public static com.nuinfra.control_plane.v1alpha1.ListSandboxRequest parseFrom(
+  public static com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest parseFrom(
       java.nio.ByteBuffer data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static com.nuinfra.control_plane.v1alpha1.ListSandboxRequest parseFrom(
+  public static com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest parseFrom(
       java.nio.ByteBuffer data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static com.nuinfra.control_plane.v1alpha1.ListSandboxRequest parseFrom(
+  public static com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest parseFrom(
       com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static com.nuinfra.control_plane.v1alpha1.ListSandboxRequest parseFrom(
+  public static com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static com.nuinfra.control_plane.v1alpha1.ListSandboxRequest parseFrom(byte[] data)
+  public static com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest parseFrom(byte[] data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static com.nuinfra.control_plane.v1alpha1.ListSandboxRequest parseFrom(
+  public static com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest parseFrom(
       byte[] data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static com.nuinfra.control_plane.v1alpha1.ListSandboxRequest parseFrom(java.io.InputStream input)
+  public static com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest parseFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessage
         .parseWithIOException(PARSER, input);
   }
-  public static com.nuinfra.control_plane.v1alpha1.ListSandboxRequest parseFrom(
+  public static com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest parseFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -511,26 +584,26 @@ private static final long serialVersionUID = 0L;
         .parseWithIOException(PARSER, input, extensionRegistry);
   }
 
-  public static com.nuinfra.control_plane.v1alpha1.ListSandboxRequest parseDelimitedFrom(java.io.InputStream input)
+  public static com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest parseDelimitedFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessage
         .parseDelimitedWithIOException(PARSER, input);
   }
 
-  public static com.nuinfra.control_plane.v1alpha1.ListSandboxRequest parseDelimitedFrom(
+  public static com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest parseDelimitedFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessage
         .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
   }
-  public static com.nuinfra.control_plane.v1alpha1.ListSandboxRequest parseFrom(
+  public static com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest parseFrom(
       com.google.protobuf.CodedInputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessage
         .parseWithIOException(PARSER, input);
   }
-  public static com.nuinfra.control_plane.v1alpha1.ListSandboxRequest parseFrom(
+  public static com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -543,7 +616,7 @@ private static final long serialVersionUID = 0L;
   public static Builder newBuilder() {
     return DEFAULT_INSTANCE.toBuilder();
   }
-  public static Builder newBuilder(com.nuinfra.control_plane.v1alpha1.ListSandboxRequest prototype) {
+  public static Builder newBuilder(com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
   @java.lang.Override
@@ -559,26 +632,30 @@ private static final long serialVersionUID = 0L;
     return builder;
   }
   /**
-   * Protobuf type {@code nuinfra.control_plane.v1alpha1.ListSandboxRequest}
+   * <pre>
+   * Request message for listing sandboxes with optional filtering and pagination.
+   * </pre>
+   *
+   * Protobuf type {@code nuinfra.control_plane.v1alpha1.ListSandboxesRequest}
    */
   public static final class Builder extends
       com.google.protobuf.GeneratedMessage.Builder<Builder> implements
-      // @@protoc_insertion_point(builder_implements:nuinfra.control_plane.v1alpha1.ListSandboxRequest)
-      com.nuinfra.control_plane.v1alpha1.ListSandboxRequestOrBuilder {
+      // @@protoc_insertion_point(builder_implements:nuinfra.control_plane.v1alpha1.ListSandboxesRequest)
+      com.nuinfra.control_plane.v1alpha1.ListSandboxesRequestOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return com.nuinfra.control_plane.v1alpha1.SandboxProto.internal_static_nuinfra_control_plane_v1alpha1_ListSandboxRequest_descriptor;
+      return com.nuinfra.control_plane.v1alpha1.SandboxProto.internal_static_nuinfra_control_plane_v1alpha1_ListSandboxesRequest_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return com.nuinfra.control_plane.v1alpha1.SandboxProto.internal_static_nuinfra_control_plane_v1alpha1_ListSandboxRequest_fieldAccessorTable
+      return com.nuinfra.control_plane.v1alpha1.SandboxProto.internal_static_nuinfra_control_plane_v1alpha1_ListSandboxesRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.nuinfra.control_plane.v1alpha1.ListSandboxRequest.class, com.nuinfra.control_plane.v1alpha1.ListSandboxRequest.Builder.class);
+              com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest.class, com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest.Builder.class);
     }
 
-    // Construct using com.nuinfra.control_plane.v1alpha1.ListSandboxRequest.newBuilder()
+    // Construct using com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest.newBuilder()
     private Builder() {
 
     }
@@ -594,27 +671,27 @@ private static final long serialVersionUID = 0L;
       bitField0_ = 0;
       namespace_ = "";
       nodeId_ = "";
-      phase_ = 0;
+      statusPhase_ = 0;
       continuationToken_ = "";
-      resultsPerPage_ = 0;
-      order_ = 0;
+      pageSize_ = 0;
+      sortOrder_ = 0;
       return this;
     }
 
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return com.nuinfra.control_plane.v1alpha1.SandboxProto.internal_static_nuinfra_control_plane_v1alpha1_ListSandboxRequest_descriptor;
+      return com.nuinfra.control_plane.v1alpha1.SandboxProto.internal_static_nuinfra_control_plane_v1alpha1_ListSandboxesRequest_descriptor;
     }
 
     @java.lang.Override
-    public com.nuinfra.control_plane.v1alpha1.ListSandboxRequest getDefaultInstanceForType() {
-      return com.nuinfra.control_plane.v1alpha1.ListSandboxRequest.getDefaultInstance();
+    public com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest getDefaultInstanceForType() {
+      return com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest.getDefaultInstance();
     }
 
     @java.lang.Override
-    public com.nuinfra.control_plane.v1alpha1.ListSandboxRequest build() {
-      com.nuinfra.control_plane.v1alpha1.ListSandboxRequest result = buildPartial();
+    public com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest build() {
+      com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
       }
@@ -622,14 +699,14 @@ private static final long serialVersionUID = 0L;
     }
 
     @java.lang.Override
-    public com.nuinfra.control_plane.v1alpha1.ListSandboxRequest buildPartial() {
-      com.nuinfra.control_plane.v1alpha1.ListSandboxRequest result = new com.nuinfra.control_plane.v1alpha1.ListSandboxRequest(this);
+    public com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest buildPartial() {
+      com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest result = new com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest(this);
       if (bitField0_ != 0) { buildPartial0(result); }
       onBuilt();
       return result;
     }
 
-    private void buildPartial0(com.nuinfra.control_plane.v1alpha1.ListSandboxRequest result) {
+    private void buildPartial0(com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest result) {
       int from_bitField0_ = bitField0_;
       if (((from_bitField0_ & 0x00000001) != 0)) {
         result.namespace_ = namespace_;
@@ -638,31 +715,31 @@ private static final long serialVersionUID = 0L;
         result.nodeId_ = nodeId_;
       }
       if (((from_bitField0_ & 0x00000004) != 0)) {
-        result.phase_ = phase_;
+        result.statusPhase_ = statusPhase_;
       }
       if (((from_bitField0_ & 0x00000008) != 0)) {
         result.continuationToken_ = continuationToken_;
       }
       if (((from_bitField0_ & 0x00000010) != 0)) {
-        result.resultsPerPage_ = resultsPerPage_;
+        result.pageSize_ = pageSize_;
       }
       if (((from_bitField0_ & 0x00000020) != 0)) {
-        result.order_ = order_;
+        result.sortOrder_ = sortOrder_;
       }
     }
 
     @java.lang.Override
     public Builder mergeFrom(com.google.protobuf.Message other) {
-      if (other instanceof com.nuinfra.control_plane.v1alpha1.ListSandboxRequest) {
-        return mergeFrom((com.nuinfra.control_plane.v1alpha1.ListSandboxRequest)other);
+      if (other instanceof com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest) {
+        return mergeFrom((com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest)other);
       } else {
         super.mergeFrom(other);
         return this;
       }
     }
 
-    public Builder mergeFrom(com.nuinfra.control_plane.v1alpha1.ListSandboxRequest other) {
-      if (other == com.nuinfra.control_plane.v1alpha1.ListSandboxRequest.getDefaultInstance()) return this;
+    public Builder mergeFrom(com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest other) {
+      if (other == com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest.getDefaultInstance()) return this;
       if (!other.getNamespace().isEmpty()) {
         namespace_ = other.namespace_;
         bitField0_ |= 0x00000001;
@@ -673,19 +750,19 @@ private static final long serialVersionUID = 0L;
         bitField0_ |= 0x00000002;
         onChanged();
       }
-      if (other.phase_ != 0) {
-        setPhaseValue(other.getPhaseValue());
+      if (other.statusPhase_ != 0) {
+        setStatusPhaseValue(other.getStatusPhaseValue());
       }
       if (!other.getContinuationToken().isEmpty()) {
         continuationToken_ = other.continuationToken_;
         bitField0_ |= 0x00000008;
         onChanged();
       }
-      if (other.getResultsPerPage() != 0) {
-        setResultsPerPage(other.getResultsPerPage());
+      if (other.getPageSize() != 0) {
+        setPageSize(other.getPageSize());
       }
-      if (other.order_ != 0) {
-        setOrderValue(other.getOrderValue());
+      if (other.sortOrder_ != 0) {
+        setSortOrderValue(other.getSortOrderValue());
       }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
@@ -724,7 +801,7 @@ private static final long serialVersionUID = 0L;
               break;
             } // case 18
             case 24: {
-              phase_ = input.readEnum();
+              statusPhase_ = input.readEnum();
               bitField0_ |= 0x00000004;
               break;
             } // case 24
@@ -734,12 +811,12 @@ private static final long serialVersionUID = 0L;
               break;
             } // case 34
             case 40: {
-              resultsPerPage_ = input.readInt32();
+              pageSize_ = input.readInt32();
               bitField0_ |= 0x00000010;
               break;
             } // case 40
             case 48: {
-              order_ = input.readEnum();
+              sortOrder_ = input.readEnum();
               bitField0_ |= 0x00000020;
               break;
             } // case 48
@@ -762,6 +839,15 @@ private static final long serialVersionUID = 0L;
 
     private java.lang.Object namespace_ = "";
     /**
+     * <pre>
+     * Filters sandboxes by namespace.
+     * Must match the format:
+     * - starts with a lowercase letter
+     * - contains only lowercase alphanumeric characters or hyphens
+     * - ends with an alphanumeric character
+     * Example: "default", "team-a"
+     * </pre>
+     *
      * <code>string namespace = 1 [json_name = "namespace", (.buf.validate.field) = { ... }</code>
      * @return The namespace.
      */
@@ -778,6 +864,15 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
+     * <pre>
+     * Filters sandboxes by namespace.
+     * Must match the format:
+     * - starts with a lowercase letter
+     * - contains only lowercase alphanumeric characters or hyphens
+     * - ends with an alphanumeric character
+     * Example: "default", "team-a"
+     * </pre>
+     *
      * <code>string namespace = 1 [json_name = "namespace", (.buf.validate.field) = { ... }</code>
      * @return The bytes for namespace.
      */
@@ -795,6 +890,15 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
+     * <pre>
+     * Filters sandboxes by namespace.
+     * Must match the format:
+     * - starts with a lowercase letter
+     * - contains only lowercase alphanumeric characters or hyphens
+     * - ends with an alphanumeric character
+     * Example: "default", "team-a"
+     * </pre>
+     *
      * <code>string namespace = 1 [json_name = "namespace", (.buf.validate.field) = { ... }</code>
      * @param value The namespace to set.
      * @return This builder for chaining.
@@ -808,6 +912,15 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * Filters sandboxes by namespace.
+     * Must match the format:
+     * - starts with a lowercase letter
+     * - contains only lowercase alphanumeric characters or hyphens
+     * - ends with an alphanumeric character
+     * Example: "default", "team-a"
+     * </pre>
+     *
      * <code>string namespace = 1 [json_name = "namespace", (.buf.validate.field) = { ... }</code>
      * @return This builder for chaining.
      */
@@ -818,6 +931,15 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * Filters sandboxes by namespace.
+     * Must match the format:
+     * - starts with a lowercase letter
+     * - contains only lowercase alphanumeric characters or hyphens
+     * - ends with an alphanumeric character
+     * Example: "default", "team-a"
+     * </pre>
+     *
      * <code>string namespace = 1 [json_name = "namespace", (.buf.validate.field) = { ... }</code>
      * @param value The bytes for namespace to set.
      * @return This builder for chaining.
@@ -834,6 +956,10 @@ private static final long serialVersionUID = 0L;
 
     private java.lang.Object nodeId_ = "";
     /**
+     * <pre>
+     * Filters sandboxes by the ID of the node where they are scheduled or running.
+     * </pre>
+     *
      * <code>string node_id = 2 [json_name = "nodeId"];</code>
      * @return The nodeId.
      */
@@ -850,6 +976,10 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
+     * <pre>
+     * Filters sandboxes by the ID of the node where they are scheduled or running.
+     * </pre>
+     *
      * <code>string node_id = 2 [json_name = "nodeId"];</code>
      * @return The bytes for nodeId.
      */
@@ -867,6 +997,10 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
+     * <pre>
+     * Filters sandboxes by the ID of the node where they are scheduled or running.
+     * </pre>
+     *
      * <code>string node_id = 2 [json_name = "nodeId"];</code>
      * @param value The nodeId to set.
      * @return This builder for chaining.
@@ -880,6 +1014,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * Filters sandboxes by the ID of the node where they are scheduled or running.
+     * </pre>
+     *
      * <code>string node_id = 2 [json_name = "nodeId"];</code>
      * @return This builder for chaining.
      */
@@ -890,6 +1028,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * Filters sandboxes by the ID of the node where they are scheduled or running.
+     * </pre>
+     *
      * <code>string node_id = 2 [json_name = "nodeId"];</code>
      * @param value The bytes for nodeId to set.
      * @return This builder for chaining.
@@ -904,53 +1046,78 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    private int phase_ = 0;
+    private int statusPhase_ = 0;
     /**
-     * <code>.nuinfra.control_plane.v1alpha1.SandboxStatus.Phase phase = 3 [json_name = "phase"];</code>
-     * @return The enum numeric value on the wire for phase.
+     * <pre>
+     * Filters sandboxes by their current lifecycle phase.
+     * If unset, sandboxes in all phases are returned.
+     * </pre>
+     *
+     * <code>.nuinfra.control_plane.v1alpha1.SandboxStatus.Phase status_phase = 3 [json_name = "statusPhase"];</code>
+     * @return The enum numeric value on the wire for statusPhase.
      */
-    @java.lang.Override public int getPhaseValue() {
-      return phase_;
+    @java.lang.Override public int getStatusPhaseValue() {
+      return statusPhase_;
     }
     /**
-     * <code>.nuinfra.control_plane.v1alpha1.SandboxStatus.Phase phase = 3 [json_name = "phase"];</code>
-     * @param value The enum numeric value on the wire for phase to set.
+     * <pre>
+     * Filters sandboxes by their current lifecycle phase.
+     * If unset, sandboxes in all phases are returned.
+     * </pre>
+     *
+     * <code>.nuinfra.control_plane.v1alpha1.SandboxStatus.Phase status_phase = 3 [json_name = "statusPhase"];</code>
+     * @param value The enum numeric value on the wire for statusPhase to set.
      * @return This builder for chaining.
      */
-    public Builder setPhaseValue(int value) {
-      phase_ = value;
+    public Builder setStatusPhaseValue(int value) {
+      statusPhase_ = value;
       bitField0_ |= 0x00000004;
       onChanged();
       return this;
     }
     /**
-     * <code>.nuinfra.control_plane.v1alpha1.SandboxStatus.Phase phase = 3 [json_name = "phase"];</code>
-     * @return The phase.
+     * <pre>
+     * Filters sandboxes by their current lifecycle phase.
+     * If unset, sandboxes in all phases are returned.
+     * </pre>
+     *
+     * <code>.nuinfra.control_plane.v1alpha1.SandboxStatus.Phase status_phase = 3 [json_name = "statusPhase"];</code>
+     * @return The statusPhase.
      */
     @java.lang.Override
-    public com.nuinfra.control_plane.v1alpha1.SandboxStatus.Phase getPhase() {
-      com.nuinfra.control_plane.v1alpha1.SandboxStatus.Phase result = com.nuinfra.control_plane.v1alpha1.SandboxStatus.Phase.forNumber(phase_);
+    public com.nuinfra.control_plane.v1alpha1.SandboxStatus.Phase getStatusPhase() {
+      com.nuinfra.control_plane.v1alpha1.SandboxStatus.Phase result = com.nuinfra.control_plane.v1alpha1.SandboxStatus.Phase.forNumber(statusPhase_);
       return result == null ? com.nuinfra.control_plane.v1alpha1.SandboxStatus.Phase.UNRECOGNIZED : result;
     }
     /**
-     * <code>.nuinfra.control_plane.v1alpha1.SandboxStatus.Phase phase = 3 [json_name = "phase"];</code>
-     * @param value The phase to set.
+     * <pre>
+     * Filters sandboxes by their current lifecycle phase.
+     * If unset, sandboxes in all phases are returned.
+     * </pre>
+     *
+     * <code>.nuinfra.control_plane.v1alpha1.SandboxStatus.Phase status_phase = 3 [json_name = "statusPhase"];</code>
+     * @param value The statusPhase to set.
      * @return This builder for chaining.
      */
-    public Builder setPhase(com.nuinfra.control_plane.v1alpha1.SandboxStatus.Phase value) {
+    public Builder setStatusPhase(com.nuinfra.control_plane.v1alpha1.SandboxStatus.Phase value) {
       if (value == null) { throw new NullPointerException(); }
       bitField0_ |= 0x00000004;
-      phase_ = value.getNumber();
+      statusPhase_ = value.getNumber();
       onChanged();
       return this;
     }
     /**
-     * <code>.nuinfra.control_plane.v1alpha1.SandboxStatus.Phase phase = 3 [json_name = "phase"];</code>
+     * <pre>
+     * Filters sandboxes by their current lifecycle phase.
+     * If unset, sandboxes in all phases are returned.
+     * </pre>
+     *
+     * <code>.nuinfra.control_plane.v1alpha1.SandboxStatus.Phase status_phase = 3 [json_name = "statusPhase"];</code>
      * @return This builder for chaining.
      */
-    public Builder clearPhase() {
+    public Builder clearStatusPhase() {
       bitField0_ = (bitField0_ & ~0x00000004);
-      phase_ = 0;
+      statusPhase_ = 0;
       onChanged();
       return this;
     }
@@ -958,7 +1125,9 @@ private static final long serialVersionUID = 0L;
     private java.lang.Object continuationToken_ = "";
     /**
      * <pre>
-     * A token used to paginate through results, allowing retrieval of additional pages after a previous request.
+     * Token used for pagination.
+     * Pass the value returned in a previous response to retrieve the next page of results.
+     * Leave empty to start listing from the beginning.
      * </pre>
      *
      * <code>string continuation_token = 4 [json_name = "continuationToken"];</code>
@@ -978,7 +1147,9 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A token used to paginate through results, allowing retrieval of additional pages after a previous request.
+     * Token used for pagination.
+     * Pass the value returned in a previous response to retrieve the next page of results.
+     * Leave empty to start listing from the beginning.
      * </pre>
      *
      * <code>string continuation_token = 4 [json_name = "continuationToken"];</code>
@@ -999,7 +1170,9 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A token used to paginate through results, allowing retrieval of additional pages after a previous request.
+     * Token used for pagination.
+     * Pass the value returned in a previous response to retrieve the next page of results.
+     * Leave empty to start listing from the beginning.
      * </pre>
      *
      * <code>string continuation_token = 4 [json_name = "continuationToken"];</code>
@@ -1016,7 +1189,9 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A token used to paginate through results, allowing retrieval of additional pages after a previous request.
+     * Token used for pagination.
+     * Pass the value returned in a previous response to retrieve the next page of results.
+     * Leave empty to start listing from the beginning.
      * </pre>
      *
      * <code>string continuation_token = 4 [json_name = "continuationToken"];</code>
@@ -1030,7 +1205,9 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * A token used to paginate through results, allowing retrieval of additional pages after a previous request.
+     * Token used for pagination.
+     * Pass the value returned in a previous response to retrieve the next page of results.
+     * Leave empty to start listing from the beginning.
      * </pre>
      *
      * <code>string continuation_token = 4 [json_name = "continuationToken"];</code>
@@ -1047,121 +1224,144 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    private int resultsPerPage_ ;
+    private int pageSize_ ;
     /**
      * <pre>
-     * Specifies the number of results to retrieve for this request. Defaults to 30.
-     * Clients can request a maximum of 1000 results per request.
+     * Maximum number of sandboxes to return in this request.
+     * Defaults to 30 if not specified.
+     * The maximum allowed value is 1000.
      * </pre>
      *
-     * <code>int32 results_per_page = 5 [json_name = "resultsPerPage", (.buf.validate.field) = { ... }</code>
-     * @return The resultsPerPage.
+     * <code>int32 page_size = 5 [json_name = "pageSize", (.buf.validate.field) = { ... }</code>
+     * @return The pageSize.
      */
     @java.lang.Override
-    public int getResultsPerPage() {
-      return resultsPerPage_;
+    public int getPageSize() {
+      return pageSize_;
     }
     /**
      * <pre>
-     * Specifies the number of results to retrieve for this request. Defaults to 30.
-     * Clients can request a maximum of 1000 results per request.
+     * Maximum number of sandboxes to return in this request.
+     * Defaults to 30 if not specified.
+     * The maximum allowed value is 1000.
      * </pre>
      *
-     * <code>int32 results_per_page = 5 [json_name = "resultsPerPage", (.buf.validate.field) = { ... }</code>
-     * @param value The resultsPerPage to set.
+     * <code>int32 page_size = 5 [json_name = "pageSize", (.buf.validate.field) = { ... }</code>
+     * @param value The pageSize to set.
      * @return This builder for chaining.
      */
-    public Builder setResultsPerPage(int value) {
+    public Builder setPageSize(int value) {
 
-      resultsPerPage_ = value;
+      pageSize_ = value;
       bitField0_ |= 0x00000010;
       onChanged();
       return this;
     }
     /**
      * <pre>
-     * Specifies the number of results to retrieve for this request. Defaults to 30.
-     * Clients can request a maximum of 1000 results per request.
+     * Maximum number of sandboxes to return in this request.
+     * Defaults to 30 if not specified.
+     * The maximum allowed value is 1000.
      * </pre>
      *
-     * <code>int32 results_per_page = 5 [json_name = "resultsPerPage", (.buf.validate.field) = { ... }</code>
+     * <code>int32 page_size = 5 [json_name = "pageSize", (.buf.validate.field) = { ... }</code>
      * @return This builder for chaining.
      */
-    public Builder clearResultsPerPage() {
+    public Builder clearPageSize() {
       bitField0_ = (bitField0_ & ~0x00000010);
-      resultsPerPage_ = 0;
+      pageSize_ = 0;
       onChanged();
       return this;
     }
 
-    private int order_ = 0;
+    private int sortOrder_ = 0;
     /**
-     * <code>.nuinfra.control_plane.v1alpha1.ListSandboxRequest.Order order = 6 [json_name = "order"];</code>
-     * @return The enum numeric value on the wire for order.
+     * <pre>
+     * Sort order applied to the results based on last_modified_at.
+     * </pre>
+     *
+     * <code>.nuinfra.control_plane.v1alpha1.ListSandboxesRequest.Order sort_order = 6 [json_name = "sortOrder"];</code>
+     * @return The enum numeric value on the wire for sortOrder.
      */
-    @java.lang.Override public int getOrderValue() {
-      return order_;
+    @java.lang.Override public int getSortOrderValue() {
+      return sortOrder_;
     }
     /**
-     * <code>.nuinfra.control_plane.v1alpha1.ListSandboxRequest.Order order = 6 [json_name = "order"];</code>
-     * @param value The enum numeric value on the wire for order to set.
+     * <pre>
+     * Sort order applied to the results based on last_modified_at.
+     * </pre>
+     *
+     * <code>.nuinfra.control_plane.v1alpha1.ListSandboxesRequest.Order sort_order = 6 [json_name = "sortOrder"];</code>
+     * @param value The enum numeric value on the wire for sortOrder to set.
      * @return This builder for chaining.
      */
-    public Builder setOrderValue(int value) {
-      order_ = value;
+    public Builder setSortOrderValue(int value) {
+      sortOrder_ = value;
       bitField0_ |= 0x00000020;
       onChanged();
       return this;
     }
     /**
-     * <code>.nuinfra.control_plane.v1alpha1.ListSandboxRequest.Order order = 6 [json_name = "order"];</code>
-     * @return The order.
+     * <pre>
+     * Sort order applied to the results based on last_modified_at.
+     * </pre>
+     *
+     * <code>.nuinfra.control_plane.v1alpha1.ListSandboxesRequest.Order sort_order = 6 [json_name = "sortOrder"];</code>
+     * @return The sortOrder.
      */
     @java.lang.Override
-    public com.nuinfra.control_plane.v1alpha1.ListSandboxRequest.Order getOrder() {
-      com.nuinfra.control_plane.v1alpha1.ListSandboxRequest.Order result = com.nuinfra.control_plane.v1alpha1.ListSandboxRequest.Order.forNumber(order_);
-      return result == null ? com.nuinfra.control_plane.v1alpha1.ListSandboxRequest.Order.UNRECOGNIZED : result;
+    public com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest.Order getSortOrder() {
+      com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest.Order result = com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest.Order.forNumber(sortOrder_);
+      return result == null ? com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest.Order.UNRECOGNIZED : result;
     }
     /**
-     * <code>.nuinfra.control_plane.v1alpha1.ListSandboxRequest.Order order = 6 [json_name = "order"];</code>
-     * @param value The order to set.
+     * <pre>
+     * Sort order applied to the results based on last_modified_at.
+     * </pre>
+     *
+     * <code>.nuinfra.control_plane.v1alpha1.ListSandboxesRequest.Order sort_order = 6 [json_name = "sortOrder"];</code>
+     * @param value The sortOrder to set.
      * @return This builder for chaining.
      */
-    public Builder setOrder(com.nuinfra.control_plane.v1alpha1.ListSandboxRequest.Order value) {
+    public Builder setSortOrder(com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest.Order value) {
       if (value == null) { throw new NullPointerException(); }
       bitField0_ |= 0x00000020;
-      order_ = value.getNumber();
+      sortOrder_ = value.getNumber();
       onChanged();
       return this;
     }
     /**
-     * <code>.nuinfra.control_plane.v1alpha1.ListSandboxRequest.Order order = 6 [json_name = "order"];</code>
+     * <pre>
+     * Sort order applied to the results based on last_modified_at.
+     * </pre>
+     *
+     * <code>.nuinfra.control_plane.v1alpha1.ListSandboxesRequest.Order sort_order = 6 [json_name = "sortOrder"];</code>
      * @return This builder for chaining.
      */
-    public Builder clearOrder() {
+    public Builder clearSortOrder() {
       bitField0_ = (bitField0_ & ~0x00000020);
-      order_ = 0;
+      sortOrder_ = 0;
       onChanged();
       return this;
     }
 
-    // @@protoc_insertion_point(builder_scope:nuinfra.control_plane.v1alpha1.ListSandboxRequest)
+    // @@protoc_insertion_point(builder_scope:nuinfra.control_plane.v1alpha1.ListSandboxesRequest)
   }
 
-  // @@protoc_insertion_point(class_scope:nuinfra.control_plane.v1alpha1.ListSandboxRequest)
-  private static final com.nuinfra.control_plane.v1alpha1.ListSandboxRequest DEFAULT_INSTANCE;
+  // @@protoc_insertion_point(class_scope:nuinfra.control_plane.v1alpha1.ListSandboxesRequest)
+  private static final com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest DEFAULT_INSTANCE;
   static {
-    DEFAULT_INSTANCE = new com.nuinfra.control_plane.v1alpha1.ListSandboxRequest();
+    DEFAULT_INSTANCE = new com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest();
   }
 
-  public static com.nuinfra.control_plane.v1alpha1.ListSandboxRequest getDefaultInstance() {
+  public static com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
 
-  private static final com.google.protobuf.Parser<ListSandboxRequest>
-      PARSER = new com.google.protobuf.AbstractParser<ListSandboxRequest>() {
+  private static final com.google.protobuf.Parser<ListSandboxesRequest>
+      PARSER = new com.google.protobuf.AbstractParser<ListSandboxesRequest>() {
     @java.lang.Override
-    public ListSandboxRequest parsePartialFrom(
+    public ListSandboxesRequest parsePartialFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -1180,17 +1380,17 @@ private static final long serialVersionUID = 0L;
     }
   };
 
-  public static com.google.protobuf.Parser<ListSandboxRequest> parser() {
+  public static com.google.protobuf.Parser<ListSandboxesRequest> parser() {
     return PARSER;
   }
 
   @java.lang.Override
-  public com.google.protobuf.Parser<ListSandboxRequest> getParserForType() {
+  public com.google.protobuf.Parser<ListSandboxesRequest> getParserForType() {
     return PARSER;
   }
 
   @java.lang.Override
-  public com.nuinfra.control_plane.v1alpha1.ListSandboxRequest getDefaultInstanceForType() {
+  public com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 

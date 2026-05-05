@@ -17,8 +17,8 @@
     - [GetSandboxRequest](#nuinfra-control_plane-v1alpha1-GetSandboxRequest)
     - [GetSandboxResponse](#nuinfra-control_plane-v1alpha1-GetSandboxResponse)
     - [Intent](#nuinfra-control_plane-v1alpha1-Intent)
-    - [ListSandboxRequest](#nuinfra-control_plane-v1alpha1-ListSandboxRequest)
-    - [ListSandboxResponse](#nuinfra-control_plane-v1alpha1-ListSandboxResponse)
+    - [ListSandboxesRequest](#nuinfra-control_plane-v1alpha1-ListSandboxesRequest)
+    - [ListSandboxesResponse](#nuinfra-control_plane-v1alpha1-ListSandboxesResponse)
     - [NodeRef](#nuinfra-control_plane-v1alpha1-NodeRef)
     - [PauseSandboxRequest](#nuinfra-control_plane-v1alpha1-PauseSandboxRequest)
     - [PauseSandboxResponse](#nuinfra-control_plane-v1alpha1-PauseSandboxResponse)
@@ -30,7 +30,7 @@
     - [SandboxMeta.LabelsEntry](#nuinfra-control_plane-v1alpha1-SandboxMeta-LabelsEntry)
     - [SandboxStatus](#nuinfra-control_plane-v1alpha1-SandboxStatus)
   
-    - [ListSandboxRequest.Order](#nuinfra-control_plane-v1alpha1-ListSandboxRequest-Order)
+    - [ListSandboxesRequest.Order](#nuinfra-control_plane-v1alpha1-ListSandboxesRequest-Order)
     - [SandboxStatus.Phase](#nuinfra-control_plane-v1alpha1-SandboxStatus-Phase)
   
     - [SandboxService](#nuinfra-control_plane-v1alpha1-SandboxService)
@@ -252,36 +252,36 @@ InsufficientScopes provides further details on unauthorized errors.
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-ListSandboxRequest"></a>
+<a name="nuinfra-control_plane-v1alpha1-ListSandboxesRequest"></a>
 
-### ListSandboxRequest
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| namespace | [string](#string) |  |  |
-| node_id | [string](#string) |  |  |
-| phase | [SandboxStatus.Phase](#nuinfra-control_plane-v1alpha1-SandboxStatus-Phase) |  |  |
-| continuation_token | [string](#string) |  | A token used to paginate through results, allowing retrieval of additional pages after a previous request. |
-| results_per_page | [int32](#int32) |  | Specifies the number of results to retrieve for this request. Defaults to 30. Clients can request a maximum of 1000 results per request. |
-| order | [ListSandboxRequest.Order](#nuinfra-control_plane-v1alpha1-ListSandboxRequest-Order) |  |  |
-
-
-
-
-
-
-<a name="nuinfra-control_plane-v1alpha1-ListSandboxResponse"></a>
-
-### ListSandboxResponse
-
+### ListSandboxesRequest
+Request message for listing sandboxes with optional filtering and pagination.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| sandbox | [Sandbox](#nuinfra-control_plane-v1alpha1-Sandbox) | repeated |  |
-| continuation_token | [string](#string) |  |  |
+| namespace | [string](#string) |  | Filters sandboxes by namespace. Must match the format: - starts with a lowercase letter - contains only lowercase alphanumeric characters or hyphens - ends with an alphanumeric character Example: &#34;default&#34;, &#34;team-a&#34; |
+| node_id | [string](#string) |  | Filters sandboxes by the ID of the node where they are scheduled or running. |
+| status_phase | [SandboxStatus.Phase](#nuinfra-control_plane-v1alpha1-SandboxStatus-Phase) |  | Filters sandboxes by their current lifecycle phase. If unset, sandboxes in all phases are returned. |
+| continuation_token | [string](#string) |  | Token used for pagination. Pass the value returned in a previous response to retrieve the next page of results. Leave empty to start listing from the beginning. |
+| page_size | [int32](#int32) |  | Maximum number of sandboxes to return in this request. Defaults to 30 if not specified. The maximum allowed value is 1000. |
+| sort_order | [ListSandboxesRequest.Order](#nuinfra-control_plane-v1alpha1-ListSandboxesRequest-Order) |  | Sort order applied to the results based on last_modified_at. |
+
+
+
+
+
+
+<a name="nuinfra-control_plane-v1alpha1-ListSandboxesResponse"></a>
+
+### ListSandboxesResponse
+Response message containing a page of sandboxes.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| sandbox | [Sandbox](#nuinfra-control_plane-v1alpha1-Sandbox) | repeated | The list of sandboxes matching the request filters. |
+| continuation_token | [string](#string) |  | Token to retrieve the next page of results. Empty if there are no more results. |
 
 
 
@@ -444,16 +444,16 @@ InsufficientScopes provides further details on unauthorized errors.
  
 
 
-<a name="nuinfra-control_plane-v1alpha1-ListSandboxRequest-Order"></a>
+<a name="nuinfra-control_plane-v1alpha1-ListSandboxesRequest-Order"></a>
 
-### ListSandboxRequest.Order
-
+### ListSandboxesRequest.Order
+Controls how results are ordered by last modification time.
 
 | Name | Number | Description |
 | ---- | ------ | ----------- |
 | ORDER_UNSPECIFIED | 0 |  |
-| ORDER_ASCENDING | 1 |  |
-| ORDER_DESCENDING | 2 |  |
+| ORDER_NEWEST_FIRST | 1 | Most recently modified sandboxes first. |
+| ORDER_OLDEST_FIRST | 2 | Least recently modified sandboxes first. |
 
 
 
@@ -489,7 +489,7 @@ InsufficientScopes provides further details on unauthorized errors.
 | ----------- | ------------ | ------------- | ------------|
 | CreateSandbox | [CreateSandboxRequest](#nuinfra-control_plane-v1alpha1-CreateSandboxRequest) | [CreateSandboxResponse](#nuinfra-control_plane-v1alpha1-CreateSandboxResponse) |  |
 | GetSandbox | [GetSandboxRequest](#nuinfra-control_plane-v1alpha1-GetSandboxRequest) | [GetSandboxResponse](#nuinfra-control_plane-v1alpha1-GetSandboxResponse) |  |
-| ListSandbox | [ListSandboxRequest](#nuinfra-control_plane-v1alpha1-ListSandboxRequest) | [ListSandboxResponse](#nuinfra-control_plane-v1alpha1-ListSandboxResponse) |  |
+| ListSandboxes | [ListSandboxesRequest](#nuinfra-control_plane-v1alpha1-ListSandboxesRequest) | [ListSandboxesResponse](#nuinfra-control_plane-v1alpha1-ListSandboxesResponse) |  |
 | PauseSandbox | [PauseSandboxRequest](#nuinfra-control_plane-v1alpha1-PauseSandboxRequest) | [PauseSandboxResponse](#nuinfra-control_plane-v1alpha1-PauseSandboxResponse) |  |
 | ResumeSandbox | [ResumeSandboxRequest](#nuinfra-control_plane-v1alpha1-ResumeSandboxRequest) | [ResumeSandboxResponse](#nuinfra-control_plane-v1alpha1-ResumeSandboxResponse) |  |
 | DeleteSandbox | [DeleteSandboxRequest](#nuinfra-control_plane-v1alpha1-DeleteSandboxRequest) | [DeleteSandboxResponse](#nuinfra-control_plane-v1alpha1-DeleteSandboxResponse) |  |

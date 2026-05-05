@@ -74,35 +74,35 @@ public final class SandboxServiceGrpc {
     return getGetSandboxMethod;
   }
 
-  private static volatile io.grpc.MethodDescriptor<com.nuinfra.control_plane.v1alpha1.ListSandboxRequest,
-      com.nuinfra.control_plane.v1alpha1.ListSandboxResponse> getListSandboxMethod;
+  private static volatile io.grpc.MethodDescriptor<com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest,
+      com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse> getListSandboxesMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
-      fullMethodName = SERVICE_NAME + '/' + "ListSandbox",
-      requestType = com.nuinfra.control_plane.v1alpha1.ListSandboxRequest.class,
-      responseType = com.nuinfra.control_plane.v1alpha1.ListSandboxResponse.class,
+      fullMethodName = SERVICE_NAME + '/' + "ListSandboxes",
+      requestType = com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest.class,
+      responseType = com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
-  public static io.grpc.MethodDescriptor<com.nuinfra.control_plane.v1alpha1.ListSandboxRequest,
-      com.nuinfra.control_plane.v1alpha1.ListSandboxResponse> getListSandboxMethod() {
-    io.grpc.MethodDescriptor<com.nuinfra.control_plane.v1alpha1.ListSandboxRequest, com.nuinfra.control_plane.v1alpha1.ListSandboxResponse> getListSandboxMethod;
-    if ((getListSandboxMethod = SandboxServiceGrpc.getListSandboxMethod) == null) {
+  public static io.grpc.MethodDescriptor<com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest,
+      com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse> getListSandboxesMethod() {
+    io.grpc.MethodDescriptor<com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest, com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse> getListSandboxesMethod;
+    if ((getListSandboxesMethod = SandboxServiceGrpc.getListSandboxesMethod) == null) {
       synchronized (SandboxServiceGrpc.class) {
-        if ((getListSandboxMethod = SandboxServiceGrpc.getListSandboxMethod) == null) {
-          SandboxServiceGrpc.getListSandboxMethod = getListSandboxMethod =
-              io.grpc.MethodDescriptor.<com.nuinfra.control_plane.v1alpha1.ListSandboxRequest, com.nuinfra.control_plane.v1alpha1.ListSandboxResponse>newBuilder()
+        if ((getListSandboxesMethod = SandboxServiceGrpc.getListSandboxesMethod) == null) {
+          SandboxServiceGrpc.getListSandboxesMethod = getListSandboxesMethod =
+              io.grpc.MethodDescriptor.<com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest, com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
-              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "ListSandbox"))
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "ListSandboxes"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  com.nuinfra.control_plane.v1alpha1.ListSandboxRequest.getDefaultInstance()))
+                  com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  com.nuinfra.control_plane.v1alpha1.ListSandboxResponse.getDefaultInstance()))
-              .setSchemaDescriptor(new SandboxServiceMethodDescriptorSupplier("ListSandbox"))
+                  com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse.getDefaultInstance()))
+              .setSchemaDescriptor(new SandboxServiceMethodDescriptorSupplier("ListSandboxes"))
               .build();
         }
       }
     }
-    return getListSandboxMethod;
+    return getListSandboxesMethod;
   }
 
   private static volatile io.grpc.MethodDescriptor<com.nuinfra.control_plane.v1alpha1.PauseSandboxRequest,
@@ -277,9 +277,9 @@ public final class SandboxServiceGrpc {
 
     /**
      */
-    default void listSandbox(com.nuinfra.control_plane.v1alpha1.ListSandboxRequest request,
-        io.grpc.stub.StreamObserver<com.nuinfra.control_plane.v1alpha1.ListSandboxResponse> responseObserver) {
-      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getListSandboxMethod(), responseObserver);
+    default void listSandboxes(com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest request,
+        io.grpc.stub.StreamObserver<com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse> responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getListSandboxesMethod(), responseObserver);
     }
 
     /**
@@ -349,10 +349,10 @@ public final class SandboxServiceGrpc {
 
     /**
      */
-    public void listSandbox(com.nuinfra.control_plane.v1alpha1.ListSandboxRequest request,
-        io.grpc.stub.StreamObserver<com.nuinfra.control_plane.v1alpha1.ListSandboxResponse> responseObserver) {
+    public void listSandboxes(com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest request,
+        io.grpc.stub.StreamObserver<com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
-          getChannel().newCall(getListSandboxMethod(), getCallOptions()), request, responseObserver);
+          getChannel().newCall(getListSandboxesMethod(), getCallOptions()), request, responseObserver);
     }
 
     /**
@@ -412,9 +412,9 @@ public final class SandboxServiceGrpc {
 
     /**
      */
-    public com.nuinfra.control_plane.v1alpha1.ListSandboxResponse listSandbox(com.nuinfra.control_plane.v1alpha1.ListSandboxRequest request) throws io.grpc.StatusException {
+    public com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse listSandboxes(com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest request) throws io.grpc.StatusException {
       return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
-          getChannel(), getListSandboxMethod(), getCallOptions(), request);
+          getChannel(), getListSandboxesMethod(), getCallOptions(), request);
     }
 
     /**
@@ -471,9 +471,9 @@ public final class SandboxServiceGrpc {
 
     /**
      */
-    public com.nuinfra.control_plane.v1alpha1.ListSandboxResponse listSandbox(com.nuinfra.control_plane.v1alpha1.ListSandboxRequest request) {
+    public com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse listSandboxes(com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
-          getChannel(), getListSandboxMethod(), getCallOptions(), request);
+          getChannel(), getListSandboxesMethod(), getCallOptions(), request);
     }
 
     /**
@@ -532,10 +532,10 @@ public final class SandboxServiceGrpc {
 
     /**
      */
-    public com.google.common.util.concurrent.ListenableFuture<com.nuinfra.control_plane.v1alpha1.ListSandboxResponse> listSandbox(
-        com.nuinfra.control_plane.v1alpha1.ListSandboxRequest request) {
+    public com.google.common.util.concurrent.ListenableFuture<com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse> listSandboxes(
+        com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
-          getChannel().newCall(getListSandboxMethod(), getCallOptions()), request);
+          getChannel().newCall(getListSandboxesMethod(), getCallOptions()), request);
     }
 
     /**
@@ -565,7 +565,7 @@ public final class SandboxServiceGrpc {
 
   private static final int METHODID_CREATE_SANDBOX = 0;
   private static final int METHODID_GET_SANDBOX = 1;
-  private static final int METHODID_LIST_SANDBOX = 2;
+  private static final int METHODID_LIST_SANDBOXES = 2;
   private static final int METHODID_PAUSE_SANDBOX = 3;
   private static final int METHODID_RESUME_SANDBOX = 4;
   private static final int METHODID_DELETE_SANDBOX = 5;
@@ -595,9 +595,9 @@ public final class SandboxServiceGrpc {
           serviceImpl.getSandbox((com.nuinfra.control_plane.v1alpha1.GetSandboxRequest) request,
               (io.grpc.stub.StreamObserver<com.nuinfra.control_plane.v1alpha1.GetSandboxResponse>) responseObserver);
           break;
-        case METHODID_LIST_SANDBOX:
-          serviceImpl.listSandbox((com.nuinfra.control_plane.v1alpha1.ListSandboxRequest) request,
-              (io.grpc.stub.StreamObserver<com.nuinfra.control_plane.v1alpha1.ListSandboxResponse>) responseObserver);
+        case METHODID_LIST_SANDBOXES:
+          serviceImpl.listSandboxes((com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest) request,
+              (io.grpc.stub.StreamObserver<com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse>) responseObserver);
           break;
         case METHODID_PAUSE_SANDBOX:
           serviceImpl.pauseSandbox((com.nuinfra.control_plane.v1alpha1.PauseSandboxRequest) request,
@@ -644,12 +644,12 @@ public final class SandboxServiceGrpc {
               com.nuinfra.control_plane.v1alpha1.GetSandboxResponse>(
                 service, METHODID_GET_SANDBOX)))
         .addMethod(
-          getListSandboxMethod(),
+          getListSandboxesMethod(),
           io.grpc.stub.ServerCalls.asyncUnaryCall(
             new MethodHandlers<
-              com.nuinfra.control_plane.v1alpha1.ListSandboxRequest,
-              com.nuinfra.control_plane.v1alpha1.ListSandboxResponse>(
-                service, METHODID_LIST_SANDBOX)))
+              com.nuinfra.control_plane.v1alpha1.ListSandboxesRequest,
+              com.nuinfra.control_plane.v1alpha1.ListSandboxesResponse>(
+                service, METHODID_LIST_SANDBOXES)))
         .addMethod(
           getPauseSandboxMethod(),
           io.grpc.stub.ServerCalls.asyncUnaryCall(
@@ -721,7 +721,7 @@ public final class SandboxServiceGrpc {
               .setSchemaDescriptor(new SandboxServiceFileDescriptorSupplier())
               .addMethod(getCreateSandboxMethod())
               .addMethod(getGetSandboxMethod())
-              .addMethod(getListSandboxMethod())
+              .addMethod(getListSandboxesMethod())
               .addMethod(getPauseSandboxMethod())
               .addMethod(getResumeSandboxMethod())
               .addMethod(getDeleteSandboxMethod())

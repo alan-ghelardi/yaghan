@@ -11,15 +11,19 @@
       "AttributeType": "S"
     },
     {
-      "AttributeName": "sandbox_status_phase",
-      "AttributeType": "S"
-    },
-    {
       "AttributeName": "node_ref_id",
       "AttributeType": "S"
     },
     {
-      "AttributeName": "gsi_namespace_lmt_sk",
+      "AttributeName": "gsi_lmt_sk",
+      "AttributeType": "S"
+    },
+    {
+      "AttributeName": "gsi_namespace_phase_hk",
+      "AttributeType": "S"
+    },
+    {
+      "AttributeName": "gsi_namespace_node_hk",
       "AttributeType": "S"
     }
   ],
@@ -38,7 +42,7 @@
           "KeyType": "HASH"
         },
         {
-          "AttributeName": "gsi_namespace_lmt_sk",
+          "AttributeName": "gsi_lmt_sk",
           "KeyType": "RANGE"
         }
       ],
@@ -53,11 +57,11 @@
       "IndexName": "by_status_phase_index",
       "KeySchema": [
         {
-          "AttributeName": "sandbox_status_phase",
+          "AttributeName": "gsi_namespace_phase_hk",
           "KeyType": "HASH"
         },
         {
-          "AttributeName": "gsi_namespace_lmt_sk",
+          "AttributeName": "gsi_lmt_sk",
           "KeyType": "RANGE"
         }
       ],
@@ -76,7 +80,26 @@
           "KeyType": "HASH"
         },
         {
-          "AttributeName": "gsi_namespace_lmt_sk",
+          "AttributeName": "gsi_lmt_sk",
+          "KeyType": "RANGE"
+        }
+      ],
+      "Projection": {
+        "ProjectionType": "INCLUDE",
+        "NonKeyAttributes": [
+          "sandbox_pb"
+        ]
+      }
+    },
+    {
+      "IndexName": "by_namespace_node_index",
+      "KeySchema": [
+        {
+          "AttributeName": "gsi_namespace_node_hk",
+          "KeyType": "HASH"
+        },
+        {
+          "AttributeName": "gsi_lmt_sk",
           "KeyType": "RANGE"
         }
       ],

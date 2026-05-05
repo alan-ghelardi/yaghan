@@ -6,40 +6,70 @@
 package com.nuinfra.control_plane.v1alpha1;
 
 @com.google.protobuf.Generated
-public interface ListSandboxResponseOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:nuinfra.control_plane.v1alpha1.ListSandboxResponse)
+public interface ListSandboxesResponseOrBuilder extends
+    // @@protoc_insertion_point(interface_extends:nuinfra.control_plane.v1alpha1.ListSandboxesResponse)
     com.google.protobuf.MessageOrBuilder {
 
   /**
+   * <pre>
+   * The list of sandboxes matching the request filters.
+   * </pre>
+   *
    * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
    */
   java.util.List<com.nuinfra.control_plane.v1alpha1.Sandbox> 
       getSandboxList();
   /**
+   * <pre>
+   * The list of sandboxes matching the request filters.
+   * </pre>
+   *
    * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
    */
   com.nuinfra.control_plane.v1alpha1.Sandbox getSandbox(int index);
   /**
+   * <pre>
+   * The list of sandboxes matching the request filters.
+   * </pre>
+   *
    * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
    */
   int getSandboxCount();
   /**
+   * <pre>
+   * The list of sandboxes matching the request filters.
+   * </pre>
+   *
    * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
    */
   java.util.List<? extends com.nuinfra.control_plane.v1alpha1.SandboxOrBuilder> 
       getSandboxOrBuilderList();
   /**
+   * <pre>
+   * The list of sandboxes matching the request filters.
+   * </pre>
+   *
    * <code>repeated .nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
    */
   com.nuinfra.control_plane.v1alpha1.SandboxOrBuilder getSandboxOrBuilder(
       int index);
 
   /**
+   * <pre>
+   * Token to retrieve the next page of results.
+   * Empty if there are no more results.
+   * </pre>
+   *
    * <code>string continuation_token = 2 [json_name = "continuationToken"];</code>
    * @return The continuationToken.
    */
   java.lang.String getContinuationToken();
   /**
+   * <pre>
+   * Token to retrieve the next page of results.
+   * Empty if there are no more results.
+   * </pre>
+   *
    * <code>string continuation_token = 2 [json_name = "continuationToken"];</code>
    * @return The bytes for continuationToken.
    */

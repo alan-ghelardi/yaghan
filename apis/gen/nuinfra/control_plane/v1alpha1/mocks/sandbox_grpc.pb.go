@@ -102,24 +102,24 @@ func (mr *MockSandboxServiceClientMockRecorder) GetSandbox(ctx, in any, opts ...
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSandbox", reflect.TypeOf((*MockSandboxServiceClient)(nil).GetSandbox), varargs...)
 }
 
-// ListSandbox mocks base method.
-func (m *MockSandboxServiceClient) ListSandbox(ctx context.Context, in *control_planev1alpha1.ListSandboxRequest, opts ...grpc.CallOption) (*control_planev1alpha1.ListSandboxResponse, error) {
+// ListSandboxes mocks base method.
+func (m *MockSandboxServiceClient) ListSandboxes(ctx context.Context, in *control_planev1alpha1.ListSandboxesRequest, opts ...grpc.CallOption) (*control_planev1alpha1.ListSandboxesResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "ListSandbox", varargs...)
-	ret0, _ := ret[0].(*control_planev1alpha1.ListSandboxResponse)
+	ret := m.ctrl.Call(m, "ListSandboxes", varargs...)
+	ret0, _ := ret[0].(*control_planev1alpha1.ListSandboxesResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ListSandbox indicates an expected call of ListSandbox.
-func (mr *MockSandboxServiceClientMockRecorder) ListSandbox(ctx, in any, opts ...any) *gomock.Call {
+// ListSandboxes indicates an expected call of ListSandboxes.
+func (mr *MockSandboxServiceClientMockRecorder) ListSandboxes(ctx, in any, opts ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]any{ctx, in}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListSandbox", reflect.TypeOf((*MockSandboxServiceClient)(nil).ListSandbox), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListSandboxes", reflect.TypeOf((*MockSandboxServiceClient)(nil).ListSandboxes), varargs...)
 }
 
 // PauseSandbox mocks base method.
@@ -231,19 +231,19 @@ func (mr *MockSandboxServiceServerMockRecorder) GetSandbox(arg0, arg1 any) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSandbox", reflect.TypeOf((*MockSandboxServiceServer)(nil).GetSandbox), arg0, arg1)
 }
 
-// ListSandbox mocks base method.
-func (m *MockSandboxServiceServer) ListSandbox(arg0 context.Context, arg1 *control_planev1alpha1.ListSandboxRequest) (*control_planev1alpha1.ListSandboxResponse, error) {
+// ListSandboxes mocks base method.
+func (m *MockSandboxServiceServer) ListSandboxes(arg0 context.Context, arg1 *control_planev1alpha1.ListSandboxesRequest) (*control_planev1alpha1.ListSandboxesResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListSandbox", arg0, arg1)
-	ret0, _ := ret[0].(*control_planev1alpha1.ListSandboxResponse)
+	ret := m.ctrl.Call(m, "ListSandboxes", arg0, arg1)
+	ret0, _ := ret[0].(*control_planev1alpha1.ListSandboxesResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ListSandbox indicates an expected call of ListSandbox.
-func (mr *MockSandboxServiceServerMockRecorder) ListSandbox(arg0, arg1 any) *gomock.Call {
+// ListSandboxes indicates an expected call of ListSandboxes.
+func (mr *MockSandboxServiceServerMockRecorder) ListSandboxes(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListSandbox", reflect.TypeOf((*MockSandboxServiceServer)(nil).ListSandbox), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListSandboxes", reflect.TypeOf((*MockSandboxServiceServer)(nil).ListSandboxes), arg0, arg1)
 }
 
 // PauseSandbox mocks base method.
