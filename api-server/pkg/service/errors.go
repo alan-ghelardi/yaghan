@@ -26,6 +26,9 @@ func dbErrToStatus(ctx context.Context, op, sandboxID string, err error) error {
 		return status.Error(codes.Aborted, err.Error())
 	case errors.Is(err, sandboxdb.ErrInvalidPhaseTransition):
 		return status.Error(codes.FailedPrecondition, err.Error())
+	case errors.Is(err, sandboxdb.ErrInvalidListOptions),
+		errors.Is(err, sandboxdb.ErrInvalidContinuationToken):
+		return status.Error(codes.InvalidArgument, err.Error())
 	default:
 		ctxzap.Extract(ctx).Error(op+" sandbox failed",
 			zap.String("sandbox_id", sandboxID),

@@ -98,19 +98,27 @@ func (h *harness) setSavedPhase(ctx context.Context, t *testing.T, id string, ph
 	updatedPB, err := proto.Marshal(sb)
 	require.NoError(t, err)
 
+	// Keep gsi_namespace_phase_hk consistent with the new phase so the
+	// row migrates between partitions of by_status_phase_index the same
+	// way a real Update would; otherwise list-by-phase queries miss
+	// rows mutated through this back-door.
+	gsiPhaseHK := sb.GetMetadata().GetNamespace() + "#" + phase.String()
+
 	_, err = h.ddb.UpdateItem(ctx, &dynamodbservice.UpdateItemInput{
 		TableName: awssdk.String(h.tableName),
 		Key: map[string]ddbtypes.AttributeValue{
 			"sandbox_id": &ddbtypes.AttributeValueMemberS{Value: id},
 		},
-		UpdateExpression: awssdk.String("SET #p = :p, #pb = :pb"),
+		UpdateExpression: awssdk.String("SET #p = :p, #pb = :pb, #hk = :hk"),
 		ExpressionAttributeNames: map[string]string{
 			"#p":  "sandbox_status_phase",
 			"#pb": "sandbox_pb",
+			"#hk": "gsi_namespace_phase_hk",
 		},
 		ExpressionAttributeValues: map[string]ddbtypes.AttributeValue{
 			":p":  &ddbtypes.AttributeValueMemberS{Value: phase.String()},
 			":pb": &ddbtypes.AttributeValueMemberB{Value: updatedPB},
+			":hk": &ddbtypes.AttributeValueMemberS{Value: gsiPhaseHK},
 		},
 	})
 	require.NoError(t, err)
@@ -768,4 +776,132 @@ func TestDeleteSandbox_ValidatesMissingVersion(t *testing.T) {
 
 	_, err := h.client.DeleteSandbox(ctx, &cpv1.DeleteSandboxRequest{SandboxId: "sb-x"})
 	assertCode(t, err, codes.InvalidArgument)
+}
+
+// listSandboxIDs creates a sandbox in the supplied namespace via the gRPC
+// surface and returns its id. It exists so List tests can build fixtures
+// through the same code path callers do.
+func listFixtureViaGRPC(ctx context.Context, t *testing.T, h *harness, id, namespace string) {
+	t.Helper()
+	_, err := h.client.CreateSandbox(ctx, newCreateRequest(withID(id), withNamespace(namespace)))
+	require.NoError(t, err)
+}
+
+func responseSandboxIDs(resp *cpv1.ListSandboxesResponse) []string {
+	out := make([]string, len(resp.GetSandboxes()))
+	for i, sb := range resp.GetSandboxes() {
+		out[i] = sb.GetMetadata().GetId()
+	}
+	return out
+}
+
+func TestListSandboxes_HappyPath(t *testing.T) {
+	h := startService(t)
+	ctx := t.Context()
+
+	listFixtureViaGRPC(ctx, t, h, "sb-list-a", "list-ns-happy")
+	listFixtureViaGRPC(ctx, t, h, "sb-list-b", "list-ns-happy")
+	// Different namespace — must NOT appear.
+	listFixtureViaGRPC(ctx, t, h, "sb-list-other", "list-ns-other")
+
+	resp, err := h.client.ListSandboxes(ctx, &cpv1.ListSandboxesRequest{
+		Namespace: "list-ns-happy",
+		SortOrder: cpv1.ListSandboxesRequest_ORDER_NEWEST_FIRST,
+	})
+	require.NoError(t, err)
+	assert.ElementsMatch(t, []string{"sb-list-a", "sb-list-b"}, responseSandboxIDs(resp),
+		"namespace-bounded list must include only the namespace's sandboxes")
+}
+
+func TestListSandboxes_AppliesDefaults(t *testing.T) {
+	h := startService(t)
+	ctx := t.Context()
+
+	listFixtureViaGRPC(ctx, t, h, "sb-list-defaults", "list-ns-defaults")
+
+	// Both PageSize and SortOrder unset; the handler must substitute the
+	// documented defaults (30, NEWEST_FIRST) before calling the DB.
+	resp, err := h.client.ListSandboxes(ctx, &cpv1.ListSandboxesRequest{
+		Namespace: "list-ns-defaults",
+	})
+	require.NoError(t, err, "unset PageSize/SortOrder must succeed via handler defaulting")
+	assert.NotEmpty(t, resp.GetSandboxes())
+}
+
+func TestListSandboxes_ValidatesMissingFilters(t *testing.T) {
+	h := startService(t)
+	ctx := t.Context()
+
+	// Neither namespace nor node_id set — the CEL message constraint must
+	// reject this at the validation interceptor.
+	_, err := h.client.ListSandboxes(ctx, &cpv1.ListSandboxesRequest{
+		SortOrder: cpv1.ListSandboxesRequest_ORDER_NEWEST_FIRST,
+	})
+	assertCode(t, err, codes.InvalidArgument)
+}
+
+func TestListSandboxes_ValidatesNamespacePattern(t *testing.T) {
+	h := startService(t)
+	ctx := t.Context()
+
+	_, err := h.client.ListSandboxes(ctx, &cpv1.ListSandboxesRequest{
+		Namespace: "Bad-NS",
+		SortOrder: cpv1.ListSandboxesRequest_ORDER_NEWEST_FIRST,
+	})
+	assertCode(t, err, codes.InvalidArgument)
+}
+
+func TestListSandboxes_ValidatesPageSizeUpperBound(t *testing.T) {
+	h := startService(t)
+	ctx := t.Context()
+
+	_, err := h.client.ListSandboxes(ctx, &cpv1.ListSandboxesRequest{
+		Namespace: "list-ns-pagesize",
+		PageSize:  10_001,
+	})
+	assertCode(t, err, codes.InvalidArgument)
+}
+
+func TestListSandboxes_RejectsGarbledContinuationToken(t *testing.T) {
+	h := startService(t)
+	ctx := t.Context()
+
+	_, err := h.client.ListSandboxes(ctx, &cpv1.ListSandboxesRequest{
+		Namespace:         "list-ns-token",
+		ContinuationToken: "this-is-not-base64-json",
+	})
+	assertCode(t, err, codes.InvalidArgument)
+}
+
+func TestListSandboxes_FiltersByPhase(t *testing.T) {
+	h := startService(t)
+	ctx := t.Context()
+
+	listFixtureViaGRPC(ctx, t, h, "sb-list-phase-1", "list-ns-phase")
+	listFixtureViaGRPC(ctx, t, h, "sb-list-phase-2", "list-ns-phase")
+	// Force one of them to RUNNING via the test back-door so the phase
+	// filter has something to discriminate. The CreateSandbox handler
+	// always seeds PENDING, so we can't construct mixed phases through
+	// the public surface alone.
+	h.setSavedPhase(ctx, t, "sb-list-phase-2", cpv1.SandboxStatus_PHASE_RUNNING)
+
+	resp, err := h.client.ListSandboxes(ctx, &cpv1.ListSandboxesRequest{
+		Namespace:   "list-ns-phase",
+		StatusPhase: cpv1.SandboxStatus_PHASE_RUNNING,
+	})
+	require.NoError(t, err)
+	assert.ElementsMatch(t, []string{"sb-list-phase-2"}, responseSandboxIDs(resp),
+		"phase filter via the namespace+phase index must drop non-RUNNING rows")
+}
+
+func TestListSandboxes_EmptyResultIsOK(t *testing.T) {
+	h := startService(t)
+	ctx := t.Context()
+
+	resp, err := h.client.ListSandboxes(ctx, &cpv1.ListSandboxesRequest{
+		Namespace: "list-ns-empty",
+	})
+	require.NoError(t, err)
+	assert.Empty(t, resp.GetSandboxes())
+	assert.Equal(t, "", resp.GetContinuationToken())
 }

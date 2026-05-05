@@ -3,8 +3,13 @@ package service
 import (
 	"context"
 
+	sandboxdb "golang.nuinfra.api-server/pkg/db/sandbox"
 	cpv1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
 )
+
+// defaultListPageSize is the page size applied when ListSandboxes callers
+// leave the field unset. Mirrors the documented default in the proto.
+const defaultListPageSize int32 = 30
 
 // CreateSandbox implements [cpv1.SandboxServiceServer].
 //
@@ -37,6 +42,36 @@ func (a *apiServer) GetSandbox(ctx context.Context, req *cpv1.GetSandboxRequest)
 		return nil, dbErrToStatus(ctx, "get", id, err)
 	}
 	return &cpv1.GetSandboxResponse{Sandbox: sb}, nil
+}
+
+// ListSandboxes implements [cpv1.SandboxServiceServer]. The protovalidate
+// interceptor has already enforced that namespace or node_id is set and the
+// page-size bounds; this layer only fills in defaults for fields the client
+// left unset and forwards the rest to the DB. Empty results are valid.
+func (a *apiServer) ListSandboxes(ctx context.Context, req *cpv1.ListSandboxesRequest) (*cpv1.ListSandboxesResponse, error) {
+	opts := sandboxdb.ListOptions{
+		Namespace:         req.GetNamespace(),
+		NodeID:            req.GetNodeId(),
+		StatusPhase:       req.GetStatusPhase(),
+		SortOrder:         req.GetSortOrder(),
+		PageSize:          req.GetPageSize(),
+		ContinuationToken: req.GetContinuationToken(),
+	}
+	if opts.PageSize == 0 {
+		opts.PageSize = defaultListPageSize
+	}
+	if opts.SortOrder == cpv1.ListSandboxesRequest_ORDER_UNSPECIFIED {
+		opts.SortOrder = cpv1.ListSandboxesRequest_ORDER_NEWEST_FIRST
+	}
+
+	sandboxes, nextToken, err := a.db.List(ctx, opts)
+	if err != nil {
+		return nil, dbErrToStatus(ctx, "list", "", err)
+	}
+	return &cpv1.ListSandboxesResponse{
+		Sandboxes:         sandboxes,
+		ContinuationToken: nextToken,
+	}, nil
 }
 
 // PauseSandbox implements [cpv1.SandboxServiceServer]. The saved Status.Phase
