@@ -15,23 +15,105 @@
   "produces": [
     "application/json"
   ],
-  "paths": {},
-  "definitions": {
-    "SandboxStatusPhase": {
-      "type": "string",
-      "enum": [
-        "PHASE_UNSPECIFIED",
-        "PHASE_PENDING",
-        "PHASE_RUNNING",
-        "PHASE_PAUSING",
-        "PHASE_PAUSED",
-        "PHASE_RESUMING",
-        "PHASE_DELETING",
-        "PHASE_DELETED",
-        "PHASE_FAILED"
-      ],
-      "default": "PHASE_UNSPECIFIED"
+  "paths": {
+    "/v1alpha1/nodes": {
+      "get": {
+        "operationId": "ClusterService_ListNodes",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1alpha1ListNodesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "statusPhase",
+            "description": "Filters nodes by their current lifecycle phase.\nIf unset, nodes in all phases are returned.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "PHASE_UNSPECIFIED",
+              "PHASE_HEALTHY",
+              "PHASE_UNHEALTHY",
+              "PHASE_LOST"
+            ],
+            "default": "PHASE_UNSPECIFIED"
+          },
+          {
+            "name": "continuationToken",
+            "description": "Token used for pagination.\nPass the value returned in a previous response to retrieve the next page of results.\nLeave empty to start listing from the beginning.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "pageSize",
+            "description": "Maximum number of nodes to return in this request.\nDefaults to 30 if not specified.\nThe maximum allowed value is 1000.",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "sortOrder",
+            "description": "Sort order applied to the results based on last_modified_at.\n\n - ORDER_NEWEST_FIRST: Most recently modified nodes first.\n - ORDER_OLDEST_FIRST: Least recently modified nodes first.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "ORDER_UNSPECIFIED",
+              "ORDER_NEWEST_FIRST",
+              "ORDER_OLDEST_FIRST"
+            ],
+            "default": "ORDER_UNSPECIFIED"
+          }
+        ],
+        "tags": [
+          "ClusterService"
+        ]
+      }
     },
+    "/v1alpha1/nodes/{nodeId}": {
+      "get": {
+        "operationId": "ClusterService_GetNode",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1alpha1GetNodeResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "nodeId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ClusterService"
+        ]
+      }
+    }
+  },
+  "definitions": {
     "protobufAny": {
       "type": "object",
       "properties": {
@@ -120,11 +202,19 @@
       },
       "description": "Event represents an activity in the system to which clients may subscribe.\nIt provides enough context for consumers to react, audit, or replicate the change."
     },
+    "v1alpha1GetNodeResponse": {
+      "type": "object",
+      "properties": {
+        "node": {
+          "$ref": "#/definitions/v1alpha1Node"
+        }
+      }
+    },
     "v1alpha1Intent": {
       "type": "object",
       "properties": {
         "phase": {
-          "$ref": "#/definitions/SandboxStatusPhase"
+          "$ref": "#/definitions/v1alpha1SandboxStatusPhase"
         },
         "resources": {
           "$ref": "#/definitions/v1alpha1Resources"
@@ -134,6 +224,34 @@
         }
       }
     },
+    "v1alpha1ListNodesRequestOrder": {
+      "type": "string",
+      "enum": [
+        "ORDER_UNSPECIFIED",
+        "ORDER_NEWEST_FIRST",
+        "ORDER_OLDEST_FIRST"
+      ],
+      "default": "ORDER_UNSPECIFIED",
+      "description": "Controls how results are ordered by last modification time.\n\n - ORDER_NEWEST_FIRST: Most recently modified nodes first.\n - ORDER_OLDEST_FIRST: Least recently modified nodes first."
+    },
+    "v1alpha1ListNodesResponse": {
+      "type": "object",
+      "properties": {
+        "nodes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1alpha1Node"
+          },
+          "description": "The list of nodes matching the request filters."
+        },
+        "continuationToken": {
+          "type": "string",
+          "description": "Token to retrieve the next page of results.\nEmpty if there are no more results."
+        }
+      },
+      "description": "Response message containing a page of nodes."
+    },
     "v1alpha1Node": {
       "type": "object",
       "properties": {
@@ -142,6 +260,9 @@
         },
         "resources": {
           "$ref": "#/definitions/v1alpha1NodeResources"
+        },
+        "status": {
+          "$ref": "#/definitions/v1alpha1NodeStatus"
         }
       }
     },
@@ -185,6 +306,27 @@
           "format": "uint64"
         }
       }
+    },
+    "v1alpha1NodeStatus": {
+      "type": "object",
+      "properties": {
+        "phase": {
+          "$ref": "#/definitions/v1alpha1NodeStatusPhase"
+        },
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "v1alpha1NodeStatusPhase": {
+      "type": "string",
+      "enum": [
+        "PHASE_UNSPECIFIED",
+        "PHASE_HEALTHY",
+        "PHASE_UNHEALTHY",
+        "PHASE_LOST"
+      ],
+      "default": "PHASE_UNSPECIFIED"
     },
     "v1alpha1Resources": {
       "type": "object",
@@ -254,12 +396,27 @@
       "type": "object",
       "properties": {
         "phase": {
-          "$ref": "#/definitions/SandboxStatusPhase"
+          "$ref": "#/definitions/v1alpha1SandboxStatusPhase"
         },
         "message": {
           "type": "string"
         }
       }
+    },
+    "v1alpha1SandboxStatusPhase": {
+      "type": "string",
+      "enum": [
+        "PHASE_UNSPECIFIED",
+        "PHASE_PENDING",
+        "PHASE_RUNNING",
+        "PHASE_PAUSING",
+        "PHASE_PAUSED",
+        "PHASE_RESUMING",
+        "PHASE_DELETING",
+        "PHASE_DELETED",
+        "PHASE_FAILED"
+      ],
+      "default": "PHASE_UNSPECIFIED"
     },
     "v1alpha1UpdateSandboxRequest": {
       "type": "object",

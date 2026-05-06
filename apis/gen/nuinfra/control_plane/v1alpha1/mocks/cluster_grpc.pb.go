@@ -62,6 +62,46 @@ func (mr *MockClusterServiceClientMockRecorder) EstablishSession(ctx any, opts .
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EstablishSession", reflect.TypeOf((*MockClusterServiceClient)(nil).EstablishSession), varargs...)
 }
 
+// GetNode mocks base method.
+func (m *MockClusterServiceClient) GetNode(ctx context.Context, in *control_planev1alpha1.GetNodeRequest, opts ...grpc.CallOption) (*control_planev1alpha1.GetNodeResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "GetNode", varargs...)
+	ret0, _ := ret[0].(*control_planev1alpha1.GetNodeResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetNode indicates an expected call of GetNode.
+func (mr *MockClusterServiceClientMockRecorder) GetNode(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNode", reflect.TypeOf((*MockClusterServiceClient)(nil).GetNode), varargs...)
+}
+
+// ListNodes mocks base method.
+func (m *MockClusterServiceClient) ListNodes(ctx context.Context, in *control_planev1alpha1.ListNodesRequest, opts ...grpc.CallOption) (*control_planev1alpha1.ListNodesResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "ListNodes", varargs...)
+	ret0, _ := ret[0].(*control_planev1alpha1.ListNodesResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListNodes indicates an expected call of ListNodes.
+func (mr *MockClusterServiceClientMockRecorder) ListNodes(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListNodes", reflect.TypeOf((*MockClusterServiceClient)(nil).ListNodes), varargs...)
+}
+
 // MockClusterServiceServer is a mock of ClusterServiceServer interface.
 type MockClusterServiceServer struct {
 	ctrl     *gomock.Controller
@@ -98,6 +138,36 @@ func (m *MockClusterServiceServer) EstablishSession(arg0 grpc.BidiStreamingServe
 func (mr *MockClusterServiceServerMockRecorder) EstablishSession(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EstablishSession", reflect.TypeOf((*MockClusterServiceServer)(nil).EstablishSession), arg0)
+}
+
+// GetNode mocks base method.
+func (m *MockClusterServiceServer) GetNode(arg0 context.Context, arg1 *control_planev1alpha1.GetNodeRequest) (*control_planev1alpha1.GetNodeResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetNode", arg0, arg1)
+	ret0, _ := ret[0].(*control_planev1alpha1.GetNodeResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetNode indicates an expected call of GetNode.
+func (mr *MockClusterServiceServerMockRecorder) GetNode(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNode", reflect.TypeOf((*MockClusterServiceServer)(nil).GetNode), arg0, arg1)
+}
+
+// ListNodes mocks base method.
+func (m *MockClusterServiceServer) ListNodes(arg0 context.Context, arg1 *control_planev1alpha1.ListNodesRequest) (*control_planev1alpha1.ListNodesResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListNodes", arg0, arg1)
+	ret0, _ := ret[0].(*control_planev1alpha1.ListNodesResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListNodes indicates an expected call of ListNodes.
+func (mr *MockClusterServiceServerMockRecorder) ListNodes(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListNodes", reflect.TypeOf((*MockClusterServiceServer)(nil).ListNodes), arg0, arg1)
 }
 
 // mustEmbedUnimplementedClusterServiceServer mocks base method.

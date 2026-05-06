@@ -8,6 +8,7 @@ package control_planev1alpha1
 
 import (
 	_ "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
+	_ "google.golang.org/genproto/googleapis/api/annotations"
 	status "google.golang.org/genproto/googleapis/rpc/status"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -24,10 +25,115 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type NodeStatus_Phase int32
+
+const (
+	NodeStatus_PHASE_UNSPECIFIED NodeStatus_Phase = 0
+	NodeStatus_PHASE_HEALTHY     NodeStatus_Phase = 1
+	NodeStatus_PHASE_UNHEALTHY   NodeStatus_Phase = 2
+	NodeStatus_PHASE_LOST        NodeStatus_Phase = 3
+)
+
+// Enum value maps for NodeStatus_Phase.
+var (
+	NodeStatus_Phase_name = map[int32]string{
+		0: "PHASE_UNSPECIFIED",
+		1: "PHASE_HEALTHY",
+		2: "PHASE_UNHEALTHY",
+		3: "PHASE_LOST",
+	}
+	NodeStatus_Phase_value = map[string]int32{
+		"PHASE_UNSPECIFIED": 0,
+		"PHASE_HEALTHY":     1,
+		"PHASE_UNHEALTHY":   2,
+		"PHASE_LOST":        3,
+	}
+)
+
+func (x NodeStatus_Phase) Enum() *NodeStatus_Phase {
+	p := new(NodeStatus_Phase)
+	*p = x
+	return p
+}
+
+func (x NodeStatus_Phase) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (NodeStatus_Phase) Descriptor() protoreflect.EnumDescriptor {
+	return file_nuinfra_control_plane_v1alpha1_cluster_proto_enumTypes[0].Descriptor()
+}
+
+func (NodeStatus_Phase) Type() protoreflect.EnumType {
+	return &file_nuinfra_control_plane_v1alpha1_cluster_proto_enumTypes[0]
+}
+
+func (x NodeStatus_Phase) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use NodeStatus_Phase.Descriptor instead.
+func (NodeStatus_Phase) EnumDescriptor() ([]byte, []int) {
+	return file_nuinfra_control_plane_v1alpha1_cluster_proto_rawDescGZIP(), []int{3, 0}
+}
+
+// Controls how results are ordered by last modification time.
+type ListNodesRequest_Order int32
+
+const (
+	ListNodesRequest_ORDER_UNSPECIFIED ListNodesRequest_Order = 0
+	// Most recently modified nodes first.
+	ListNodesRequest_ORDER_NEWEST_FIRST ListNodesRequest_Order = 1
+	// Least recently modified nodes first.
+	ListNodesRequest_ORDER_OLDEST_FIRST ListNodesRequest_Order = 2
+)
+
+// Enum value maps for ListNodesRequest_Order.
+var (
+	ListNodesRequest_Order_name = map[int32]string{
+		0: "ORDER_UNSPECIFIED",
+		1: "ORDER_NEWEST_FIRST",
+		2: "ORDER_OLDEST_FIRST",
+	}
+	ListNodesRequest_Order_value = map[string]int32{
+		"ORDER_UNSPECIFIED":  0,
+		"ORDER_NEWEST_FIRST": 1,
+		"ORDER_OLDEST_FIRST": 2,
+	}
+)
+
+func (x ListNodesRequest_Order) Enum() *ListNodesRequest_Order {
+	p := new(ListNodesRequest_Order)
+	*p = x
+	return p
+}
+
+func (x ListNodesRequest_Order) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (ListNodesRequest_Order) Descriptor() protoreflect.EnumDescriptor {
+	return file_nuinfra_control_plane_v1alpha1_cluster_proto_enumTypes[1].Descriptor()
+}
+
+func (ListNodesRequest_Order) Type() protoreflect.EnumType {
+	return &file_nuinfra_control_plane_v1alpha1_cluster_proto_enumTypes[1]
+}
+
+func (x ListNodesRequest_Order) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use ListNodesRequest_Order.Descriptor instead.
+func (ListNodesRequest_Order) EnumDescriptor() ([]byte, []int) {
+	return file_nuinfra_control_plane_v1alpha1_cluster_proto_rawDescGZIP(), []int{6, 0}
+}
+
 type Node struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Metadata      *NodeMeta              `protobuf:"bytes,1,opt,name=metadata,proto3" json:"metadata,omitempty"`
 	Resources     *NodeResources         `protobuf:"bytes,2,opt,name=resources,proto3" json:"resources,omitempty"`
+	Status        *NodeStatus            `protobuf:"bytes,3,opt,name=status,proto3" json:"status,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -72,6 +178,13 @@ func (x *Node) GetMetadata() *NodeMeta {
 func (x *Node) GetResources() *NodeResources {
 	if x != nil {
 		return x.Resources
+	}
+	return nil
+}
+
+func (x *Node) GetStatus() *NodeStatus {
+	if x != nil {
+		return x.Status
 	}
 	return nil
 }
@@ -196,6 +309,280 @@ func (x *NodeResources) GetMemoryMib() uint64 {
 	return 0
 }
 
+type NodeStatus struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Phase         NodeStatus_Phase       `protobuf:"varint,1,opt,name=phase,proto3,enum=nuinfra.control_plane.v1alpha1.NodeStatus_Phase" json:"phase,omitempty"`
+	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *NodeStatus) Reset() {
+	*x = NodeStatus{}
+	mi := &file_nuinfra_control_plane_v1alpha1_cluster_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *NodeStatus) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*NodeStatus) ProtoMessage() {}
+
+func (x *NodeStatus) ProtoReflect() protoreflect.Message {
+	mi := &file_nuinfra_control_plane_v1alpha1_cluster_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use NodeStatus.ProtoReflect.Descriptor instead.
+func (*NodeStatus) Descriptor() ([]byte, []int) {
+	return file_nuinfra_control_plane_v1alpha1_cluster_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *NodeStatus) GetPhase() NodeStatus_Phase {
+	if x != nil {
+		return x.Phase
+	}
+	return NodeStatus_PHASE_UNSPECIFIED
+}
+
+func (x *NodeStatus) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+type GetNodeRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	NodeId        string                 `protobuf:"bytes,1,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetNodeRequest) Reset() {
+	*x = GetNodeRequest{}
+	mi := &file_nuinfra_control_plane_v1alpha1_cluster_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetNodeRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetNodeRequest) ProtoMessage() {}
+
+func (x *GetNodeRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_nuinfra_control_plane_v1alpha1_cluster_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetNodeRequest.ProtoReflect.Descriptor instead.
+func (*GetNodeRequest) Descriptor() ([]byte, []int) {
+	return file_nuinfra_control_plane_v1alpha1_cluster_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *GetNodeRequest) GetNodeId() string {
+	if x != nil {
+		return x.NodeId
+	}
+	return ""
+}
+
+type GetNodeResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Node          *Node                  `protobuf:"bytes,1,opt,name=node,proto3" json:"node,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetNodeResponse) Reset() {
+	*x = GetNodeResponse{}
+	mi := &file_nuinfra_control_plane_v1alpha1_cluster_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetNodeResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetNodeResponse) ProtoMessage() {}
+
+func (x *GetNodeResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_nuinfra_control_plane_v1alpha1_cluster_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetNodeResponse.ProtoReflect.Descriptor instead.
+func (*GetNodeResponse) Descriptor() ([]byte, []int) {
+	return file_nuinfra_control_plane_v1alpha1_cluster_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *GetNodeResponse) GetNode() *Node {
+	if x != nil {
+		return x.Node
+	}
+	return nil
+}
+
+// Request message for listing nodes with optional filtering and pagination.
+type ListNodesRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Filters nodes by their current lifecycle phase.
+	// If unset, nodes in all phases are returned.
+	StatusPhase NodeStatus_Phase `protobuf:"varint,1,opt,name=status_phase,json=statusPhase,proto3,enum=nuinfra.control_plane.v1alpha1.NodeStatus_Phase" json:"status_phase,omitempty"`
+	// Token used for pagination.
+	// Pass the value returned in a previous response to retrieve the next page of results.
+	// Leave empty to start listing from the beginning.
+	ContinuationToken string `protobuf:"bytes,2,opt,name=continuation_token,json=continuationToken,proto3" json:"continuation_token,omitempty"`
+	// Maximum number of nodes to return in this request.
+	// Defaults to 30 if not specified.
+	// The maximum allowed value is 1000.
+	PageSize int32 `protobuf:"varint,3,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	// Sort order applied to the results based on last_modified_at.
+	SortOrder     ListNodesRequest_Order `protobuf:"varint,4,opt,name=sort_order,json=sortOrder,proto3,enum=nuinfra.control_plane.v1alpha1.ListNodesRequest_Order" json:"sort_order,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListNodesRequest) Reset() {
+	*x = ListNodesRequest{}
+	mi := &file_nuinfra_control_plane_v1alpha1_cluster_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListNodesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListNodesRequest) ProtoMessage() {}
+
+func (x *ListNodesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_nuinfra_control_plane_v1alpha1_cluster_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListNodesRequest.ProtoReflect.Descriptor instead.
+func (*ListNodesRequest) Descriptor() ([]byte, []int) {
+	return file_nuinfra_control_plane_v1alpha1_cluster_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *ListNodesRequest) GetStatusPhase() NodeStatus_Phase {
+	if x != nil {
+		return x.StatusPhase
+	}
+	return NodeStatus_PHASE_UNSPECIFIED
+}
+
+func (x *ListNodesRequest) GetContinuationToken() string {
+	if x != nil {
+		return x.ContinuationToken
+	}
+	return ""
+}
+
+func (x *ListNodesRequest) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
+func (x *ListNodesRequest) GetSortOrder() ListNodesRequest_Order {
+	if x != nil {
+		return x.SortOrder
+	}
+	return ListNodesRequest_ORDER_UNSPECIFIED
+}
+
+// Response message containing a page of nodes.
+type ListNodesResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The list of nodes matching the request filters.
+	Nodes []*Node `protobuf:"bytes,1,rep,name=nodes,proto3" json:"nodes,omitempty"`
+	// Token to retrieve the next page of results.
+	// Empty if there are no more results.
+	ContinuationToken string `protobuf:"bytes,2,opt,name=continuation_token,json=continuationToken,proto3" json:"continuation_token,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *ListNodesResponse) Reset() {
+	*x = ListNodesResponse{}
+	mi := &file_nuinfra_control_plane_v1alpha1_cluster_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListNodesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListNodesResponse) ProtoMessage() {}
+
+func (x *ListNodesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_nuinfra_control_plane_v1alpha1_cluster_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListNodesResponse.ProtoReflect.Descriptor instead.
+func (*ListNodesResponse) Descriptor() ([]byte, []int) {
+	return file_nuinfra_control_plane_v1alpha1_cluster_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *ListNodesResponse) GetNodes() []*Node {
+	if x != nil {
+		return x.Nodes
+	}
+	return nil
+}
+
+func (x *ListNodesResponse) GetContinuationToken() string {
+	if x != nil {
+		return x.ContinuationToken
+	}
+	return ""
+}
+
 type EstablishSessionRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Types that are valid to be assigned to Operation:
@@ -209,7 +596,7 @@ type EstablishSessionRequest struct {
 
 func (x *EstablishSessionRequest) Reset() {
 	*x = EstablishSessionRequest{}
-	mi := &file_nuinfra_control_plane_v1alpha1_cluster_proto_msgTypes[3]
+	mi := &file_nuinfra_control_plane_v1alpha1_cluster_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -221,7 +608,7 @@ func (x *EstablishSessionRequest) String() string {
 func (*EstablishSessionRequest) ProtoMessage() {}
 
 func (x *EstablishSessionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_nuinfra_control_plane_v1alpha1_cluster_proto_msgTypes[3]
+	mi := &file_nuinfra_control_plane_v1alpha1_cluster_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -234,7 +621,7 @@ func (x *EstablishSessionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EstablishSessionRequest.ProtoReflect.Descriptor instead.
 func (*EstablishSessionRequest) Descriptor() ([]byte, []int) {
-	return file_nuinfra_control_plane_v1alpha1_cluster_proto_rawDescGZIP(), []int{3}
+	return file_nuinfra_control_plane_v1alpha1_cluster_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *EstablishSessionRequest) GetOperation() isEstablishSessionRequest_Operation {
@@ -294,7 +681,7 @@ type ConnectionRequest struct {
 
 func (x *ConnectionRequest) Reset() {
 	*x = ConnectionRequest{}
-	mi := &file_nuinfra_control_plane_v1alpha1_cluster_proto_msgTypes[4]
+	mi := &file_nuinfra_control_plane_v1alpha1_cluster_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -306,7 +693,7 @@ func (x *ConnectionRequest) String() string {
 func (*ConnectionRequest) ProtoMessage() {}
 
 func (x *ConnectionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_nuinfra_control_plane_v1alpha1_cluster_proto_msgTypes[4]
+	mi := &file_nuinfra_control_plane_v1alpha1_cluster_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -319,7 +706,7 @@ func (x *ConnectionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ConnectionRequest.ProtoReflect.Descriptor instead.
 func (*ConnectionRequest) Descriptor() ([]byte, []int) {
-	return file_nuinfra_control_plane_v1alpha1_cluster_proto_rawDescGZIP(), []int{4}
+	return file_nuinfra_control_plane_v1alpha1_cluster_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *ConnectionRequest) GetSessionId() int64 {
@@ -345,7 +732,7 @@ type UpdateSandboxRequest struct {
 
 func (x *UpdateSandboxRequest) Reset() {
 	*x = UpdateSandboxRequest{}
-	mi := &file_nuinfra_control_plane_v1alpha1_cluster_proto_msgTypes[5]
+	mi := &file_nuinfra_control_plane_v1alpha1_cluster_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -357,7 +744,7 @@ func (x *UpdateSandboxRequest) String() string {
 func (*UpdateSandboxRequest) ProtoMessage() {}
 
 func (x *UpdateSandboxRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_nuinfra_control_plane_v1alpha1_cluster_proto_msgTypes[5]
+	mi := &file_nuinfra_control_plane_v1alpha1_cluster_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -370,7 +757,7 @@ func (x *UpdateSandboxRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateSandboxRequest.ProtoReflect.Descriptor instead.
 func (*UpdateSandboxRequest) Descriptor() ([]byte, []int) {
-	return file_nuinfra_control_plane_v1alpha1_cluster_proto_rawDescGZIP(), []int{5}
+	return file_nuinfra_control_plane_v1alpha1_cluster_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *UpdateSandboxRequest) GetSandbox() *Sandbox {
@@ -394,7 +781,7 @@ type EstablishSessionResponse struct {
 
 func (x *EstablishSessionResponse) Reset() {
 	*x = EstablishSessionResponse{}
-	mi := &file_nuinfra_control_plane_v1alpha1_cluster_proto_msgTypes[6]
+	mi := &file_nuinfra_control_plane_v1alpha1_cluster_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -406,7 +793,7 @@ func (x *EstablishSessionResponse) String() string {
 func (*EstablishSessionResponse) ProtoMessage() {}
 
 func (x *EstablishSessionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_nuinfra_control_plane_v1alpha1_cluster_proto_msgTypes[6]
+	mi := &file_nuinfra_control_plane_v1alpha1_cluster_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -419,7 +806,7 @@ func (x *EstablishSessionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EstablishSessionResponse.ProtoReflect.Descriptor instead.
 func (*EstablishSessionResponse) Descriptor() ([]byte, []int) {
-	return file_nuinfra_control_plane_v1alpha1_cluster_proto_rawDescGZIP(), []int{6}
+	return file_nuinfra_control_plane_v1alpha1_cluster_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *EstablishSessionResponse) GetMessage() isEstablishSessionResponse_Message {
@@ -487,7 +874,7 @@ type ConnectionResponse struct {
 
 func (x *ConnectionResponse) Reset() {
 	*x = ConnectionResponse{}
-	mi := &file_nuinfra_control_plane_v1alpha1_cluster_proto_msgTypes[7]
+	mi := &file_nuinfra_control_plane_v1alpha1_cluster_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -499,7 +886,7 @@ func (x *ConnectionResponse) String() string {
 func (*ConnectionResponse) ProtoMessage() {}
 
 func (x *ConnectionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_nuinfra_control_plane_v1alpha1_cluster_proto_msgTypes[7]
+	mi := &file_nuinfra_control_plane_v1alpha1_cluster_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -512,7 +899,7 @@ func (x *ConnectionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ConnectionResponse.ProtoReflect.Descriptor instead.
 func (*ConnectionResponse) Descriptor() ([]byte, []int) {
-	return file_nuinfra_control_plane_v1alpha1_cluster_proto_rawDescGZIP(), []int{7}
+	return file_nuinfra_control_plane_v1alpha1_cluster_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *ConnectionResponse) GetSessionId() int64 {
@@ -542,7 +929,7 @@ type Event struct {
 
 func (x *Event) Reset() {
 	*x = Event{}
-	mi := &file_nuinfra_control_plane_v1alpha1_cluster_proto_msgTypes[8]
+	mi := &file_nuinfra_control_plane_v1alpha1_cluster_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -554,7 +941,7 @@ func (x *Event) String() string {
 func (*Event) ProtoMessage() {}
 
 func (x *Event) ProtoReflect() protoreflect.Message {
-	mi := &file_nuinfra_control_plane_v1alpha1_cluster_proto_msgTypes[8]
+	mi := &file_nuinfra_control_plane_v1alpha1_cluster_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -567,7 +954,7 @@ func (x *Event) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Event.ProtoReflect.Descriptor instead.
 func (*Event) Descriptor() ([]byte, []int) {
-	return file_nuinfra_control_plane_v1alpha1_cluster_proto_rawDescGZIP(), []int{8}
+	return file_nuinfra_control_plane_v1alpha1_cluster_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *Event) GetId() string {
@@ -614,10 +1001,11 @@ var File_nuinfra_control_plane_v1alpha1_cluster_proto protoreflect.FileDescripto
 
 const file_nuinfra_control_plane_v1alpha1_cluster_proto_rawDesc = "" +
 	"\n" +
-	",nuinfra/control_plane/v1alpha1/cluster.proto\x12\x1enuinfra.control_plane.v1alpha1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x17google/rpc/status.proto\x1a,nuinfra/control_plane/v1alpha1/sandbox.proto\"\xa9\x01\n" +
+	",nuinfra/control_plane/v1alpha1/cluster.proto\x12\x1enuinfra.control_plane.v1alpha1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x17google/rpc/status.proto\x1a,nuinfra/control_plane/v1alpha1/sandbox.proto\"\xed\x01\n" +
 	"\x04Node\x12L\n" +
 	"\bmetadata\x18\x01 \x01(\v2(.nuinfra.control_plane.v1alpha1.NodeMetaB\x06\xbaH\x03\xc8\x01\x01R\bmetadata\x12S\n" +
-	"\tresources\x18\x02 \x01(\v2-.nuinfra.control_plane.v1alpha1.NodeResourcesB\x06\xbaH\x03\xc8\x01\x01R\tresources\"\xbd\x01\n" +
+	"\tresources\x18\x02 \x01(\v2-.nuinfra.control_plane.v1alpha1.NodeResourcesB\x06\xbaH\x03\xc8\x01\x01R\tresources\x12B\n" +
+	"\x06status\x18\x03 \x01(\v2*.nuinfra.control_plane.v1alpha1.NodeStatusR\x06status\"\xbd\x01\n" +
 	"\bNodeMeta\x12\x16\n" +
 	"\x02id\x18\x01 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x02id\x12\x18\n" +
 	"\aversion\x18\x02 \x01(\x03R\aversion\x129\n" +
@@ -628,7 +1016,35 @@ const file_nuinfra_control_plane_v1alpha1_cluster_proto_rawDesc = "" +
 	"\n" +
 	"vcpu_count\x18\x01 \x01(\rB\a\xbaH\x04*\x02(\x01R\tvcpuCount\x12'\n" +
 	"\n" +
-	"memory_mib\x18\x02 \x01(\x04B\b\xbaH\x052\x03(\x80\x01R\tmemoryMib\"\xd4\x01\n" +
+	"memory_mib\x18\x02 \x01(\x04B\b\xbaH\x052\x03(\x80\x01R\tmemoryMib\"\xc6\x01\n" +
+	"\n" +
+	"NodeStatus\x12F\n" +
+	"\x05phase\x18\x01 \x01(\x0e20.nuinfra.control_plane.v1alpha1.NodeStatus.PhaseR\x05phase\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\"V\n" +
+	"\x05Phase\x12\x15\n" +
+	"\x11PHASE_UNSPECIFIED\x10\x00\x12\x11\n" +
+	"\rPHASE_HEALTHY\x10\x01\x12\x13\n" +
+	"\x0fPHASE_UNHEALTHY\x10\x02\x12\x0e\n" +
+	"\n" +
+	"PHASE_LOST\x10\x03\"1\n" +
+	"\x0eGetNodeRequest\x12\x1f\n" +
+	"\anode_id\x18\x01 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x06nodeId\"K\n" +
+	"\x0fGetNodeResponse\x128\n" +
+	"\x04node\x18\x01 \x01(\v2$.nuinfra.control_plane.v1alpha1.NodeR\x04node\"\xe6\x02\n" +
+	"\x10ListNodesRequest\x12S\n" +
+	"\fstatus_phase\x18\x01 \x01(\x0e20.nuinfra.control_plane.v1alpha1.NodeStatus.PhaseR\vstatusPhase\x12-\n" +
+	"\x12continuation_token\x18\x02 \x01(\tR\x11continuationToken\x12'\n" +
+	"\tpage_size\x18\x03 \x01(\x05B\n" +
+	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x12U\n" +
+	"\n" +
+	"sort_order\x18\x04 \x01(\x0e26.nuinfra.control_plane.v1alpha1.ListNodesRequest.OrderR\tsortOrder\"N\n" +
+	"\x05Order\x12\x15\n" +
+	"\x11ORDER_UNSPECIFIED\x10\x00\x12\x16\n" +
+	"\x12ORDER_NEWEST_FIRST\x10\x01\x12\x16\n" +
+	"\x12ORDER_OLDEST_FIRST\x10\x02\"~\n" +
+	"\x11ListNodesResponse\x12:\n" +
+	"\x05nodes\x18\x01 \x03(\v2$.nuinfra.control_plane.v1alpha1.NodeR\x05nodes\x12-\n" +
+	"\x12continuation_token\x18\x02 \x01(\tR\x11continuationToken\"\xd4\x01\n" +
 	"\x17EstablishSessionRequest\x12M\n" +
 	"\aconnect\x18\x01 \x01(\v21.nuinfra.control_plane.v1alpha1.ConnectionRequestH\x00R\aconnect\x12]\n" +
 	"\x0eupdate_sandbox\x18\x02 \x01(\v24.nuinfra.control_plane.v1alpha1.UpdateSandboxRequestH\x00R\rupdateSandboxB\v\n" +
@@ -652,9 +1068,11 @@ const file_nuinfra_control_plane_v1alpha1_cluster_proto_rawDesc = "" +
 	"\n" +
 	"emitted_at\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\temittedAt\x12C\n" +
 	"\asandbox\x18\x03 \x01(\v2'.nuinfra.control_plane.v1alpha1.SandboxH\x00R\asandboxB\x11\n" +
-	"\x0finvolved_object2\x9c\x01\n" +
+	"\x0finvolved_object2\xb8\x03\n" +
 	"\x0eClusterService\x12\x89\x01\n" +
-	"\x10EstablishSession\x127.nuinfra.control_plane.v1alpha1.EstablishSessionRequest\x1a8.nuinfra.control_plane.v1alpha1.EstablishSessionResponse(\x010\x01B\x9a\x02\n" +
+	"\x10EstablishSession\x127.nuinfra.control_plane.v1alpha1.EstablishSessionRequest\x1a8.nuinfra.control_plane.v1alpha1.EstablishSessionResponse(\x010\x01\x12\x8d\x01\n" +
+	"\aGetNode\x12..nuinfra.control_plane.v1alpha1.GetNodeRequest\x1a/.nuinfra.control_plane.v1alpha1.GetNodeResponse\"!\x82\xd3\xe4\x93\x02\x1b\x12\x19/v1alpha1/nodes/{node_id}\x12\x89\x01\n" +
+	"\tListNodes\x120.nuinfra.control_plane.v1alpha1.ListNodesRequest\x1a1.nuinfra.control_plane.v1alpha1.ListNodesResponse\"\x17\x82\xd3\xe4\x93\x02\x11\x12\x0f/v1alpha1/nodesB\x9a\x02\n" +
 	"\"com.nuinfra.control_plane.v1alpha1B\fClusterProtoP\x01ZPgolang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1;control_planev1alpha1\xa2\x02\x03NCX\xaa\x02\x1dNuinfra.ControlPlane.V1alpha1\xca\x02\x1dNuinfra\\ControlPlane\\V1alpha1\xe2\x02)Nuinfra\\ControlPlane\\V1alpha1\\GPBMetadata\xea\x02\x1fNuinfra::ControlPlane::V1alpha1b\x06proto3"
 
 var (
@@ -669,42 +1087,60 @@ func file_nuinfra_control_plane_v1alpha1_cluster_proto_rawDescGZIP() []byte {
 	return file_nuinfra_control_plane_v1alpha1_cluster_proto_rawDescData
 }
 
-var file_nuinfra_control_plane_v1alpha1_cluster_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_nuinfra_control_plane_v1alpha1_cluster_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
+var file_nuinfra_control_plane_v1alpha1_cluster_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
 var file_nuinfra_control_plane_v1alpha1_cluster_proto_goTypes = []any{
-	(*Node)(nil),                     // 0: nuinfra.control_plane.v1alpha1.Node
-	(*NodeMeta)(nil),                 // 1: nuinfra.control_plane.v1alpha1.NodeMeta
-	(*NodeResources)(nil),            // 2: nuinfra.control_plane.v1alpha1.NodeResources
-	(*EstablishSessionRequest)(nil),  // 3: nuinfra.control_plane.v1alpha1.EstablishSessionRequest
-	(*ConnectionRequest)(nil),        // 4: nuinfra.control_plane.v1alpha1.ConnectionRequest
-	(*UpdateSandboxRequest)(nil),     // 5: nuinfra.control_plane.v1alpha1.UpdateSandboxRequest
-	(*EstablishSessionResponse)(nil), // 6: nuinfra.control_plane.v1alpha1.EstablishSessionResponse
-	(*ConnectionResponse)(nil),       // 7: nuinfra.control_plane.v1alpha1.ConnectionResponse
-	(*Event)(nil),                    // 8: nuinfra.control_plane.v1alpha1.Event
-	(*timestamppb.Timestamp)(nil),    // 9: google.protobuf.Timestamp
-	(*Sandbox)(nil),                  // 10: nuinfra.control_plane.v1alpha1.Sandbox
-	(*status.Status)(nil),            // 11: google.rpc.Status
+	(NodeStatus_Phase)(0),            // 0: nuinfra.control_plane.v1alpha1.NodeStatus.Phase
+	(ListNodesRequest_Order)(0),      // 1: nuinfra.control_plane.v1alpha1.ListNodesRequest.Order
+	(*Node)(nil),                     // 2: nuinfra.control_plane.v1alpha1.Node
+	(*NodeMeta)(nil),                 // 3: nuinfra.control_plane.v1alpha1.NodeMeta
+	(*NodeResources)(nil),            // 4: nuinfra.control_plane.v1alpha1.NodeResources
+	(*NodeStatus)(nil),               // 5: nuinfra.control_plane.v1alpha1.NodeStatus
+	(*GetNodeRequest)(nil),           // 6: nuinfra.control_plane.v1alpha1.GetNodeRequest
+	(*GetNodeResponse)(nil),          // 7: nuinfra.control_plane.v1alpha1.GetNodeResponse
+	(*ListNodesRequest)(nil),         // 8: nuinfra.control_plane.v1alpha1.ListNodesRequest
+	(*ListNodesResponse)(nil),        // 9: nuinfra.control_plane.v1alpha1.ListNodesResponse
+	(*EstablishSessionRequest)(nil),  // 10: nuinfra.control_plane.v1alpha1.EstablishSessionRequest
+	(*ConnectionRequest)(nil),        // 11: nuinfra.control_plane.v1alpha1.ConnectionRequest
+	(*UpdateSandboxRequest)(nil),     // 12: nuinfra.control_plane.v1alpha1.UpdateSandboxRequest
+	(*EstablishSessionResponse)(nil), // 13: nuinfra.control_plane.v1alpha1.EstablishSessionResponse
+	(*ConnectionResponse)(nil),       // 14: nuinfra.control_plane.v1alpha1.ConnectionResponse
+	(*Event)(nil),                    // 15: nuinfra.control_plane.v1alpha1.Event
+	(*timestamppb.Timestamp)(nil),    // 16: google.protobuf.Timestamp
+	(*Sandbox)(nil),                  // 17: nuinfra.control_plane.v1alpha1.Sandbox
+	(*status.Status)(nil),            // 18: google.rpc.Status
 }
 var file_nuinfra_control_plane_v1alpha1_cluster_proto_depIdxs = []int32{
-	1,  // 0: nuinfra.control_plane.v1alpha1.Node.metadata:type_name -> nuinfra.control_plane.v1alpha1.NodeMeta
-	2,  // 1: nuinfra.control_plane.v1alpha1.Node.resources:type_name -> nuinfra.control_plane.v1alpha1.NodeResources
-	9,  // 2: nuinfra.control_plane.v1alpha1.NodeMeta.created_at:type_name -> google.protobuf.Timestamp
-	9,  // 3: nuinfra.control_plane.v1alpha1.NodeMeta.last_modified_at:type_name -> google.protobuf.Timestamp
-	4,  // 4: nuinfra.control_plane.v1alpha1.EstablishSessionRequest.connect:type_name -> nuinfra.control_plane.v1alpha1.ConnectionRequest
-	5,  // 5: nuinfra.control_plane.v1alpha1.EstablishSessionRequest.update_sandbox:type_name -> nuinfra.control_plane.v1alpha1.UpdateSandboxRequest
-	0,  // 6: nuinfra.control_plane.v1alpha1.ConnectionRequest.node:type_name -> nuinfra.control_plane.v1alpha1.Node
-	10, // 7: nuinfra.control_plane.v1alpha1.UpdateSandboxRequest.sandbox:type_name -> nuinfra.control_plane.v1alpha1.Sandbox
-	7,  // 8: nuinfra.control_plane.v1alpha1.EstablishSessionResponse.acknowledge:type_name -> nuinfra.control_plane.v1alpha1.ConnectionResponse
-	8,  // 9: nuinfra.control_plane.v1alpha1.EstablishSessionResponse.event:type_name -> nuinfra.control_plane.v1alpha1.Event
-	11, // 10: nuinfra.control_plane.v1alpha1.EstablishSessionResponse.error:type_name -> google.rpc.Status
-	9,  // 11: nuinfra.control_plane.v1alpha1.Event.emitted_at:type_name -> google.protobuf.Timestamp
-	10, // 12: nuinfra.control_plane.v1alpha1.Event.sandbox:type_name -> nuinfra.control_plane.v1alpha1.Sandbox
-	3,  // 13: nuinfra.control_plane.v1alpha1.ClusterService.EstablishSession:input_type -> nuinfra.control_plane.v1alpha1.EstablishSessionRequest
-	6,  // 14: nuinfra.control_plane.v1alpha1.ClusterService.EstablishSession:output_type -> nuinfra.control_plane.v1alpha1.EstablishSessionResponse
-	14, // [14:15] is the sub-list for method output_type
-	13, // [13:14] is the sub-list for method input_type
-	13, // [13:13] is the sub-list for extension type_name
-	13, // [13:13] is the sub-list for extension extendee
-	0,  // [0:13] is the sub-list for field type_name
+	3,  // 0: nuinfra.control_plane.v1alpha1.Node.metadata:type_name -> nuinfra.control_plane.v1alpha1.NodeMeta
+	4,  // 1: nuinfra.control_plane.v1alpha1.Node.resources:type_name -> nuinfra.control_plane.v1alpha1.NodeResources
+	5,  // 2: nuinfra.control_plane.v1alpha1.Node.status:type_name -> nuinfra.control_plane.v1alpha1.NodeStatus
+	16, // 3: nuinfra.control_plane.v1alpha1.NodeMeta.created_at:type_name -> google.protobuf.Timestamp
+	16, // 4: nuinfra.control_plane.v1alpha1.NodeMeta.last_modified_at:type_name -> google.protobuf.Timestamp
+	0,  // 5: nuinfra.control_plane.v1alpha1.NodeStatus.phase:type_name -> nuinfra.control_plane.v1alpha1.NodeStatus.Phase
+	2,  // 6: nuinfra.control_plane.v1alpha1.GetNodeResponse.node:type_name -> nuinfra.control_plane.v1alpha1.Node
+	0,  // 7: nuinfra.control_plane.v1alpha1.ListNodesRequest.status_phase:type_name -> nuinfra.control_plane.v1alpha1.NodeStatus.Phase
+	1,  // 8: nuinfra.control_plane.v1alpha1.ListNodesRequest.sort_order:type_name -> nuinfra.control_plane.v1alpha1.ListNodesRequest.Order
+	2,  // 9: nuinfra.control_plane.v1alpha1.ListNodesResponse.nodes:type_name -> nuinfra.control_plane.v1alpha1.Node
+	11, // 10: nuinfra.control_plane.v1alpha1.EstablishSessionRequest.connect:type_name -> nuinfra.control_plane.v1alpha1.ConnectionRequest
+	12, // 11: nuinfra.control_plane.v1alpha1.EstablishSessionRequest.update_sandbox:type_name -> nuinfra.control_plane.v1alpha1.UpdateSandboxRequest
+	2,  // 12: nuinfra.control_plane.v1alpha1.ConnectionRequest.node:type_name -> nuinfra.control_plane.v1alpha1.Node
+	17, // 13: nuinfra.control_plane.v1alpha1.UpdateSandboxRequest.sandbox:type_name -> nuinfra.control_plane.v1alpha1.Sandbox
+	14, // 14: nuinfra.control_plane.v1alpha1.EstablishSessionResponse.acknowledge:type_name -> nuinfra.control_plane.v1alpha1.ConnectionResponse
+	15, // 15: nuinfra.control_plane.v1alpha1.EstablishSessionResponse.event:type_name -> nuinfra.control_plane.v1alpha1.Event
+	18, // 16: nuinfra.control_plane.v1alpha1.EstablishSessionResponse.error:type_name -> google.rpc.Status
+	16, // 17: nuinfra.control_plane.v1alpha1.Event.emitted_at:type_name -> google.protobuf.Timestamp
+	17, // 18: nuinfra.control_plane.v1alpha1.Event.sandbox:type_name -> nuinfra.control_plane.v1alpha1.Sandbox
+	10, // 19: nuinfra.control_plane.v1alpha1.ClusterService.EstablishSession:input_type -> nuinfra.control_plane.v1alpha1.EstablishSessionRequest
+	6,  // 20: nuinfra.control_plane.v1alpha1.ClusterService.GetNode:input_type -> nuinfra.control_plane.v1alpha1.GetNodeRequest
+	8,  // 21: nuinfra.control_plane.v1alpha1.ClusterService.ListNodes:input_type -> nuinfra.control_plane.v1alpha1.ListNodesRequest
+	13, // 22: nuinfra.control_plane.v1alpha1.ClusterService.EstablishSession:output_type -> nuinfra.control_plane.v1alpha1.EstablishSessionResponse
+	7,  // 23: nuinfra.control_plane.v1alpha1.ClusterService.GetNode:output_type -> nuinfra.control_plane.v1alpha1.GetNodeResponse
+	9,  // 24: nuinfra.control_plane.v1alpha1.ClusterService.ListNodes:output_type -> nuinfra.control_plane.v1alpha1.ListNodesResponse
+	22, // [22:25] is the sub-list for method output_type
+	19, // [19:22] is the sub-list for method input_type
+	19, // [19:19] is the sub-list for extension type_name
+	19, // [19:19] is the sub-list for extension extendee
+	0,  // [0:19] is the sub-list for field type_name
 }
 
 func init() { file_nuinfra_control_plane_v1alpha1_cluster_proto_init() }
@@ -713,16 +1149,16 @@ func file_nuinfra_control_plane_v1alpha1_cluster_proto_init() {
 		return
 	}
 	file_nuinfra_control_plane_v1alpha1_sandbox_proto_init()
-	file_nuinfra_control_plane_v1alpha1_cluster_proto_msgTypes[3].OneofWrappers = []any{
+	file_nuinfra_control_plane_v1alpha1_cluster_proto_msgTypes[8].OneofWrappers = []any{
 		(*EstablishSessionRequest_Connect)(nil),
 		(*EstablishSessionRequest_UpdateSandbox)(nil),
 	}
-	file_nuinfra_control_plane_v1alpha1_cluster_proto_msgTypes[6].OneofWrappers = []any{
+	file_nuinfra_control_plane_v1alpha1_cluster_proto_msgTypes[11].OneofWrappers = []any{
 		(*EstablishSessionResponse_Acknowledge)(nil),
 		(*EstablishSessionResponse_Event)(nil),
 		(*EstablishSessionResponse_Error)(nil),
 	}
-	file_nuinfra_control_plane_v1alpha1_cluster_proto_msgTypes[8].OneofWrappers = []any{
+	file_nuinfra_control_plane_v1alpha1_cluster_proto_msgTypes[13].OneofWrappers = []any{
 		(*Event_Sandbox)(nil),
 	}
 	type x struct{}
@@ -730,13 +1166,14 @@ func file_nuinfra_control_plane_v1alpha1_cluster_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_nuinfra_control_plane_v1alpha1_cluster_proto_rawDesc), len(file_nuinfra_control_plane_v1alpha1_cluster_proto_rawDesc)),
-			NumEnums:      0,
-			NumMessages:   9,
+			NumEnums:      2,
+			NumMessages:   14,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_nuinfra_control_plane_v1alpha1_cluster_proto_goTypes,
 		DependencyIndexes: file_nuinfra_control_plane_v1alpha1_cluster_proto_depIdxs,
+		EnumInfos:         file_nuinfra_control_plane_v1alpha1_cluster_proto_enumTypes,
 		MessageInfos:      file_nuinfra_control_plane_v1alpha1_cluster_proto_msgTypes,
 	}.Build()
 	File_nuinfra_control_plane_v1alpha1_cluster_proto = out.File

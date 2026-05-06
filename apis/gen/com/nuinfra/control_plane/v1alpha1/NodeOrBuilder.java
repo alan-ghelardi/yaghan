@@ -39,4 +39,19 @@ public interface NodeOrBuilder extends
    * <code>.nuinfra.control_plane.v1alpha1.NodeResources resources = 2 [json_name = "resources", (.buf.validate.field) = { ... }</code>
    */
   com.nuinfra.control_plane.v1alpha1.NodeResourcesOrBuilder getResourcesOrBuilder();
+
+  /**
+   * <code>.nuinfra.control_plane.v1alpha1.NodeStatus status = 3 [json_name = "status"];</code>
+   * @return Whether the status field is set.
+   */
+  boolean hasStatus();
+  /**
+   * <code>.nuinfra.control_plane.v1alpha1.NodeStatus status = 3 [json_name = "status"];</code>
+   * @return The status.
+   */
+  com.nuinfra.control_plane.v1alpha1.NodeStatus getStatus();
+  /**
+   * <code>.nuinfra.control_plane.v1alpha1.NodeStatus status = 3 [json_name = "status"];</code>
+   */
+  com.nuinfra.control_plane.v1alpha1.NodeStatusOrBuilder getStatusOrBuilder();
 }

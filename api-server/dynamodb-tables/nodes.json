@@ -1,0 +1,68 @@
+{
+  "TableName": "nodes",
+  "BillingMode": "PAY_PER_REQUEST",
+  "AttributeDefinitions": [
+    {
+      "AttributeName": "node_id",
+      "AttributeType": "S"
+    },
+    {
+      "AttributeName": "node_status_phase",
+      "AttributeType": "S"
+    },
+    {
+      "AttributeName": "gsi_const_hk",
+      "AttributeType": "S"
+    },
+    {
+      "AttributeName": "gsi_lmt_sk",
+      "AttributeType": "S"
+    }
+  ],
+  "KeySchema": [
+    {
+      "AttributeName": "node_id",
+      "KeyType": "HASH"
+    }
+  ],
+  "GlobalSecondaryIndexes": [
+    {
+      "IndexName": "all_nodes_index",
+      "KeySchema": [
+        {
+          "AttributeName": "gsi_const_hk",
+          "KeyType": "HASH"
+        },
+        {
+          "AttributeName": "gsi_lmt_sk",
+          "KeyType": "RANGE"
+        }
+      ],
+      "Projection": {
+        "ProjectionType": "INCLUDE",
+        "NonKeyAttributes": [
+          "node_pb"
+        ]
+      }
+    },
+    {
+      "IndexName": "by_status_phase_index",
+      "KeySchema": [
+        {
+          "AttributeName": "node_status_phase",
+          "KeyType": "HASH"
+        },
+        {
+          "AttributeName": "gsi_lmt_sk",
+          "KeyType": "RANGE"
+        }
+      ],
+      "Projection": {
+        "ProjectionType": "INCLUDE",
+        "NonKeyAttributes": [
+          "node_pb"
+        ]
+      }
+    }
+  ]
+}

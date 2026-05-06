@@ -3,6 +3,7 @@ syntax = "proto3";
 package nuinfra.control_plane.v1alpha1;
 
 import "buf/validate/validate.proto";
+import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
 import "google/rpc/status.proto";
 import "nuinfra/control_plane/v1alpha1/sandbox.proto";
@@ -11,6 +12,8 @@ message Node {
   NodeMeta metadata = 1 [(buf.validate.field).required = true];
 
   NodeResources resources = 2 [(buf.validate.field).required = true];
+
+  NodeStatus status = 3;
 }
 
 message NodeMeta {
@@ -27,6 +30,71 @@ message NodeResources {
   uint32 vcpu_count = 1 [(buf.validate.field).uint32.gte = 1];
 
   uint64 memory_mib = 2 [(buf.validate.field).uint64.gte = 128];
+}
+
+message NodeStatus {
+  enum Phase {
+    PHASE_UNSPECIFIED = 0;
+    PHASE_HEALTHY = 1;
+    PHASE_UNHEALTHY = 2;
+    PHASE_LOST = 3;
+  }
+
+  Phase phase = 1;
+
+  string message = 2;
+}
+
+message GetNodeRequest {
+  string node_id = 1 [(buf.validate.field).required = true];
+}
+
+message GetNodeResponse {
+  Node node = 1;
+}
+
+// Request message for listing nodes with optional filtering and pagination.
+message ListNodesRequest {
+  // Filters nodes by their current lifecycle phase.
+  // If unset, nodes in all phases are returned.
+  NodeStatus.Phase status_phase = 1;
+
+  // Token used for pagination.
+  // Pass the value returned in a previous response to retrieve the next page of results.
+  // Leave empty to start listing from the beginning.
+  string continuation_token = 2;
+
+  // Maximum number of nodes to return in this request.
+  // Defaults to 30 if not specified.
+  // The maximum allowed value is 1000.
+  int32 page_size = 3 [
+    (buf.validate.field).int32.gte = 0,
+    (buf.validate.field).int32.lte = 1000
+  ];
+
+  // Controls how results are ordered by last modification time.
+  enum Order {
+    ORDER_UNSPECIFIED = 0;
+
+    // Most recently modified nodes first.
+    ORDER_NEWEST_FIRST = 1;
+
+    // Least recently modified nodes first.
+    ORDER_OLDEST_FIRST = 2;
+  }
+
+  // Sort order applied to the results based on last_modified_at.
+  Order sort_order = 4;
+}
+
+// Response message containing a page of nodes.
+message ListNodesResponse {
+  // The list of nodes matching the request filters.
+  repeated Node nodes = 1;
+
+  // Token to retrieve the next page of results.
+  // Empty if there are no more results.
+  string continuation_token = 2;
 }
 
 message EstablishSessionRequest {
@@ -81,4 +149,12 @@ message Event {
 
 service ClusterService {
   rpc EstablishSession(stream EstablishSessionRequest) returns (stream EstablishSessionResponse);
+
+  rpc GetNode(GetNodeRequest) returns (GetNodeResponse) {
+    option (google.api.http) = {get: "/v1alpha1/nodes/{node_id}"};
+  }
+
+  rpc ListNodes(ListNodesRequest) returns (ListNodesResponse) {
+    option (google.api.http) = {get: "/v1alpha1/nodes"};
+  }
 }

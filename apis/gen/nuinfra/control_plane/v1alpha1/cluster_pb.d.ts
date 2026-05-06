@@ -2,7 +2,7 @@
 // @generated from file nuinfra/control_plane/v1alpha1/cluster.proto (package nuinfra.control_plane.v1alpha1, syntax proto3)
 /* eslint-disable */
 
-import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
+import type { GenEnum, GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
 import type { Message } from "@bufbuild/protobuf";
 import type { Timestamp } from "@bufbuild/protobuf/wkt";
 import type { Sandbox } from "./sandbox_pb";
@@ -26,6 +26,11 @@ export declare type Node = Message<"nuinfra.control_plane.v1alpha1.Node"> & {
    * @generated from field: nuinfra.control_plane.v1alpha1.NodeResources resources = 2;
    */
   resources?: NodeResources;
+
+  /**
+   * @generated from field: nuinfra.control_plane.v1alpha1.NodeStatus status = 3;
+   */
+  status?: NodeStatus;
 };
 
 /**
@@ -85,6 +90,194 @@ export declare type NodeResources = Message<"nuinfra.control_plane.v1alpha1.Node
  * Use `create(NodeResourcesSchema)` to create a new message.
  */
 export declare const NodeResourcesSchema: GenMessage<NodeResources>;
+
+/**
+ * @generated from message nuinfra.control_plane.v1alpha1.NodeStatus
+ */
+export declare type NodeStatus = Message<"nuinfra.control_plane.v1alpha1.NodeStatus"> & {
+  /**
+   * @generated from field: nuinfra.control_plane.v1alpha1.NodeStatus.Phase phase = 1;
+   */
+  phase: NodeStatus_Phase;
+
+  /**
+   * @generated from field: string message = 2;
+   */
+  message: string;
+};
+
+/**
+ * Describes the message nuinfra.control_plane.v1alpha1.NodeStatus.
+ * Use `create(NodeStatusSchema)` to create a new message.
+ */
+export declare const NodeStatusSchema: GenMessage<NodeStatus>;
+
+/**
+ * @generated from enum nuinfra.control_plane.v1alpha1.NodeStatus.Phase
+ */
+export enum NodeStatus_Phase {
+  /**
+   * @generated from enum value: PHASE_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: PHASE_HEALTHY = 1;
+   */
+  HEALTHY = 1,
+
+  /**
+   * @generated from enum value: PHASE_UNHEALTHY = 2;
+   */
+  UNHEALTHY = 2,
+
+  /**
+   * @generated from enum value: PHASE_LOST = 3;
+   */
+  LOST = 3,
+}
+
+/**
+ * Describes the enum nuinfra.control_plane.v1alpha1.NodeStatus.Phase.
+ */
+export declare const NodeStatus_PhaseSchema: GenEnum<NodeStatus_Phase>;
+
+/**
+ * @generated from message nuinfra.control_plane.v1alpha1.GetNodeRequest
+ */
+export declare type GetNodeRequest = Message<"nuinfra.control_plane.v1alpha1.GetNodeRequest"> & {
+  /**
+   * @generated from field: string node_id = 1;
+   */
+  nodeId: string;
+};
+
+/**
+ * Describes the message nuinfra.control_plane.v1alpha1.GetNodeRequest.
+ * Use `create(GetNodeRequestSchema)` to create a new message.
+ */
+export declare const GetNodeRequestSchema: GenMessage<GetNodeRequest>;
+
+/**
+ * @generated from message nuinfra.control_plane.v1alpha1.GetNodeResponse
+ */
+export declare type GetNodeResponse = Message<"nuinfra.control_plane.v1alpha1.GetNodeResponse"> & {
+  /**
+   * @generated from field: nuinfra.control_plane.v1alpha1.Node node = 1;
+   */
+  node?: Node;
+};
+
+/**
+ * Describes the message nuinfra.control_plane.v1alpha1.GetNodeResponse.
+ * Use `create(GetNodeResponseSchema)` to create a new message.
+ */
+export declare const GetNodeResponseSchema: GenMessage<GetNodeResponse>;
+
+/**
+ * Request message for listing nodes with optional filtering and pagination.
+ *
+ * @generated from message nuinfra.control_plane.v1alpha1.ListNodesRequest
+ */
+export declare type ListNodesRequest = Message<"nuinfra.control_plane.v1alpha1.ListNodesRequest"> & {
+  /**
+   * Filters nodes by their current lifecycle phase.
+   * If unset, nodes in all phases are returned.
+   *
+   * @generated from field: nuinfra.control_plane.v1alpha1.NodeStatus.Phase status_phase = 1;
+   */
+  statusPhase: NodeStatus_Phase;
+
+  /**
+   * Token used for pagination.
+   * Pass the value returned in a previous response to retrieve the next page of results.
+   * Leave empty to start listing from the beginning.
+   *
+   * @generated from field: string continuation_token = 2;
+   */
+  continuationToken: string;
+
+  /**
+   * Maximum number of nodes to return in this request.
+   * Defaults to 30 if not specified.
+   * The maximum allowed value is 1000.
+   *
+   * @generated from field: int32 page_size = 3;
+   */
+  pageSize: number;
+
+  /**
+   * Sort order applied to the results based on last_modified_at.
+   *
+   * @generated from field: nuinfra.control_plane.v1alpha1.ListNodesRequest.Order sort_order = 4;
+   */
+  sortOrder: ListNodesRequest_Order;
+};
+
+/**
+ * Describes the message nuinfra.control_plane.v1alpha1.ListNodesRequest.
+ * Use `create(ListNodesRequestSchema)` to create a new message.
+ */
+export declare const ListNodesRequestSchema: GenMessage<ListNodesRequest>;
+
+/**
+ * Controls how results are ordered by last modification time.
+ *
+ * @generated from enum nuinfra.control_plane.v1alpha1.ListNodesRequest.Order
+ */
+export enum ListNodesRequest_Order {
+  /**
+   * @generated from enum value: ORDER_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * Most recently modified nodes first.
+   *
+   * @generated from enum value: ORDER_NEWEST_FIRST = 1;
+   */
+  NEWEST_FIRST = 1,
+
+  /**
+   * Least recently modified nodes first.
+   *
+   * @generated from enum value: ORDER_OLDEST_FIRST = 2;
+   */
+  OLDEST_FIRST = 2,
+}
+
+/**
+ * Describes the enum nuinfra.control_plane.v1alpha1.ListNodesRequest.Order.
+ */
+export declare const ListNodesRequest_OrderSchema: GenEnum<ListNodesRequest_Order>;
+
+/**
+ * Response message containing a page of nodes.
+ *
+ * @generated from message nuinfra.control_plane.v1alpha1.ListNodesResponse
+ */
+export declare type ListNodesResponse = Message<"nuinfra.control_plane.v1alpha1.ListNodesResponse"> & {
+  /**
+   * The list of nodes matching the request filters.
+   *
+   * @generated from field: repeated nuinfra.control_plane.v1alpha1.Node nodes = 1;
+   */
+  nodes: Node[];
+
+  /**
+   * Token to retrieve the next page of results.
+   * Empty if there are no more results.
+   *
+   * @generated from field: string continuation_token = 2;
+   */
+  continuationToken: string;
+};
+
+/**
+ * Describes the message nuinfra.control_plane.v1alpha1.ListNodesResponse.
+ * Use `create(ListNodesResponseSchema)` to create a new message.
+ */
+export declare const ListNodesResponseSchema: GenMessage<ListNodesResponse>;
 
 /**
  * @generated from message nuinfra.control_plane.v1alpha1.EstablishSessionRequest
@@ -260,6 +453,22 @@ export declare const ClusterService: GenService<{
     methodKind: "bidi_streaming";
     input: typeof EstablishSessionRequestSchema;
     output: typeof EstablishSessionResponseSchema;
+  },
+  /**
+   * @generated from rpc nuinfra.control_plane.v1alpha1.ClusterService.GetNode
+   */
+  getNode: {
+    methodKind: "unary";
+    input: typeof GetNodeRequestSchema;
+    output: typeof GetNodeResponseSchema;
+  },
+  /**
+   * @generated from rpc nuinfra.control_plane.v1alpha1.ClusterService.ListNodes
+   */
+  listNodes: {
+    methodKind: "unary";
+    input: typeof ListNodesRequestSchema;
+    output: typeof ListNodesResponseSchema;
   },
 }>;
 

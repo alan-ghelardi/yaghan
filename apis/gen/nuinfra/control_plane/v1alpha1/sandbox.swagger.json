@@ -272,31 +272,6 @@
     }
   },
   "definitions": {
-    "ListSandboxesRequestOrder": {
-      "type": "string",
-      "enum": [
-        "ORDER_UNSPECIFIED",
-        "ORDER_NEWEST_FIRST",
-        "ORDER_OLDEST_FIRST"
-      ],
-      "default": "ORDER_UNSPECIFIED",
-      "description": "Controls how results are ordered by last modification time.\n\n - ORDER_NEWEST_FIRST: Most recently modified sandboxes first.\n - ORDER_OLDEST_FIRST: Least recently modified sandboxes first."
-    },
-    "SandboxStatusPhase": {
-      "type": "string",
-      "enum": [
-        "PHASE_UNSPECIFIED",
-        "PHASE_PENDING",
-        "PHASE_RUNNING",
-        "PHASE_PAUSING",
-        "PHASE_PAUSED",
-        "PHASE_RESUMING",
-        "PHASE_DELETING",
-        "PHASE_DELETED",
-        "PHASE_FAILED"
-      ],
-      "default": "PHASE_UNSPECIFIED"
-    },
     "protobufAny": {
       "type": "object",
       "properties": {
@@ -362,7 +337,7 @@
       "type": "object",
       "properties": {
         "phase": {
-          "$ref": "#/definitions/SandboxStatusPhase"
+          "$ref": "#/definitions/v1alpha1SandboxStatusPhase"
         },
         "resources": {
           "$ref": "#/definitions/v1alpha1Resources"
@@ -371,6 +346,16 @@
           "type": "boolean"
         }
       }
+    },
+    "v1alpha1ListSandboxesRequestOrder": {
+      "type": "string",
+      "enum": [
+        "ORDER_UNSPECIFIED",
+        "ORDER_NEWEST_FIRST",
+        "ORDER_OLDEST_FIRST"
+      ],
+      "default": "ORDER_UNSPECIFIED",
+      "description": "Controls how results are ordered by last modification time.\n\n - ORDER_NEWEST_FIRST: Most recently modified sandboxes first.\n - ORDER_OLDEST_FIRST: Least recently modified sandboxes first."
     },
     "v1alpha1ListSandboxesResponse": {
       "type": "object",
@@ -472,12 +457,27 @@
       "type": "object",
       "properties": {
         "phase": {
-          "$ref": "#/definitions/SandboxStatusPhase"
+          "$ref": "#/definitions/v1alpha1SandboxStatusPhase"
         },
         "message": {
           "type": "string"
         }
       }
+    },
+    "v1alpha1SandboxStatusPhase": {
+      "type": "string",
+      "enum": [
+        "PHASE_UNSPECIFIED",
+        "PHASE_PENDING",
+        "PHASE_RUNNING",
+        "PHASE_PAUSING",
+        "PHASE_PAUSED",
+        "PHASE_RESUMING",
+        "PHASE_DELETING",
+        "PHASE_DELETED",
+        "PHASE_FAILED"
+      ],
+      "default": "PHASE_UNSPECIFIED"
     }
   }
 }

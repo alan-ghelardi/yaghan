@@ -64,7 +64,11 @@ generate_markdown() {
 
 # Generate documentation for each service
 generate_markdown \
-    "$GEN_DIR/nuinfra/sandbox/v1alpha1/api.swagger.json" \
+    "$GEN_DIR/nuinfra/control_plane/v1alpha1/cluster.swagger.json" \
+    "$DOCS_DIR/cluster-api.md" \
+    "Cluster Service"
+
+generate_markdown \
+    "$GEN_DIR/nuinfra/control_plane/v1alpha1/sandbox.swagger.json" \
     "$DOCS_DIR/sandbox-api.md" \
     "Sandbox Service"
-

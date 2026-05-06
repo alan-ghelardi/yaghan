@@ -43,6 +43,68 @@ public final class ClusterServiceGrpc {
     return getEstablishSessionMethod;
   }
 
+  private static volatile io.grpc.MethodDescriptor<com.nuinfra.control_plane.v1alpha1.GetNodeRequest,
+      com.nuinfra.control_plane.v1alpha1.GetNodeResponse> getGetNodeMethod;
+
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "GetNode",
+      requestType = com.nuinfra.control_plane.v1alpha1.GetNodeRequest.class,
+      responseType = com.nuinfra.control_plane.v1alpha1.GetNodeResponse.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
+  public static io.grpc.MethodDescriptor<com.nuinfra.control_plane.v1alpha1.GetNodeRequest,
+      com.nuinfra.control_plane.v1alpha1.GetNodeResponse> getGetNodeMethod() {
+    io.grpc.MethodDescriptor<com.nuinfra.control_plane.v1alpha1.GetNodeRequest, com.nuinfra.control_plane.v1alpha1.GetNodeResponse> getGetNodeMethod;
+    if ((getGetNodeMethod = ClusterServiceGrpc.getGetNodeMethod) == null) {
+      synchronized (ClusterServiceGrpc.class) {
+        if ((getGetNodeMethod = ClusterServiceGrpc.getGetNodeMethod) == null) {
+          ClusterServiceGrpc.getGetNodeMethod = getGetNodeMethod =
+              io.grpc.MethodDescriptor.<com.nuinfra.control_plane.v1alpha1.GetNodeRequest, com.nuinfra.control_plane.v1alpha1.GetNodeResponse>newBuilder()
+              .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "GetNode"))
+              .setSampledToLocalTracing(true)
+              .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  com.nuinfra.control_plane.v1alpha1.GetNodeRequest.getDefaultInstance()))
+              .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  com.nuinfra.control_plane.v1alpha1.GetNodeResponse.getDefaultInstance()))
+              .setSchemaDescriptor(new ClusterServiceMethodDescriptorSupplier("GetNode"))
+              .build();
+        }
+      }
+    }
+    return getGetNodeMethod;
+  }
+
+  private static volatile io.grpc.MethodDescriptor<com.nuinfra.control_plane.v1alpha1.ListNodesRequest,
+      com.nuinfra.control_plane.v1alpha1.ListNodesResponse> getListNodesMethod;
+
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "ListNodes",
+      requestType = com.nuinfra.control_plane.v1alpha1.ListNodesRequest.class,
+      responseType = com.nuinfra.control_plane.v1alpha1.ListNodesResponse.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
+  public static io.grpc.MethodDescriptor<com.nuinfra.control_plane.v1alpha1.ListNodesRequest,
+      com.nuinfra.control_plane.v1alpha1.ListNodesResponse> getListNodesMethod() {
+    io.grpc.MethodDescriptor<com.nuinfra.control_plane.v1alpha1.ListNodesRequest, com.nuinfra.control_plane.v1alpha1.ListNodesResponse> getListNodesMethod;
+    if ((getListNodesMethod = ClusterServiceGrpc.getListNodesMethod) == null) {
+      synchronized (ClusterServiceGrpc.class) {
+        if ((getListNodesMethod = ClusterServiceGrpc.getListNodesMethod) == null) {
+          ClusterServiceGrpc.getListNodesMethod = getListNodesMethod =
+              io.grpc.MethodDescriptor.<com.nuinfra.control_plane.v1alpha1.ListNodesRequest, com.nuinfra.control_plane.v1alpha1.ListNodesResponse>newBuilder()
+              .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "ListNodes"))
+              .setSampledToLocalTracing(true)
+              .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  com.nuinfra.control_plane.v1alpha1.ListNodesRequest.getDefaultInstance()))
+              .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  com.nuinfra.control_plane.v1alpha1.ListNodesResponse.getDefaultInstance()))
+              .setSchemaDescriptor(new ClusterServiceMethodDescriptorSupplier("ListNodes"))
+              .build();
+        }
+      }
+    }
+    return getListNodesMethod;
+  }
+
   /**
    * Creates a new async stub that supports all call types for the service
    */
@@ -112,6 +174,20 @@ public final class ClusterServiceGrpc {
         io.grpc.stub.StreamObserver<com.nuinfra.control_plane.v1alpha1.EstablishSessionResponse> responseObserver) {
       return io.grpc.stub.ServerCalls.asyncUnimplementedStreamingCall(getEstablishSessionMethod(), responseObserver);
     }
+
+    /**
+     */
+    default void getNode(com.nuinfra.control_plane.v1alpha1.GetNodeRequest request,
+        io.grpc.stub.StreamObserver<com.nuinfra.control_plane.v1alpha1.GetNodeResponse> responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getGetNodeMethod(), responseObserver);
+    }
+
+    /**
+     */
+    default void listNodes(com.nuinfra.control_plane.v1alpha1.ListNodesRequest request,
+        io.grpc.stub.StreamObserver<com.nuinfra.control_plane.v1alpha1.ListNodesResponse> responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getListNodesMethod(), responseObserver);
+    }
   }
 
   /**
@@ -148,6 +224,22 @@ public final class ClusterServiceGrpc {
       return io.grpc.stub.ClientCalls.asyncBidiStreamingCall(
           getChannel().newCall(getEstablishSessionMethod(), getCallOptions()), responseObserver);
     }
+
+    /**
+     */
+    public void getNode(com.nuinfra.control_plane.v1alpha1.GetNodeRequest request,
+        io.grpc.stub.StreamObserver<com.nuinfra.control_plane.v1alpha1.GetNodeResponse> responseObserver) {
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
+          getChannel().newCall(getGetNodeMethod(), getCallOptions()), request, responseObserver);
+    }
+
+    /**
+     */
+    public void listNodes(com.nuinfra.control_plane.v1alpha1.ListNodesRequest request,
+        io.grpc.stub.StreamObserver<com.nuinfra.control_plane.v1alpha1.ListNodesResponse> responseObserver) {
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
+          getChannel().newCall(getListNodesMethod(), getCallOptions()), request, responseObserver);
+    }
   }
 
   /**
@@ -174,6 +266,20 @@ public final class ClusterServiceGrpc {
       return io.grpc.stub.ClientCalls.blockingBidiStreamingCall(
           getChannel(), getEstablishSessionMethod(), getCallOptions());
     }
+
+    /**
+     */
+    public com.nuinfra.control_plane.v1alpha1.GetNodeResponse getNode(com.nuinfra.control_plane.v1alpha1.GetNodeRequest request) throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
+          getChannel(), getGetNodeMethod(), getCallOptions(), request);
+    }
+
+    /**
+     */
+    public com.nuinfra.control_plane.v1alpha1.ListNodesResponse listNodes(com.nuinfra.control_plane.v1alpha1.ListNodesRequest request) throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
+          getChannel(), getListNodesMethod(), getCallOptions(), request);
+    }
   }
 
   /**
@@ -190,6 +296,20 @@ public final class ClusterServiceGrpc {
     protected ClusterServiceBlockingStub build(
         io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       return new ClusterServiceBlockingStub(channel, callOptions);
+    }
+
+    /**
+     */
+    public com.nuinfra.control_plane.v1alpha1.GetNodeResponse getNode(com.nuinfra.control_plane.v1alpha1.GetNodeRequest request) {
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getGetNodeMethod(), getCallOptions(), request);
+    }
+
+    /**
+     */
+    public com.nuinfra.control_plane.v1alpha1.ListNodesResponse listNodes(com.nuinfra.control_plane.v1alpha1.ListNodesRequest request) {
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getListNodesMethod(), getCallOptions(), request);
     }
   }
 
@@ -208,9 +328,27 @@ public final class ClusterServiceGrpc {
         io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       return new ClusterServiceFutureStub(channel, callOptions);
     }
+
+    /**
+     */
+    public com.google.common.util.concurrent.ListenableFuture<com.nuinfra.control_plane.v1alpha1.GetNodeResponse> getNode(
+        com.nuinfra.control_plane.v1alpha1.GetNodeRequest request) {
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
+          getChannel().newCall(getGetNodeMethod(), getCallOptions()), request);
+    }
+
+    /**
+     */
+    public com.google.common.util.concurrent.ListenableFuture<com.nuinfra.control_plane.v1alpha1.ListNodesResponse> listNodes(
+        com.nuinfra.control_plane.v1alpha1.ListNodesRequest request) {
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
+          getChannel().newCall(getListNodesMethod(), getCallOptions()), request);
+    }
   }
 
-  private static final int METHODID_ESTABLISH_SESSION = 0;
+  private static final int METHODID_GET_NODE = 0;
+  private static final int METHODID_LIST_NODES = 1;
+  private static final int METHODID_ESTABLISH_SESSION = 2;
 
   private static final class MethodHandlers<Req, Resp> implements
       io.grpc.stub.ServerCalls.UnaryMethod<Req, Resp>,
@@ -229,6 +367,14 @@ public final class ClusterServiceGrpc {
     @java.lang.SuppressWarnings("unchecked")
     public void invoke(Req request, io.grpc.stub.StreamObserver<Resp> responseObserver) {
       switch (methodId) {
+        case METHODID_GET_NODE:
+          serviceImpl.getNode((com.nuinfra.control_plane.v1alpha1.GetNodeRequest) request,
+              (io.grpc.stub.StreamObserver<com.nuinfra.control_plane.v1alpha1.GetNodeResponse>) responseObserver);
+          break;
+        case METHODID_LIST_NODES:
+          serviceImpl.listNodes((com.nuinfra.control_plane.v1alpha1.ListNodesRequest) request,
+              (io.grpc.stub.StreamObserver<com.nuinfra.control_plane.v1alpha1.ListNodesResponse>) responseObserver);
+          break;
         default:
           throw new AssertionError();
       }
@@ -257,6 +403,20 @@ public final class ClusterServiceGrpc {
               com.nuinfra.control_plane.v1alpha1.EstablishSessionRequest,
               com.nuinfra.control_plane.v1alpha1.EstablishSessionResponse>(
                 service, METHODID_ESTABLISH_SESSION)))
+        .addMethod(
+          getGetNodeMethod(),
+          io.grpc.stub.ServerCalls.asyncUnaryCall(
+            new MethodHandlers<
+              com.nuinfra.control_plane.v1alpha1.GetNodeRequest,
+              com.nuinfra.control_plane.v1alpha1.GetNodeResponse>(
+                service, METHODID_GET_NODE)))
+        .addMethod(
+          getListNodesMethod(),
+          io.grpc.stub.ServerCalls.asyncUnaryCall(
+            new MethodHandlers<
+              com.nuinfra.control_plane.v1alpha1.ListNodesRequest,
+              com.nuinfra.control_plane.v1alpha1.ListNodesResponse>(
+                service, METHODID_LIST_NODES)))
         .build();
   }
 
@@ -306,6 +466,8 @@ public final class ClusterServiceGrpc {
           serviceDescriptor = result = io.grpc.ServiceDescriptor.newBuilder(SERVICE_NAME)
               .setSchemaDescriptor(new ClusterServiceFileDescriptorSupplier())
               .addMethod(getEstablishSessionMethod())
+              .addMethod(getGetNodeMethod())
+              .addMethod(getListNodesMethod())
               .build();
         }
       }

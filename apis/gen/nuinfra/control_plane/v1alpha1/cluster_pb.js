@@ -2,8 +2,9 @@
 // @generated from file nuinfra/control_plane/v1alpha1/cluster.proto (package nuinfra.control_plane.v1alpha1, syntax proto3)
 /* eslint-disable */
 
-import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
+import { enumDesc, fileDesc, messageDesc, serviceDesc, tsEnum } from "@bufbuild/protobuf/codegenv2";
 import { file_buf_validate_validate } from "../../../buf/validate/validate_pb";
+import { file_google_api_annotations } from "../../../google/api/annotations_pb";
 import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
 import { file_google_rpc_status } from "../../../google/rpc/status_pb";
 import { file_nuinfra_control_plane_v1alpha1_sandbox } from "./sandbox_pb";
@@ -12,7 +13,7 @@ import { file_nuinfra_control_plane_v1alpha1_sandbox } from "./sandbox_pb";
  * Describes the file nuinfra/control_plane/v1alpha1/cluster.proto.
  */
 export const file_nuinfra_control_plane_v1alpha1_cluster = /*@__PURE__*/
-  fileDesc("CixudWluZnJhL2NvbnRyb2xfcGxhbmUvdjFhbHBoYTEvY2x1c3Rlci5wcm90bxIebnVpbmZyYS5jb250cm9sX3BsYW5lLnYxYWxwaGExIpQBCgROb2RlEkIKCG1ldGFkYXRhGAEgASgLMigubnVpbmZyYS5jb250cm9sX3BsYW5lLnYxYWxwaGExLk5vZGVNZXRhQga6SAPIAQESSAoJcmVzb3VyY2VzGAIgASgLMi0ubnVpbmZyYS5jb250cm9sX3BsYW5lLnYxYWxwaGExLk5vZGVSZXNvdXJjZXNCBrpIA8gBASKVAQoITm9kZU1ldGESEgoCaWQYASABKAlCBrpIA8gBARIPCgd2ZXJzaW9uGAIgASgDEi4KCmNyZWF0ZWRfYXQYBCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEjQKEGxhc3RfbW9kaWZpZWRfYXQYBSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIkoKDU5vZGVSZXNvdXJjZXMSGwoKdmNwdV9jb3VudBgBIAEoDUIHukgEKgIoARIcCgptZW1vcnlfbWliGAIgASgEQgi6SAUyAyiAASK8AQoXRXN0YWJsaXNoU2Vzc2lvblJlcXVlc3QSRAoHY29ubmVjdBgBIAEoCzIxLm51aW5mcmEuY29udHJvbF9wbGFuZS52MWFscGhhMS5Db25uZWN0aW9uUmVxdWVzdEgAEk4KDnVwZGF0ZV9zYW5kYm94GAIgASgLMjQubnVpbmZyYS5jb250cm9sX3BsYW5lLnYxYWxwaGExLlVwZGF0ZVNhbmRib3hSZXF1ZXN0SABCCwoJb3BlcmF0aW9uIlsKEUNvbm5lY3Rpb25SZXF1ZXN0EhIKCnNlc3Npb25faWQYASABKAMSMgoEbm9kZRgCIAEoCzIkLm51aW5mcmEuY29udHJvbF9wbGFuZS52MWFscGhhMS5Ob2RlIlgKFFVwZGF0ZVNhbmRib3hSZXF1ZXN0EkAKB3NhbmRib3gYASABKAsyJy5udWluZnJhLmNvbnRyb2xfcGxhbmUudjFhbHBoYTEuU2FuZGJveEIGukgDyAEBIs0BChhFc3RhYmxpc2hTZXNzaW9uUmVzcG9uc2USSQoLYWNrbm93bGVkZ2UYASABKAsyMi5udWluZnJhLmNvbnRyb2xfcGxhbmUudjFhbHBoYTEuQ29ubmVjdGlvblJlc3BvbnNlSAASNgoFZXZlbnQYAiABKAsyJS5udWluZnJhLmNvbnRyb2xfcGxhbmUudjFhbHBoYTEuRXZlbnRIABIjCgVlcnJvchgDIAEoCzISLmdvb2dsZS5ycGMuU3RhdHVzSABCCQoHbWVzc2FnZSIoChJDb25uZWN0aW9uUmVzcG9uc2USEgoKc2Vzc2lvbl9pZBgBIAEoAyKSAQoFRXZlbnQSCgoCaWQYASABKAkSLgoKZW1pdHRlZF9hdBgCIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASOgoHc2FuZGJveBgDIAEoCzInLm51aW5mcmEuY29udHJvbF9wbGFuZS52MWFscGhhMS5TYW5kYm94SABCEQoPaW52b2x2ZWRfb2JqZWN0MpwBCg5DbHVzdGVyU2VydmljZRKJAQoQRXN0YWJsaXNoU2Vzc2lvbhI3Lm51aW5mcmEuY29udHJvbF9wbGFuZS52MWFscGhhMS5Fc3RhYmxpc2hTZXNzaW9uUmVxdWVzdBo4Lm51aW5mcmEuY29udHJvbF9wbGFuZS52MWFscGhhMS5Fc3RhYmxpc2hTZXNzaW9uUmVzcG9uc2UoATABQpoCCiJjb20ubnVpbmZyYS5jb250cm9sX3BsYW5lLnYxYWxwaGExQgxDbHVzdGVyUHJvdG9QAVpQZ29sYW5nLm51aW5mcmEubmV0L2FwaXMvZ2VuL251aW5mcmEvY29udHJvbF9wbGFuZS92MWFscGhhMTtjb250cm9sX3BsYW5ldjFhbHBoYTGiAgNOQ1iqAh1OdWluZnJhLkNvbnRyb2xQbGFuZS5WMWFscGhhMcoCHU51aW5mcmFcQ29udHJvbFBsYW5lXFYxYWxwaGEx4gIpTnVpbmZyYVxDb250cm9sUGxhbmVcVjFhbHBoYTFcR1BCTWV0YWRhdGHqAh9OdWluZnJhOjpDb250cm9sUGxhbmU6OlYxYWxwaGExYgZwcm90bzM", [file_buf_validate_validate, file_google_protobuf_timestamp, file_google_rpc_status, file_nuinfra_control_plane_v1alpha1_sandbox]);
+  fileDesc("CixudWluZnJhL2NvbnRyb2xfcGxhbmUvdjFhbHBoYTEvY2x1c3Rlci5wcm90bxIebnVpbmZyYS5jb250cm9sX3BsYW5lLnYxYWxwaGExItABCgROb2RlEkIKCG1ldGFkYXRhGAEgASgLMigubnVpbmZyYS5jb250cm9sX3BsYW5lLnYxYWxwaGExLk5vZGVNZXRhQga6SAPIAQESSAoJcmVzb3VyY2VzGAIgASgLMi0ubnVpbmZyYS5jb250cm9sX3BsYW5lLnYxYWxwaGExLk5vZGVSZXNvdXJjZXNCBrpIA8gBARI6CgZzdGF0dXMYAyABKAsyKi5udWluZnJhLmNvbnRyb2xfcGxhbmUudjFhbHBoYTEuTm9kZVN0YXR1cyKVAQoITm9kZU1ldGESEgoCaWQYASABKAlCBrpIA8gBARIPCgd2ZXJzaW9uGAIgASgDEi4KCmNyZWF0ZWRfYXQYBCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEjQKEGxhc3RfbW9kaWZpZWRfYXQYBSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIkoKDU5vZGVSZXNvdXJjZXMSGwoKdmNwdV9jb3VudBgBIAEoDUIHukgEKgIoARIcCgptZW1vcnlfbWliGAIgASgEQgi6SAUyAyiAASK2AQoKTm9kZVN0YXR1cxI/CgVwaGFzZRgBIAEoDjIwLm51aW5mcmEuY29udHJvbF9wbGFuZS52MWFscGhhMS5Ob2RlU3RhdHVzLlBoYXNlEg8KB21lc3NhZ2UYAiABKAkiVgoFUGhhc2USFQoRUEhBU0VfVU5TUEVDSUZJRUQQABIRCg1QSEFTRV9IRUFMVEhZEAESEwoPUEhBU0VfVU5IRUFMVEhZEAISDgoKUEhBU0VfTE9TVBADIikKDkdldE5vZGVSZXF1ZXN0EhcKB25vZGVfaWQYASABKAlCBrpIA8gBASJFCg9HZXROb2RlUmVzcG9uc2USMgoEbm9kZRgBIAEoCzIkLm51aW5mcmEuY29udHJvbF9wbGFuZS52MWFscGhhMS5Ob2RlIrECChBMaXN0Tm9kZXNSZXF1ZXN0EkYKDHN0YXR1c19waGFzZRgBIAEoDjIwLm51aW5mcmEuY29udHJvbF9wbGFuZS52MWFscGhhMS5Ob2RlU3RhdHVzLlBoYXNlEhoKEmNvbnRpbnVhdGlvbl90b2tlbhgCIAEoCRIdCglwYWdlX3NpemUYAyABKAVCCrpIBxoFGOgHKAASSgoKc29ydF9vcmRlchgEIAEoDjI2Lm51aW5mcmEuY29udHJvbF9wbGFuZS52MWFscGhhMS5MaXN0Tm9kZXNSZXF1ZXN0Lk9yZGVyIk4KBU9yZGVyEhUKEU9SREVSX1VOU1BFQ0lGSUVEEAASFgoST1JERVJfTkVXRVNUX0ZJUlNUEAESFgoST1JERVJfT0xERVNUX0ZJUlNUEAIiZAoRTGlzdE5vZGVzUmVzcG9uc2USMwoFbm9kZXMYASADKAsyJC5udWluZnJhLmNvbnRyb2xfcGxhbmUudjFhbHBoYTEuTm9kZRIaChJjb250aW51YXRpb25fdG9rZW4YAiABKAkivAEKF0VzdGFibGlzaFNlc3Npb25SZXF1ZXN0EkQKB2Nvbm5lY3QYASABKAsyMS5udWluZnJhLmNvbnRyb2xfcGxhbmUudjFhbHBoYTEuQ29ubmVjdGlvblJlcXVlc3RIABJOCg51cGRhdGVfc2FuZGJveBgCIAEoCzI0Lm51aW5mcmEuY29udHJvbF9wbGFuZS52MWFscGhhMS5VcGRhdGVTYW5kYm94UmVxdWVzdEgAQgsKCW9wZXJhdGlvbiJbChFDb25uZWN0aW9uUmVxdWVzdBISCgpzZXNzaW9uX2lkGAEgASgDEjIKBG5vZGUYAiABKAsyJC5udWluZnJhLmNvbnRyb2xfcGxhbmUudjFhbHBoYTEuTm9kZSJYChRVcGRhdGVTYW5kYm94UmVxdWVzdBJACgdzYW5kYm94GAEgASgLMicubnVpbmZyYS5jb250cm9sX3BsYW5lLnYxYWxwaGExLlNhbmRib3hCBrpIA8gBASLNAQoYRXN0YWJsaXNoU2Vzc2lvblJlc3BvbnNlEkkKC2Fja25vd2xlZGdlGAEgASgLMjIubnVpbmZyYS5jb250cm9sX3BsYW5lLnYxYWxwaGExLkNvbm5lY3Rpb25SZXNwb25zZUgAEjYKBWV2ZW50GAIgASgLMiUubnVpbmZyYS5jb250cm9sX3BsYW5lLnYxYWxwaGExLkV2ZW50SAASIwoFZXJyb3IYAyABKAsyEi5nb29nbGUucnBjLlN0YXR1c0gAQgkKB21lc3NhZ2UiKAoSQ29ubmVjdGlvblJlc3BvbnNlEhIKCnNlc3Npb25faWQYASABKAMikgEKBUV2ZW50EgoKAmlkGAEgASgJEi4KCmVtaXR0ZWRfYXQYAiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEjoKB3NhbmRib3gYAyABKAsyJy5udWluZnJhLmNvbnRyb2xfcGxhbmUudjFhbHBoYTEuU2FuZGJveEgAQhEKD2ludm9sdmVkX29iamVjdDK4AwoOQ2x1c3RlclNlcnZpY2USiQEKEEVzdGFibGlzaFNlc3Npb24SNy5udWluZnJhLmNvbnRyb2xfcGxhbmUudjFhbHBoYTEuRXN0YWJsaXNoU2Vzc2lvblJlcXVlc3QaOC5udWluZnJhLmNvbnRyb2xfcGxhbmUudjFhbHBoYTEuRXN0YWJsaXNoU2Vzc2lvblJlc3BvbnNlKAEwARKNAQoHR2V0Tm9kZRIuLm51aW5mcmEuY29udHJvbF9wbGFuZS52MWFscGhhMS5HZXROb2RlUmVxdWVzdBovLm51aW5mcmEuY29udHJvbF9wbGFuZS52MWFscGhhMS5HZXROb2RlUmVzcG9uc2UiIYLT5JMCGxIZL3YxYWxwaGExL25vZGVzL3tub2RlX2lkfRKJAQoJTGlzdE5vZGVzEjAubnVpbmZyYS5jb250cm9sX3BsYW5lLnYxYWxwaGExLkxpc3ROb2Rlc1JlcXVlc3QaMS5udWluZnJhLmNvbnRyb2xfcGxhbmUudjFhbHBoYTEuTGlzdE5vZGVzUmVzcG9uc2UiF4LT5JMCERIPL3YxYWxwaGExL25vZGVzQpoCCiJjb20ubnVpbmZyYS5jb250cm9sX3BsYW5lLnYxYWxwaGExQgxDbHVzdGVyUHJvdG9QAVpQZ29sYW5nLm51aW5mcmEubmV0L2FwaXMvZ2VuL251aW5mcmEvY29udHJvbF9wbGFuZS92MWFscGhhMTtjb250cm9sX3BsYW5ldjFhbHBoYTGiAgNOQ1iqAh1OdWluZnJhLkNvbnRyb2xQbGFuZS5WMWFscGhhMcoCHU51aW5mcmFcQ29udHJvbFBsYW5lXFYxYWxwaGEx4gIpTnVpbmZyYVxDb250cm9sUGxhbmVcVjFhbHBoYTFcR1BCTWV0YWRhdGHqAh9OdWluZnJhOjpDb250cm9sUGxhbmU6OlYxYWxwaGExYgZwcm90bzM", [file_buf_validate_validate, file_google_api_annotations, file_google_protobuf_timestamp, file_google_rpc_status, file_nuinfra_control_plane_v1alpha1_sandbox]);
 
 /**
  * Describes the message nuinfra.control_plane.v1alpha1.Node.
@@ -36,46 +37,107 @@ export const NodeResourcesSchema = /*@__PURE__*/
   messageDesc(file_nuinfra_control_plane_v1alpha1_cluster, 2);
 
 /**
+ * Describes the message nuinfra.control_plane.v1alpha1.NodeStatus.
+ * Use `create(NodeStatusSchema)` to create a new message.
+ */
+export const NodeStatusSchema = /*@__PURE__*/
+  messageDesc(file_nuinfra_control_plane_v1alpha1_cluster, 3);
+
+/**
+ * Describes the enum nuinfra.control_plane.v1alpha1.NodeStatus.Phase.
+ */
+export const NodeStatus_PhaseSchema = /*@__PURE__*/
+  enumDesc(file_nuinfra_control_plane_v1alpha1_cluster, 3, 0);
+
+/**
+ * @generated from enum nuinfra.control_plane.v1alpha1.NodeStatus.Phase
+ */
+export const NodeStatus_Phase = /*@__PURE__*/
+  tsEnum(NodeStatus_PhaseSchema);
+
+/**
+ * Describes the message nuinfra.control_plane.v1alpha1.GetNodeRequest.
+ * Use `create(GetNodeRequestSchema)` to create a new message.
+ */
+export const GetNodeRequestSchema = /*@__PURE__*/
+  messageDesc(file_nuinfra_control_plane_v1alpha1_cluster, 4);
+
+/**
+ * Describes the message nuinfra.control_plane.v1alpha1.GetNodeResponse.
+ * Use `create(GetNodeResponseSchema)` to create a new message.
+ */
+export const GetNodeResponseSchema = /*@__PURE__*/
+  messageDesc(file_nuinfra_control_plane_v1alpha1_cluster, 5);
+
+/**
+ * Describes the message nuinfra.control_plane.v1alpha1.ListNodesRequest.
+ * Use `create(ListNodesRequestSchema)` to create a new message.
+ */
+export const ListNodesRequestSchema = /*@__PURE__*/
+  messageDesc(file_nuinfra_control_plane_v1alpha1_cluster, 6);
+
+/**
+ * Describes the enum nuinfra.control_plane.v1alpha1.ListNodesRequest.Order.
+ */
+export const ListNodesRequest_OrderSchema = /*@__PURE__*/
+  enumDesc(file_nuinfra_control_plane_v1alpha1_cluster, 6, 0);
+
+/**
+ * Controls how results are ordered by last modification time.
+ *
+ * @generated from enum nuinfra.control_plane.v1alpha1.ListNodesRequest.Order
+ */
+export const ListNodesRequest_Order = /*@__PURE__*/
+  tsEnum(ListNodesRequest_OrderSchema);
+
+/**
+ * Describes the message nuinfra.control_plane.v1alpha1.ListNodesResponse.
+ * Use `create(ListNodesResponseSchema)` to create a new message.
+ */
+export const ListNodesResponseSchema = /*@__PURE__*/
+  messageDesc(file_nuinfra_control_plane_v1alpha1_cluster, 7);
+
+/**
  * Describes the message nuinfra.control_plane.v1alpha1.EstablishSessionRequest.
  * Use `create(EstablishSessionRequestSchema)` to create a new message.
  */
 export const EstablishSessionRequestSchema = /*@__PURE__*/
-  messageDesc(file_nuinfra_control_plane_v1alpha1_cluster, 3);
+  messageDesc(file_nuinfra_control_plane_v1alpha1_cluster, 8);
 
 /**
  * Describes the message nuinfra.control_plane.v1alpha1.ConnectionRequest.
  * Use `create(ConnectionRequestSchema)` to create a new message.
  */
 export const ConnectionRequestSchema = /*@__PURE__*/
-  messageDesc(file_nuinfra_control_plane_v1alpha1_cluster, 4);
+  messageDesc(file_nuinfra_control_plane_v1alpha1_cluster, 9);
 
 /**
  * Describes the message nuinfra.control_plane.v1alpha1.UpdateSandboxRequest.
  * Use `create(UpdateSandboxRequestSchema)` to create a new message.
  */
 export const UpdateSandboxRequestSchema = /*@__PURE__*/
-  messageDesc(file_nuinfra_control_plane_v1alpha1_cluster, 5);
+  messageDesc(file_nuinfra_control_plane_v1alpha1_cluster, 10);
 
 /**
  * Describes the message nuinfra.control_plane.v1alpha1.EstablishSessionResponse.
  * Use `create(EstablishSessionResponseSchema)` to create a new message.
  */
 export const EstablishSessionResponseSchema = /*@__PURE__*/
-  messageDesc(file_nuinfra_control_plane_v1alpha1_cluster, 6);
+  messageDesc(file_nuinfra_control_plane_v1alpha1_cluster, 11);
 
 /**
  * Describes the message nuinfra.control_plane.v1alpha1.ConnectionResponse.
  * Use `create(ConnectionResponseSchema)` to create a new message.
  */
 export const ConnectionResponseSchema = /*@__PURE__*/
-  messageDesc(file_nuinfra_control_plane_v1alpha1_cluster, 7);
+  messageDesc(file_nuinfra_control_plane_v1alpha1_cluster, 12);
 
 /**
  * Describes the message nuinfra.control_plane.v1alpha1.Event.
  * Use `create(EventSchema)` to create a new message.
  */
 export const EventSchema = /*@__PURE__*/
-  messageDesc(file_nuinfra_control_plane_v1alpha1_cluster, 8);
+  messageDesc(file_nuinfra_control_plane_v1alpha1_cluster, 13);
 
 /**
  * @generated from service nuinfra.control_plane.v1alpha1.ClusterService

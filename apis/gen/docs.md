@@ -41,10 +41,18 @@
     - [EstablishSessionRequest](#nuinfra-control_plane-v1alpha1-EstablishSessionRequest)
     - [EstablishSessionResponse](#nuinfra-control_plane-v1alpha1-EstablishSessionResponse)
     - [Event](#nuinfra-control_plane-v1alpha1-Event)
+    - [GetNodeRequest](#nuinfra-control_plane-v1alpha1-GetNodeRequest)
+    - [GetNodeResponse](#nuinfra-control_plane-v1alpha1-GetNodeResponse)
+    - [ListNodesRequest](#nuinfra-control_plane-v1alpha1-ListNodesRequest)
+    - [ListNodesResponse](#nuinfra-control_plane-v1alpha1-ListNodesResponse)
     - [Node](#nuinfra-control_plane-v1alpha1-Node)
     - [NodeMeta](#nuinfra-control_plane-v1alpha1-NodeMeta)
     - [NodeResources](#nuinfra-control_plane-v1alpha1-NodeResources)
+    - [NodeStatus](#nuinfra-control_plane-v1alpha1-NodeStatus)
     - [UpdateSandboxRequest](#nuinfra-control_plane-v1alpha1-UpdateSandboxRequest)
+  
+    - [ListNodesRequest.Order](#nuinfra-control_plane-v1alpha1-ListNodesRequest-Order)
+    - [NodeStatus.Phase](#nuinfra-control_plane-v1alpha1-NodeStatus-Phase)
   
     - [ClusterService](#nuinfra-control_plane-v1alpha1-ClusterService)
   
@@ -587,6 +595,70 @@ It provides enough context for consumers to react, audit, or replicate the chang
 
 
 
+<a name="nuinfra-control_plane-v1alpha1-GetNodeRequest"></a>
+
+### GetNodeRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| node_id | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="nuinfra-control_plane-v1alpha1-GetNodeResponse"></a>
+
+### GetNodeResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| node | [Node](#nuinfra-control_plane-v1alpha1-Node) |  |  |
+
+
+
+
+
+
+<a name="nuinfra-control_plane-v1alpha1-ListNodesRequest"></a>
+
+### ListNodesRequest
+Request message for listing nodes with optional filtering and pagination.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| status_phase | [NodeStatus.Phase](#nuinfra-control_plane-v1alpha1-NodeStatus-Phase) |  | Filters nodes by their current lifecycle phase. If unset, nodes in all phases are returned. |
+| continuation_token | [string](#string) |  | Token used for pagination. Pass the value returned in a previous response to retrieve the next page of results. Leave empty to start listing from the beginning. |
+| page_size | [int32](#int32) |  | Maximum number of nodes to return in this request. Defaults to 30 if not specified. The maximum allowed value is 1000. |
+| sort_order | [ListNodesRequest.Order](#nuinfra-control_plane-v1alpha1-ListNodesRequest-Order) |  | Sort order applied to the results based on last_modified_at. |
+
+
+
+
+
+
+<a name="nuinfra-control_plane-v1alpha1-ListNodesResponse"></a>
+
+### ListNodesResponse
+Response message containing a page of nodes.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| nodes | [Node](#nuinfra-control_plane-v1alpha1-Node) | repeated | The list of nodes matching the request filters. |
+| continuation_token | [string](#string) |  | Token to retrieve the next page of results. Empty if there are no more results. |
+
+
+
+
+
+
 <a name="nuinfra-control_plane-v1alpha1-Node"></a>
 
 ### Node
@@ -597,6 +669,7 @@ It provides enough context for consumers to react, audit, or replicate the chang
 | ----- | ---- | ----- | ----------- |
 | metadata | [NodeMeta](#nuinfra-control_plane-v1alpha1-NodeMeta) |  |  |
 | resources | [NodeResources](#nuinfra-control_plane-v1alpha1-NodeResources) |  |  |
+| status | [NodeStatus](#nuinfra-control_plane-v1alpha1-NodeStatus) |  |  |
 
 
 
@@ -637,6 +710,22 @@ It provides enough context for consumers to react, audit, or replicate the chang
 
 
 
+<a name="nuinfra-control_plane-v1alpha1-NodeStatus"></a>
+
+### NodeStatus
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| phase | [NodeStatus.Phase](#nuinfra-control_plane-v1alpha1-NodeStatus-Phase) |  |  |
+| message | [string](#string) |  |  |
+
+
+
+
+
+
 <a name="nuinfra-control_plane-v1alpha1-UpdateSandboxRequest"></a>
 
 ### UpdateSandboxRequest
@@ -653,6 +742,33 @@ It provides enough context for consumers to react, audit, or replicate the chang
 
  
 
+
+<a name="nuinfra-control_plane-v1alpha1-ListNodesRequest-Order"></a>
+
+### ListNodesRequest.Order
+Controls how results are ordered by last modification time.
+
+| Name | Number | Description |
+| ---- | ------ | ----------- |
+| ORDER_UNSPECIFIED | 0 |  |
+| ORDER_NEWEST_FIRST | 1 | Most recently modified nodes first. |
+| ORDER_OLDEST_FIRST | 2 | Least recently modified nodes first. |
+
+
+
+<a name="nuinfra-control_plane-v1alpha1-NodeStatus-Phase"></a>
+
+### NodeStatus.Phase
+
+
+| Name | Number | Description |
+| ---- | ------ | ----------- |
+| PHASE_UNSPECIFIED | 0 |  |
+| PHASE_HEALTHY | 1 |  |
+| PHASE_UNHEALTHY | 2 |  |
+| PHASE_LOST | 3 |  |
+
+
  
 
  
@@ -666,6 +782,8 @@ It provides enough context for consumers to react, audit, or replicate the chang
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
 | EstablishSession | [EstablishSessionRequest](#nuinfra-control_plane-v1alpha1-EstablishSessionRequest) stream | [EstablishSessionResponse](#nuinfra-control_plane-v1alpha1-EstablishSessionResponse) stream |  |
+| GetNode | [GetNodeRequest](#nuinfra-control_plane-v1alpha1-GetNodeRequest) | [GetNodeResponse](#nuinfra-control_plane-v1alpha1-GetNodeResponse) |  |
+| ListNodes | [ListNodesRequest](#nuinfra-control_plane-v1alpha1-ListNodesRequest) | [ListNodesResponse](#nuinfra-control_plane-v1alpha1-ListNodesResponse) |  |
 
  
 
