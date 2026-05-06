@@ -155,6 +155,7 @@ func startService(t *testing.T, opts ...harnessOption) *harness {
 		Database: &config.Database{
 			AWS: &config.AWS{
 				SandboxesTableName: tableName,
+				NodesTableName:     "nodes-test-not-used",
 				EndpointURL:        endpoint,
 			},
 		},

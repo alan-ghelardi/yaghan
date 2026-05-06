@@ -44,6 +44,7 @@ logger:
 database:
   aws:
     sandboxes-table-name: sandboxes
+    nodes-table-name: nodes
     # DynamoDB Local listener brought up by docker-compose.yml.
     endpoint-url: http://localhost:8000
 

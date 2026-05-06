@@ -69,6 +69,7 @@ func TestNewFromFile(t *testing.T) {
 				Database: &Database{
 					AWS: &AWS{
 						SandboxesTableName: "sandboxes",
+						NodesTableName:     "nodes",
 					},
 				},
 			},
@@ -93,6 +94,7 @@ func TestNewFromFile(t *testing.T) {
 				Database: &Database{
 					AWS: &AWS{
 						SandboxesTableName: "sandboxes",
+						NodesTableName:     "nodes",
 					},
 				},
 			},
@@ -131,6 +133,7 @@ func TestNewFromFile(t *testing.T) {
 				Database: &Database{
 					AWS: &AWS{
 						SandboxesTableName: "sandboxes",
+						NodesTableName:     "nodes",
 					},
 				},
 			},
@@ -170,6 +173,7 @@ func TestNewFromFile(t *testing.T) {
 				Database: &Database{
 					AWS: &AWS{
 						SandboxesTableName: "sandboxes",
+						NodesTableName:     "nodes",
 					},
 				},
 			},
@@ -209,6 +213,7 @@ func TestNewFromFile(t *testing.T) {
 				Database: &Database{
 					AWS: &AWS{
 						SandboxesTableName: "sandboxes",
+						NodesTableName:     "nodes",
 					},
 				},
 			},
@@ -249,6 +254,7 @@ func TestNewFromFile(t *testing.T) {
 				Database: &Database{
 					AWS: &AWS{
 						SandboxesTableName: "sandboxes",
+						NodesTableName:     "nodes",
 					},
 				},
 			},

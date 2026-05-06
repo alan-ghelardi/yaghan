@@ -9,3 +9,4 @@ watch-stream:
 database:
   aws:
     sandboxes-table-name: sandboxes
+    nodes-table-name: nodes

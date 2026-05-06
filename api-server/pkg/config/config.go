@@ -97,6 +97,9 @@ type AWS struct {
 	// SandboxesTableName is the DynamoDB table in which sandboxes data is stored.
 	SandboxesTableName string `mapstructure:"sandboxes-table-name" validate:"required"`
 
+	// NodesTableName is the DynamoDB table in which nodes data is stored.
+	NodesTableName string `mapstructure:"nodes-table-name" validate:"required"`
+
 	// Endpoint is the local endpoint URL for AWS services, used for testing
 	// purposes.
 	EndpointURL string `mapstructure:"endpoint-url"`
