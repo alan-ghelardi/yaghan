@@ -1,3 +1,7 @@
+// Package sandbox declares the persistence contract for sandboxes. The
+// shared sentinel errors (AlreadyExists, NotFound, VersionConflict,
+// InvalidListOptions, InvalidContinuationToken) live in the parent
+// [db] package; only sandbox-specific sentinels are re-declared here.
 package sandbox
 
 import (
@@ -7,39 +11,11 @@ import (
 	controlplanev1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
 )
 
-// ErrAlreadyExists is returned by [DB.Create] when a sandbox with the same id
-// already exists and its stored content is not equivalent to the input. Callers
-// translate this to a transport-appropriate code (e.g. gRPC AlreadyExists).
-var ErrAlreadyExists = errors.New("sandbox already exists")
-
-// ErrNotFound is returned by [DB.Get] and [DB.Update] when no sandbox with the
-// requested id exists. Callers translate this to gRPC NotFound.
-var ErrNotFound = errors.New("sandbox not found")
-
-// ErrVersionConflict is returned by [DB.Update] when the supplied
-// Metadata.Version does not match the currently stored version, indicating a
-// concurrent modification. Callers translate this to gRPC Aborted (or
-// FailedPrecondition).
-var ErrVersionConflict = errors.New("sandbox version conflict")
-
 // ErrInvalidPhaseTransition is returned by [DB.Update] when the requested
 // Intent.Phase cannot be applied from the sandbox's current saved phase (e.g.
 // pausing a sandbox that is not running). Callers translate this to gRPC
 // FailedPrecondition.
 var ErrInvalidPhaseTransition = errors.New("invalid sandbox phase transition")
-
-// ErrInvalidListOptions is returned by [DB.List] when the supplied options
-// fail the DB layer's invariants (e.g. neither Namespace nor NodeID set,
-// PageSize <= 0). Validation that should never fail in production reaches
-// this layer only when an upstream check is missing; callers translate to
-// gRPC InvalidArgument.
-var ErrInvalidListOptions = errors.New("invalid list options")
-
-// ErrInvalidContinuationToken is returned by [DB.List] when the supplied
-// continuation token cannot be decoded or does not match the supplied
-// filter combination (e.g. it was issued for a different index). Callers
-// translate to gRPC InvalidArgument.
-var ErrInvalidContinuationToken = errors.New("invalid continuation token")
 
 // ListOptions parameterises a [DB.List] call. The handler layer is responsible
 // for applying request-level defaults (e.g. page-size fallbacks) before
@@ -95,13 +71,13 @@ type DB interface {
 	// Idempotency: a retry whose canonical content (everything except the
 	// DB-owned wall-clock and version fields) matches the stored row is a
 	// no-op success. A retry with a different body returns
-	// [ErrAlreadyExists].
+	// db.ErrAlreadyExists.
 	Create(ctx context.Context, sandbox *controlplanev1alpha1.Sandbox) error
 
 	// Update applies the supplied sandbox to the row identified by
 	// sb.Metadata.Id. The caller passes the version they read; the DB
-	// rejects the call with [ErrVersionConflict] when the stored row has
-	// since advanced. On success, Metadata.Version is bumped and
+	// rejects the call with db.ErrVersionConflict when the stored row
+	// has since advanced. On success, Metadata.Version is bumped and
 	// Metadata.LastModifiedAt is stamped server-side, both reflected on
 	// the input proto.
 	//
@@ -112,13 +88,13 @@ type DB interface {
 	//
 	// Idempotency mirrors Create: a retry whose canonical content matches
 	// the stored row is a no-op success even if the version has already
-	// advanced from the first attempt. [ErrNotFound] is returned when the
-	// row does not exist.
+	// advanced from the first attempt. db.ErrNotFound is returned when
+	// the row does not exist.
 	Update(ctx context.Context, sandbox *controlplanev1alpha1.Sandbox) error
 
 	// Get returns the sandbox identified by id. Reads are strongly
 	// consistent so callers observe their own writes — including writes
-	// made by Create and Update on the same node. [ErrNotFound] is
+	// made by Create and Update on the same node. db.ErrNotFound is
 	// returned when no row with that id exists.
 	Get(ctx context.Context, id string) (*controlplanev1alpha1.Sandbox, error)
 

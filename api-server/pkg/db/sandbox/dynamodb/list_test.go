@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	dberrors "golang.nuinfra.api-server/pkg/db"
 	sandboxdb "golang.nuinfra.api-server/pkg/db/sandbox"
 	cpv1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
 	"google.golang.org/protobuf/proto"
@@ -49,7 +50,7 @@ func TestList_RejectsUnboundedQuery(t *testing.T) {
 		SortOrder: cpv1.ListSandboxesRequest_ORDER_NEWEST_FIRST,
 	})
 	require.Error(t, err)
-	assert.True(t, errors.Is(err, sandboxdb.ErrInvalidListOptions),
+	assert.True(t, errors.Is(err, dberrors.ErrInvalidListOptions),
 		"missing namespace and node_id must wrap ErrInvalidListOptions, got: %v", err)
 }
 
@@ -62,7 +63,7 @@ func TestList_RejectsNonPositivePageSize(t *testing.T) {
 		SortOrder: cpv1.ListSandboxesRequest_ORDER_NEWEST_FIRST,
 	})
 	require.Error(t, err)
-	assert.True(t, errors.Is(err, sandboxdb.ErrInvalidListOptions),
+	assert.True(t, errors.Is(err, dberrors.ErrInvalidListOptions),
 		"page_size <= 0 must wrap ErrInvalidListOptions, got: %v", err)
 }
 
@@ -75,7 +76,7 @@ func TestList_RejectsUnspecifiedSortOrder(t *testing.T) {
 		SortOrder: cpv1.ListSandboxesRequest_ORDER_UNSPECIFIED,
 	})
 	require.Error(t, err)
-	assert.True(t, errors.Is(err, sandboxdb.ErrInvalidListOptions),
+	assert.True(t, errors.Is(err, dberrors.ErrInvalidListOptions),
 		"ORDER_UNSPECIFIED must wrap ErrInvalidListOptions, got: %v", err)
 }
 
@@ -316,7 +317,7 @@ func TestList_ContinuationTokenRejectedOnIndexMismatch(t *testing.T) {
 		ContinuationToken: token,
 	})
 	require.Error(t, err)
-	assert.True(t, errors.Is(err, sandboxdb.ErrInvalidContinuationToken),
+	assert.True(t, errors.Is(err, dberrors.ErrInvalidContinuationToken),
 		"token reuse across indexes must wrap ErrInvalidContinuationToken, got: %v", err)
 }
 
@@ -330,7 +331,7 @@ func TestList_ContinuationTokenRejectedOnGarbledInput(t *testing.T) {
 		ContinuationToken: "this-is-not-a-valid-token!!!",
 	})
 	require.Error(t, err)
-	assert.True(t, errors.Is(err, sandboxdb.ErrInvalidContinuationToken),
+	assert.True(t, errors.Is(err, dberrors.ErrInvalidContinuationToken),
 		"garbled token must wrap ErrInvalidContinuationToken, got: %v", err)
 }
 
@@ -367,7 +368,7 @@ func TestScanIndexForward_MapsSortOrder(t *testing.T) {
 	t.Run("unspecified is rejected", func(t *testing.T) {
 		_, err := scanIndexForward(cpv1.ListSandboxesRequest_ORDER_UNSPECIFIED)
 		require.Error(t, err)
-		assert.True(t, errors.Is(err, sandboxdb.ErrInvalidListOptions),
+		assert.True(t, errors.Is(err, dberrors.ErrInvalidListOptions),
 			"ORDER_UNSPECIFIED must wrap ErrInvalidListOptions, got: %v", err)
 	})
 }

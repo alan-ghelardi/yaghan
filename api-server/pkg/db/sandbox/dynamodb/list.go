@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	dynamodbservice "github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	"golang.nuinfra.api-server/pkg/db"
 	sandboxdb "golang.nuinfra.api-server/pkg/db/sandbox"
 	cpv1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
 )
@@ -43,10 +44,10 @@ const (
 // wrong data.
 func (d *dynamoDB) List(ctx context.Context, opts sandboxdb.ListOptions) ([]*cpv1.Sandbox, string, error) {
 	if opts.Namespace == "" && opts.NodeID == "" {
-		return nil, "", fmt.Errorf("namespace or node_id required: %w", sandboxdb.ErrInvalidListOptions)
+		return nil, "", fmt.Errorf("namespace or node_id required: %w", db.ErrInvalidListOptions)
 	}
 	if opts.PageSize <= 0 {
-		return nil, "", fmt.Errorf("page_size must be > 0: %w", sandboxdb.ErrInvalidListOptions)
+		return nil, "", fmt.Errorf("page_size must be > 0: %w", db.ErrInvalidListOptions)
 	}
 
 	scanForward, err := scanIndexForward(opts.SortOrder)
@@ -111,7 +112,7 @@ func scanIndexForward(order cpv1.ListSandboxesRequest_Order) (bool, error) {
 	case cpv1.ListSandboxesRequest_ORDER_OLDEST_FIRST:
 		return true, nil
 	default:
-		return false, fmt.Errorf("sort_order must be NEWEST_FIRST or OLDEST_FIRST: %w", sandboxdb.ErrInvalidListOptions)
+		return false, fmt.Errorf("sort_order must be NEWEST_FIRST or OLDEST_FIRST: %w", db.ErrInvalidListOptions)
 	}
 }
 
@@ -174,15 +175,15 @@ func decodeContinuationToken(token, indexName string) (map[string]types.Attribut
 	}
 	raw, err := base64.RawURLEncoding.DecodeString(token)
 	if err != nil {
-		return nil, fmt.Errorf("decode continuation token: %s: %w", err.Error(), sandboxdb.ErrInvalidContinuationToken)
+		return nil, fmt.Errorf("decode continuation token: %s: %w", err.Error(), db.ErrInvalidContinuationToken)
 	}
 	var payload continuationTokenPayload
 	if err := json.Unmarshal(raw, &payload); err != nil {
-		return nil, fmt.Errorf("unmarshal continuation token: %s: %w", err.Error(), sandboxdb.ErrInvalidContinuationToken)
+		return nil, fmt.Errorf("unmarshal continuation token: %s: %w", err.Error(), db.ErrInvalidContinuationToken)
 	}
 	if payload.IndexName != indexName {
 		return nil, fmt.Errorf("continuation token was issued for index %q, current request targets %q: %w",
-			payload.IndexName, indexName, sandboxdb.ErrInvalidContinuationToken)
+			payload.IndexName, indexName, db.ErrInvalidContinuationToken)
 	}
 	out := make(map[string]types.AttributeValue, len(payload.Key))
 	for k, v := range payload.Key {

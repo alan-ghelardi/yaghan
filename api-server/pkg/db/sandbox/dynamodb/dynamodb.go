@@ -15,6 +15,7 @@ import (
 	"github.com/grpc-ecosystem/go-grpc-middleware/logging/zap/ctxzap"
 	"go.uber.org/zap"
 	"golang.nuinfra.api-server/pkg/config"
+	"golang.nuinfra.api-server/pkg/db"
 	sandboxdb "golang.nuinfra.api-server/pkg/db/sandbox"
 	control_planev1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
 	"golang.nuinfra.net/commons/pkg/aws/dynamodb"
@@ -123,7 +124,7 @@ func (d *dynamoDB) Create(ctx context.Context, sb *control_planev1alpha1.Sandbox
 	if bytes.Equal(digest, storedDigest) {
 		return nil
 	}
-	return fmt.Errorf("sandbox %q: %w", id, sandboxdb.ErrAlreadyExists)
+	return fmt.Errorf("sandbox %q: %w", id, db.ErrAlreadyExists)
 }
 
 // fetchStoredItem returns the prior item for the given sandbox id following a
@@ -167,7 +168,7 @@ func (d *dynamoDB) Get(ctx context.Context, id string) (*control_planev1alpha1.S
 		return nil, fmt.Errorf("sandbox %q: get item: %w", id, err)
 	}
 	if len(out.Item) == 0 {
-		return nil, fmt.Errorf("sandbox %q: %w", id, sandboxdb.ErrNotFound)
+		return nil, fmt.Errorf("sandbox %q: %w", id, db.ErrNotFound)
 	}
 	return sandboxFromAttrs(out.Item, id)
 }
@@ -246,7 +247,7 @@ func (d *dynamoDB) Update(ctx context.Context, sb *control_planev1alpha1.Sandbox
 		return fmt.Errorf("sandbox %q: read stored row after conflict: %w", id, err)
 	}
 	if len(stored) == 0 {
-		return fmt.Errorf("sandbox %q: %w", id, sandboxdb.ErrNotFound)
+		return fmt.Errorf("sandbox %q: %w", id, db.ErrNotFound)
 	}
 
 	if storedDigest, ok := digestFromAttrs(stored); ok && bytes.Equal(digest, storedDigest) {
@@ -276,11 +277,11 @@ func diagnoseUpdateConflict(id string, expectedVersion int64, targetStatus contr
 	if storedVersion, ok := stringFromAttrs(stored, attrSandboxVersion); ok {
 		return fmt.Errorf(
 			"sandbox %q: expected version %d but stored version is %s: %w",
-			id, expectedVersion, storedVersion, sandboxdb.ErrVersionConflict,
+			id, expectedVersion, storedVersion, db.ErrVersionConflict,
 		)
 	}
 
-	return fmt.Errorf("sandbox %q: %w", id, sandboxdb.ErrVersionConflict)
+	return fmt.Errorf("sandbox %q: %w", id, db.ErrVersionConflict)
 }
 
 // requiredPriorPhase maps a target Status.Phase (the in-progress marker the

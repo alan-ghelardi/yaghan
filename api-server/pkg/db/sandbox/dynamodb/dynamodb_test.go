@@ -13,6 +13,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	dberrors "golang.nuinfra.api-server/pkg/db"
 	sandboxdb "golang.nuinfra.api-server/pkg/db/sandbox"
 	cpv1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
 	awsconfig "golang.nuinfra.net/commons/pkg/aws/config"
@@ -235,8 +236,8 @@ func TestCreate_ConflictOnDifferentBody(t *testing.T) {
 	withVCPU(4)(conflicting)
 	err := db.Create(ctx, conflicting)
 	require.Error(t, err)
-	assert.True(t, errors.Is(err, sandboxdb.ErrAlreadyExists),
-		"different body for same id must wrap sandboxdb.ErrAlreadyExists, got: %v", err)
+	assert.True(t, errors.Is(err, dberrors.ErrAlreadyExists),
+		"different body for same id must wrap dberrors.ErrAlreadyExists, got: %v", err)
 }
 
 func TestCreate_ConflictAfterPhaseTransition(t *testing.T) {
@@ -267,7 +268,7 @@ func TestCreate_ConflictAfterPhaseTransition(t *testing.T) {
 	retry := proto.Clone(original).(*cpv1.Sandbox)
 	err = db.Create(ctx, retry)
 	require.Error(t, err)
-	assert.True(t, errors.Is(err, sandboxdb.ErrAlreadyExists),
+	assert.True(t, errors.Is(err, dberrors.ErrAlreadyExists),
 		"retry after a server-side phase transition must surface as conflict, got: %v", err)
 }
 
@@ -333,8 +334,8 @@ func TestGet_NotFound(t *testing.T) {
 	got, err := db.Get(ctx, "no-such-sandbox")
 	require.Error(t, err)
 	assert.Nil(t, got)
-	assert.True(t, errors.Is(err, sandboxdb.ErrNotFound),
-		"missing sandbox must wrap sandboxdb.ErrNotFound, got: %v", err)
+	assert.True(t, errors.Is(err, dberrors.ErrNotFound),
+		"missing sandbox must wrap dberrors.ErrNotFound, got: %v", err)
 }
 
 func TestUpdate_HappyPath(t *testing.T) {
@@ -386,7 +387,7 @@ func TestUpdate_VersionConflict(t *testing.T) {
 	withVCPU(16)(stale)
 	err := db.Update(ctx, stale)
 	require.Error(t, err)
-	assert.True(t, errors.Is(err, sandboxdb.ErrVersionConflict),
+	assert.True(t, errors.Is(err, dberrors.ErrVersionConflict),
 		"stale version with a different body must wrap ErrVersionConflict, got: %v", err)
 }
 
@@ -396,7 +397,7 @@ func TestUpdate_NotFound(t *testing.T) {
 	sb := newFixture(withID("sb-missing"))
 	err := db.Update(ctx, sb)
 	require.Error(t, err)
-	assert.True(t, errors.Is(err, sandboxdb.ErrNotFound),
+	assert.True(t, errors.Is(err, dberrors.ErrNotFound),
 		"update on missing sandbox must wrap ErrNotFound, got: %v", err)
 }
 
