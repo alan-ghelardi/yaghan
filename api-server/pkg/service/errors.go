@@ -13,13 +13,19 @@ import (
 )
 
 // dbErrToStatus maps a DB-layer sentinel error to a gRPC status. Unknown
-// errors are logged with the supplied op and sandbox id, then surfaced as
-// codes.Internal so server internals do not leak to clients.
+// errors are logged with the supplied entity, op, and id, then surfaced
+// as codes.Internal so server internals do not leak to clients.
+//
+// entity (e.g. "sandbox", "node") is the noun used in the log message
+// and the codes.Internal payload — handlers pass the kind they're
+// servicing so log lines and client-facing strings read naturally.
 //
 // Shared sentinels (existence, version conflict, list-option /
 // continuation-token validation) live in [db]. Sandbox-specific
-// sentinels (e.g. invalid phase transition) live in [sandbox].
-func dbErrToStatus(ctx context.Context, op, sandboxID string, err error) error {
+// sentinels (e.g. invalid phase transition) live in [sandbox]; for
+// entities that don't share that concern the corresponding errors.Is
+// branch is simply never matched.
+func dbErrToStatus(ctx context.Context, entity, op, id string, err error) error {
 	switch {
 	case err == nil:
 		return nil
@@ -35,9 +41,9 @@ func dbErrToStatus(ctx context.Context, op, sandboxID string, err error) error {
 		errors.Is(err, db.ErrInvalidContinuationToken):
 		return status.Error(codes.InvalidArgument, err.Error())
 	default:
-		ctxzap.Extract(ctx).Error(op+" sandbox failed",
-			zap.String("sandbox_id", sandboxID),
+		ctxzap.Extract(ctx).Error(op+" "+entity+" failed",
+			zap.String(entity+"_id", id),
 			zap.Error(err))
-		return status.Error(codes.Internal, "failed to "+op+" sandbox")
+		return status.Error(codes.Internal, "failed to "+op+" "+entity)
 	}
 }

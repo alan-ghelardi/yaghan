@@ -8,6 +8,7 @@ import (
 
 	"github.com/grpc-ecosystem/go-grpc-middleware/logging/zap/ctxzap"
 	"go.uber.org/zap"
+	nodedb "golang.nuinfra.api-server/pkg/db/node"
 	"golang.nuinfra.api-server/pkg/watch"
 	cpv1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
 	"google.golang.org/grpc/codes"
@@ -187,7 +188,7 @@ func (a *apiServer) receiveRequests(ctx context.Context, stream cpv1.ClusterServ
 		case *cpv1.EstablishSessionRequest_UpdateSandbox:
 			sb := op.UpdateSandbox.GetSandbox()
 			if updateErr := a.db.Update(ctx, sb); updateErr != nil {
-				grpcErr := dbErrToStatus(ctx, "update", sb.GetMetadata().GetId(), updateErr)
+				grpcErr := dbErrToStatus(ctx, "sandbox", "update", sb.GetMetadata().GetId(), updateErr)
 				if err := send(errorResponse(grpcErr)); err != nil {
 					return err
 				}
@@ -213,4 +214,42 @@ func errorResponse(grpcErr error) *cpv1.EstablishSessionResponse {
 	return &cpv1.EstablishSessionResponse{
 		Message: &cpv1.EstablishSessionResponse_Error{Error: s.Proto()},
 	}
+}
+
+// GetNode implements [cpv1.ClusterServiceServer].
+func (a *apiServer) GetNode(ctx context.Context, req *cpv1.GetNodeRequest) (*cpv1.GetNodeResponse, error) {
+	id := req.GetNodeId()
+	n, err := a.nodeDB.Get(ctx, id)
+	if err != nil {
+		return nil, dbErrToStatus(ctx, "node", "get", id, err)
+	}
+	return &cpv1.GetNodeResponse{Node: n}, nil
+}
+
+// ListNodes implements [cpv1.ClusterServiceServer]. The protovalidate
+// interceptor has already enforced the page-size bounds; this layer
+// only fills in defaults for fields the client left unset and forwards
+// the rest to the DB. Empty results are valid.
+func (a *apiServer) ListNodes(ctx context.Context, req *cpv1.ListNodesRequest) (*cpv1.ListNodesResponse, error) {
+	opts := nodedb.ListOptions{
+		StatusPhase:       req.GetStatusPhase(),
+		SortOrder:         req.GetSortOrder(),
+		PageSize:          req.GetPageSize(),
+		ContinuationToken: req.GetContinuationToken(),
+	}
+	if opts.PageSize == 0 {
+		opts.PageSize = defaultListPageSize
+	}
+	if opts.SortOrder == cpv1.ListNodesRequest_ORDER_UNSPECIFIED {
+		opts.SortOrder = cpv1.ListNodesRequest_ORDER_NEWEST_FIRST
+	}
+
+	nodes, nextToken, err := a.nodeDB.List(ctx, opts)
+	if err != nil {
+		return nil, dbErrToStatus(ctx, "node", "list", "", err)
+	}
+	return &cpv1.ListNodesResponse{
+		Nodes:             nodes,
+		ContinuationToken: nextToken,
+	}, nil
 }

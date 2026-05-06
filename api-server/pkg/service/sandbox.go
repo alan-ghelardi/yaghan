@@ -28,7 +28,7 @@ func (a *apiServer) CreateSandbox(ctx context.Context, req *cpv1.CreateSandboxRe
 	sb.Intent = &cpv1.Intent{Phase: cpv1.SandboxStatus_PHASE_RUNNING}
 
 	if err := a.db.Create(ctx, sb); err != nil {
-		return nil, dbErrToStatus(ctx, "create", sb.GetMetadata().GetId(), err)
+		return nil, dbErrToStatus(ctx, "sandbox", "create", sb.GetMetadata().GetId(), err)
 	}
 
 	return &cpv1.CreateSandboxResponse{Sandbox: sb}, nil
@@ -39,7 +39,7 @@ func (a *apiServer) GetSandbox(ctx context.Context, req *cpv1.GetSandboxRequest)
 	id := req.GetSandboxId()
 	sb, err := a.db.Get(ctx, id)
 	if err != nil {
-		return nil, dbErrToStatus(ctx, "get", id, err)
+		return nil, dbErrToStatus(ctx, "sandbox", "get", id, err)
 	}
 	return &cpv1.GetSandboxResponse{Sandbox: sb}, nil
 }
@@ -66,7 +66,7 @@ func (a *apiServer) ListSandboxes(ctx context.Context, req *cpv1.ListSandboxesRe
 
 	sandboxes, nextToken, err := a.db.List(ctx, opts)
 	if err != nil {
-		return nil, dbErrToStatus(ctx, "list", "", err)
+		return nil, dbErrToStatus(ctx, "sandbox", "list", "", err)
 	}
 	return &cpv1.ListSandboxesResponse{
 		Sandboxes:         sandboxes,
@@ -112,7 +112,7 @@ func (a *apiServer) transitionPhase(
 ) error {
 	sb, err := a.db.Get(ctx, id)
 	if err != nil {
-		return dbErrToStatus(ctx, op, id, err)
+		return dbErrToStatus(ctx, "sandbox", op, id, err)
 	}
 
 	sb.Metadata.Version = version
@@ -120,7 +120,7 @@ func (a *apiServer) transitionPhase(
 	sb.Intent = &cpv1.Intent{Phase: targetIntent}
 
 	if err := a.db.Update(ctx, sb); err != nil {
-		return dbErrToStatus(ctx, op, id, err)
+		return dbErrToStatus(ctx, "sandbox", op, id, err)
 	}
 	return nil
 }

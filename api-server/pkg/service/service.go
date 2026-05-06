@@ -6,6 +6,8 @@ import (
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"golang.nuinfra.api-server/pkg/config"
+	nodedb "golang.nuinfra.api-server/pkg/db/node"
+	nodedynamodb "golang.nuinfra.api-server/pkg/db/node/dynamodb"
 	sandboxdb "golang.nuinfra.api-server/pkg/db/sandbox"
 	"golang.nuinfra.api-server/pkg/db/sandbox/dynamodb"
 	"golang.nuinfra.api-server/pkg/watch"
@@ -27,6 +29,11 @@ type apiServer struct {
 	// db is the database instance to persist and retrieve sandboxes; backed by
 	// a *WatchableDB so successful writes also emit events on eventStream.
 	db sandboxdb.DB
+
+	// nodeDB is the database instance to persist and retrieve nodes. Reads
+	// (GetNode, ListNodes) flow straight through; there is no Watchable
+	// wrapper yet because no node-write RPC exists today.
+	nodeDB nodedb.DB
 
 	// eventStream is the WatchableStream EstablishSession registers watchers
 	// against. Reads of past events go through the redis stream's last-event-id
@@ -58,7 +65,10 @@ func (a *apiServer) RegisterGRPC(_ context.Context, grpcServer *grpc.Server) err
 
 // RegisterRESTGateway implements [server.Service].
 func (a *apiServer) RegisterRESTGateway(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
-	return cpv1.RegisterSandboxServiceHandler(ctx, mux, conn)
+	if err := cpv1.RegisterSandboxServiceHandler(ctx, mux, conn); err != nil {
+		return err
+	}
+	return cpv1.RegisterClusterServiceHandler(ctx, mux, conn)
 }
 
 // Setup implements [server.Service].
@@ -72,6 +82,7 @@ func (a *apiServer) Setup(ctx context.Context) error {
 
 	a.eventStream = stream
 	a.db = NewWatchableDB(rawDB, stream)
+	a.nodeDB = nodedynamodb.New(ctx, a.config)
 	a.nodes = newNodeRegistry()
 	return nil
 }

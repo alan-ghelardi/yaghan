@@ -14,6 +14,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"golang.nuinfra.api-server/pkg/config"
+	nodedb "golang.nuinfra.api-server/pkg/db/node"
+	nodedynamodb "golang.nuinfra.api-server/pkg/db/node/dynamodb"
 	"golang.nuinfra.api-server/pkg/db/sandbox/dynamodb"
 	"golang.nuinfra.api-server/pkg/service"
 	"golang.nuinfra.api-server/pkg/watch"
@@ -35,6 +37,7 @@ import (
 )
 
 const sandboxesSchemaPath = "../../../dynamodb-tables/sandboxes.json"
+const nodesSchemaPath = "../../../dynamodb-tables/nodes.json"
 
 // validNamespace satisfies the post-fix regex
 // `^[a-z][a-z0-9-]{0,61}[a-z0-9]$`.
@@ -45,6 +48,11 @@ type harness struct {
 	cluster   cpv1.ClusterServiceClient
 	ddb       awsdynamodb.Client
 	tableName string
+
+	// nodeDB lets a test seed nodes directly (e.g. for GetNode and
+	// ListNodes coverage), since no node-write RPC exists yet. It
+	// targets the same nodes table the api-server is running against.
+	nodeDB nodedb.DB
 
 	// Populated when startService is invoked with withEventStream(); empty
 	// otherwise. db lets a test simulate an internal write (e.g. an
@@ -134,6 +142,7 @@ func startService(t *testing.T, opts ...harnessOption) *harness {
 
 	endpoint := awstesting.StartDynamoDB(t)
 	tableName := awstesting.CreateTable(t, endpoint, sandboxesSchemaPath)
+	nodesTableName := awstesting.CreateTable(t, endpoint, nodesSchemaPath)
 
 	// Pre-bind the gRPC listener and pass it to server.Start via context.
 	// This eliminates the close→relisten race that exists when picking a
@@ -155,7 +164,7 @@ func startService(t *testing.T, opts ...harnessOption) *harness {
 		Database: &config.Database{
 			AWS: &config.AWS{
 				SandboxesTableName: tableName,
-				NodesTableName:     "nodes-test-not-used",
+				NodesTableName:     nodesTableName,
 				EndpointURL:        endpoint,
 			},
 		},
@@ -199,6 +208,7 @@ func startService(t *testing.T, opts ...harnessOption) *harness {
 		cluster:   cpv1.NewClusterServiceClient(conn),
 		ddb:       ddbClient,
 		tableName: tableName,
+		nodeDB:    nodedynamodb.New(ctx, bundle),
 		redisAddr: redisAddr,
 	}
 
