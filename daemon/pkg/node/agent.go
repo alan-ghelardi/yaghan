@@ -7,8 +7,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/feature/ec2/imds"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
+	"github.com/google/uuid"
 	"github.com/grpc-ecosystem/go-grpc-middleware/logging/zap/ctxzap"
 	"go.uber.org/zap"
 	controlplanev1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
@@ -41,6 +43,43 @@ func NewAgent(ctx context.Context, config *config.Bundle, firecracker firecracke
 	}
 }
 
+// BuildNode constructs the Node identity that the controller sends to the
+// api-server when establishing a session. In EC2 runtime mode it pulls the
+// instance metadata from IMDS and the initial health snapshot from the EC2
+// status API; in local runtime mode it generates a UUID and reports a healthy
+// placeholder status, since no provider health source is available.
+func (a *Agent) BuildNode(ctx context.Context) (*controlplanev1alpha1.Node, error) {
+	resources, metrics, err := a.capacityAndMetrics(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to collect node capacity and metrics: %w", err)
+	}
+
+	node := &controlplanev1alpha1.Node{
+		Resources: resources,
+		Metrics:   metrics,
+	}
+
+	if a.runtimeIsEC2() {
+		ec2Meta, err := a.ec2InstanceMeta(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read EC2 instance metadata: %w", err)
+		}
+		node.Metadata = &controlplanev1alpha1.NodeMeta{Id: ec2Meta.InstanceId}
+		node.ProviderMetadata = &controlplanev1alpha1.Node_AwsEc2{AwsEc2: ec2Meta}
+
+		phase, message := a.statusPhaseAndMessage(ctx, ec2Meta.InstanceId)
+		node.Status = &controlplanev1alpha1.NodeStatus{Phase: phase, Message: message}
+	} else {
+		node.Metadata = &controlplanev1alpha1.NodeMeta{Id: uuid.NewString()}
+		node.Status = &controlplanev1alpha1.NodeStatus{
+			Phase:   controlplanev1alpha1.NodeStatus_PHASE_HEALTHY,
+			Message: "local runtime: no provider health source",
+		}
+	}
+
+	return node, nil
+}
+
 // Run ...
 func (a *Agent) Run(ctx context.Context, nodeID string) {
 	var wg sync.WaitGroup
@@ -49,13 +88,17 @@ func (a *Agent) Run(ctx context.Context, nodeID string) {
 		a.metricsLoop(ctx)
 	})
 
-	if a.config.NodeAgent != nil && a.config.NodeAgent.Runtime == config.NodeRuntimeEC2 {
+	if a.runtimeIsEC2() {
 		wg.Go(func() {
 			a.ec2HealthCheckLoop(ctx, nodeID)
 		})
 	}
 
 	wg.Wait()
+}
+
+func (a *Agent) runtimeIsEC2() bool {
+	return a.config.NodeAgent != nil && a.config.NodeAgent.Runtime == config.NodeRuntimeEC2
 }
 
 func (a *Agent) metricsLoop(ctx context.Context) {
@@ -110,6 +153,26 @@ func (a *Agent) capacityAndMetrics(ctx context.Context) (*controlplanev1alpha1.N
 	return nodeCapacity, nodeMetrics, nil
 }
 
+// ec2InstanceMeta reads the EC2 instance identity document via IMDS and maps
+// it onto the EC2InstanceMeta proto.
+func (a *Agent) ec2InstanceMeta(ctx context.Context) (*controlplanev1alpha1.EC2InstanceMeta, error) {
+	out, err := a.imdsClient.GetInstanceIdentityDocument(ctx, &imds.GetInstanceIdentityDocumentInput{})
+	if err != nil {
+		return nil, err
+	}
+	return &controlplanev1alpha1.EC2InstanceMeta{
+		InstanceId:       out.InstanceID,
+		InstanceType:     out.InstanceType,
+		ImageId:          out.ImageID,
+		AccountId:        out.AccountID,
+		Region:           out.Region,
+		AvailabilityZone: out.AvailabilityZone,
+		PrivateIp:        out.PrivateIP,
+		KernelId:         out.KernelID,
+		Architecture:     out.Architecture,
+	}, nil
+}
+
 func (a *Agent) ec2HealthCheckLoop(ctx context.Context, instanceID string) {
 	zapLogger := ctxzap.Extract(ctx)
 	ticker := time.NewTicker(a.config.NodeAgent.HealthReportInterval)
@@ -137,36 +200,85 @@ func (a *Agent) ec2HealthCheckLoop(ctx context.Context, instanceID string) {
 	}
 }
 
+// statusPhaseAndMessage queries EC2 for the system / instance / EBS status
+// checks of the given instance and renders the result as a NodeStatus phase
+// and human-readable message.
 func (a *Agent) statusPhaseAndMessage(ctx context.Context, instanceID string) (controlplanev1alpha1.NodeStatus_Phase, string) {
 	resp, err := a.ec2Client.DescribeInstanceStatus(ctx, &ec2.DescribeInstanceStatusInput{
 		InstanceIds: []string{instanceID},
 	})
 	if err != nil {
-		return controlplanev1alpha1.NodeStatus_PHASE_UNKNOWN, fmt.Sprintf("failed to determine EC2 instance health status: %v", err)
+		return controlplanev1alpha1.NodeStatus_PHASE_UNKNOWN,
+			fmt.Sprintf("failed to query EC2 instance status: %v", err)
+	}
+	if len(resp.InstanceStatuses) == 0 {
+		return controlplanev1alpha1.NodeStatus_PHASE_UNKNOWN,
+			fmt.Sprintf("EC2 returned no status entries for instance %s", instanceID)
 	}
 
-	failedChecks := 0
-	var message strings.Builder
-	for _, instanceStatus := range resp.InstanceStatuses {
-		ebsStatus := instanceStatus.AttachedEbsStatus
-		if ebsStatus != nil {
-			switch ebsStatus.Status {
-			case ec2types.SummaryStatusOk, ec2types.SummaryStatusInitializing, ec2types.SummaryStatusNotApplicable:
-			default:
-				failedChecks++
-				for _, detail := range ebsStatus.Details {
-					fmt.Fprintf(&message, "- %s: %s", detail.Name, detail.Status)
-					if ts := detail.ImpairedSince; ts != nil {
-						fmt.Fprintf(&message, " at %s", ts.Format(time.RFC3339))
-					}
-					fmt.Fprintln(&message)
-				}
-			}
-		}
+	is := resp.InstanceStatuses[0]
+	var failures []string
+	if msg := summarizeStatusCheck("system", is.SystemStatus); msg != "" {
+		failures = append(failures, msg)
+	}
+	if msg := summarizeStatusCheck("instance", is.InstanceStatus); msg != "" {
+		failures = append(failures, msg)
+	}
+	if msg := summarizeEbsCheck(is.AttachedEbsStatus); msg != "" {
+		failures = append(failures, msg)
 	}
 
-	if failedChecks != 0 {
-		return controlplanev1alpha1.NodeStatus_PHASE_UNHEALTHY, message.String()
+	if len(failures) == 0 {
+		return controlplanev1alpha1.NodeStatus_PHASE_HEALTHY, "all EC2 status checks passed"
 	}
-	return controlplanev1alpha1.NodeStatus_PHASE_HEALTHY, "all checks have passed"
+	return controlplanev1alpha1.NodeStatus_PHASE_UNHEALTHY,
+		"EC2 status checks failed:\n" + strings.Join(failures, "\n")
+}
+
+// summarizeStatusCheck renders a failing system or instance status check as a
+// multi-line string, or returns "" when the check is healthy.
+func summarizeStatusCheck(kind string, summary *ec2types.InstanceStatusSummary) string {
+	if summary == nil || isHealthyStatus(summary.Status) {
+		return ""
+	}
+	details := make([]string, 0, len(summary.Details))
+	for _, d := range summary.Details {
+		details = append(details, formatDetail(string(d.Name), string(d.Status), d.ImpairedSince))
+	}
+	return formatCheck(kind+" status", string(summary.Status), details)
+}
+
+// summarizeEbsCheck renders a failing attached-EBS status check; the AWS type
+// differs from InstanceStatusSummary, but the rendered shape is identical.
+func summarizeEbsCheck(summary *ec2types.EbsStatusSummary) string {
+	if summary == nil || isHealthyStatus(summary.Status) {
+		return ""
+	}
+	details := make([]string, 0, len(summary.Details))
+	for _, d := range summary.Details {
+		details = append(details, formatDetail(string(d.Name), string(d.Status), d.ImpairedSince))
+	}
+	return formatCheck("ebs status", string(summary.Status), details)
+}
+
+func isHealthyStatus(s ec2types.SummaryStatus) bool {
+	switch s {
+	case ec2types.SummaryStatusOk, ec2types.SummaryStatusInitializing, ec2types.SummaryStatusNotApplicable:
+		return true
+	}
+	return false
+}
+
+func formatCheck(name, status string, details []string) string {
+	if len(details) == 0 {
+		return fmt.Sprintf("  - %s: %s", name, status)
+	}
+	return fmt.Sprintf("  - %s: %s\n    %s", name, status, strings.Join(details, "\n    "))
+}
+
+func formatDetail(name, status string, impairedSince *time.Time) string {
+	if impairedSince != nil {
+		return fmt.Sprintf("- %s: %s (since %s)", name, status, impairedSince.Format(time.RFC3339))
+	}
+	return fmt.Sprintf("- %s: %s", name, status)
 }
