@@ -14,7 +14,5 @@ source $cur_dir/../../hack/helpers.sh
 
 # Call the function gen_mocks for each file containing interfaces to be mocked.
 gen_mocks pkg/aws/dynamodb/dynamodb.go
-gen_mocks pkg/aws/s3/s3.go
-gen_mocks pkg/aws/sns/sns.go
-gen_mocks pkg/aws/secretsmanager/secretsmanager.go
-gen_mocks pkg/aws/sqs/sqs.go
+gen_mocks pkg/aws/ec2/ec2.go
+gen_mocks pkg/aws/ec2imds/ec2_imds.go

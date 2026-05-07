@@ -11,14 +11,32 @@ public interface NodeResourcesOrBuilder extends
     com.google.protobuf.MessageOrBuilder {
 
   /**
-   * <code>uint32 vcpu_count = 1 [json_name = "vcpuCount", (.buf.validate.field) = { ... }</code>
-   * @return The vcpuCount.
+   * <pre>
+   * Total allocatable vCPUs available for workloads.
+   * </pre>
+   *
+   * <code>uint32 cpu_capacity_millicores = 1 [json_name = "cpuCapacityMillicores", (.buf.validate.field) = { ... }</code>
+   * @return The cpuCapacityMillicores.
    */
-  int getVcpuCount();
+  int getCpuCapacityMillicores();
 
   /**
-   * <code>uint64 memory_mib = 2 [json_name = "memoryMib", (.buf.validate.field) = { ... }</code>
-   * @return The memoryMib.
+   * <pre>
+   * Total allocatable memory available for workloads.
+   * </pre>
+   *
+   * <code>uint64 memory_capacity_bytes = 2 [json_name = "memoryCapacityBytes", (.buf.validate.field) = { ... }</code>
+   * @return The memoryCapacityBytes.
    */
-  long getMemoryMib();
+  long getMemoryCapacityBytes();
+
+  /**
+   * <pre>
+   * Total allocatable disk available for workloads.
+   * </pre>
+   *
+   * <code>uint64 disk_capacity_bytes = 3 [json_name = "diskCapacityBytes", (.buf.validate.field) = { ... }</code>
+   * @return The diskCapacityBytes.
+   */
+  long getDiskCapacityBytes();
 }

@@ -36,7 +36,7 @@
         "parameters": [
           {
             "name": "statusPhase",
-            "description": "Filters nodes by their current lifecycle phase.\nIf unset, nodes in all phases are returned.",
+            "description": "Filters nodes by their current lifecycle phase.\nIf unset, nodes in all phases are returned.\n\n - PHASE_HEALTHY: Node is healthy and able to accept workloads.\n - PHASE_UNHEALTHY: Node is reachable but degraded.\n - PHASE_LOST: Node has not reported recently and is considered lost.\n - PHASE_DELETED: Node is being removed or is no longer active.\n - PHASE_UNKNOWN: Status could not be determined due to transient failures.",
             "in": "query",
             "required": false,
             "type": "string",
@@ -44,7 +44,9 @@
               "PHASE_UNSPECIFIED",
               "PHASE_HEALTHY",
               "PHASE_UNHEALTHY",
-              "PHASE_LOST"
+              "PHASE_LOST",
+              "PHASE_DELETED",
+              "PHASE_UNKNOWN"
             ],
             "default": "PHASE_UNSPECIFIED"
           },
@@ -170,6 +172,38 @@
         }
       }
     },
+    "v1alpha1EC2InstanceMeta": {
+      "type": "object",
+      "properties": {
+        "instanceId": {
+          "type": "string"
+        },
+        "instanceType": {
+          "type": "string"
+        },
+        "imageId": {
+          "type": "string"
+        },
+        "accountId": {
+          "type": "string"
+        },
+        "region": {
+          "type": "string"
+        },
+        "availabilityZone": {
+          "type": "string"
+        },
+        "privateIp": {
+          "type": "string"
+        },
+        "kernelId": {
+          "type": "string"
+        },
+        "architecture": {
+          "type": "string"
+        }
+      }
+    },
     "v1alpha1EstablishSessionResponse": {
       "type": "object",
       "properties": {
@@ -259,10 +293,19 @@
           "$ref": "#/definitions/v1alpha1NodeMeta"
         },
         "resources": {
-          "$ref": "#/definitions/v1alpha1NodeResources"
+          "$ref": "#/definitions/v1alpha1NodeResources",
+          "description": "Static/allocatable characteristics of the node."
+        },
+        "metrics": {
+          "$ref": "#/definitions/v1alpha1NodeMetrics",
+          "description": "Dynamic periodically sampled metrics."
         },
         "status": {
-          "$ref": "#/definitions/v1alpha1NodeStatus"
+          "$ref": "#/definitions/v1alpha1NodeStatus",
+          "description": "Health and lifecycle state."
+        },
+        "awsEc2": {
+          "$ref": "#/definitions/v1alpha1EC2InstanceMeta"
         }
       }
     },
@@ -286,6 +329,36 @@
         }
       }
     },
+    "v1alpha1NodeMetrics": {
+      "type": "object",
+      "properties": {
+        "sampledAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Time at which the metrics were sampled."
+        },
+        "activeSandboxCount": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Number of currently active sandboxes."
+        },
+        "cpuUsedMillicores": {
+          "type": "integer",
+          "format": "int64",
+          "description": "CPU currently in use."
+        },
+        "memoryUsedBytes": {
+          "type": "string",
+          "format": "uint64",
+          "description": "Memory currently in use."
+        },
+        "diskUsedBytes": {
+          "type": "string",
+          "format": "uint64",
+          "description": "Disk currently in use."
+        }
+      }
+    },
     "v1alpha1NodeRef": {
       "type": "object",
       "properties": {
@@ -297,13 +370,20 @@
     "v1alpha1NodeResources": {
       "type": "object",
       "properties": {
-        "vcpuCount": {
+        "cpuCapacityMillicores": {
           "type": "integer",
-          "format": "int64"
+          "format": "int64",
+          "description": "Total allocatable vCPUs available for workloads."
         },
-        "memoryMib": {
+        "memoryCapacityBytes": {
           "type": "string",
-          "format": "uint64"
+          "format": "uint64",
+          "description": "Total allocatable memory available for workloads."
+        },
+        "diskCapacityBytes": {
+          "type": "string",
+          "format": "uint64",
+          "description": "Total allocatable disk available for workloads."
         }
       }
     },
@@ -314,7 +394,8 @@
           "$ref": "#/definitions/v1alpha1NodeStatusPhase"
         },
         "message": {
-          "type": "string"
+          "type": "string",
+          "description": "Human-readable status message."
         }
       }
     },
@@ -324,9 +405,12 @@
         "PHASE_UNSPECIFIED",
         "PHASE_HEALTHY",
         "PHASE_UNHEALTHY",
-        "PHASE_LOST"
+        "PHASE_LOST",
+        "PHASE_DELETED",
+        "PHASE_UNKNOWN"
       ],
-      "default": "PHASE_UNSPECIFIED"
+      "default": "PHASE_UNSPECIFIED",
+      "description": " - PHASE_HEALTHY: Node is healthy and able to accept workloads.\n - PHASE_UNHEALTHY: Node is reachable but degraded.\n - PHASE_LOST: Node has not reported recently and is considered lost.\n - PHASE_DELETED: Node is being removed or is no longer active.\n - PHASE_UNKNOWN: Status could not be determined due to transient failures."
     },
     "v1alpha1Resources": {
       "type": "object",

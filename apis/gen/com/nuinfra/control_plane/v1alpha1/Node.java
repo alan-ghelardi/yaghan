@@ -44,6 +44,46 @@ private static final long serialVersionUID = 0L;
   }
 
   private int bitField0_;
+  private int providerMetadataCase_ = 0;
+  @SuppressWarnings("serial")
+  private java.lang.Object providerMetadata_;
+  public enum ProviderMetadataCase
+      implements com.google.protobuf.Internal.EnumLite,
+          com.google.protobuf.AbstractMessage.InternalOneOfEnum {
+    AWS_EC2(5),
+    PROVIDERMETADATA_NOT_SET(0);
+    private final int value;
+    private ProviderMetadataCase(int value) {
+      this.value = value;
+    }
+    /**
+     * @param value The number of the enum to look for.
+     * @return The enum associated with the given number.
+     * @deprecated Use {@link #forNumber(int)} instead.
+     */
+    @java.lang.Deprecated
+    public static ProviderMetadataCase valueOf(int value) {
+      return forNumber(value);
+    }
+
+    public static ProviderMetadataCase forNumber(int value) {
+      switch (value) {
+        case 5: return AWS_EC2;
+        case 0: return PROVIDERMETADATA_NOT_SET;
+        default: return null;
+      }
+    }
+    public int getNumber() {
+      return this.value;
+    }
+  };
+
+  public ProviderMetadataCase
+  getProviderMetadataCase() {
+    return ProviderMetadataCase.forNumber(
+        providerMetadataCase_);
+  }
+
   public static final int METADATA_FIELD_NUMBER = 1;
   private com.nuinfra.control_plane.v1alpha1.NodeMeta metadata_;
   /**
@@ -73,6 +113,10 @@ private static final long serialVersionUID = 0L;
   public static final int RESOURCES_FIELD_NUMBER = 2;
   private com.nuinfra.control_plane.v1alpha1.NodeResources resources_;
   /**
+   * <pre>
+   * Static/allocatable characteristics of the node.
+   * </pre>
+   *
    * <code>.nuinfra.control_plane.v1alpha1.NodeResources resources = 2 [json_name = "resources", (.buf.validate.field) = { ... }</code>
    * @return Whether the resources field is set.
    */
@@ -81,6 +125,10 @@ private static final long serialVersionUID = 0L;
     return ((bitField0_ & 0x00000002) != 0);
   }
   /**
+   * <pre>
+   * Static/allocatable characteristics of the node.
+   * </pre>
+   *
    * <code>.nuinfra.control_plane.v1alpha1.NodeResources resources = 2 [json_name = "resources", (.buf.validate.field) = { ... }</code>
    * @return The resources.
    */
@@ -89,6 +137,10 @@ private static final long serialVersionUID = 0L;
     return resources_ == null ? com.nuinfra.control_plane.v1alpha1.NodeResources.getDefaultInstance() : resources_;
   }
   /**
+   * <pre>
+   * Static/allocatable characteristics of the node.
+   * </pre>
+   *
    * <code>.nuinfra.control_plane.v1alpha1.NodeResources resources = 2 [json_name = "resources", (.buf.validate.field) = { ... }</code>
    */
   @java.lang.Override
@@ -96,18 +148,64 @@ private static final long serialVersionUID = 0L;
     return resources_ == null ? com.nuinfra.control_plane.v1alpha1.NodeResources.getDefaultInstance() : resources_;
   }
 
-  public static final int STATUS_FIELD_NUMBER = 3;
+  public static final int METRICS_FIELD_NUMBER = 3;
+  private com.nuinfra.control_plane.v1alpha1.NodeMetrics metrics_;
+  /**
+   * <pre>
+   * Dynamic periodically sampled metrics.
+   * </pre>
+   *
+   * <code>.nuinfra.control_plane.v1alpha1.NodeMetrics metrics = 3 [json_name = "metrics"];</code>
+   * @return Whether the metrics field is set.
+   */
+  @java.lang.Override
+  public boolean hasMetrics() {
+    return ((bitField0_ & 0x00000004) != 0);
+  }
+  /**
+   * <pre>
+   * Dynamic periodically sampled metrics.
+   * </pre>
+   *
+   * <code>.nuinfra.control_plane.v1alpha1.NodeMetrics metrics = 3 [json_name = "metrics"];</code>
+   * @return The metrics.
+   */
+  @java.lang.Override
+  public com.nuinfra.control_plane.v1alpha1.NodeMetrics getMetrics() {
+    return metrics_ == null ? com.nuinfra.control_plane.v1alpha1.NodeMetrics.getDefaultInstance() : metrics_;
+  }
+  /**
+   * <pre>
+   * Dynamic periodically sampled metrics.
+   * </pre>
+   *
+   * <code>.nuinfra.control_plane.v1alpha1.NodeMetrics metrics = 3 [json_name = "metrics"];</code>
+   */
+  @java.lang.Override
+  public com.nuinfra.control_plane.v1alpha1.NodeMetricsOrBuilder getMetricsOrBuilder() {
+    return metrics_ == null ? com.nuinfra.control_plane.v1alpha1.NodeMetrics.getDefaultInstance() : metrics_;
+  }
+
+  public static final int STATUS_FIELD_NUMBER = 4;
   private com.nuinfra.control_plane.v1alpha1.NodeStatus status_;
   /**
-   * <code>.nuinfra.control_plane.v1alpha1.NodeStatus status = 3 [json_name = "status"];</code>
+   * <pre>
+   * Health and lifecycle state.
+   * </pre>
+   *
+   * <code>.nuinfra.control_plane.v1alpha1.NodeStatus status = 4 [json_name = "status"];</code>
    * @return Whether the status field is set.
    */
   @java.lang.Override
   public boolean hasStatus() {
-    return ((bitField0_ & 0x00000004) != 0);
+    return ((bitField0_ & 0x00000008) != 0);
   }
   /**
-   * <code>.nuinfra.control_plane.v1alpha1.NodeStatus status = 3 [json_name = "status"];</code>
+   * <pre>
+   * Health and lifecycle state.
+   * </pre>
+   *
+   * <code>.nuinfra.control_plane.v1alpha1.NodeStatus status = 4 [json_name = "status"];</code>
    * @return The status.
    */
   @java.lang.Override
@@ -115,11 +213,46 @@ private static final long serialVersionUID = 0L;
     return status_ == null ? com.nuinfra.control_plane.v1alpha1.NodeStatus.getDefaultInstance() : status_;
   }
   /**
-   * <code>.nuinfra.control_plane.v1alpha1.NodeStatus status = 3 [json_name = "status"];</code>
+   * <pre>
+   * Health and lifecycle state.
+   * </pre>
+   *
+   * <code>.nuinfra.control_plane.v1alpha1.NodeStatus status = 4 [json_name = "status"];</code>
    */
   @java.lang.Override
   public com.nuinfra.control_plane.v1alpha1.NodeStatusOrBuilder getStatusOrBuilder() {
     return status_ == null ? com.nuinfra.control_plane.v1alpha1.NodeStatus.getDefaultInstance() : status_;
+  }
+
+  public static final int AWS_EC2_FIELD_NUMBER = 5;
+  /**
+   * <code>.nuinfra.control_plane.v1alpha1.EC2InstanceMeta aws_ec2 = 5 [json_name = "awsEc2"];</code>
+   * @return Whether the awsEc2 field is set.
+   */
+  @java.lang.Override
+  public boolean hasAwsEc2() {
+    return providerMetadataCase_ == 5;
+  }
+  /**
+   * <code>.nuinfra.control_plane.v1alpha1.EC2InstanceMeta aws_ec2 = 5 [json_name = "awsEc2"];</code>
+   * @return The awsEc2.
+   */
+  @java.lang.Override
+  public com.nuinfra.control_plane.v1alpha1.EC2InstanceMeta getAwsEc2() {
+    if (providerMetadataCase_ == 5) {
+       return (com.nuinfra.control_plane.v1alpha1.EC2InstanceMeta) providerMetadata_;
+    }
+    return com.nuinfra.control_plane.v1alpha1.EC2InstanceMeta.getDefaultInstance();
+  }
+  /**
+   * <code>.nuinfra.control_plane.v1alpha1.EC2InstanceMeta aws_ec2 = 5 [json_name = "awsEc2"];</code>
+   */
+  @java.lang.Override
+  public com.nuinfra.control_plane.v1alpha1.EC2InstanceMetaOrBuilder getAwsEc2OrBuilder() {
+    if (providerMetadataCase_ == 5) {
+       return (com.nuinfra.control_plane.v1alpha1.EC2InstanceMeta) providerMetadata_;
+    }
+    return com.nuinfra.control_plane.v1alpha1.EC2InstanceMeta.getDefaultInstance();
   }
 
   private byte memoizedIsInitialized = -1;
@@ -143,7 +276,13 @@ private static final long serialVersionUID = 0L;
       output.writeMessage(2, getResources());
     }
     if (((bitField0_ & 0x00000004) != 0)) {
-      output.writeMessage(3, getStatus());
+      output.writeMessage(3, getMetrics());
+    }
+    if (((bitField0_ & 0x00000008) != 0)) {
+      output.writeMessage(4, getStatus());
+    }
+    if (providerMetadataCase_ == 5) {
+      output.writeMessage(5, (com.nuinfra.control_plane.v1alpha1.EC2InstanceMeta) providerMetadata_);
     }
     getUnknownFields().writeTo(output);
   }
@@ -164,7 +303,15 @@ private static final long serialVersionUID = 0L;
     }
     if (((bitField0_ & 0x00000004) != 0)) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(3, getStatus());
+        .computeMessageSize(3, getMetrics());
+    }
+    if (((bitField0_ & 0x00000008) != 0)) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(4, getStatus());
+    }
+    if (providerMetadataCase_ == 5) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(5, (com.nuinfra.control_plane.v1alpha1.EC2InstanceMeta) providerMetadata_);
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -191,10 +338,24 @@ private static final long serialVersionUID = 0L;
       if (!getResources()
           .equals(other.getResources())) return false;
     }
+    if (hasMetrics() != other.hasMetrics()) return false;
+    if (hasMetrics()) {
+      if (!getMetrics()
+          .equals(other.getMetrics())) return false;
+    }
     if (hasStatus() != other.hasStatus()) return false;
     if (hasStatus()) {
       if (!getStatus()
           .equals(other.getStatus())) return false;
+    }
+    if (!getProviderMetadataCase().equals(other.getProviderMetadataCase())) return false;
+    switch (providerMetadataCase_) {
+      case 5:
+        if (!getAwsEc2()
+            .equals(other.getAwsEc2())) return false;
+        break;
+      case 0:
+      default:
     }
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
@@ -215,9 +376,21 @@ private static final long serialVersionUID = 0L;
       hash = (37 * hash) + RESOURCES_FIELD_NUMBER;
       hash = (53 * hash) + getResources().hashCode();
     }
+    if (hasMetrics()) {
+      hash = (37 * hash) + METRICS_FIELD_NUMBER;
+      hash = (53 * hash) + getMetrics().hashCode();
+    }
     if (hasStatus()) {
       hash = (37 * hash) + STATUS_FIELD_NUMBER;
       hash = (53 * hash) + getStatus().hashCode();
+    }
+    switch (providerMetadataCase_) {
+      case 5:
+        hash = (37 * hash) + AWS_EC2_FIELD_NUMBER;
+        hash = (53 * hash) + getAwsEc2().hashCode();
+        break;
+      case 0:
+      default:
     }
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
@@ -351,6 +524,7 @@ private static final long serialVersionUID = 0L;
               .alwaysUseFieldBuilders) {
         internalGetMetadataFieldBuilder();
         internalGetResourcesFieldBuilder();
+        internalGetMetricsFieldBuilder();
         internalGetStatusFieldBuilder();
       }
     }
@@ -368,11 +542,21 @@ private static final long serialVersionUID = 0L;
         resourcesBuilder_.dispose();
         resourcesBuilder_ = null;
       }
+      metrics_ = null;
+      if (metricsBuilder_ != null) {
+        metricsBuilder_.dispose();
+        metricsBuilder_ = null;
+      }
       status_ = null;
       if (statusBuilder_ != null) {
         statusBuilder_.dispose();
         statusBuilder_ = null;
       }
+      if (awsEc2Builder_ != null) {
+        awsEc2Builder_.clear();
+      }
+      providerMetadataCase_ = 0;
+      providerMetadata_ = null;
       return this;
     }
 
@@ -400,6 +584,7 @@ private static final long serialVersionUID = 0L;
     public com.nuinfra.control_plane.v1alpha1.Node buildPartial() {
       com.nuinfra.control_plane.v1alpha1.Node result = new com.nuinfra.control_plane.v1alpha1.Node(this);
       if (bitField0_ != 0) { buildPartial0(result); }
+      buildPartialOneofs(result);
       onBuilt();
       return result;
     }
@@ -420,12 +605,27 @@ private static final long serialVersionUID = 0L;
         to_bitField0_ |= 0x00000002;
       }
       if (((from_bitField0_ & 0x00000004) != 0)) {
+        result.metrics_ = metricsBuilder_ == null
+            ? metrics_
+            : metricsBuilder_.build();
+        to_bitField0_ |= 0x00000004;
+      }
+      if (((from_bitField0_ & 0x00000008) != 0)) {
         result.status_ = statusBuilder_ == null
             ? status_
             : statusBuilder_.build();
-        to_bitField0_ |= 0x00000004;
+        to_bitField0_ |= 0x00000008;
       }
       result.bitField0_ |= to_bitField0_;
+    }
+
+    private void buildPartialOneofs(com.nuinfra.control_plane.v1alpha1.Node result) {
+      result.providerMetadataCase_ = providerMetadataCase_;
+      result.providerMetadata_ = this.providerMetadata_;
+      if (providerMetadataCase_ == 5 &&
+          awsEc2Builder_ != null) {
+        result.providerMetadata_ = awsEc2Builder_.build();
+      }
     }
 
     @java.lang.Override
@@ -446,8 +646,20 @@ private static final long serialVersionUID = 0L;
       if (other.hasResources()) {
         mergeResources(other.getResources());
       }
+      if (other.hasMetrics()) {
+        mergeMetrics(other.getMetrics());
+      }
       if (other.hasStatus()) {
         mergeStatus(other.getStatus());
+      }
+      switch (other.getProviderMetadataCase()) {
+        case AWS_EC2: {
+          mergeAwsEc2(other.getAwsEc2());
+          break;
+        }
+        case PROVIDERMETADATA_NOT_SET: {
+          break;
+        }
       }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
@@ -491,11 +703,25 @@ private static final long serialVersionUID = 0L;
             } // case 18
             case 26: {
               input.readMessage(
-                  internalGetStatusFieldBuilder().getBuilder(),
+                  internalGetMetricsFieldBuilder().getBuilder(),
                   extensionRegistry);
               bitField0_ |= 0x00000004;
               break;
             } // case 26
+            case 34: {
+              input.readMessage(
+                  internalGetStatusFieldBuilder().getBuilder(),
+                  extensionRegistry);
+              bitField0_ |= 0x00000008;
+              break;
+            } // case 34
+            case 42: {
+              input.readMessage(
+                  internalGetAwsEc2FieldBuilder().getBuilder(),
+                  extensionRegistry);
+              providerMetadataCase_ = 5;
+              break;
+            } // case 42
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -511,6 +737,21 @@ private static final long serialVersionUID = 0L;
       } // finally
       return this;
     }
+    private int providerMetadataCase_ = 0;
+    private java.lang.Object providerMetadata_;
+    public ProviderMetadataCase
+        getProviderMetadataCase() {
+      return ProviderMetadataCase.forNumber(
+          providerMetadataCase_);
+    }
+
+    public Builder clearProviderMetadata() {
+      providerMetadataCase_ = 0;
+      providerMetadata_ = null;
+      onChanged();
+      return this;
+    }
+
     private int bitField0_;
 
     private com.nuinfra.control_plane.v1alpha1.NodeMeta metadata_;
@@ -638,6 +879,10 @@ private static final long serialVersionUID = 0L;
     private com.google.protobuf.SingleFieldBuilder<
         com.nuinfra.control_plane.v1alpha1.NodeResources, com.nuinfra.control_plane.v1alpha1.NodeResources.Builder, com.nuinfra.control_plane.v1alpha1.NodeResourcesOrBuilder> resourcesBuilder_;
     /**
+     * <pre>
+     * Static/allocatable characteristics of the node.
+     * </pre>
+     *
      * <code>.nuinfra.control_plane.v1alpha1.NodeResources resources = 2 [json_name = "resources", (.buf.validate.field) = { ... }</code>
      * @return Whether the resources field is set.
      */
@@ -645,6 +890,10 @@ private static final long serialVersionUID = 0L;
       return ((bitField0_ & 0x00000002) != 0);
     }
     /**
+     * <pre>
+     * Static/allocatable characteristics of the node.
+     * </pre>
+     *
      * <code>.nuinfra.control_plane.v1alpha1.NodeResources resources = 2 [json_name = "resources", (.buf.validate.field) = { ... }</code>
      * @return The resources.
      */
@@ -656,6 +905,10 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
+     * <pre>
+     * Static/allocatable characteristics of the node.
+     * </pre>
+     *
      * <code>.nuinfra.control_plane.v1alpha1.NodeResources resources = 2 [json_name = "resources", (.buf.validate.field) = { ... }</code>
      */
     public Builder setResources(com.nuinfra.control_plane.v1alpha1.NodeResources value) {
@@ -672,6 +925,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * Static/allocatable characteristics of the node.
+     * </pre>
+     *
      * <code>.nuinfra.control_plane.v1alpha1.NodeResources resources = 2 [json_name = "resources", (.buf.validate.field) = { ... }</code>
      */
     public Builder setResources(
@@ -686,6 +943,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * Static/allocatable characteristics of the node.
+     * </pre>
+     *
      * <code>.nuinfra.control_plane.v1alpha1.NodeResources resources = 2 [json_name = "resources", (.buf.validate.field) = { ... }</code>
      */
     public Builder mergeResources(com.nuinfra.control_plane.v1alpha1.NodeResources value) {
@@ -707,6 +968,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * Static/allocatable characteristics of the node.
+     * </pre>
+     *
      * <code>.nuinfra.control_plane.v1alpha1.NodeResources resources = 2 [json_name = "resources", (.buf.validate.field) = { ... }</code>
      */
     public Builder clearResources() {
@@ -720,6 +985,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * Static/allocatable characteristics of the node.
+     * </pre>
+     *
      * <code>.nuinfra.control_plane.v1alpha1.NodeResources resources = 2 [json_name = "resources", (.buf.validate.field) = { ... }</code>
      */
     public com.nuinfra.control_plane.v1alpha1.NodeResources.Builder getResourcesBuilder() {
@@ -728,6 +997,10 @@ private static final long serialVersionUID = 0L;
       return internalGetResourcesFieldBuilder().getBuilder();
     }
     /**
+     * <pre>
+     * Static/allocatable characteristics of the node.
+     * </pre>
+     *
      * <code>.nuinfra.control_plane.v1alpha1.NodeResources resources = 2 [json_name = "resources", (.buf.validate.field) = { ... }</code>
      */
     public com.nuinfra.control_plane.v1alpha1.NodeResourcesOrBuilder getResourcesOrBuilder() {
@@ -739,6 +1012,10 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
+     * <pre>
+     * Static/allocatable characteristics of the node.
+     * </pre>
+     *
      * <code>.nuinfra.control_plane.v1alpha1.NodeResources resources = 2 [json_name = "resources", (.buf.validate.field) = { ... }</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
@@ -755,18 +1032,183 @@ private static final long serialVersionUID = 0L;
       return resourcesBuilder_;
     }
 
+    private com.nuinfra.control_plane.v1alpha1.NodeMetrics metrics_;
+    private com.google.protobuf.SingleFieldBuilder<
+        com.nuinfra.control_plane.v1alpha1.NodeMetrics, com.nuinfra.control_plane.v1alpha1.NodeMetrics.Builder, com.nuinfra.control_plane.v1alpha1.NodeMetricsOrBuilder> metricsBuilder_;
+    /**
+     * <pre>
+     * Dynamic periodically sampled metrics.
+     * </pre>
+     *
+     * <code>.nuinfra.control_plane.v1alpha1.NodeMetrics metrics = 3 [json_name = "metrics"];</code>
+     * @return Whether the metrics field is set.
+     */
+    public boolean hasMetrics() {
+      return ((bitField0_ & 0x00000004) != 0);
+    }
+    /**
+     * <pre>
+     * Dynamic periodically sampled metrics.
+     * </pre>
+     *
+     * <code>.nuinfra.control_plane.v1alpha1.NodeMetrics metrics = 3 [json_name = "metrics"];</code>
+     * @return The metrics.
+     */
+    public com.nuinfra.control_plane.v1alpha1.NodeMetrics getMetrics() {
+      if (metricsBuilder_ == null) {
+        return metrics_ == null ? com.nuinfra.control_plane.v1alpha1.NodeMetrics.getDefaultInstance() : metrics_;
+      } else {
+        return metricsBuilder_.getMessage();
+      }
+    }
+    /**
+     * <pre>
+     * Dynamic periodically sampled metrics.
+     * </pre>
+     *
+     * <code>.nuinfra.control_plane.v1alpha1.NodeMetrics metrics = 3 [json_name = "metrics"];</code>
+     */
+    public Builder setMetrics(com.nuinfra.control_plane.v1alpha1.NodeMetrics value) {
+      if (metricsBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        metrics_ = value;
+      } else {
+        metricsBuilder_.setMessage(value);
+      }
+      bitField0_ |= 0x00000004;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * Dynamic periodically sampled metrics.
+     * </pre>
+     *
+     * <code>.nuinfra.control_plane.v1alpha1.NodeMetrics metrics = 3 [json_name = "metrics"];</code>
+     */
+    public Builder setMetrics(
+        com.nuinfra.control_plane.v1alpha1.NodeMetrics.Builder builderForValue) {
+      if (metricsBuilder_ == null) {
+        metrics_ = builderForValue.build();
+      } else {
+        metricsBuilder_.setMessage(builderForValue.build());
+      }
+      bitField0_ |= 0x00000004;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * Dynamic periodically sampled metrics.
+     * </pre>
+     *
+     * <code>.nuinfra.control_plane.v1alpha1.NodeMetrics metrics = 3 [json_name = "metrics"];</code>
+     */
+    public Builder mergeMetrics(com.nuinfra.control_plane.v1alpha1.NodeMetrics value) {
+      if (metricsBuilder_ == null) {
+        if (((bitField0_ & 0x00000004) != 0) &&
+          metrics_ != null &&
+          metrics_ != com.nuinfra.control_plane.v1alpha1.NodeMetrics.getDefaultInstance()) {
+          getMetricsBuilder().mergeFrom(value);
+        } else {
+          metrics_ = value;
+        }
+      } else {
+        metricsBuilder_.mergeFrom(value);
+      }
+      if (metrics_ != null) {
+        bitField0_ |= 0x00000004;
+        onChanged();
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     * Dynamic periodically sampled metrics.
+     * </pre>
+     *
+     * <code>.nuinfra.control_plane.v1alpha1.NodeMetrics metrics = 3 [json_name = "metrics"];</code>
+     */
+    public Builder clearMetrics() {
+      bitField0_ = (bitField0_ & ~0x00000004);
+      metrics_ = null;
+      if (metricsBuilder_ != null) {
+        metricsBuilder_.dispose();
+        metricsBuilder_ = null;
+      }
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * Dynamic periodically sampled metrics.
+     * </pre>
+     *
+     * <code>.nuinfra.control_plane.v1alpha1.NodeMetrics metrics = 3 [json_name = "metrics"];</code>
+     */
+    public com.nuinfra.control_plane.v1alpha1.NodeMetrics.Builder getMetricsBuilder() {
+      bitField0_ |= 0x00000004;
+      onChanged();
+      return internalGetMetricsFieldBuilder().getBuilder();
+    }
+    /**
+     * <pre>
+     * Dynamic periodically sampled metrics.
+     * </pre>
+     *
+     * <code>.nuinfra.control_plane.v1alpha1.NodeMetrics metrics = 3 [json_name = "metrics"];</code>
+     */
+    public com.nuinfra.control_plane.v1alpha1.NodeMetricsOrBuilder getMetricsOrBuilder() {
+      if (metricsBuilder_ != null) {
+        return metricsBuilder_.getMessageOrBuilder();
+      } else {
+        return metrics_ == null ?
+            com.nuinfra.control_plane.v1alpha1.NodeMetrics.getDefaultInstance() : metrics_;
+      }
+    }
+    /**
+     * <pre>
+     * Dynamic periodically sampled metrics.
+     * </pre>
+     *
+     * <code>.nuinfra.control_plane.v1alpha1.NodeMetrics metrics = 3 [json_name = "metrics"];</code>
+     */
+    private com.google.protobuf.SingleFieldBuilder<
+        com.nuinfra.control_plane.v1alpha1.NodeMetrics, com.nuinfra.control_plane.v1alpha1.NodeMetrics.Builder, com.nuinfra.control_plane.v1alpha1.NodeMetricsOrBuilder> 
+        internalGetMetricsFieldBuilder() {
+      if (metricsBuilder_ == null) {
+        metricsBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+            com.nuinfra.control_plane.v1alpha1.NodeMetrics, com.nuinfra.control_plane.v1alpha1.NodeMetrics.Builder, com.nuinfra.control_plane.v1alpha1.NodeMetricsOrBuilder>(
+                getMetrics(),
+                getParentForChildren(),
+                isClean());
+        metrics_ = null;
+      }
+      return metricsBuilder_;
+    }
+
     private com.nuinfra.control_plane.v1alpha1.NodeStatus status_;
     private com.google.protobuf.SingleFieldBuilder<
         com.nuinfra.control_plane.v1alpha1.NodeStatus, com.nuinfra.control_plane.v1alpha1.NodeStatus.Builder, com.nuinfra.control_plane.v1alpha1.NodeStatusOrBuilder> statusBuilder_;
     /**
-     * <code>.nuinfra.control_plane.v1alpha1.NodeStatus status = 3 [json_name = "status"];</code>
+     * <pre>
+     * Health and lifecycle state.
+     * </pre>
+     *
+     * <code>.nuinfra.control_plane.v1alpha1.NodeStatus status = 4 [json_name = "status"];</code>
      * @return Whether the status field is set.
      */
     public boolean hasStatus() {
-      return ((bitField0_ & 0x00000004) != 0);
+      return ((bitField0_ & 0x00000008) != 0);
     }
     /**
-     * <code>.nuinfra.control_plane.v1alpha1.NodeStatus status = 3 [json_name = "status"];</code>
+     * <pre>
+     * Health and lifecycle state.
+     * </pre>
+     *
+     * <code>.nuinfra.control_plane.v1alpha1.NodeStatus status = 4 [json_name = "status"];</code>
      * @return The status.
      */
     public com.nuinfra.control_plane.v1alpha1.NodeStatus getStatus() {
@@ -777,7 +1219,11 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.nuinfra.control_plane.v1alpha1.NodeStatus status = 3 [json_name = "status"];</code>
+     * <pre>
+     * Health and lifecycle state.
+     * </pre>
+     *
+     * <code>.nuinfra.control_plane.v1alpha1.NodeStatus status = 4 [json_name = "status"];</code>
      */
     public Builder setStatus(com.nuinfra.control_plane.v1alpha1.NodeStatus value) {
       if (statusBuilder_ == null) {
@@ -788,12 +1234,16 @@ private static final long serialVersionUID = 0L;
       } else {
         statusBuilder_.setMessage(value);
       }
-      bitField0_ |= 0x00000004;
+      bitField0_ |= 0x00000008;
       onChanged();
       return this;
     }
     /**
-     * <code>.nuinfra.control_plane.v1alpha1.NodeStatus status = 3 [json_name = "status"];</code>
+     * <pre>
+     * Health and lifecycle state.
+     * </pre>
+     *
+     * <code>.nuinfra.control_plane.v1alpha1.NodeStatus status = 4 [json_name = "status"];</code>
      */
     public Builder setStatus(
         com.nuinfra.control_plane.v1alpha1.NodeStatus.Builder builderForValue) {
@@ -802,16 +1252,20 @@ private static final long serialVersionUID = 0L;
       } else {
         statusBuilder_.setMessage(builderForValue.build());
       }
-      bitField0_ |= 0x00000004;
+      bitField0_ |= 0x00000008;
       onChanged();
       return this;
     }
     /**
-     * <code>.nuinfra.control_plane.v1alpha1.NodeStatus status = 3 [json_name = "status"];</code>
+     * <pre>
+     * Health and lifecycle state.
+     * </pre>
+     *
+     * <code>.nuinfra.control_plane.v1alpha1.NodeStatus status = 4 [json_name = "status"];</code>
      */
     public Builder mergeStatus(com.nuinfra.control_plane.v1alpha1.NodeStatus value) {
       if (statusBuilder_ == null) {
-        if (((bitField0_ & 0x00000004) != 0) &&
+        if (((bitField0_ & 0x00000008) != 0) &&
           status_ != null &&
           status_ != com.nuinfra.control_plane.v1alpha1.NodeStatus.getDefaultInstance()) {
           getStatusBuilder().mergeFrom(value);
@@ -822,16 +1276,20 @@ private static final long serialVersionUID = 0L;
         statusBuilder_.mergeFrom(value);
       }
       if (status_ != null) {
-        bitField0_ |= 0x00000004;
+        bitField0_ |= 0x00000008;
         onChanged();
       }
       return this;
     }
     /**
-     * <code>.nuinfra.control_plane.v1alpha1.NodeStatus status = 3 [json_name = "status"];</code>
+     * <pre>
+     * Health and lifecycle state.
+     * </pre>
+     *
+     * <code>.nuinfra.control_plane.v1alpha1.NodeStatus status = 4 [json_name = "status"];</code>
      */
     public Builder clearStatus() {
-      bitField0_ = (bitField0_ & ~0x00000004);
+      bitField0_ = (bitField0_ & ~0x00000008);
       status_ = null;
       if (statusBuilder_ != null) {
         statusBuilder_.dispose();
@@ -841,15 +1299,23 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.nuinfra.control_plane.v1alpha1.NodeStatus status = 3 [json_name = "status"];</code>
+     * <pre>
+     * Health and lifecycle state.
+     * </pre>
+     *
+     * <code>.nuinfra.control_plane.v1alpha1.NodeStatus status = 4 [json_name = "status"];</code>
      */
     public com.nuinfra.control_plane.v1alpha1.NodeStatus.Builder getStatusBuilder() {
-      bitField0_ |= 0x00000004;
+      bitField0_ |= 0x00000008;
       onChanged();
       return internalGetStatusFieldBuilder().getBuilder();
     }
     /**
-     * <code>.nuinfra.control_plane.v1alpha1.NodeStatus status = 3 [json_name = "status"];</code>
+     * <pre>
+     * Health and lifecycle state.
+     * </pre>
+     *
+     * <code>.nuinfra.control_plane.v1alpha1.NodeStatus status = 4 [json_name = "status"];</code>
      */
     public com.nuinfra.control_plane.v1alpha1.NodeStatusOrBuilder getStatusOrBuilder() {
       if (statusBuilder_ != null) {
@@ -860,7 +1326,11 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.nuinfra.control_plane.v1alpha1.NodeStatus status = 3 [json_name = "status"];</code>
+     * <pre>
+     * Health and lifecycle state.
+     * </pre>
+     *
+     * <code>.nuinfra.control_plane.v1alpha1.NodeStatus status = 4 [json_name = "status"];</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         com.nuinfra.control_plane.v1alpha1.NodeStatus, com.nuinfra.control_plane.v1alpha1.NodeStatus.Builder, com.nuinfra.control_plane.v1alpha1.NodeStatusOrBuilder> 
@@ -874,6 +1344,148 @@ private static final long serialVersionUID = 0L;
         status_ = null;
       }
       return statusBuilder_;
+    }
+
+    private com.google.protobuf.SingleFieldBuilder<
+        com.nuinfra.control_plane.v1alpha1.EC2InstanceMeta, com.nuinfra.control_plane.v1alpha1.EC2InstanceMeta.Builder, com.nuinfra.control_plane.v1alpha1.EC2InstanceMetaOrBuilder> awsEc2Builder_;
+    /**
+     * <code>.nuinfra.control_plane.v1alpha1.EC2InstanceMeta aws_ec2 = 5 [json_name = "awsEc2"];</code>
+     * @return Whether the awsEc2 field is set.
+     */
+    @java.lang.Override
+    public boolean hasAwsEc2() {
+      return providerMetadataCase_ == 5;
+    }
+    /**
+     * <code>.nuinfra.control_plane.v1alpha1.EC2InstanceMeta aws_ec2 = 5 [json_name = "awsEc2"];</code>
+     * @return The awsEc2.
+     */
+    @java.lang.Override
+    public com.nuinfra.control_plane.v1alpha1.EC2InstanceMeta getAwsEc2() {
+      if (awsEc2Builder_ == null) {
+        if (providerMetadataCase_ == 5) {
+          return (com.nuinfra.control_plane.v1alpha1.EC2InstanceMeta) providerMetadata_;
+        }
+        return com.nuinfra.control_plane.v1alpha1.EC2InstanceMeta.getDefaultInstance();
+      } else {
+        if (providerMetadataCase_ == 5) {
+          return awsEc2Builder_.getMessage();
+        }
+        return com.nuinfra.control_plane.v1alpha1.EC2InstanceMeta.getDefaultInstance();
+      }
+    }
+    /**
+     * <code>.nuinfra.control_plane.v1alpha1.EC2InstanceMeta aws_ec2 = 5 [json_name = "awsEc2"];</code>
+     */
+    public Builder setAwsEc2(com.nuinfra.control_plane.v1alpha1.EC2InstanceMeta value) {
+      if (awsEc2Builder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        providerMetadata_ = value;
+        onChanged();
+      } else {
+        awsEc2Builder_.setMessage(value);
+      }
+      providerMetadataCase_ = 5;
+      return this;
+    }
+    /**
+     * <code>.nuinfra.control_plane.v1alpha1.EC2InstanceMeta aws_ec2 = 5 [json_name = "awsEc2"];</code>
+     */
+    public Builder setAwsEc2(
+        com.nuinfra.control_plane.v1alpha1.EC2InstanceMeta.Builder builderForValue) {
+      if (awsEc2Builder_ == null) {
+        providerMetadata_ = builderForValue.build();
+        onChanged();
+      } else {
+        awsEc2Builder_.setMessage(builderForValue.build());
+      }
+      providerMetadataCase_ = 5;
+      return this;
+    }
+    /**
+     * <code>.nuinfra.control_plane.v1alpha1.EC2InstanceMeta aws_ec2 = 5 [json_name = "awsEc2"];</code>
+     */
+    public Builder mergeAwsEc2(com.nuinfra.control_plane.v1alpha1.EC2InstanceMeta value) {
+      if (awsEc2Builder_ == null) {
+        if (providerMetadataCase_ == 5 &&
+            providerMetadata_ != com.nuinfra.control_plane.v1alpha1.EC2InstanceMeta.getDefaultInstance()) {
+          providerMetadata_ = com.nuinfra.control_plane.v1alpha1.EC2InstanceMeta.newBuilder((com.nuinfra.control_plane.v1alpha1.EC2InstanceMeta) providerMetadata_)
+              .mergeFrom(value).buildPartial();
+        } else {
+          providerMetadata_ = value;
+        }
+        onChanged();
+      } else {
+        if (providerMetadataCase_ == 5) {
+          awsEc2Builder_.mergeFrom(value);
+        } else {
+          awsEc2Builder_.setMessage(value);
+        }
+      }
+      providerMetadataCase_ = 5;
+      return this;
+    }
+    /**
+     * <code>.nuinfra.control_plane.v1alpha1.EC2InstanceMeta aws_ec2 = 5 [json_name = "awsEc2"];</code>
+     */
+    public Builder clearAwsEc2() {
+      if (awsEc2Builder_ == null) {
+        if (providerMetadataCase_ == 5) {
+          providerMetadataCase_ = 0;
+          providerMetadata_ = null;
+          onChanged();
+        }
+      } else {
+        if (providerMetadataCase_ == 5) {
+          providerMetadataCase_ = 0;
+          providerMetadata_ = null;
+        }
+        awsEc2Builder_.clear();
+      }
+      return this;
+    }
+    /**
+     * <code>.nuinfra.control_plane.v1alpha1.EC2InstanceMeta aws_ec2 = 5 [json_name = "awsEc2"];</code>
+     */
+    public com.nuinfra.control_plane.v1alpha1.EC2InstanceMeta.Builder getAwsEc2Builder() {
+      return internalGetAwsEc2FieldBuilder().getBuilder();
+    }
+    /**
+     * <code>.nuinfra.control_plane.v1alpha1.EC2InstanceMeta aws_ec2 = 5 [json_name = "awsEc2"];</code>
+     */
+    @java.lang.Override
+    public com.nuinfra.control_plane.v1alpha1.EC2InstanceMetaOrBuilder getAwsEc2OrBuilder() {
+      if ((providerMetadataCase_ == 5) && (awsEc2Builder_ != null)) {
+        return awsEc2Builder_.getMessageOrBuilder();
+      } else {
+        if (providerMetadataCase_ == 5) {
+          return (com.nuinfra.control_plane.v1alpha1.EC2InstanceMeta) providerMetadata_;
+        }
+        return com.nuinfra.control_plane.v1alpha1.EC2InstanceMeta.getDefaultInstance();
+      }
+    }
+    /**
+     * <code>.nuinfra.control_plane.v1alpha1.EC2InstanceMeta aws_ec2 = 5 [json_name = "awsEc2"];</code>
+     */
+    private com.google.protobuf.SingleFieldBuilder<
+        com.nuinfra.control_plane.v1alpha1.EC2InstanceMeta, com.nuinfra.control_plane.v1alpha1.EC2InstanceMeta.Builder, com.nuinfra.control_plane.v1alpha1.EC2InstanceMetaOrBuilder> 
+        internalGetAwsEc2FieldBuilder() {
+      if (awsEc2Builder_ == null) {
+        if (!(providerMetadataCase_ == 5)) {
+          providerMetadata_ = com.nuinfra.control_plane.v1alpha1.EC2InstanceMeta.getDefaultInstance();
+        }
+        awsEc2Builder_ = new com.google.protobuf.SingleFieldBuilder<
+            com.nuinfra.control_plane.v1alpha1.EC2InstanceMeta, com.nuinfra.control_plane.v1alpha1.EC2InstanceMeta.Builder, com.nuinfra.control_plane.v1alpha1.EC2InstanceMetaOrBuilder>(
+                (com.nuinfra.control_plane.v1alpha1.EC2InstanceMeta) providerMetadata_,
+                getParentForChildren(),
+                isClean());
+        providerMetadata_ = null;
+      }
+      providerMetadataCase_ = 5;
+      onChanged();
+      return awsEc2Builder_;
     }
 
     // @@protoc_insertion_point(builder_scope:nuinfra.control_plane.v1alpha1.Node)

@@ -9,6 +9,13 @@ import (
 	"golang.nuinfra.net/commons/pkg/config"
 )
 
+type NodeRuntime string
+
+const (
+	NodeRuntimeLocal NodeRuntime = "local"
+	NodeRuntimeEC2   NodeRuntime = "aws-ec2"
+)
+
 const (
 	defaultFirecrackerBinaryName = "firecracker"
 	defaultJailerBinaryName      = "jailer"
@@ -34,6 +41,10 @@ const (
 	defaultControllerMaxRetries = 10
 	defaultReconnectMaxInterval = 2 * time.Minute
 	defaultResyncInterval       = 5 * time.Minute
+
+	defaultNodeRuntime               NodeRuntime = NodeRuntimeLocal
+	defaultNodeMetricsReportInterval             = 30 * time.Second
+	defaultNodeHealthReportInterval              = 30 * time.Second
 )
 
 // Bundle is the daemon's top-level configuration. It embeds the gRPC
@@ -64,6 +75,9 @@ type Bundle struct {
 
 	// Controller tunes the daemon's reconciliation loop.
 	Controller *Controller `mapstructure:"controller"`
+
+	// NodeAgent tunes the daemon's node metrics and health report cadence.
+	NodeAgent *NodeAgent `mapstructure:"node-agent"`
 }
 
 // APIServer points the daemon at its control plane.
@@ -176,6 +190,24 @@ type MicroVM struct {
 	GuestMAC string `mapstructure:"guest-mac"`
 }
 
+// NodeAgent configures the node agent.
+type NodeAgent struct {
+	// Runtime identifies the environment in which the node agent is running.
+	//
+	// Supported runtimes are:
+	//   - local: intended for development and integration tests
+	//   - aws-ec2: running inside an AWS EC2 instance
+	Runtime NodeRuntime `mapstructure:"node-runtime" validate:"oneof=local aws-ec2"`
+
+	// MetricsReportInterval is the cadence at which the node agent collects
+	// node metrics and reports them to the API server.
+	MetricsReportInterval time.Duration `mapstructure:"metrics-report-interval"`
+
+	// HealthReportInterval is the cadence at which the node agent checks node
+	// health and reports it to the API server.
+	HealthReportInterval time.Duration `mapstructure:"health-report-interval"`
+}
+
 // NewFromFile loads configuration from filename into a [Bundle], applying
 // daemon-level defaults before viper's unmarshal step.
 func NewFromFile(filename string) (*Bundle, error) {
@@ -209,4 +241,8 @@ func applyDefaults(v *viper.Viper) {
 	v.SetDefault("controller.max-retries", defaultControllerMaxRetries)
 	v.SetDefault("controller.reconnect-max-interval", defaultReconnectMaxInterval)
 	v.SetDefault("controller.resync-interval", defaultResyncInterval)
+
+	v.SetDefault("node-agent.runtime", defaultNodeRuntime)
+	v.SetDefault("node-agent.metrics-report-interval", defaultNodeMetricsReportInterval)
+	v.SetDefault("node-agent.health-report-interval", defaultNodeHealthReportInterval)
 }

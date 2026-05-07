@@ -2,11 +2,7 @@ package dynamodb
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"net/url"
-	"os"
-	"path/filepath"
 
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	smithyendpoints "github.com/aws/smithy-go/endpoints"
@@ -78,22 +74,4 @@ func New(ctx context.Context, config Config) Client {
 	}
 
 	return dynamodb.NewFromConfig(awsConfig, options...)
-}
-
-func CreateTableInputFromFile(base string, schemaFile string) (*dynamodb.CreateTableInput, error) {
-	schemaPath, err := filepath.Abs(filepath.Join(base, schemaFile))
-	if err != nil {
-		return nil, fmt.Errorf("cannot resolve DynamoDB schema file: %w", err)
-	}
-
-	data, err := os.ReadFile(schemaPath)
-	if err != nil {
-		return nil, err
-	}
-
-	createTableInput := &dynamodb.CreateTableInput{}
-	if err := json.Unmarshal(data, createTableInput); err != nil {
-		return nil, fmt.Errorf("error parsing schema at %s: %w", schemaPath, err)
-	}
-	return createTableInput, nil
 }

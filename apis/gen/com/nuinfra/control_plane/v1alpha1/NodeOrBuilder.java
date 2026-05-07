@@ -26,32 +26,100 @@ public interface NodeOrBuilder extends
   com.nuinfra.control_plane.v1alpha1.NodeMetaOrBuilder getMetadataOrBuilder();
 
   /**
+   * <pre>
+   * Static/allocatable characteristics of the node.
+   * </pre>
+   *
    * <code>.nuinfra.control_plane.v1alpha1.NodeResources resources = 2 [json_name = "resources", (.buf.validate.field) = { ... }</code>
    * @return Whether the resources field is set.
    */
   boolean hasResources();
   /**
+   * <pre>
+   * Static/allocatable characteristics of the node.
+   * </pre>
+   *
    * <code>.nuinfra.control_plane.v1alpha1.NodeResources resources = 2 [json_name = "resources", (.buf.validate.field) = { ... }</code>
    * @return The resources.
    */
   com.nuinfra.control_plane.v1alpha1.NodeResources getResources();
   /**
+   * <pre>
+   * Static/allocatable characteristics of the node.
+   * </pre>
+   *
    * <code>.nuinfra.control_plane.v1alpha1.NodeResources resources = 2 [json_name = "resources", (.buf.validate.field) = { ... }</code>
    */
   com.nuinfra.control_plane.v1alpha1.NodeResourcesOrBuilder getResourcesOrBuilder();
 
   /**
-   * <code>.nuinfra.control_plane.v1alpha1.NodeStatus status = 3 [json_name = "status"];</code>
+   * <pre>
+   * Dynamic periodically sampled metrics.
+   * </pre>
+   *
+   * <code>.nuinfra.control_plane.v1alpha1.NodeMetrics metrics = 3 [json_name = "metrics"];</code>
+   * @return Whether the metrics field is set.
+   */
+  boolean hasMetrics();
+  /**
+   * <pre>
+   * Dynamic periodically sampled metrics.
+   * </pre>
+   *
+   * <code>.nuinfra.control_plane.v1alpha1.NodeMetrics metrics = 3 [json_name = "metrics"];</code>
+   * @return The metrics.
+   */
+  com.nuinfra.control_plane.v1alpha1.NodeMetrics getMetrics();
+  /**
+   * <pre>
+   * Dynamic periodically sampled metrics.
+   * </pre>
+   *
+   * <code>.nuinfra.control_plane.v1alpha1.NodeMetrics metrics = 3 [json_name = "metrics"];</code>
+   */
+  com.nuinfra.control_plane.v1alpha1.NodeMetricsOrBuilder getMetricsOrBuilder();
+
+  /**
+   * <pre>
+   * Health and lifecycle state.
+   * </pre>
+   *
+   * <code>.nuinfra.control_plane.v1alpha1.NodeStatus status = 4 [json_name = "status"];</code>
    * @return Whether the status field is set.
    */
   boolean hasStatus();
   /**
-   * <code>.nuinfra.control_plane.v1alpha1.NodeStatus status = 3 [json_name = "status"];</code>
+   * <pre>
+   * Health and lifecycle state.
+   * </pre>
+   *
+   * <code>.nuinfra.control_plane.v1alpha1.NodeStatus status = 4 [json_name = "status"];</code>
    * @return The status.
    */
   com.nuinfra.control_plane.v1alpha1.NodeStatus getStatus();
   /**
-   * <code>.nuinfra.control_plane.v1alpha1.NodeStatus status = 3 [json_name = "status"];</code>
+   * <pre>
+   * Health and lifecycle state.
+   * </pre>
+   *
+   * <code>.nuinfra.control_plane.v1alpha1.NodeStatus status = 4 [json_name = "status"];</code>
    */
   com.nuinfra.control_plane.v1alpha1.NodeStatusOrBuilder getStatusOrBuilder();
+
+  /**
+   * <code>.nuinfra.control_plane.v1alpha1.EC2InstanceMeta aws_ec2 = 5 [json_name = "awsEc2"];</code>
+   * @return Whether the awsEc2 field is set.
+   */
+  boolean hasAwsEc2();
+  /**
+   * <code>.nuinfra.control_plane.v1alpha1.EC2InstanceMeta aws_ec2 = 5 [json_name = "awsEc2"];</code>
+   * @return The awsEc2.
+   */
+  com.nuinfra.control_plane.v1alpha1.EC2InstanceMeta getAwsEc2();
+  /**
+   * <code>.nuinfra.control_plane.v1alpha1.EC2InstanceMeta aws_ec2 = 5 [json_name = "awsEc2"];</code>
+   */
+  com.nuinfra.control_plane.v1alpha1.EC2InstanceMetaOrBuilder getAwsEc2OrBuilder();
+
+  com.nuinfra.control_plane.v1alpha1.Node.ProviderMetadataCase getProviderMetadataCase();
 }

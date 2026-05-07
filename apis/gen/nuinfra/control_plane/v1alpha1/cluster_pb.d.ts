@@ -23,14 +23,38 @@ export declare type Node = Message<"nuinfra.control_plane.v1alpha1.Node"> & {
   metadata?: NodeMeta;
 
   /**
+   * Static/allocatable characteristics of the node.
+   *
    * @generated from field: nuinfra.control_plane.v1alpha1.NodeResources resources = 2;
    */
   resources?: NodeResources;
 
   /**
-   * @generated from field: nuinfra.control_plane.v1alpha1.NodeStatus status = 3;
+   * Dynamic periodically sampled metrics.
+   *
+   * @generated from field: nuinfra.control_plane.v1alpha1.NodeMetrics metrics = 3;
+   */
+  metrics?: NodeMetrics;
+
+  /**
+   * Health and lifecycle state.
+   *
+   * @generated from field: nuinfra.control_plane.v1alpha1.NodeStatus status = 4;
    */
   status?: NodeStatus;
+
+  /**
+   * Cloud provider specific metadata.
+   *
+   * @generated from oneof nuinfra.control_plane.v1alpha1.Node.provider_metadata
+   */
+  providerMetadata: {
+    /**
+     * @generated from field: nuinfra.control_plane.v1alpha1.EC2InstanceMeta aws_ec2 = 5;
+     */
+    value: EC2InstanceMeta;
+    case: "awsEc2";
+  } | { case: undefined; value?: undefined };
 };
 
 /**
@@ -54,12 +78,12 @@ export declare type NodeMeta = Message<"nuinfra.control_plane.v1alpha1.NodeMeta"
   version: bigint;
 
   /**
-   * @generated from field: google.protobuf.Timestamp created_at = 4;
+   * @generated from field: google.protobuf.Timestamp created_at = 3;
    */
   createdAt?: Timestamp;
 
   /**
-   * @generated from field: google.protobuf.Timestamp last_modified_at = 5;
+   * @generated from field: google.protobuf.Timestamp last_modified_at = 4;
    */
   lastModifiedAt?: Timestamp;
 };
@@ -75,14 +99,25 @@ export declare const NodeMetaSchema: GenMessage<NodeMeta>;
  */
 export declare type NodeResources = Message<"nuinfra.control_plane.v1alpha1.NodeResources"> & {
   /**
-   * @generated from field: uint32 vcpu_count = 1;
+   * Total allocatable vCPUs available for workloads.
+   *
+   * @generated from field: uint32 cpu_capacity_millicores = 1;
    */
-  vcpuCount: number;
+  cpuCapacityMillicores: number;
 
   /**
-   * @generated from field: uint64 memory_mib = 2;
+   * Total allocatable memory available for workloads.
+   *
+   * @generated from field: uint64 memory_capacity_bytes = 2;
    */
-  memoryMib: bigint;
+  memoryCapacityBytes: bigint;
+
+  /**
+   * Total allocatable disk available for workloads.
+   *
+   * @generated from field: uint64 disk_capacity_bytes = 3;
+   */
+  diskCapacityBytes: bigint;
 };
 
 /**
@@ -90,6 +125,52 @@ export declare type NodeResources = Message<"nuinfra.control_plane.v1alpha1.Node
  * Use `create(NodeResourcesSchema)` to create a new message.
  */
 export declare const NodeResourcesSchema: GenMessage<NodeResources>;
+
+/**
+ * @generated from message nuinfra.control_plane.v1alpha1.NodeMetrics
+ */
+export declare type NodeMetrics = Message<"nuinfra.control_plane.v1alpha1.NodeMetrics"> & {
+  /**
+   * Time at which the metrics were sampled.
+   *
+   * @generated from field: google.protobuf.Timestamp sampled_at = 1;
+   */
+  sampledAt?: Timestamp;
+
+  /**
+   * Number of currently active sandboxes.
+   *
+   * @generated from field: uint32 active_sandbox_count = 2;
+   */
+  activeSandboxCount: number;
+
+  /**
+   * CPU currently in use.
+   *
+   * @generated from field: uint32 cpu_used_millicores = 3;
+   */
+  cpuUsedMillicores: number;
+
+  /**
+   * Memory currently in use.
+   *
+   * @generated from field: uint64 memory_used_bytes = 4;
+   */
+  memoryUsedBytes: bigint;
+
+  /**
+   * Disk currently in use.
+   *
+   * @generated from field: uint64 disk_used_bytes = 5;
+   */
+  diskUsedBytes: bigint;
+};
+
+/**
+ * Describes the message nuinfra.control_plane.v1alpha1.NodeMetrics.
+ * Use `create(NodeMetricsSchema)` to create a new message.
+ */
+export declare const NodeMetricsSchema: GenMessage<NodeMetrics>;
 
 /**
  * @generated from message nuinfra.control_plane.v1alpha1.NodeStatus
@@ -101,6 +182,8 @@ export declare type NodeStatus = Message<"nuinfra.control_plane.v1alpha1.NodeSta
   phase: NodeStatus_Phase;
 
   /**
+   * Human-readable status message.
+   *
    * @generated from field: string message = 2;
    */
   message: string;
@@ -122,25 +205,101 @@ export enum NodeStatus_Phase {
   UNSPECIFIED = 0,
 
   /**
+   * Node is healthy and able to accept workloads.
+   *
    * @generated from enum value: PHASE_HEALTHY = 1;
    */
   HEALTHY = 1,
 
   /**
+   * Node is reachable but degraded.
+   *
    * @generated from enum value: PHASE_UNHEALTHY = 2;
    */
   UNHEALTHY = 2,
 
   /**
+   * Node has not reported recently and is considered lost.
+   *
    * @generated from enum value: PHASE_LOST = 3;
    */
   LOST = 3,
+
+  /**
+   * Node is being removed or is no longer active.
+   *
+   * @generated from enum value: PHASE_DELETED = 4;
+   */
+  DELETED = 4,
+
+  /**
+   * Status could not be determined due to transient failures.
+   *
+   * @generated from enum value: PHASE_UNKNOWN = 5;
+   */
+  UNKNOWN = 5,
 }
 
 /**
  * Describes the enum nuinfra.control_plane.v1alpha1.NodeStatus.Phase.
  */
 export declare const NodeStatus_PhaseSchema: GenEnum<NodeStatus_Phase>;
+
+/**
+ * @generated from message nuinfra.control_plane.v1alpha1.EC2InstanceMeta
+ */
+export declare type EC2InstanceMeta = Message<"nuinfra.control_plane.v1alpha1.EC2InstanceMeta"> & {
+  /**
+   * @generated from field: string instance_id = 1;
+   */
+  instanceId: string;
+
+  /**
+   * @generated from field: string instance_type = 2;
+   */
+  instanceType: string;
+
+  /**
+   * @generated from field: string image_id = 3;
+   */
+  imageId: string;
+
+  /**
+   * @generated from field: string account_id = 4;
+   */
+  accountId: string;
+
+  /**
+   * @generated from field: string region = 5;
+   */
+  region: string;
+
+  /**
+   * @generated from field: string availability_zone = 6;
+   */
+  availabilityZone: string;
+
+  /**
+   * @generated from field: string private_ip = 7;
+   */
+  privateIp: string;
+
+  /**
+   * @generated from field: string kernel_id = 8;
+   */
+  kernelId: string;
+
+  /**
+   * @generated from field: string architecture = 9;
+   */
+  architecture: string;
+};
+
+/**
+ * Describes the message nuinfra.control_plane.v1alpha1.EC2InstanceMeta.
+ * Use `create(EC2InstanceMetaSchema)` to create a new message.
+ */
+export declare const EC2InstanceMetaSchema: GenMessage<EC2InstanceMeta>;
 
 /**
  * @generated from message nuinfra.control_plane.v1alpha1.GetNodeRequest

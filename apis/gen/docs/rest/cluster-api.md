@@ -46,6 +46,12 @@ headingLevel: 2
 **statusPhase**: Filters nodes by their current lifecycle phase.
 If unset, nodes in all phases are returned.
 
+ - PHASE_HEALTHY: Node is healthy and able to accept workloads.
+ - PHASE_UNHEALTHY: Node is reachable but degraded.
+ - PHASE_LOST: Node has not reported recently and is considered lost.
+ - PHASE_DELETED: Node is being removed or is no longer active.
+ - PHASE_UNKNOWN: Status could not be determined due to transient failures.
+
 **continuationToken**: Token used for pagination.
 Pass the value returned in a previous response to retrieve the next page of results.
 Leave empty to start listing from the beginning.
@@ -67,6 +73,8 @@ The maximum allowed value is 1000.
 |statusPhase|PHASE_HEALTHY|
 |statusPhase|PHASE_UNHEALTHY|
 |statusPhase|PHASE_LOST|
+|statusPhase|PHASE_DELETED|
+|statusPhase|PHASE_UNKNOWN|
 |sortOrder|ORDER_UNSPECIFIED|
 |sortOrder|ORDER_NEWEST_FIRST|
 |sortOrder|ORDER_OLDEST_FIRST|
@@ -86,12 +94,31 @@ The maximum allowed value is 1000.
         "lastModifiedAt": "2019-08-24T14:15:22Z"
       },
       "resources": {
-        "vcpuCount": 0,
-        "memoryMib": "string"
+        "cpuCapacityMillicores": 0,
+        "memoryCapacityBytes": "string",
+        "diskCapacityBytes": "string"
+      },
+      "metrics": {
+        "sampledAt": "2019-08-24T14:15:22Z",
+        "activeSandboxCount": 0,
+        "cpuUsedMillicores": 0,
+        "memoryUsedBytes": "string",
+        "diskUsedBytes": "string"
       },
       "status": {
         "phase": "PHASE_UNSPECIFIED",
         "message": "string"
+      },
+      "awsEc2": {
+        "instanceId": "string",
+        "instanceType": "string",
+        "imageId": "string",
+        "accountId": "string",
+        "region": "string",
+        "availabilityZone": "string",
+        "privateIp": "string",
+        "kernelId": "string",
+        "architecture": "string"
       }
     }
   ],
@@ -136,12 +163,31 @@ This operation does not require authentication
       "lastModifiedAt": "2019-08-24T14:15:22Z"
     },
     "resources": {
-      "vcpuCount": 0,
-      "memoryMib": "string"
+      "cpuCapacityMillicores": 0,
+      "memoryCapacityBytes": "string",
+      "diskCapacityBytes": "string"
+    },
+    "metrics": {
+      "sampledAt": "2019-08-24T14:15:22Z",
+      "activeSandboxCount": 0,
+      "cpuUsedMillicores": 0,
+      "memoryUsedBytes": "string",
+      "diskUsedBytes": "string"
     },
     "status": {
       "phase": "PHASE_UNSPECIFIED",
       "message": "string"
+    },
+    "awsEc2": {
+      "instanceId": "string",
+      "instanceType": "string",
+      "imageId": "string",
+      "accountId": "string",
+      "region": "string",
+      "availabilityZone": "string",
+      "privateIp": "string",
+      "kernelId": "string",
+      "architecture": "string"
     }
   }
 }
@@ -325,12 +371,31 @@ You can find out more about this error model and how to work with it in the
       "lastModifiedAt": "2019-08-24T14:15:22Z"
     },
     "resources": {
-      "vcpuCount": 0,
-      "memoryMib": "string"
+      "cpuCapacityMillicores": 0,
+      "memoryCapacityBytes": "string",
+      "diskCapacityBytes": "string"
+    },
+    "metrics": {
+      "sampledAt": "2019-08-24T14:15:22Z",
+      "activeSandboxCount": 0,
+      "cpuUsedMillicores": 0,
+      "memoryUsedBytes": "string",
+      "diskUsedBytes": "string"
     },
     "status": {
       "phase": "PHASE_UNSPECIFIED",
       "message": "string"
+    },
+    "awsEc2": {
+      "instanceId": "string",
+      "instanceType": "string",
+      "imageId": "string",
+      "accountId": "string",
+      "region": "string",
+      "availabilityZone": "string",
+      "privateIp": "string",
+      "kernelId": "string",
+      "architecture": "string"
     }
   }
 }
@@ -363,6 +428,42 @@ You can find out more about this error model and how to work with it in the
 |Name|Type|Required|Restrictions|Description|
 |---|---|---|---|---|
 |sessionId|string(int64)|false|none|none|
+
+<h2 id="tocS_v1alpha1EC2InstanceMeta">v1alpha1EC2InstanceMeta</h2>
+<!-- backwards compatibility -->
+<a id="schemav1alpha1ec2instancemeta"></a>
+<a id="schema_v1alpha1EC2InstanceMeta"></a>
+<a id="tocSv1alpha1ec2instancemeta"></a>
+<a id="tocsv1alpha1ec2instancemeta"></a>
+
+```json
+{
+  "instanceId": "string",
+  "instanceType": "string",
+  "imageId": "string",
+  "accountId": "string",
+  "region": "string",
+  "availabilityZone": "string",
+  "privateIp": "string",
+  "kernelId": "string",
+  "architecture": "string"
+}
+
+```
+
+### Properties
+
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|instanceId|string|false|none|none|
+|instanceType|string|false|none|none|
+|imageId|string|false|none|none|
+|accountId|string|false|none|none|
+|region|string|false|none|none|
+|availabilityZone|string|false|none|none|
+|privateIp|string|false|none|none|
+|kernelId|string|false|none|none|
+|architecture|string|false|none|none|
 
 <h2 id="tocS_v1alpha1EstablishSessionResponse">v1alpha1EstablishSessionResponse</h2>
 <!-- backwards compatibility -->
@@ -510,12 +611,31 @@ It provides enough context for consumers to react, audit, or replicate the chang
       "lastModifiedAt": "2019-08-24T14:15:22Z"
     },
     "resources": {
-      "vcpuCount": 0,
-      "memoryMib": "string"
+      "cpuCapacityMillicores": 0,
+      "memoryCapacityBytes": "string",
+      "diskCapacityBytes": "string"
+    },
+    "metrics": {
+      "sampledAt": "2019-08-24T14:15:22Z",
+      "activeSandboxCount": 0,
+      "cpuUsedMillicores": 0,
+      "memoryUsedBytes": "string",
+      "diskUsedBytes": "string"
     },
     "status": {
       "phase": "PHASE_UNSPECIFIED",
       "message": "string"
+    },
+    "awsEc2": {
+      "instanceId": "string",
+      "instanceType": "string",
+      "imageId": "string",
+      "accountId": "string",
+      "region": "string",
+      "availabilityZone": "string",
+      "privateIp": "string",
+      "kernelId": "string",
+      "architecture": "string"
     }
   }
 }
@@ -604,12 +724,31 @@ Controls how results are ordered by last modification time.
         "lastModifiedAt": "2019-08-24T14:15:22Z"
       },
       "resources": {
-        "vcpuCount": 0,
-        "memoryMib": "string"
+        "cpuCapacityMillicores": 0,
+        "memoryCapacityBytes": "string",
+        "diskCapacityBytes": "string"
+      },
+      "metrics": {
+        "sampledAt": "2019-08-24T14:15:22Z",
+        "activeSandboxCount": 0,
+        "cpuUsedMillicores": 0,
+        "memoryUsedBytes": "string",
+        "diskUsedBytes": "string"
       },
       "status": {
         "phase": "PHASE_UNSPECIFIED",
         "message": "string"
+      },
+      "awsEc2": {
+        "instanceId": "string",
+        "instanceType": "string",
+        "imageId": "string",
+        "accountId": "string",
+        "region": "string",
+        "availabilityZone": "string",
+        "privateIp": "string",
+        "kernelId": "string",
+        "architecture": "string"
       }
     }
   ],
@@ -643,12 +782,31 @@ Response message containing a page of nodes.
     "lastModifiedAt": "2019-08-24T14:15:22Z"
   },
   "resources": {
-    "vcpuCount": 0,
-    "memoryMib": "string"
+    "cpuCapacityMillicores": 0,
+    "memoryCapacityBytes": "string",
+    "diskCapacityBytes": "string"
+  },
+  "metrics": {
+    "sampledAt": "2019-08-24T14:15:22Z",
+    "activeSandboxCount": 0,
+    "cpuUsedMillicores": 0,
+    "memoryUsedBytes": "string",
+    "diskUsedBytes": "string"
   },
   "status": {
     "phase": "PHASE_UNSPECIFIED",
     "message": "string"
+  },
+  "awsEc2": {
+    "instanceId": "string",
+    "instanceType": "string",
+    "imageId": "string",
+    "accountId": "string",
+    "region": "string",
+    "availabilityZone": "string",
+    "privateIp": "string",
+    "kernelId": "string",
+    "architecture": "string"
   }
 }
 
@@ -660,7 +818,9 @@ Response message containing a page of nodes.
 |---|---|---|---|---|
 |metadata|[v1alpha1NodeMeta](#schemav1alpha1nodemeta)|false|none|none|
 |resources|[v1alpha1NodeResources](#schemav1alpha1noderesources)|false|none|none|
+|metrics|[v1alpha1NodeMetrics](#schemav1alpha1nodemetrics)|false|none|none|
 |status|[v1alpha1NodeStatus](#schemav1alpha1nodestatus)|false|none|none|
+|awsEc2|[v1alpha1EC2InstanceMeta](#schemav1alpha1ec2instancemeta)|false|none|none|
 
 <h2 id="tocS_v1alpha1NodeMeta">v1alpha1NodeMeta</h2>
 <!-- backwards compatibility -->
@@ -687,6 +847,34 @@ Response message containing a page of nodes.
 |version|string(int64)|false|none|none|
 |createdAt|string(date-time)|false|none|none|
 |lastModifiedAt|string(date-time)|false|none|none|
+
+<h2 id="tocS_v1alpha1NodeMetrics">v1alpha1NodeMetrics</h2>
+<!-- backwards compatibility -->
+<a id="schemav1alpha1nodemetrics"></a>
+<a id="schema_v1alpha1NodeMetrics"></a>
+<a id="tocSv1alpha1nodemetrics"></a>
+<a id="tocsv1alpha1nodemetrics"></a>
+
+```json
+{
+  "sampledAt": "2019-08-24T14:15:22Z",
+  "activeSandboxCount": 0,
+  "cpuUsedMillicores": 0,
+  "memoryUsedBytes": "string",
+  "diskUsedBytes": "string"
+}
+
+```
+
+### Properties
+
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|sampledAt|string(date-time)|false|none|Time at which the metrics were sampled.|
+|activeSandboxCount|integer(int64)|false|none|Number of currently active sandboxes.|
+|cpuUsedMillicores|integer(int64)|false|none|CPU currently in use.|
+|memoryUsedBytes|string(uint64)|false|none|Memory currently in use.|
+|diskUsedBytes|string(uint64)|false|none|Disk currently in use.|
 
 <h2 id="tocS_v1alpha1NodeRef">v1alpha1NodeRef</h2>
 <!-- backwards compatibility -->
@@ -717,8 +905,9 @@ Response message containing a page of nodes.
 
 ```json
 {
-  "vcpuCount": 0,
-  "memoryMib": "string"
+  "cpuCapacityMillicores": 0,
+  "memoryCapacityBytes": "string",
+  "diskCapacityBytes": "string"
 }
 
 ```
@@ -727,8 +916,9 @@ Response message containing a page of nodes.
 
 |Name|Type|Required|Restrictions|Description|
 |---|---|---|---|---|
-|vcpuCount|integer(int64)|false|none|none|
-|memoryMib|string(uint64)|false|none|none|
+|cpuCapacityMillicores|integer(int64)|false|none|Total allocatable vCPUs available for workloads.|
+|memoryCapacityBytes|string(uint64)|false|none|Total allocatable memory available for workloads.|
+|diskCapacityBytes|string(uint64)|false|none|Total allocatable disk available for workloads.|
 
 <h2 id="tocS_v1alpha1NodeStatus">v1alpha1NodeStatus</h2>
 <!-- backwards compatibility -->
@@ -749,8 +939,8 @@ Response message containing a page of nodes.
 
 |Name|Type|Required|Restrictions|Description|
 |---|---|---|---|---|
-|phase|[v1alpha1NodeStatusPhase](#schemav1alpha1nodestatusphase)|false|none|none|
-|message|string|false|none|none|
+|phase|[v1alpha1NodeStatusPhase](#schemav1alpha1nodestatusphase)|false|none|- PHASE_HEALTHY: Node is healthy and able to accept workloads.<br> - PHASE_UNHEALTHY: Node is reachable but degraded.<br> - PHASE_LOST: Node has not reported recently and is considered lost.<br> - PHASE_DELETED: Node is being removed or is no longer active.<br> - PHASE_UNKNOWN: Status could not be determined due to transient failures.|
+|message|string|false|none|Human-readable status message.|
 
 <h2 id="tocS_v1alpha1NodeStatusPhase">v1alpha1NodeStatusPhase</h2>
 <!-- backwards compatibility -->
@@ -764,11 +954,17 @@ Response message containing a page of nodes.
 
 ```
 
+ - PHASE_HEALTHY: Node is healthy and able to accept workloads.
+ - PHASE_UNHEALTHY: Node is reachable but degraded.
+ - PHASE_LOST: Node has not reported recently and is considered lost.
+ - PHASE_DELETED: Node is being removed or is no longer active.
+ - PHASE_UNKNOWN: Status could not be determined due to transient failures.
+
 ### Properties
 
 |Name|Type|Required|Restrictions|Description|
 |---|---|---|---|---|
-|*anonymous*|string|false|none|none|
+|*anonymous*|string|false|none|- PHASE_HEALTHY: Node is healthy and able to accept workloads.<br> - PHASE_UNHEALTHY: Node is reachable but degraded.<br> - PHASE_LOST: Node has not reported recently and is considered lost.<br> - PHASE_DELETED: Node is being removed or is no longer active.<br> - PHASE_UNKNOWN: Status could not be determined due to transient failures.|
 
 #### Enumerated Values
 
@@ -778,6 +974,8 @@ Response message containing a page of nodes.
 |*anonymous*|PHASE_HEALTHY|
 |*anonymous*|PHASE_UNHEALTHY|
 |*anonymous*|PHASE_LOST|
+|*anonymous*|PHASE_DELETED|
+|*anonymous*|PHASE_UNKNOWN|
 
 <h2 id="tocS_v1alpha1Resources">v1alpha1Resources</h2>
 <!-- backwards compatibility -->

@@ -43,26 +43,49 @@ private static final long serialVersionUID = 0L;
             com.nuinfra.control_plane.v1alpha1.NodeResources.class, com.nuinfra.control_plane.v1alpha1.NodeResources.Builder.class);
   }
 
-  public static final int VCPU_COUNT_FIELD_NUMBER = 1;
-  private int vcpuCount_ = 0;
+  public static final int CPU_CAPACITY_MILLICORES_FIELD_NUMBER = 1;
+  private int cpuCapacityMillicores_ = 0;
   /**
-   * <code>uint32 vcpu_count = 1 [json_name = "vcpuCount", (.buf.validate.field) = { ... }</code>
-   * @return The vcpuCount.
+   * <pre>
+   * Total allocatable vCPUs available for workloads.
+   * </pre>
+   *
+   * <code>uint32 cpu_capacity_millicores = 1 [json_name = "cpuCapacityMillicores", (.buf.validate.field) = { ... }</code>
+   * @return The cpuCapacityMillicores.
    */
   @java.lang.Override
-  public int getVcpuCount() {
-    return vcpuCount_;
+  public int getCpuCapacityMillicores() {
+    return cpuCapacityMillicores_;
   }
 
-  public static final int MEMORY_MIB_FIELD_NUMBER = 2;
-  private long memoryMib_ = 0L;
+  public static final int MEMORY_CAPACITY_BYTES_FIELD_NUMBER = 2;
+  private long memoryCapacityBytes_ = 0L;
   /**
-   * <code>uint64 memory_mib = 2 [json_name = "memoryMib", (.buf.validate.field) = { ... }</code>
-   * @return The memoryMib.
+   * <pre>
+   * Total allocatable memory available for workloads.
+   * </pre>
+   *
+   * <code>uint64 memory_capacity_bytes = 2 [json_name = "memoryCapacityBytes", (.buf.validate.field) = { ... }</code>
+   * @return The memoryCapacityBytes.
    */
   @java.lang.Override
-  public long getMemoryMib() {
-    return memoryMib_;
+  public long getMemoryCapacityBytes() {
+    return memoryCapacityBytes_;
+  }
+
+  public static final int DISK_CAPACITY_BYTES_FIELD_NUMBER = 3;
+  private long diskCapacityBytes_ = 0L;
+  /**
+   * <pre>
+   * Total allocatable disk available for workloads.
+   * </pre>
+   *
+   * <code>uint64 disk_capacity_bytes = 3 [json_name = "diskCapacityBytes", (.buf.validate.field) = { ... }</code>
+   * @return The diskCapacityBytes.
+   */
+  @java.lang.Override
+  public long getDiskCapacityBytes() {
+    return diskCapacityBytes_;
   }
 
   private byte memoizedIsInitialized = -1;
@@ -79,11 +102,14 @@ private static final long serialVersionUID = 0L;
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output)
                       throws java.io.IOException {
-    if (vcpuCount_ != 0) {
-      output.writeUInt32(1, vcpuCount_);
+    if (cpuCapacityMillicores_ != 0) {
+      output.writeUInt32(1, cpuCapacityMillicores_);
     }
-    if (memoryMib_ != 0L) {
-      output.writeUInt64(2, memoryMib_);
+    if (memoryCapacityBytes_ != 0L) {
+      output.writeUInt64(2, memoryCapacityBytes_);
+    }
+    if (diskCapacityBytes_ != 0L) {
+      output.writeUInt64(3, diskCapacityBytes_);
     }
     getUnknownFields().writeTo(output);
   }
@@ -94,13 +120,17 @@ private static final long serialVersionUID = 0L;
     if (size != -1) return size;
 
     size = 0;
-    if (vcpuCount_ != 0) {
+    if (cpuCapacityMillicores_ != 0) {
       size += com.google.protobuf.CodedOutputStream
-        .computeUInt32Size(1, vcpuCount_);
+        .computeUInt32Size(1, cpuCapacityMillicores_);
     }
-    if (memoryMib_ != 0L) {
+    if (memoryCapacityBytes_ != 0L) {
       size += com.google.protobuf.CodedOutputStream
-        .computeUInt64Size(2, memoryMib_);
+        .computeUInt64Size(2, memoryCapacityBytes_);
+    }
+    if (diskCapacityBytes_ != 0L) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeUInt64Size(3, diskCapacityBytes_);
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -117,10 +147,12 @@ private static final long serialVersionUID = 0L;
     }
     com.nuinfra.control_plane.v1alpha1.NodeResources other = (com.nuinfra.control_plane.v1alpha1.NodeResources) obj;
 
-    if (getVcpuCount()
-        != other.getVcpuCount()) return false;
-    if (getMemoryMib()
-        != other.getMemoryMib()) return false;
+    if (getCpuCapacityMillicores()
+        != other.getCpuCapacityMillicores()) return false;
+    if (getMemoryCapacityBytes()
+        != other.getMemoryCapacityBytes()) return false;
+    if (getDiskCapacityBytes()
+        != other.getDiskCapacityBytes()) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -132,11 +164,14 @@ private static final long serialVersionUID = 0L;
     }
     int hash = 41;
     hash = (19 * hash) + getDescriptor().hashCode();
-    hash = (37 * hash) + VCPU_COUNT_FIELD_NUMBER;
-    hash = (53 * hash) + getVcpuCount();
-    hash = (37 * hash) + MEMORY_MIB_FIELD_NUMBER;
+    hash = (37 * hash) + CPU_CAPACITY_MILLICORES_FIELD_NUMBER;
+    hash = (53 * hash) + getCpuCapacityMillicores();
+    hash = (37 * hash) + MEMORY_CAPACITY_BYTES_FIELD_NUMBER;
     hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
-        getMemoryMib());
+        getMemoryCapacityBytes());
+    hash = (37 * hash) + DISK_CAPACITY_BYTES_FIELD_NUMBER;
+    hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+        getDiskCapacityBytes());
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -268,8 +303,9 @@ private static final long serialVersionUID = 0L;
     public Builder clear() {
       super.clear();
       bitField0_ = 0;
-      vcpuCount_ = 0;
-      memoryMib_ = 0L;
+      cpuCapacityMillicores_ = 0;
+      memoryCapacityBytes_ = 0L;
+      diskCapacityBytes_ = 0L;
       return this;
     }
 
@@ -304,10 +340,13 @@ private static final long serialVersionUID = 0L;
     private void buildPartial0(com.nuinfra.control_plane.v1alpha1.NodeResources result) {
       int from_bitField0_ = bitField0_;
       if (((from_bitField0_ & 0x00000001) != 0)) {
-        result.vcpuCount_ = vcpuCount_;
+        result.cpuCapacityMillicores_ = cpuCapacityMillicores_;
       }
       if (((from_bitField0_ & 0x00000002) != 0)) {
-        result.memoryMib_ = memoryMib_;
+        result.memoryCapacityBytes_ = memoryCapacityBytes_;
+      }
+      if (((from_bitField0_ & 0x00000004) != 0)) {
+        result.diskCapacityBytes_ = diskCapacityBytes_;
       }
     }
 
@@ -323,11 +362,14 @@ private static final long serialVersionUID = 0L;
 
     public Builder mergeFrom(com.nuinfra.control_plane.v1alpha1.NodeResources other) {
       if (other == com.nuinfra.control_plane.v1alpha1.NodeResources.getDefaultInstance()) return this;
-      if (other.getVcpuCount() != 0) {
-        setVcpuCount(other.getVcpuCount());
+      if (other.getCpuCapacityMillicores() != 0) {
+        setCpuCapacityMillicores(other.getCpuCapacityMillicores());
       }
-      if (other.getMemoryMib() != 0L) {
-        setMemoryMib(other.getMemoryMib());
+      if (other.getMemoryCapacityBytes() != 0L) {
+        setMemoryCapacityBytes(other.getMemoryCapacityBytes());
+      }
+      if (other.getDiskCapacityBytes() != 0L) {
+        setDiskCapacityBytes(other.getDiskCapacityBytes());
       }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
@@ -356,15 +398,20 @@ private static final long serialVersionUID = 0L;
               done = true;
               break;
             case 8: {
-              vcpuCount_ = input.readUInt32();
+              cpuCapacityMillicores_ = input.readUInt32();
               bitField0_ |= 0x00000001;
               break;
             } // case 8
             case 16: {
-              memoryMib_ = input.readUInt64();
+              memoryCapacityBytes_ = input.readUInt64();
               bitField0_ |= 0x00000002;
               break;
             } // case 16
+            case 24: {
+              diskCapacityBytes_ = input.readUInt64();
+              bitField0_ |= 0x00000004;
+              break;
+            } // case 24
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -382,66 +429,134 @@ private static final long serialVersionUID = 0L;
     }
     private int bitField0_;
 
-    private int vcpuCount_ ;
+    private int cpuCapacityMillicores_ ;
     /**
-     * <code>uint32 vcpu_count = 1 [json_name = "vcpuCount", (.buf.validate.field) = { ... }</code>
-     * @return The vcpuCount.
+     * <pre>
+     * Total allocatable vCPUs available for workloads.
+     * </pre>
+     *
+     * <code>uint32 cpu_capacity_millicores = 1 [json_name = "cpuCapacityMillicores", (.buf.validate.field) = { ... }</code>
+     * @return The cpuCapacityMillicores.
      */
     @java.lang.Override
-    public int getVcpuCount() {
-      return vcpuCount_;
+    public int getCpuCapacityMillicores() {
+      return cpuCapacityMillicores_;
     }
     /**
-     * <code>uint32 vcpu_count = 1 [json_name = "vcpuCount", (.buf.validate.field) = { ... }</code>
-     * @param value The vcpuCount to set.
+     * <pre>
+     * Total allocatable vCPUs available for workloads.
+     * </pre>
+     *
+     * <code>uint32 cpu_capacity_millicores = 1 [json_name = "cpuCapacityMillicores", (.buf.validate.field) = { ... }</code>
+     * @param value The cpuCapacityMillicores to set.
      * @return This builder for chaining.
      */
-    public Builder setVcpuCount(int value) {
+    public Builder setCpuCapacityMillicores(int value) {
 
-      vcpuCount_ = value;
+      cpuCapacityMillicores_ = value;
       bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
     /**
-     * <code>uint32 vcpu_count = 1 [json_name = "vcpuCount", (.buf.validate.field) = { ... }</code>
+     * <pre>
+     * Total allocatable vCPUs available for workloads.
+     * </pre>
+     *
+     * <code>uint32 cpu_capacity_millicores = 1 [json_name = "cpuCapacityMillicores", (.buf.validate.field) = { ... }</code>
      * @return This builder for chaining.
      */
-    public Builder clearVcpuCount() {
+    public Builder clearCpuCapacityMillicores() {
       bitField0_ = (bitField0_ & ~0x00000001);
-      vcpuCount_ = 0;
+      cpuCapacityMillicores_ = 0;
       onChanged();
       return this;
     }
 
-    private long memoryMib_ ;
+    private long memoryCapacityBytes_ ;
     /**
-     * <code>uint64 memory_mib = 2 [json_name = "memoryMib", (.buf.validate.field) = { ... }</code>
-     * @return The memoryMib.
+     * <pre>
+     * Total allocatable memory available for workloads.
+     * </pre>
+     *
+     * <code>uint64 memory_capacity_bytes = 2 [json_name = "memoryCapacityBytes", (.buf.validate.field) = { ... }</code>
+     * @return The memoryCapacityBytes.
      */
     @java.lang.Override
-    public long getMemoryMib() {
-      return memoryMib_;
+    public long getMemoryCapacityBytes() {
+      return memoryCapacityBytes_;
     }
     /**
-     * <code>uint64 memory_mib = 2 [json_name = "memoryMib", (.buf.validate.field) = { ... }</code>
-     * @param value The memoryMib to set.
+     * <pre>
+     * Total allocatable memory available for workloads.
+     * </pre>
+     *
+     * <code>uint64 memory_capacity_bytes = 2 [json_name = "memoryCapacityBytes", (.buf.validate.field) = { ... }</code>
+     * @param value The memoryCapacityBytes to set.
      * @return This builder for chaining.
      */
-    public Builder setMemoryMib(long value) {
+    public Builder setMemoryCapacityBytes(long value) {
 
-      memoryMib_ = value;
+      memoryCapacityBytes_ = value;
       bitField0_ |= 0x00000002;
       onChanged();
       return this;
     }
     /**
-     * <code>uint64 memory_mib = 2 [json_name = "memoryMib", (.buf.validate.field) = { ... }</code>
+     * <pre>
+     * Total allocatable memory available for workloads.
+     * </pre>
+     *
+     * <code>uint64 memory_capacity_bytes = 2 [json_name = "memoryCapacityBytes", (.buf.validate.field) = { ... }</code>
      * @return This builder for chaining.
      */
-    public Builder clearMemoryMib() {
+    public Builder clearMemoryCapacityBytes() {
       bitField0_ = (bitField0_ & ~0x00000002);
-      memoryMib_ = 0L;
+      memoryCapacityBytes_ = 0L;
+      onChanged();
+      return this;
+    }
+
+    private long diskCapacityBytes_ ;
+    /**
+     * <pre>
+     * Total allocatable disk available for workloads.
+     * </pre>
+     *
+     * <code>uint64 disk_capacity_bytes = 3 [json_name = "diskCapacityBytes", (.buf.validate.field) = { ... }</code>
+     * @return The diskCapacityBytes.
+     */
+    @java.lang.Override
+    public long getDiskCapacityBytes() {
+      return diskCapacityBytes_;
+    }
+    /**
+     * <pre>
+     * Total allocatable disk available for workloads.
+     * </pre>
+     *
+     * <code>uint64 disk_capacity_bytes = 3 [json_name = "diskCapacityBytes", (.buf.validate.field) = { ... }</code>
+     * @param value The diskCapacityBytes to set.
+     * @return This builder for chaining.
+     */
+    public Builder setDiskCapacityBytes(long value) {
+
+      diskCapacityBytes_ = value;
+      bitField0_ |= 0x00000004;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * Total allocatable disk available for workloads.
+     * </pre>
+     *
+     * <code>uint64 disk_capacity_bytes = 3 [json_name = "diskCapacityBytes", (.buf.validate.field) = { ... }</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearDiskCapacityBytes() {
+      bitField0_ = (bitField0_ & ~0x00000004);
+      diskCapacityBytes_ = 0L;
       onChanged();
       return this;
     }

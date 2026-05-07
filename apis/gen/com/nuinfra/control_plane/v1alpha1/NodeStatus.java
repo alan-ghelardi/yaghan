@@ -55,17 +55,45 @@ private static final long serialVersionUID = 0L;
      */
     PHASE_UNSPECIFIED(0),
     /**
+     * <pre>
+     * Node is healthy and able to accept workloads.
+     * </pre>
+     *
      * <code>PHASE_HEALTHY = 1;</code>
      */
     PHASE_HEALTHY(1),
     /**
+     * <pre>
+     * Node is reachable but degraded.
+     * </pre>
+     *
      * <code>PHASE_UNHEALTHY = 2;</code>
      */
     PHASE_UNHEALTHY(2),
     /**
+     * <pre>
+     * Node has not reported recently and is considered lost.
+     * </pre>
+     *
      * <code>PHASE_LOST = 3;</code>
      */
     PHASE_LOST(3),
+    /**
+     * <pre>
+     * Node is being removed or is no longer active.
+     * </pre>
+     *
+     * <code>PHASE_DELETED = 4;</code>
+     */
+    PHASE_DELETED(4),
+    /**
+     * <pre>
+     * Status could not be determined due to transient failures.
+     * </pre>
+     *
+     * <code>PHASE_UNKNOWN = 5;</code>
+     */
+    PHASE_UNKNOWN(5),
     UNRECOGNIZED(-1),
     ;
 
@@ -83,17 +111,45 @@ private static final long serialVersionUID = 0L;
      */
     public static final int PHASE_UNSPECIFIED_VALUE = 0;
     /**
+     * <pre>
+     * Node is healthy and able to accept workloads.
+     * </pre>
+     *
      * <code>PHASE_HEALTHY = 1;</code>
      */
     public static final int PHASE_HEALTHY_VALUE = 1;
     /**
+     * <pre>
+     * Node is reachable but degraded.
+     * </pre>
+     *
      * <code>PHASE_UNHEALTHY = 2;</code>
      */
     public static final int PHASE_UNHEALTHY_VALUE = 2;
     /**
+     * <pre>
+     * Node has not reported recently and is considered lost.
+     * </pre>
+     *
      * <code>PHASE_LOST = 3;</code>
      */
     public static final int PHASE_LOST_VALUE = 3;
+    /**
+     * <pre>
+     * Node is being removed or is no longer active.
+     * </pre>
+     *
+     * <code>PHASE_DELETED = 4;</code>
+     */
+    public static final int PHASE_DELETED_VALUE = 4;
+    /**
+     * <pre>
+     * Status could not be determined due to transient failures.
+     * </pre>
+     *
+     * <code>PHASE_UNKNOWN = 5;</code>
+     */
+    public static final int PHASE_UNKNOWN_VALUE = 5;
 
 
     public final int getNumber() {
@@ -124,6 +180,8 @@ private static final long serialVersionUID = 0L;
         case 1: return PHASE_HEALTHY;
         case 2: return PHASE_UNHEALTHY;
         case 3: return PHASE_LOST;
+        case 4: return PHASE_DELETED;
+        case 5: return PHASE_UNKNOWN;
         default: return null;
       }
     }
@@ -202,6 +260,10 @@ private static final long serialVersionUID = 0L;
   @SuppressWarnings("serial")
   private volatile java.lang.Object message_ = "";
   /**
+   * <pre>
+   * Human-readable status message.
+   * </pre>
+   *
    * <code>string message = 2 [json_name = "message"];</code>
    * @return The message.
    */
@@ -219,6 +281,10 @@ private static final long serialVersionUID = 0L;
     }
   }
   /**
+   * <pre>
+   * Human-readable status message.
+   * </pre>
+   *
    * <code>string message = 2 [json_name = "message"];</code>
    * @return The bytes for message.
    */
@@ -606,6 +672,10 @@ private static final long serialVersionUID = 0L;
 
     private java.lang.Object message_ = "";
     /**
+     * <pre>
+     * Human-readable status message.
+     * </pre>
+     *
      * <code>string message = 2 [json_name = "message"];</code>
      * @return The message.
      */
@@ -622,6 +692,10 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
+     * <pre>
+     * Human-readable status message.
+     * </pre>
+     *
      * <code>string message = 2 [json_name = "message"];</code>
      * @return The bytes for message.
      */
@@ -639,6 +713,10 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
+     * <pre>
+     * Human-readable status message.
+     * </pre>
+     *
      * <code>string message = 2 [json_name = "message"];</code>
      * @param value The message to set.
      * @return This builder for chaining.
@@ -652,6 +730,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * Human-readable status message.
+     * </pre>
+     *
      * <code>string message = 2 [json_name = "message"];</code>
      * @return This builder for chaining.
      */
@@ -662,6 +744,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * Human-readable status message.
+     * </pre>
+     *
      * <code>string message = 2 [json_name = "message"];</code>
      * @param value The bytes for message to set.
      * @return This builder for chaining.

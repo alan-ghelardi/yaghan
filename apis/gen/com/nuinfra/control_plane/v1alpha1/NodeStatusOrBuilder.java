@@ -22,11 +22,19 @@ public interface NodeStatusOrBuilder extends
   com.nuinfra.control_plane.v1alpha1.NodeStatus.Phase getPhase();
 
   /**
+   * <pre>
+   * Human-readable status message.
+   * </pre>
+   *
    * <code>string message = 2 [json_name = "message"];</code>
    * @return The message.
    */
   java.lang.String getMessage();
   /**
+   * <pre>
+   * Human-readable status message.
+   * </pre>
+   *
    * <code>string message = 2 [json_name = "message"];</code>
    * @return The bytes for message.
    */

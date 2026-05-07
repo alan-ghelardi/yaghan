@@ -38,6 +38,7 @@
 - [nuinfra/control_plane/v1alpha1/cluster.proto](#nuinfra_control_plane_v1alpha1_cluster-proto)
     - [ConnectionRequest](#nuinfra-control_plane-v1alpha1-ConnectionRequest)
     - [ConnectionResponse](#nuinfra-control_plane-v1alpha1-ConnectionResponse)
+    - [EC2InstanceMeta](#nuinfra-control_plane-v1alpha1-EC2InstanceMeta)
     - [EstablishSessionRequest](#nuinfra-control_plane-v1alpha1-EstablishSessionRequest)
     - [EstablishSessionResponse](#nuinfra-control_plane-v1alpha1-EstablishSessionResponse)
     - [Event](#nuinfra-control_plane-v1alpha1-Event)
@@ -47,6 +48,7 @@
     - [ListNodesResponse](#nuinfra-control_plane-v1alpha1-ListNodesResponse)
     - [Node](#nuinfra-control_plane-v1alpha1-Node)
     - [NodeMeta](#nuinfra-control_plane-v1alpha1-NodeMeta)
+    - [NodeMetrics](#nuinfra-control_plane-v1alpha1-NodeMetrics)
     - [NodeResources](#nuinfra-control_plane-v1alpha1-NodeResources)
     - [NodeStatus](#nuinfra-control_plane-v1alpha1-NodeStatus)
     - [UpdateSandboxRequest](#nuinfra-control_plane-v1alpha1-UpdateSandboxRequest)
@@ -544,6 +546,29 @@ Controls how results are ordered by last modification time.
 
 
 
+<a name="nuinfra-control_plane-v1alpha1-EC2InstanceMeta"></a>
+
+### EC2InstanceMeta
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| instance_id | [string](#string) |  |  |
+| instance_type | [string](#string) |  |  |
+| image_id | [string](#string) |  |  |
+| account_id | [string](#string) |  |  |
+| region | [string](#string) |  |  |
+| availability_zone | [string](#string) |  |  |
+| private_ip | [string](#string) |  |  |
+| kernel_id | [string](#string) |  |  |
+| architecture | [string](#string) |  |  |
+
+
+
+
+
+
 <a name="nuinfra-control_plane-v1alpha1-EstablishSessionRequest"></a>
 
 ### EstablishSessionRequest
@@ -668,8 +693,10 @@ Response message containing a page of nodes.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | metadata | [NodeMeta](#nuinfra-control_plane-v1alpha1-NodeMeta) |  |  |
-| resources | [NodeResources](#nuinfra-control_plane-v1alpha1-NodeResources) |  |  |
-| status | [NodeStatus](#nuinfra-control_plane-v1alpha1-NodeStatus) |  |  |
+| resources | [NodeResources](#nuinfra-control_plane-v1alpha1-NodeResources) |  | Static/allocatable characteristics of the node. |
+| metrics | [NodeMetrics](#nuinfra-control_plane-v1alpha1-NodeMetrics) |  | Dynamic periodically sampled metrics. |
+| status | [NodeStatus](#nuinfra-control_plane-v1alpha1-NodeStatus) |  | Health and lifecycle state. |
+| aws_ec2 | [EC2InstanceMeta](#nuinfra-control_plane-v1alpha1-EC2InstanceMeta) |  |  |
 
 
 
@@ -694,6 +721,25 @@ Response message containing a page of nodes.
 
 
 
+<a name="nuinfra-control_plane-v1alpha1-NodeMetrics"></a>
+
+### NodeMetrics
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| sampled_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | Time at which the metrics were sampled. |
+| active_sandbox_count | [uint32](#uint32) |  | Number of currently active sandboxes. |
+| cpu_used_millicores | [uint32](#uint32) |  | CPU currently in use. |
+| memory_used_bytes | [uint64](#uint64) |  | Memory currently in use. |
+| disk_used_bytes | [uint64](#uint64) |  | Disk currently in use. |
+
+
+
+
+
+
 <a name="nuinfra-control_plane-v1alpha1-NodeResources"></a>
 
 ### NodeResources
@@ -702,8 +748,9 @@ Response message containing a page of nodes.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| vcpu_count | [uint32](#uint32) |  |  |
-| memory_mib | [uint64](#uint64) |  |  |
+| cpu_capacity_millicores | [uint32](#uint32) |  | Total allocatable vCPUs available for workloads. |
+| memory_capacity_bytes | [uint64](#uint64) |  | Total allocatable memory available for workloads. |
+| disk_capacity_bytes | [uint64](#uint64) |  | Total allocatable disk available for workloads. |
 
 
 
@@ -719,7 +766,7 @@ Response message containing a page of nodes.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | phase | [NodeStatus.Phase](#nuinfra-control_plane-v1alpha1-NodeStatus-Phase) |  |  |
-| message | [string](#string) |  |  |
+| message | [string](#string) |  | Human-readable status message. |
 
 
 
@@ -764,9 +811,11 @@ Controls how results are ordered by last modification time.
 | Name | Number | Description |
 | ---- | ------ | ----------- |
 | PHASE_UNSPECIFIED | 0 |  |
-| PHASE_HEALTHY | 1 |  |
-| PHASE_UNHEALTHY | 2 |  |
-| PHASE_LOST | 3 |  |
+| PHASE_HEALTHY | 1 | Node is healthy and able to accept workloads. |
+| PHASE_UNHEALTHY | 2 | Node is reachable but degraded. |
+| PHASE_LOST | 3 | Node has not reported recently and is considered lost. |
+| PHASE_DELETED | 4 | Node is being removed or is no longer active. |
+| PHASE_UNKNOWN | 5 | Status could not be determined due to transient failures. |
 
 
  

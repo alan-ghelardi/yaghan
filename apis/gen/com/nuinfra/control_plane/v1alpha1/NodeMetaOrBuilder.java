@@ -29,32 +29,32 @@ public interface NodeMetaOrBuilder extends
   long getVersion();
 
   /**
-   * <code>.google.protobuf.Timestamp created_at = 4 [json_name = "createdAt"];</code>
+   * <code>.google.protobuf.Timestamp created_at = 3 [json_name = "createdAt"];</code>
    * @return Whether the createdAt field is set.
    */
   boolean hasCreatedAt();
   /**
-   * <code>.google.protobuf.Timestamp created_at = 4 [json_name = "createdAt"];</code>
+   * <code>.google.protobuf.Timestamp created_at = 3 [json_name = "createdAt"];</code>
    * @return The createdAt.
    */
   com.google.protobuf.Timestamp getCreatedAt();
   /**
-   * <code>.google.protobuf.Timestamp created_at = 4 [json_name = "createdAt"];</code>
+   * <code>.google.protobuf.Timestamp created_at = 3 [json_name = "createdAt"];</code>
    */
   com.google.protobuf.TimestampOrBuilder getCreatedAtOrBuilder();
 
   /**
-   * <code>.google.protobuf.Timestamp last_modified_at = 5 [json_name = "lastModifiedAt"];</code>
+   * <code>.google.protobuf.Timestamp last_modified_at = 4 [json_name = "lastModifiedAt"];</code>
    * @return Whether the lastModifiedAt field is set.
    */
   boolean hasLastModifiedAt();
   /**
-   * <code>.google.protobuf.Timestamp last_modified_at = 5 [json_name = "lastModifiedAt"];</code>
+   * <code>.google.protobuf.Timestamp last_modified_at = 4 [json_name = "lastModifiedAt"];</code>
    * @return The lastModifiedAt.
    */
   com.google.protobuf.Timestamp getLastModifiedAt();
   /**
-   * <code>.google.protobuf.Timestamp last_modified_at = 5 [json_name = "lastModifiedAt"];</code>
+   * <code>.google.protobuf.Timestamp last_modified_at = 4 [json_name = "lastModifiedAt"];</code>
    */
   com.google.protobuf.TimestampOrBuilder getLastModifiedAtOrBuilder();
 }

@@ -11,9 +11,19 @@ import "nuinfra/control_plane/v1alpha1/sandbox.proto";
 message Node {
   NodeMeta metadata = 1 [(buf.validate.field).required = true];
 
+  // Static/allocatable characteristics of the node.
   NodeResources resources = 2 [(buf.validate.field).required = true];
 
-  NodeStatus status = 3;
+  // Dynamic periodically sampled metrics.
+  NodeMetrics metrics = 3;
+
+  // Health and lifecycle state.
+  NodeStatus status = 4;
+
+  // Cloud provider specific metadata.
+  oneof provider_metadata {
+    EC2InstanceMeta aws_ec2 = 5;
+  }
 }
 
 message NodeMeta {
@@ -21,28 +31,75 @@ message NodeMeta {
 
   int64 version = 2;
 
-  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp created_at = 3;
 
-  google.protobuf.Timestamp last_modified_at = 5;
+  google.protobuf.Timestamp last_modified_at = 4;
 }
 
 message NodeResources {
-  uint32 vcpu_count = 1 [(buf.validate.field).uint32.gte = 1];
+  // Total allocatable vCPUs available for workloads.
+  uint32 cpu_capacity_millicores = 1 [(buf.validate.field).uint32.gte = 1000];
 
-  uint64 memory_mib = 2 [(buf.validate.field).uint64.gte = 128];
+  // Total allocatable memory available for workloads.
+  uint64 memory_capacity_bytes = 2 [(buf.validate.field).uint64.gte = 134217728];
+
+  // Total allocatable disk available for workloads.
+  uint64 disk_capacity_bytes = 3 [(buf.validate.field).uint64.gte = 1073741824];
+}
+
+message NodeMetrics {
+  // Time at which the metrics were sampled.
+  google.protobuf.Timestamp sampled_at = 1;
+
+  // Number of currently active sandboxes.
+  uint32 active_sandbox_count = 2;
+
+  // CPU currently in use.
+  uint32 cpu_used_millicores = 3;
+
+  // Memory currently in use.
+  uint64 memory_used_bytes = 4;
+
+  // Disk currently in use.
+  uint64 disk_used_bytes = 5;
 }
 
 message NodeStatus {
   enum Phase {
     PHASE_UNSPECIFIED = 0;
+
+    // Node is healthy and able to accept workloads.
     PHASE_HEALTHY = 1;
+
+    // Node is reachable but degraded.
     PHASE_UNHEALTHY = 2;
+
+    // Node has not reported recently and is considered lost.
     PHASE_LOST = 3;
+
+    // Node is being removed or is no longer active.
+    PHASE_DELETED = 4;
+
+    // Status could not be determined due to transient failures.
+    PHASE_UNKNOWN = 5;
   }
 
   Phase phase = 1;
 
+  // Human-readable status message.
   string message = 2;
+}
+
+message EC2InstanceMeta {
+  string instance_id = 1;
+  string instance_type = 2;
+  string image_id = 3;
+  string account_id = 4;
+  string region = 5;
+  string availability_zone = 6;
+  string private_ip = 7;
+  string kernel_id = 8;
+  string architecture = 9;
 }
 
 message GetNodeRequest {
