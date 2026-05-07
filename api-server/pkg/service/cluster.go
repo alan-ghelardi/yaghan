@@ -15,6 +15,10 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// defaultListNodesPageSize is the page size applied when ListNodes callers
+// leave the field unset. Mirrors the documented default in the proto.
+const defaultListNodesPageSize int32 = 30
+
 // EstablishSession implements [cpv1.ClusterServiceServer]. It is a long-lived
 // bidirectional stream:
 //
@@ -238,7 +242,7 @@ func (a *apiServer) ListNodes(ctx context.Context, req *cpv1.ListNodesRequest) (
 		ContinuationToken: req.GetContinuationToken(),
 	}
 	if opts.PageSize == 0 {
-		opts.PageSize = defaultListPageSize
+		opts.PageSize = defaultListNodesPageSize
 	}
 	if opts.SortOrder == cpv1.ListNodesRequest_ORDER_UNSPECIFIED {
 		opts.SortOrder = cpv1.ListNodesRequest_ORDER_NEWEST_FIRST

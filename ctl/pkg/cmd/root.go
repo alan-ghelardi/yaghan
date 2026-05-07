@@ -21,6 +21,7 @@ import (
 	"syscall"
 
 	"github.com/spf13/cobra"
+	"golang.nuinfra.net/ctl/pkg/cmd/node"
 	"golang.nuinfra.net/ctl/pkg/cmd/sandbox"
 	"golang.nuinfra.net/ctl/pkg/machinery"
 )
@@ -46,6 +47,7 @@ func Execute() {
 
 	rootCmd.AddCommand(
 		sandbox.New(cmdCtx),
+		node.New(cmdCtx),
 	)
 
 	if err := rootCmd.Execute(); err != nil {

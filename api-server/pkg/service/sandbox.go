@@ -7,9 +7,9 @@ import (
 	cpv1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
 )
 
-// defaultListPageSize is the page size applied when ListSandboxes callers
+// defaultListSandboxesPageSize is the page size applied when ListSandboxes callers
 // leave the field unset. Mirrors the documented default in the proto.
-const defaultListPageSize int32 = 30
+const defaultListSandboxesPageSize int32 = 30
 
 // CreateSandbox implements [cpv1.SandboxServiceServer].
 //
@@ -58,7 +58,7 @@ func (a *apiServer) ListSandboxes(ctx context.Context, req *cpv1.ListSandboxesRe
 		ContinuationToken: req.GetContinuationToken(),
 	}
 	if opts.PageSize == 0 {
-		opts.PageSize = defaultListPageSize
+		opts.PageSize = defaultListSandboxesPageSize
 	}
 	if opts.SortOrder == cpv1.ListSandboxesRequest_ORDER_UNSPECIFIED {
 		opts.SortOrder = cpv1.ListSandboxesRequest_ORDER_NEWEST_FIRST
