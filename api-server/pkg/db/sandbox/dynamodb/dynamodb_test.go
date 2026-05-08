@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -25,16 +27,37 @@ import (
 
 const sandboxesSchemaPath = "../../../../../dynamodb-tables/sandboxes.json"
 
+// sharedDynamoDBEndpoint is the http endpoint of the package-shared
+// DynamoDB Local container started by TestMain. Tests use it via
+// setupDB; per-test isolation comes from CreateTable's random table
+// suffix rather than a fresh container per call.
+var sharedDynamoDBEndpoint string
+
+func TestMain(m *testing.M) {
+	endpoint, cleanup, err := awstesting.StartSharedDynamoDB(context.Background())
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "TestMain: start dynamodb:", err)
+		os.Exit(1)
+	}
+	sharedDynamoDBEndpoint = endpoint
+
+	code := m.Run()
+
+	if err := cleanup(); err != nil {
+		fmt.Fprintln(os.Stderr, "TestMain: terminate dynamodb:", err)
+	}
+	os.Exit(code)
+}
+
 func setupDB(t *testing.T) (*dynamoDB, context.Context) {
 	t.Helper()
 
-	endpointURL := awstesting.StartDynamoDB(t)
-	tableName := awstesting.CreateTable(t, endpointURL, sandboxesSchemaPath)
+	tableName := awstesting.CreateTable(t, sharedDynamoDBEndpoint, sandboxesSchemaPath)
 
 	ctx := t.Context()
 	awsCfg := awsconfig.New(ctx)
 	ctx = awsconfig.With(ctx, awsCfg)
-	client := dynamodb.New(ctx, dynamodb.Config{Endpoint: endpointURL})
+	client := dynamodb.New(ctx, dynamodb.Config{Endpoint: sharedDynamoDBEndpoint})
 
 	return &dynamoDB{client: client, tableName: tableName}, ctx
 }

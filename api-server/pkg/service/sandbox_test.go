@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"net"
+	"os"
 	"testing"
 	"time"
 
@@ -39,6 +40,28 @@ import (
 const sandboxesSchemaPath = "../../../dynamodb-tables/sandboxes.json"
 const nodesSchemaPath = "../../../dynamodb-tables/nodes.json"
 
+// sharedDynamoDBEndpoint is the http endpoint of the package-shared
+// DynamoDB Local container started by TestMain. The redis container
+// for the WatchableStream is still spun up per-test (only ~5 tests
+// use it), so it is not shared here.
+var sharedDynamoDBEndpoint string
+
+func TestMain(m *testing.M) {
+	endpoint, cleanup, err := awstesting.StartSharedDynamoDB(context.Background())
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "TestMain: start dynamodb:", err)
+		os.Exit(1)
+	}
+	sharedDynamoDBEndpoint = endpoint
+
+	code := m.Run()
+
+	if err := cleanup(); err != nil {
+		fmt.Fprintln(os.Stderr, "TestMain: terminate dynamodb:", err)
+	}
+	os.Exit(code)
+}
+
 // validNamespace satisfies the post-fix regex
 // `^[a-z][a-z0-9-]{0,61}[a-z0-9]$`.
 const validNamespace = "team-alpha"
@@ -66,8 +89,8 @@ type harness struct {
 }
 
 type harnessConfig struct {
-	withEventStream    bool
-	skipDefaultNode    bool
+	withEventStream bool
+	skipDefaultNode bool
 }
 
 type harnessOption func(*harnessConfig)
@@ -155,7 +178,7 @@ func startService(t *testing.T, opts ...harnessOption) *harness {
 		opt(&cfg)
 	}
 
-	endpoint := awstesting.StartDynamoDB(t)
+	endpoint := sharedDynamoDBEndpoint
 	tableName := awstesting.CreateTable(t, endpoint, sandboxesSchemaPath)
 	nodesTableName := awstesting.CreateTable(t, endpoint, nodesSchemaPath)
 

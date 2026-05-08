@@ -212,7 +212,11 @@ func TestEstablishSession_UpdateSandboxVersionConflictReturnsInBandError(t *test
 	require.NoError(t, err)
 	sb := createResp.GetSandbox()
 	sb.Metadata.Version = 999 // stale; the DB will refuse the write
-	sb.Node = &cpv1.NodeRef{Id: testNodeID}
+	// Mutate a digest-included field so the conditional-check failure
+	// can't be rescued as an idempotent retry. (Node is server-managed
+	// and excluded from the digest; mutating only Node would now be
+	// treated as a no-op.)
+	sb.Resources.VcpuCount = sb.Resources.GetVcpuCount() + 1
 
 	require.NoError(t, stream.Send(&cpv1.EstablishSessionRequest{
 		Operation: &cpv1.EstablishSessionRequest_UpdateSandbox{
