@@ -157,7 +157,8 @@ message ListNodesResponse {
 message EstablishSessionRequest {
   oneof operation {
     ConnectionRequest connect = 1;
-    UpdateSandboxRequest update_sandbox = 2;
+    PatchNodeRequest patch_node = 2;
+    UpdateSandboxRequest update_sandbox = 3;
   }
 }
 
@@ -171,6 +172,13 @@ message ConnectionRequest {
   int64 session_id = 1;
 
   Node node = 2;
+}
+
+message PatchNodeRequest {
+  oneof patch {
+    NodeMetrics node_metrics = 1;
+    NodeStatus node_status = 2;
+  }
 }
 
 message UpdateSandboxRequest {

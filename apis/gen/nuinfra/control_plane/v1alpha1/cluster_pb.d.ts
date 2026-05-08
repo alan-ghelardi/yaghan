@@ -453,7 +453,13 @@ export declare type EstablishSessionRequest = Message<"nuinfra.control_plane.v1a
     case: "connect";
   } | {
     /**
-     * @generated from field: nuinfra.control_plane.v1alpha1.UpdateSandboxRequest update_sandbox = 2;
+     * @generated from field: nuinfra.control_plane.v1alpha1.PatchNodeRequest patch_node = 2;
+     */
+    value: PatchNodeRequest;
+    case: "patchNode";
+  } | {
+    /**
+     * @generated from field: nuinfra.control_plane.v1alpha1.UpdateSandboxRequest update_sandbox = 3;
      */
     value: UpdateSandboxRequest;
     case: "updateSandbox";
@@ -493,6 +499,34 @@ export declare type ConnectionRequest = Message<"nuinfra.control_plane.v1alpha1.
  * Use `create(ConnectionRequestSchema)` to create a new message.
  */
 export declare const ConnectionRequestSchema: GenMessage<ConnectionRequest>;
+
+/**
+ * @generated from message nuinfra.control_plane.v1alpha1.PatchNodeRequest
+ */
+export declare type PatchNodeRequest = Message<"nuinfra.control_plane.v1alpha1.PatchNodeRequest"> & {
+  /**
+   * @generated from oneof nuinfra.control_plane.v1alpha1.PatchNodeRequest.patch
+   */
+  patch: {
+    /**
+     * @generated from field: nuinfra.control_plane.v1alpha1.NodeMetrics node_metrics = 1;
+     */
+    value: NodeMetrics;
+    case: "nodeMetrics";
+  } | {
+    /**
+     * @generated from field: nuinfra.control_plane.v1alpha1.NodeStatus node_status = 2;
+     */
+    value: NodeStatus;
+    case: "nodeStatus";
+  } | { case: undefined; value?: undefined };
+};
+
+/**
+ * Describes the message nuinfra.control_plane.v1alpha1.PatchNodeRequest.
+ * Use `create(PatchNodeRequestSchema)` to create a new message.
+ */
+export declare const PatchNodeRequestSchema: GenMessage<PatchNodeRequest>;
 
 /**
  * @generated from message nuinfra.control_plane.v1alpha1.UpdateSandboxRequest

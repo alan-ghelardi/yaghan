@@ -977,6 +977,37 @@ Response message containing a page of nodes.
 |*anonymous*|PHASE_DELETED|
 |*anonymous*|PHASE_UNKNOWN|
 
+<h2 id="tocS_v1alpha1PatchNodeRequest">v1alpha1PatchNodeRequest</h2>
+<!-- backwards compatibility -->
+<a id="schemav1alpha1patchnoderequest"></a>
+<a id="schema_v1alpha1PatchNodeRequest"></a>
+<a id="tocSv1alpha1patchnoderequest"></a>
+<a id="tocsv1alpha1patchnoderequest"></a>
+
+```json
+{
+  "nodeMetrics": {
+    "sampledAt": "2019-08-24T14:15:22Z",
+    "activeSandboxCount": 0,
+    "cpuUsedMillicores": 0,
+    "memoryUsedBytes": "string",
+    "diskUsedBytes": "string"
+  },
+  "nodeStatus": {
+    "phase": "PHASE_UNSPECIFIED",
+    "message": "string"
+  }
+}
+
+```
+
+### Properties
+
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|nodeMetrics|[v1alpha1NodeMetrics](#schemav1alpha1nodemetrics)|false|none|none|
+|nodeStatus|[v1alpha1NodeStatus](#schemav1alpha1nodestatus)|false|none|none|
+
 <h2 id="tocS_v1alpha1Resources">v1alpha1Resources</h2>
 <!-- backwards compatibility -->
 <a id="schemav1alpha1resources"></a>

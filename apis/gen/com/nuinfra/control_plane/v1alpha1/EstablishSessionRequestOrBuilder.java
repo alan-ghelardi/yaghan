@@ -26,17 +26,32 @@ public interface EstablishSessionRequestOrBuilder extends
   com.nuinfra.control_plane.v1alpha1.ConnectionRequestOrBuilder getConnectOrBuilder();
 
   /**
-   * <code>.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest update_sandbox = 2 [json_name = "updateSandbox"];</code>
+   * <code>.nuinfra.control_plane.v1alpha1.PatchNodeRequest patch_node = 2 [json_name = "patchNode"];</code>
+   * @return Whether the patchNode field is set.
+   */
+  boolean hasPatchNode();
+  /**
+   * <code>.nuinfra.control_plane.v1alpha1.PatchNodeRequest patch_node = 2 [json_name = "patchNode"];</code>
+   * @return The patchNode.
+   */
+  com.nuinfra.control_plane.v1alpha1.PatchNodeRequest getPatchNode();
+  /**
+   * <code>.nuinfra.control_plane.v1alpha1.PatchNodeRequest patch_node = 2 [json_name = "patchNode"];</code>
+   */
+  com.nuinfra.control_plane.v1alpha1.PatchNodeRequestOrBuilder getPatchNodeOrBuilder();
+
+  /**
+   * <code>.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest update_sandbox = 3 [json_name = "updateSandbox"];</code>
    * @return Whether the updateSandbox field is set.
    */
   boolean hasUpdateSandbox();
   /**
-   * <code>.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest update_sandbox = 2 [json_name = "updateSandbox"];</code>
+   * <code>.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest update_sandbox = 3 [json_name = "updateSandbox"];</code>
    * @return The updateSandbox.
    */
   com.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest getUpdateSandbox();
   /**
-   * <code>.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest update_sandbox = 2 [json_name = "updateSandbox"];</code>
+   * <code>.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest update_sandbox = 3 [json_name = "updateSandbox"];</code>
    */
   com.nuinfra.control_plane.v1alpha1.UpdateSandboxRequestOrBuilder getUpdateSandboxOrBuilder();
 

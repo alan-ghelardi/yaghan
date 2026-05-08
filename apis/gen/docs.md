@@ -51,6 +51,7 @@
     - [NodeMetrics](#nuinfra-control_plane-v1alpha1-NodeMetrics)
     - [NodeResources](#nuinfra-control_plane-v1alpha1-NodeResources)
     - [NodeStatus](#nuinfra-control_plane-v1alpha1-NodeStatus)
+    - [PatchNodeRequest](#nuinfra-control_plane-v1alpha1-PatchNodeRequest)
     - [UpdateSandboxRequest](#nuinfra-control_plane-v1alpha1-UpdateSandboxRequest)
   
     - [ListNodesRequest.Order](#nuinfra-control_plane-v1alpha1-ListNodesRequest-Order)
@@ -578,6 +579,7 @@ Controls how results are ordered by last modification time.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | connect | [ConnectionRequest](#nuinfra-control_plane-v1alpha1-ConnectionRequest) |  |  |
+| patch_node | [PatchNodeRequest](#nuinfra-control_plane-v1alpha1-PatchNodeRequest) |  |  |
 | update_sandbox | [UpdateSandboxRequest](#nuinfra-control_plane-v1alpha1-UpdateSandboxRequest) |  |  |
 
 
@@ -767,6 +769,22 @@ Response message containing a page of nodes.
 | ----- | ---- | ----- | ----------- |
 | phase | [NodeStatus.Phase](#nuinfra-control_plane-v1alpha1-NodeStatus-Phase) |  |  |
 | message | [string](#string) |  | Human-readable status message. |
+
+
+
+
+
+
+<a name="nuinfra-control_plane-v1alpha1-PatchNodeRequest"></a>
+
+### PatchNodeRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| node_metrics | [NodeMetrics](#nuinfra-control_plane-v1alpha1-NodeMetrics) |  |  |
+| node_status | [NodeStatus](#nuinfra-control_plane-v1alpha1-NodeStatus) |  |  |
 
 
 

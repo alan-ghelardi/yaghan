@@ -87,6 +87,11 @@ public final class ClusterProto extends com.google.protobuf.GeneratedFile {
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_nuinfra_control_plane_v1alpha1_ConnectionRequest_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_nuinfra_control_plane_v1alpha1_PatchNodeRequest_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_nuinfra_control_plane_v1alpha1_PatchNodeRequest_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
     internal_static_nuinfra_control_plane_v1alpha1_UpdateSandboxRequest_descriptor;
   static final 
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
@@ -176,48 +181,55 @@ public final class ClusterProto extends com.google.protobuf.GeneratedFile {
       "ST\020\001\022\026\n\022ORDER_OLDEST_FIRST\020\002\"~\n\021ListNode" +
       "sResponse\022:\n\005nodes\030\001 \003(\0132$.nuinfra.contr" +
       "ol_plane.v1alpha1.NodeR\005nodes\022-\n\022continu" +
-      "ation_token\030\002 \001(\tR\021continuationToken\"\324\001\n" +
+      "ation_token\030\002 \001(\tR\021continuationToken\"\247\002\n" +
       "\027EstablishSessionRequest\022M\n\007connect\030\001 \001(" +
       "\01321.nuinfra.control_plane.v1alpha1.Conne" +
-      "ctionRequestH\000R\007connect\022]\n\016update_sandbo" +
-      "x\030\002 \001(\01324.nuinfra.control_plane.v1alpha1" +
-      ".UpdateSandboxRequestH\000R\rupdateSandboxB\013" +
-      "\n\toperation\"l\n\021ConnectionRequest\022\035\n\nsess" +
-      "ion_id\030\001 \001(\003R\tsessionId\0228\n\004node\030\002 \001(\0132$." +
-      "nuinfra.control_plane.v1alpha1.NodeR\004nod" +
-      "e\"a\n\024UpdateSandboxRequest\022I\n\007sandbox\030\001 \001" +
-      "(\0132\'.nuinfra.control_plane.v1alpha1.Sand" +
-      "boxB\006\272H\003\310\001\001R\007sandbox\"\350\001\n\030EstablishSessio" +
-      "nResponse\022V\n\013acknowledge\030\001 \001(\01322.nuinfra" +
-      ".control_plane.v1alpha1.ConnectionRespon" +
-      "seH\000R\013acknowledge\022=\n\005event\030\002 \001(\0132%.nuinf" +
-      "ra.control_plane.v1alpha1.EventH\000R\005event" +
-      "\022*\n\005error\030\003 \001(\0132\022.google.rpc.StatusH\000R\005e" +
-      "rrorB\t\n\007message\"3\n\022ConnectionResponse\022\035\n" +
-      "\nsession_id\030\001 \001(\003R\tsessionId\"\252\001\n\005Event\022\016" +
-      "\n\002id\030\001 \001(\tR\002id\0229\n\nemitted_at\030\002 \001(\0132\032.goo" +
-      "gle.protobuf.TimestampR\temittedAt\022C\n\007san" +
-      "dbox\030\003 \001(\0132\'.nuinfra.control_plane.v1alp" +
-      "ha1.SandboxH\000R\007sandboxB\021\n\017involved_objec" +
-      "t2\270\003\n\016ClusterService\022\211\001\n\020EstablishSessio" +
-      "n\0227.nuinfra.control_plane.v1alpha1.Estab" +
-      "lishSessionRequest\0328.nuinfra.control_pla" +
-      "ne.v1alpha1.EstablishSessionResponse(\0010\001" +
-      "\022\215\001\n\007GetNode\022..nuinfra.control_plane.v1a" +
-      "lpha1.GetNodeRequest\032/.nuinfra.control_p" +
-      "lane.v1alpha1.GetNodeResponse\"!\202\323\344\223\002\033\022\031/" +
-      "v1alpha1/nodes/{node_id}\022\211\001\n\tListNodes\0220" +
-      ".nuinfra.control_plane.v1alpha1.ListNode" +
-      "sRequest\0321.nuinfra.control_plane.v1alpha" +
-      "1.ListNodesResponse\"\027\202\323\344\223\002\021\022\017/v1alpha1/n" +
-      "odesB\232\002\n\"com.nuinfra.control_plane.v1alp" +
-      "ha1B\014ClusterProtoP\001ZPgolang.nuinfra.net/" +
-      "apis/gen/nuinfra/control_plane/v1alpha1;" +
-      "control_planev1alpha1\242\002\003NCX\252\002\035Nuinfra.Co" +
-      "ntrolPlane.V1alpha1\312\002\035Nuinfra\\ControlPla" +
-      "ne\\V1alpha1\342\002)Nuinfra\\ControlPlane\\V1alp" +
-      "ha1\\GPBMetadata\352\002\037Nuinfra::ControlPlane:" +
-      ":V1alpha1b\006proto3"
+      "ctionRequestH\000R\007connect\022Q\n\npatch_node\030\002 " +
+      "\001(\01320.nuinfra.control_plane.v1alpha1.Pat" +
+      "chNodeRequestH\000R\tpatchNode\022]\n\016update_san" +
+      "dbox\030\003 \001(\01324.nuinfra.control_plane.v1alp" +
+      "ha1.UpdateSandboxRequestH\000R\rupdateSandbo" +
+      "xB\013\n\toperation\"l\n\021ConnectionRequest\022\035\n\ns" +
+      "ession_id\030\001 \001(\003R\tsessionId\0228\n\004node\030\002 \001(\013" +
+      "2$.nuinfra.control_plane.v1alpha1.NodeR\004" +
+      "node\"\274\001\n\020PatchNodeRequest\022P\n\014node_metric" +
+      "s\030\001 \001(\0132+.nuinfra.control_plane.v1alpha1" +
+      ".NodeMetricsH\000R\013nodeMetrics\022M\n\013node_stat" +
+      "us\030\002 \001(\0132*.nuinfra.control_plane.v1alpha" +
+      "1.NodeStatusH\000R\nnodeStatusB\007\n\005patch\"a\n\024U" +
+      "pdateSandboxRequest\022I\n\007sandbox\030\001 \001(\0132\'.n" +
+      "uinfra.control_plane.v1alpha1.SandboxB\006\272" +
+      "H\003\310\001\001R\007sandbox\"\350\001\n\030EstablishSessionRespo" +
+      "nse\022V\n\013acknowledge\030\001 \001(\01322.nuinfra.contr" +
+      "ol_plane.v1alpha1.ConnectionResponseH\000R\013" +
+      "acknowledge\022=\n\005event\030\002 \001(\0132%.nuinfra.con" +
+      "trol_plane.v1alpha1.EventH\000R\005event\022*\n\005er" +
+      "ror\030\003 \001(\0132\022.google.rpc.StatusH\000R\005errorB\t" +
+      "\n\007message\"3\n\022ConnectionResponse\022\035\n\nsessi" +
+      "on_id\030\001 \001(\003R\tsessionId\"\252\001\n\005Event\022\016\n\002id\030\001" +
+      " \001(\tR\002id\0229\n\nemitted_at\030\002 \001(\0132\032.google.pr" +
+      "otobuf.TimestampR\temittedAt\022C\n\007sandbox\030\003" +
+      " \001(\0132\'.nuinfra.control_plane.v1alpha1.Sa" +
+      "ndboxH\000R\007sandboxB\021\n\017involved_object2\270\003\n\016" +
+      "ClusterService\022\211\001\n\020EstablishSession\0227.nu" +
+      "infra.control_plane.v1alpha1.EstablishSe" +
+      "ssionRequest\0328.nuinfra.control_plane.v1a" +
+      "lpha1.EstablishSessionResponse(\0010\001\022\215\001\n\007G" +
+      "etNode\022..nuinfra.control_plane.v1alpha1." +
+      "GetNodeRequest\032/.nuinfra.control_plane.v" +
+      "1alpha1.GetNodeResponse\"!\202\323\344\223\002\033\022\031/v1alph" +
+      "a1/nodes/{node_id}\022\211\001\n\tListNodes\0220.nuinf" +
+      "ra.control_plane.v1alpha1.ListNodesReque" +
+      "st\0321.nuinfra.control_plane.v1alpha1.List" +
+      "NodesResponse\"\027\202\323\344\223\002\021\022\017/v1alpha1/nodesB\232" +
+      "\002\n\"com.nuinfra.control_plane.v1alpha1B\014C" +
+      "lusterProtoP\001ZPgolang.nuinfra.net/apis/g" +
+      "en/nuinfra/control_plane/v1alpha1;contro" +
+      "l_planev1alpha1\242\002\003NCX\252\002\035Nuinfra.ControlP" +
+      "lane.V1alpha1\312\002\035Nuinfra\\ControlPlane\\V1a" +
+      "lpha1\342\002)Nuinfra\\ControlPlane\\V1alpha1\\GP" +
+      "BMetadata\352\002\037Nuinfra::ControlPlane::V1alp" +
+      "ha1b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -293,33 +305,39 @@ public final class ClusterProto extends com.google.protobuf.GeneratedFile {
     internal_static_nuinfra_control_plane_v1alpha1_EstablishSessionRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_nuinfra_control_plane_v1alpha1_EstablishSessionRequest_descriptor,
-        new java.lang.String[] { "Connect", "UpdateSandbox", "Operation", });
+        new java.lang.String[] { "Connect", "PatchNode", "UpdateSandbox", "Operation", });
     internal_static_nuinfra_control_plane_v1alpha1_ConnectionRequest_descriptor =
       getDescriptor().getMessageType(11);
     internal_static_nuinfra_control_plane_v1alpha1_ConnectionRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_nuinfra_control_plane_v1alpha1_ConnectionRequest_descriptor,
         new java.lang.String[] { "SessionId", "Node", });
-    internal_static_nuinfra_control_plane_v1alpha1_UpdateSandboxRequest_descriptor =
+    internal_static_nuinfra_control_plane_v1alpha1_PatchNodeRequest_descriptor =
       getDescriptor().getMessageType(12);
+    internal_static_nuinfra_control_plane_v1alpha1_PatchNodeRequest_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_nuinfra_control_plane_v1alpha1_PatchNodeRequest_descriptor,
+        new java.lang.String[] { "NodeMetrics", "NodeStatus", "Patch", });
+    internal_static_nuinfra_control_plane_v1alpha1_UpdateSandboxRequest_descriptor =
+      getDescriptor().getMessageType(13);
     internal_static_nuinfra_control_plane_v1alpha1_UpdateSandboxRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_nuinfra_control_plane_v1alpha1_UpdateSandboxRequest_descriptor,
         new java.lang.String[] { "Sandbox", });
     internal_static_nuinfra_control_plane_v1alpha1_EstablishSessionResponse_descriptor =
-      getDescriptor().getMessageType(13);
+      getDescriptor().getMessageType(14);
     internal_static_nuinfra_control_plane_v1alpha1_EstablishSessionResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_nuinfra_control_plane_v1alpha1_EstablishSessionResponse_descriptor,
         new java.lang.String[] { "Acknowledge", "Event", "Error", "Message", });
     internal_static_nuinfra_control_plane_v1alpha1_ConnectionResponse_descriptor =
-      getDescriptor().getMessageType(14);
+      getDescriptor().getMessageType(15);
     internal_static_nuinfra_control_plane_v1alpha1_ConnectionResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_nuinfra_control_plane_v1alpha1_ConnectionResponse_descriptor,
         new java.lang.String[] { "SessionId", });
     internal_static_nuinfra_control_plane_v1alpha1_Event_descriptor =
-      getDescriptor().getMessageType(15);
+      getDescriptor().getMessageType(16);
     internal_static_nuinfra_control_plane_v1alpha1_Event_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_nuinfra_control_plane_v1alpha1_Event_descriptor,

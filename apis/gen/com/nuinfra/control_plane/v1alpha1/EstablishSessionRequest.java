@@ -50,7 +50,8 @@ private static final long serialVersionUID = 0L;
       implements com.google.protobuf.Internal.EnumLite,
           com.google.protobuf.AbstractMessage.InternalOneOfEnum {
     CONNECT(1),
-    UPDATE_SANDBOX(2),
+    PATCH_NODE(2),
+    UPDATE_SANDBOX(3),
     OPERATION_NOT_SET(0);
     private final int value;
     private OperationCase(int value) {
@@ -69,7 +70,8 @@ private static final long serialVersionUID = 0L;
     public static OperationCase forNumber(int value) {
       switch (value) {
         case 1: return CONNECT;
-        case 2: return UPDATE_SANDBOX;
+        case 2: return PATCH_NODE;
+        case 3: return UPDATE_SANDBOX;
         case 0: return OPERATION_NOT_SET;
         default: return null;
       }
@@ -116,32 +118,63 @@ private static final long serialVersionUID = 0L;
     return com.nuinfra.control_plane.v1alpha1.ConnectionRequest.getDefaultInstance();
   }
 
-  public static final int UPDATE_SANDBOX_FIELD_NUMBER = 2;
+  public static final int PATCH_NODE_FIELD_NUMBER = 2;
   /**
-   * <code>.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest update_sandbox = 2 [json_name = "updateSandbox"];</code>
+   * <code>.nuinfra.control_plane.v1alpha1.PatchNodeRequest patch_node = 2 [json_name = "patchNode"];</code>
+   * @return Whether the patchNode field is set.
+   */
+  @java.lang.Override
+  public boolean hasPatchNode() {
+    return operationCase_ == 2;
+  }
+  /**
+   * <code>.nuinfra.control_plane.v1alpha1.PatchNodeRequest patch_node = 2 [json_name = "patchNode"];</code>
+   * @return The patchNode.
+   */
+  @java.lang.Override
+  public com.nuinfra.control_plane.v1alpha1.PatchNodeRequest getPatchNode() {
+    if (operationCase_ == 2) {
+       return (com.nuinfra.control_plane.v1alpha1.PatchNodeRequest) operation_;
+    }
+    return com.nuinfra.control_plane.v1alpha1.PatchNodeRequest.getDefaultInstance();
+  }
+  /**
+   * <code>.nuinfra.control_plane.v1alpha1.PatchNodeRequest patch_node = 2 [json_name = "patchNode"];</code>
+   */
+  @java.lang.Override
+  public com.nuinfra.control_plane.v1alpha1.PatchNodeRequestOrBuilder getPatchNodeOrBuilder() {
+    if (operationCase_ == 2) {
+       return (com.nuinfra.control_plane.v1alpha1.PatchNodeRequest) operation_;
+    }
+    return com.nuinfra.control_plane.v1alpha1.PatchNodeRequest.getDefaultInstance();
+  }
+
+  public static final int UPDATE_SANDBOX_FIELD_NUMBER = 3;
+  /**
+   * <code>.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest update_sandbox = 3 [json_name = "updateSandbox"];</code>
    * @return Whether the updateSandbox field is set.
    */
   @java.lang.Override
   public boolean hasUpdateSandbox() {
-    return operationCase_ == 2;
+    return operationCase_ == 3;
   }
   /**
-   * <code>.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest update_sandbox = 2 [json_name = "updateSandbox"];</code>
+   * <code>.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest update_sandbox = 3 [json_name = "updateSandbox"];</code>
    * @return The updateSandbox.
    */
   @java.lang.Override
   public com.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest getUpdateSandbox() {
-    if (operationCase_ == 2) {
+    if (operationCase_ == 3) {
        return (com.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest) operation_;
     }
     return com.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest.getDefaultInstance();
   }
   /**
-   * <code>.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest update_sandbox = 2 [json_name = "updateSandbox"];</code>
+   * <code>.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest update_sandbox = 3 [json_name = "updateSandbox"];</code>
    */
   @java.lang.Override
   public com.nuinfra.control_plane.v1alpha1.UpdateSandboxRequestOrBuilder getUpdateSandboxOrBuilder() {
-    if (operationCase_ == 2) {
+    if (operationCase_ == 3) {
        return (com.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest) operation_;
     }
     return com.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest.getDefaultInstance();
@@ -165,7 +198,10 @@ private static final long serialVersionUID = 0L;
       output.writeMessage(1, (com.nuinfra.control_plane.v1alpha1.ConnectionRequest) operation_);
     }
     if (operationCase_ == 2) {
-      output.writeMessage(2, (com.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest) operation_);
+      output.writeMessage(2, (com.nuinfra.control_plane.v1alpha1.PatchNodeRequest) operation_);
+    }
+    if (operationCase_ == 3) {
+      output.writeMessage(3, (com.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest) operation_);
     }
     getUnknownFields().writeTo(output);
   }
@@ -182,7 +218,11 @@ private static final long serialVersionUID = 0L;
     }
     if (operationCase_ == 2) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(2, (com.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest) operation_);
+        .computeMessageSize(2, (com.nuinfra.control_plane.v1alpha1.PatchNodeRequest) operation_);
+    }
+    if (operationCase_ == 3) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(3, (com.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest) operation_);
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -206,6 +246,10 @@ private static final long serialVersionUID = 0L;
             .equals(other.getConnect())) return false;
         break;
       case 2:
+        if (!getPatchNode()
+            .equals(other.getPatchNode())) return false;
+        break;
+      case 3:
         if (!getUpdateSandbox()
             .equals(other.getUpdateSandbox())) return false;
         break;
@@ -229,6 +273,10 @@ private static final long serialVersionUID = 0L;
         hash = (53 * hash) + getConnect().hashCode();
         break;
       case 2:
+        hash = (37 * hash) + PATCH_NODE_FIELD_NUMBER;
+        hash = (53 * hash) + getPatchNode().hashCode();
+        break;
+      case 3:
         hash = (37 * hash) + UPDATE_SANDBOX_FIELD_NUMBER;
         hash = (53 * hash) + getUpdateSandbox().hashCode();
         break;
@@ -369,6 +417,9 @@ private static final long serialVersionUID = 0L;
       if (connectBuilder_ != null) {
         connectBuilder_.clear();
       }
+      if (patchNodeBuilder_ != null) {
+        patchNodeBuilder_.clear();
+      }
       if (updateSandboxBuilder_ != null) {
         updateSandboxBuilder_.clear();
       }
@@ -418,6 +469,10 @@ private static final long serialVersionUID = 0L;
         result.operation_ = connectBuilder_.build();
       }
       if (operationCase_ == 2 &&
+          patchNodeBuilder_ != null) {
+        result.operation_ = patchNodeBuilder_.build();
+      }
+      if (operationCase_ == 3 &&
           updateSandboxBuilder_ != null) {
         result.operation_ = updateSandboxBuilder_.build();
       }
@@ -438,6 +493,10 @@ private static final long serialVersionUID = 0L;
       switch (other.getOperationCase()) {
         case CONNECT: {
           mergeConnect(other.getConnect());
+          break;
+        }
+        case PATCH_NODE: {
+          mergePatchNode(other.getPatchNode());
           break;
         }
         case UPDATE_SANDBOX: {
@@ -483,11 +542,18 @@ private static final long serialVersionUID = 0L;
             } // case 10
             case 18: {
               input.readMessage(
-                  internalGetUpdateSandboxFieldBuilder().getBuilder(),
+                  internalGetPatchNodeFieldBuilder().getBuilder(),
                   extensionRegistry);
               operationCase_ = 2;
               break;
             } // case 18
+            case 26: {
+              input.readMessage(
+                  internalGetUpdateSandboxFieldBuilder().getBuilder(),
+                  extensionRegistry);
+              operationCase_ = 3;
+              break;
+            } // case 26
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -663,35 +729,177 @@ private static final long serialVersionUID = 0L;
     }
 
     private com.google.protobuf.SingleFieldBuilder<
+        com.nuinfra.control_plane.v1alpha1.PatchNodeRequest, com.nuinfra.control_plane.v1alpha1.PatchNodeRequest.Builder, com.nuinfra.control_plane.v1alpha1.PatchNodeRequestOrBuilder> patchNodeBuilder_;
+    /**
+     * <code>.nuinfra.control_plane.v1alpha1.PatchNodeRequest patch_node = 2 [json_name = "patchNode"];</code>
+     * @return Whether the patchNode field is set.
+     */
+    @java.lang.Override
+    public boolean hasPatchNode() {
+      return operationCase_ == 2;
+    }
+    /**
+     * <code>.nuinfra.control_plane.v1alpha1.PatchNodeRequest patch_node = 2 [json_name = "patchNode"];</code>
+     * @return The patchNode.
+     */
+    @java.lang.Override
+    public com.nuinfra.control_plane.v1alpha1.PatchNodeRequest getPatchNode() {
+      if (patchNodeBuilder_ == null) {
+        if (operationCase_ == 2) {
+          return (com.nuinfra.control_plane.v1alpha1.PatchNodeRequest) operation_;
+        }
+        return com.nuinfra.control_plane.v1alpha1.PatchNodeRequest.getDefaultInstance();
+      } else {
+        if (operationCase_ == 2) {
+          return patchNodeBuilder_.getMessage();
+        }
+        return com.nuinfra.control_plane.v1alpha1.PatchNodeRequest.getDefaultInstance();
+      }
+    }
+    /**
+     * <code>.nuinfra.control_plane.v1alpha1.PatchNodeRequest patch_node = 2 [json_name = "patchNode"];</code>
+     */
+    public Builder setPatchNode(com.nuinfra.control_plane.v1alpha1.PatchNodeRequest value) {
+      if (patchNodeBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        operation_ = value;
+        onChanged();
+      } else {
+        patchNodeBuilder_.setMessage(value);
+      }
+      operationCase_ = 2;
+      return this;
+    }
+    /**
+     * <code>.nuinfra.control_plane.v1alpha1.PatchNodeRequest patch_node = 2 [json_name = "patchNode"];</code>
+     */
+    public Builder setPatchNode(
+        com.nuinfra.control_plane.v1alpha1.PatchNodeRequest.Builder builderForValue) {
+      if (patchNodeBuilder_ == null) {
+        operation_ = builderForValue.build();
+        onChanged();
+      } else {
+        patchNodeBuilder_.setMessage(builderForValue.build());
+      }
+      operationCase_ = 2;
+      return this;
+    }
+    /**
+     * <code>.nuinfra.control_plane.v1alpha1.PatchNodeRequest patch_node = 2 [json_name = "patchNode"];</code>
+     */
+    public Builder mergePatchNode(com.nuinfra.control_plane.v1alpha1.PatchNodeRequest value) {
+      if (patchNodeBuilder_ == null) {
+        if (operationCase_ == 2 &&
+            operation_ != com.nuinfra.control_plane.v1alpha1.PatchNodeRequest.getDefaultInstance()) {
+          operation_ = com.nuinfra.control_plane.v1alpha1.PatchNodeRequest.newBuilder((com.nuinfra.control_plane.v1alpha1.PatchNodeRequest) operation_)
+              .mergeFrom(value).buildPartial();
+        } else {
+          operation_ = value;
+        }
+        onChanged();
+      } else {
+        if (operationCase_ == 2) {
+          patchNodeBuilder_.mergeFrom(value);
+        } else {
+          patchNodeBuilder_.setMessage(value);
+        }
+      }
+      operationCase_ = 2;
+      return this;
+    }
+    /**
+     * <code>.nuinfra.control_plane.v1alpha1.PatchNodeRequest patch_node = 2 [json_name = "patchNode"];</code>
+     */
+    public Builder clearPatchNode() {
+      if (patchNodeBuilder_ == null) {
+        if (operationCase_ == 2) {
+          operationCase_ = 0;
+          operation_ = null;
+          onChanged();
+        }
+      } else {
+        if (operationCase_ == 2) {
+          operationCase_ = 0;
+          operation_ = null;
+        }
+        patchNodeBuilder_.clear();
+      }
+      return this;
+    }
+    /**
+     * <code>.nuinfra.control_plane.v1alpha1.PatchNodeRequest patch_node = 2 [json_name = "patchNode"];</code>
+     */
+    public com.nuinfra.control_plane.v1alpha1.PatchNodeRequest.Builder getPatchNodeBuilder() {
+      return internalGetPatchNodeFieldBuilder().getBuilder();
+    }
+    /**
+     * <code>.nuinfra.control_plane.v1alpha1.PatchNodeRequest patch_node = 2 [json_name = "patchNode"];</code>
+     */
+    @java.lang.Override
+    public com.nuinfra.control_plane.v1alpha1.PatchNodeRequestOrBuilder getPatchNodeOrBuilder() {
+      if ((operationCase_ == 2) && (patchNodeBuilder_ != null)) {
+        return patchNodeBuilder_.getMessageOrBuilder();
+      } else {
+        if (operationCase_ == 2) {
+          return (com.nuinfra.control_plane.v1alpha1.PatchNodeRequest) operation_;
+        }
+        return com.nuinfra.control_plane.v1alpha1.PatchNodeRequest.getDefaultInstance();
+      }
+    }
+    /**
+     * <code>.nuinfra.control_plane.v1alpha1.PatchNodeRequest patch_node = 2 [json_name = "patchNode"];</code>
+     */
+    private com.google.protobuf.SingleFieldBuilder<
+        com.nuinfra.control_plane.v1alpha1.PatchNodeRequest, com.nuinfra.control_plane.v1alpha1.PatchNodeRequest.Builder, com.nuinfra.control_plane.v1alpha1.PatchNodeRequestOrBuilder> 
+        internalGetPatchNodeFieldBuilder() {
+      if (patchNodeBuilder_ == null) {
+        if (!(operationCase_ == 2)) {
+          operation_ = com.nuinfra.control_plane.v1alpha1.PatchNodeRequest.getDefaultInstance();
+        }
+        patchNodeBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+            com.nuinfra.control_plane.v1alpha1.PatchNodeRequest, com.nuinfra.control_plane.v1alpha1.PatchNodeRequest.Builder, com.nuinfra.control_plane.v1alpha1.PatchNodeRequestOrBuilder>(
+                (com.nuinfra.control_plane.v1alpha1.PatchNodeRequest) operation_,
+                getParentForChildren(),
+                isClean());
+        operation_ = null;
+      }
+      operationCase_ = 2;
+      onChanged();
+      return patchNodeBuilder_;
+    }
+
+    private com.google.protobuf.SingleFieldBuilder<
         com.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest, com.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest.Builder, com.nuinfra.control_plane.v1alpha1.UpdateSandboxRequestOrBuilder> updateSandboxBuilder_;
     /**
-     * <code>.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest update_sandbox = 2 [json_name = "updateSandbox"];</code>
+     * <code>.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest update_sandbox = 3 [json_name = "updateSandbox"];</code>
      * @return Whether the updateSandbox field is set.
      */
     @java.lang.Override
     public boolean hasUpdateSandbox() {
-      return operationCase_ == 2;
+      return operationCase_ == 3;
     }
     /**
-     * <code>.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest update_sandbox = 2 [json_name = "updateSandbox"];</code>
+     * <code>.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest update_sandbox = 3 [json_name = "updateSandbox"];</code>
      * @return The updateSandbox.
      */
     @java.lang.Override
     public com.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest getUpdateSandbox() {
       if (updateSandboxBuilder_ == null) {
-        if (operationCase_ == 2) {
+        if (operationCase_ == 3) {
           return (com.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest) operation_;
         }
         return com.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest.getDefaultInstance();
       } else {
-        if (operationCase_ == 2) {
+        if (operationCase_ == 3) {
           return updateSandboxBuilder_.getMessage();
         }
         return com.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest.getDefaultInstance();
       }
     }
     /**
-     * <code>.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest update_sandbox = 2 [json_name = "updateSandbox"];</code>
+     * <code>.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest update_sandbox = 3 [json_name = "updateSandbox"];</code>
      */
     public Builder setUpdateSandbox(com.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest value) {
       if (updateSandboxBuilder_ == null) {
@@ -703,11 +911,11 @@ private static final long serialVersionUID = 0L;
       } else {
         updateSandboxBuilder_.setMessage(value);
       }
-      operationCase_ = 2;
+      operationCase_ = 3;
       return this;
     }
     /**
-     * <code>.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest update_sandbox = 2 [json_name = "updateSandbox"];</code>
+     * <code>.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest update_sandbox = 3 [json_name = "updateSandbox"];</code>
      */
     public Builder setUpdateSandbox(
         com.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest.Builder builderForValue) {
@@ -717,15 +925,15 @@ private static final long serialVersionUID = 0L;
       } else {
         updateSandboxBuilder_.setMessage(builderForValue.build());
       }
-      operationCase_ = 2;
+      operationCase_ = 3;
       return this;
     }
     /**
-     * <code>.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest update_sandbox = 2 [json_name = "updateSandbox"];</code>
+     * <code>.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest update_sandbox = 3 [json_name = "updateSandbox"];</code>
      */
     public Builder mergeUpdateSandbox(com.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest value) {
       if (updateSandboxBuilder_ == null) {
-        if (operationCase_ == 2 &&
+        if (operationCase_ == 3 &&
             operation_ != com.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest.getDefaultInstance()) {
           operation_ = com.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest.newBuilder((com.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest) operation_)
               .mergeFrom(value).buildPartial();
@@ -734,27 +942,27 @@ private static final long serialVersionUID = 0L;
         }
         onChanged();
       } else {
-        if (operationCase_ == 2) {
+        if (operationCase_ == 3) {
           updateSandboxBuilder_.mergeFrom(value);
         } else {
           updateSandboxBuilder_.setMessage(value);
         }
       }
-      operationCase_ = 2;
+      operationCase_ = 3;
       return this;
     }
     /**
-     * <code>.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest update_sandbox = 2 [json_name = "updateSandbox"];</code>
+     * <code>.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest update_sandbox = 3 [json_name = "updateSandbox"];</code>
      */
     public Builder clearUpdateSandbox() {
       if (updateSandboxBuilder_ == null) {
-        if (operationCase_ == 2) {
+        if (operationCase_ == 3) {
           operationCase_ = 0;
           operation_ = null;
           onChanged();
         }
       } else {
-        if (operationCase_ == 2) {
+        if (operationCase_ == 3) {
           operationCase_ = 0;
           operation_ = null;
         }
@@ -763,33 +971,33 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest update_sandbox = 2 [json_name = "updateSandbox"];</code>
+     * <code>.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest update_sandbox = 3 [json_name = "updateSandbox"];</code>
      */
     public com.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest.Builder getUpdateSandboxBuilder() {
       return internalGetUpdateSandboxFieldBuilder().getBuilder();
     }
     /**
-     * <code>.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest update_sandbox = 2 [json_name = "updateSandbox"];</code>
+     * <code>.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest update_sandbox = 3 [json_name = "updateSandbox"];</code>
      */
     @java.lang.Override
     public com.nuinfra.control_plane.v1alpha1.UpdateSandboxRequestOrBuilder getUpdateSandboxOrBuilder() {
-      if ((operationCase_ == 2) && (updateSandboxBuilder_ != null)) {
+      if ((operationCase_ == 3) && (updateSandboxBuilder_ != null)) {
         return updateSandboxBuilder_.getMessageOrBuilder();
       } else {
-        if (operationCase_ == 2) {
+        if (operationCase_ == 3) {
           return (com.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest) operation_;
         }
         return com.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest.getDefaultInstance();
       }
     }
     /**
-     * <code>.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest update_sandbox = 2 [json_name = "updateSandbox"];</code>
+     * <code>.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest update_sandbox = 3 [json_name = "updateSandbox"];</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         com.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest, com.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest.Builder, com.nuinfra.control_plane.v1alpha1.UpdateSandboxRequestOrBuilder> 
         internalGetUpdateSandboxFieldBuilder() {
       if (updateSandboxBuilder_ == null) {
-        if (!(operationCase_ == 2)) {
+        if (!(operationCase_ == 3)) {
           operation_ = com.nuinfra.control_plane.v1alpha1.UpdateSandboxRequest.getDefaultInstance();
         }
         updateSandboxBuilder_ = new com.google.protobuf.SingleFieldBuilder<
@@ -799,7 +1007,7 @@ private static final long serialVersionUID = 0L;
                 isClean());
         operation_ = null;
       }
-      operationCase_ = 2;
+      operationCase_ = 3;
       onChanged();
       return updateSandboxBuilder_;
     }

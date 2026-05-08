@@ -412,6 +412,17 @@
       "default": "PHASE_UNSPECIFIED",
       "description": " - PHASE_HEALTHY: Node is healthy and able to accept workloads.\n - PHASE_UNHEALTHY: Node is reachable but degraded.\n - PHASE_LOST: Node has not reported recently and is considered lost.\n - PHASE_DELETED: Node is being removed or is no longer active.\n - PHASE_UNKNOWN: Status could not be determined due to transient failures."
     },
+    "v1alpha1PatchNodeRequest": {
+      "type": "object",
+      "properties": {
+        "nodeMetrics": {
+          "$ref": "#/definitions/v1alpha1NodeMetrics"
+        },
+        "nodeStatus": {
+          "$ref": "#/definitions/v1alpha1NodeStatus"
+        }
+      }
+    },
     "v1alpha1Resources": {
       "type": "object",
       "properties": {
