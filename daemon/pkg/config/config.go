@@ -197,7 +197,7 @@ type NodeAgent struct {
 	// Supported runtimes are:
 	//   - local: intended for development and integration tests
 	//   - aws-ec2: running inside an AWS EC2 instance
-	Runtime NodeRuntime `mapstructure:"node-runtime" validate:"oneof=local aws-ec2"`
+	Runtime NodeRuntime `mapstructure:"runtime" validate:"oneof=local aws-ec2"`
 
 	// MetricsReportInterval is the cadence at which the node agent collects
 	// node metrics and reports them to the API server.
