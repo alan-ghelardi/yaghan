@@ -181,7 +181,7 @@ func TestList_ByNamespaceAndNode_ScopesToNamespaceAndNode(t *testing.T) {
 		"by_namespace_node_index must scope to the namespace+node tuple, newest-first")
 }
 
-func TestList_ByNamespaceNodeAndPhase_AppliesInAppPhaseFilter(t *testing.T) {
+func TestList_ByNamespaceNodeAndPhase_UsesNamespaceNodePhaseIndex(t *testing.T) {
 	db, ctx := setupDB(t)
 	const (
 		ns   = "team-alpha"
@@ -201,7 +201,7 @@ func TestList_ByNamespaceNodeAndPhase_AppliesInAppPhaseFilter(t *testing.T) {
 	})
 	require.NoError(t, err)
 	assert.Equal(t, []string{"sb-bnnp-paused"}, ids(got),
-		"in-app filter must drop non-matching phases")
+		"by_namespace_node_phase_index must return only the requested phase")
 }
 
 func TestList_ByNode_CrossesNamespaces(t *testing.T) {
@@ -222,7 +222,7 @@ func TestList_ByNode_CrossesNamespaces(t *testing.T) {
 		"by_node_index must span namespaces; sb-bnode-c on a different node must be excluded")
 }
 
-func TestList_ByNodeAndPhase_AppliesInAppPhaseFilter(t *testing.T) {
+func TestList_ByNodeAndPhase_UsesNodePhaseIndex(t *testing.T) {
 	db, ctx := setupDB(t)
 	const node = "node-1"
 
@@ -238,7 +238,7 @@ func TestList_ByNodeAndPhase_AppliesInAppPhaseFilter(t *testing.T) {
 	})
 	require.NoError(t, err)
 	assert.Equal(t, []string{"sb-bnp-r-1", "sb-bnp-r-2"}, ids(got),
-		"in-app filter must keep only RUNNING and span namespaces, oldest-first")
+		"by_node_phase_index must keep only RUNNING and span namespaces, oldest-first")
 }
 
 func TestList_EmptyResultSet(t *testing.T) {
@@ -433,11 +433,11 @@ func TestSelectIndex_PicksTheRightGSI(t *testing.T) {
 			wantValue: "team-alpha#node-1",
 		},
 		{
-			name:      "namespace, node and phase prefers namespace+node index (phase filtered in-app)",
+			name:      "namespace, node and phase uses the dedicated namespace+node+phase index",
 			opts:      sandboxdb.ListOptions{Namespace: "team-alpha", NodeID: "node-1", StatusPhase: cpv1.SandboxStatus_PHASE_RUNNING},
-			wantIndex: indexByNamespaceNode,
-			wantHK:    attrGSINamespaceNodeHK,
-			wantValue: "team-alpha#node-1",
+			wantIndex: indexByNamespaceNodePhase,
+			wantHK:    attrGSINamespaceNodePhaseHK,
+			wantValue: "team-alpha#node-1#PHASE_RUNNING",
 		},
 		{
 			name:      "node only",
@@ -447,11 +447,11 @@ func TestSelectIndex_PicksTheRightGSI(t *testing.T) {
 			wantValue: "node-1",
 		},
 		{
-			name:      "node and phase prefers node index (phase filtered in-app)",
+			name:      "node and phase uses the dedicated node+phase index",
 			opts:      sandboxdb.ListOptions{NodeID: "node-1", StatusPhase: cpv1.SandboxStatus_PHASE_RUNNING},
-			wantIndex: indexByNode,
-			wantHK:    attrNodeRefID,
-			wantValue: "node-1",
+			wantIndex: indexByNodePhase,
+			wantHK:    attrGSINodePhaseHK,
+			wantValue: "node-1#PHASE_RUNNING",
 		},
 	}
 	for _, tc := range cases {

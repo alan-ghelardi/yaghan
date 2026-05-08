@@ -200,6 +200,10 @@ func TestCreate_HappyPath(t *testing.T) {
 	assert.NotContains(t, item, attrNodeRefID, "node_ref_id must be absent when Node is unset (sparse GSI)")
 	assert.NotContains(t, item, attrGSINamespaceNodeHK,
 		"gsi_namespace_node_hk must be absent when Node is unset (sparse GSI)")
+	assert.NotContains(t, item, attrGSINodePhaseHK,
+		"gsi_node_phase_hk must be absent when Node is unset (sparse GSI)")
+	assert.NotContains(t, item, attrGSINamespaceNodePhaseHK,
+		"gsi_namespace_node_phase_hk must be absent when Node is unset (sparse GSI)")
 
 	storedDigest := attrB(t, item, attrSandboxContentDigest)
 	assert.Len(t, storedDigest, 32)
@@ -215,6 +219,8 @@ func TestCreate_HappyPath(t *testing.T) {
 
 func TestCreate_IncludesNodeRefIDWhenSet(t *testing.T) {
 	db, ctx := setupDB(t)
+	// Sandbox status defaults to PHASE_PENDING in the fixture, so the
+	// node-phase synthetic columns interpolate that.
 	sb := newFixture(withID("sb-002"), withNode("node-1"))
 
 	require.NoError(t, db.Create(ctx, sb))
@@ -223,6 +229,10 @@ func TestCreate_IncludesNodeRefIDWhenSet(t *testing.T) {
 	assert.Equal(t, "node-1", attrS(t, item, attrNodeRefID))
 	assert.Equal(t, "team-alpha#node-1", attrS(t, item, attrGSINamespaceNodeHK),
 		"gsi_namespace_node_hk must be {namespace}#{node_id} when Node is set")
+	assert.Equal(t, "node-1#PHASE_PENDING", attrS(t, item, attrGSINodePhaseHK),
+		"gsi_node_phase_hk must be {node_id}#{phase} when Node is set")
+	assert.Equal(t, "team-alpha#node-1#PHASE_PENDING", attrS(t, item, attrGSINamespaceNodePhaseHK),
+		"gsi_namespace_node_phase_hk must be {namespace}#{node_id}#{phase} when Node is set")
 }
 
 func TestCreate_IdempotentOnEquivalentRetry(t *testing.T) {

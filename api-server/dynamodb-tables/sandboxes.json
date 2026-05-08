@@ -25,6 +25,14 @@
     {
       "AttributeName": "gsi_namespace_node_hk",
       "AttributeType": "S"
+    },
+    {
+      "AttributeName": "gsi_node_phase_hk",
+      "AttributeType": "S"
+    },
+    {
+      "AttributeName": "gsi_namespace_node_phase_hk",
+      "AttributeType": "S"
     }
   ],
   "KeySchema": [
@@ -96,6 +104,44 @@
       "KeySchema": [
         {
           "AttributeName": "gsi_namespace_node_hk",
+          "KeyType": "HASH"
+        },
+        {
+          "AttributeName": "gsi_lmt_sk",
+          "KeyType": "RANGE"
+        }
+      ],
+      "Projection": {
+        "ProjectionType": "INCLUDE",
+        "NonKeyAttributes": [
+          "sandbox_pb"
+        ]
+      }
+    },
+    {
+      "IndexName": "by_node_phase_index",
+      "KeySchema": [
+        {
+          "AttributeName": "gsi_node_phase_hk",
+          "KeyType": "HASH"
+        },
+        {
+          "AttributeName": "gsi_lmt_sk",
+          "KeyType": "RANGE"
+        }
+      ],
+      "Projection": {
+        "ProjectionType": "INCLUDE",
+        "NonKeyAttributes": [
+          "sandbox_pb"
+        ]
+      }
+    },
+    {
+      "IndexName": "by_namespace_node_phase_index",
+      "KeySchema": [
+        {
+          "AttributeName": "gsi_namespace_node_phase_hk",
           "KeyType": "HASH"
         },
         {

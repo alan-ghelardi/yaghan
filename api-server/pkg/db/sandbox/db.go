@@ -30,19 +30,17 @@ type ListOptions struct {
 	NodeID string
 
 	// StatusPhase, when not PHASE_UNSPECIFIED, restricts results to
-	// sandboxes in this phase. The DB picks the most-selective index for
-	// the supplied (Namespace, NodeID, StatusPhase) tuple and applies an
-	// in-application filter on phase when no single index covers the
-	// combination — pages may therefore contain fewer than PageSize items.
+	// sandboxes in this phase. Every (Namespace, NodeID, StatusPhase)
+	// combination is served by a dedicated GSI, so the returned page
+	// contains only matching rows up to PageSize.
 	StatusPhase controlplanev1alpha1.SandboxStatus_Phase
 
 	// SortOrder controls the order of results by Metadata.LastModifiedAt.
 	// The DB does not impose a default; pass an explicit order.
 	SortOrder controlplanev1alpha1.ListSandboxesRequest_Order
 
-	// PageSize caps the number of items the DB asks DynamoDB to scan in a
-	// single Query call. With phase filtering, fewer items may be
-	// returned. Must be > 0.
+	// PageSize caps the number of items returned in a single page. Must
+	// be > 0.
 	PageSize int32
 
 	// ContinuationToken is the opaque token returned by a prior List

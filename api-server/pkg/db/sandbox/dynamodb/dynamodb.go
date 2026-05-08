@@ -30,16 +30,18 @@ import (
 // conditional expression and diagnoseUpdateConflict. The GSI partitioned
 // on phase keys off the composite gsi_namespace_phase_hk instead.
 const (
-	attrSandboxID            = "sandbox_id"
-	attrSandboxNamespace     = "sandbox_namespace"
-	attrSandboxStatusPhase   = "sandbox_status_phase"
-	attrNodeRefID            = "node_ref_id"
-	attrGSILmtSK             = "gsi_lmt_sk"
-	attrGSINamespacePhaseHK  = "gsi_namespace_phase_hk"
-	attrGSINamespaceNodeHK   = "gsi_namespace_node_hk"
-	attrSandboxVersion       = "sandbox_version"
-	attrSandboxPB            = "sandbox_pb"
-	attrSandboxContentDigest = "sandbox_content_digest"
+	attrSandboxID               = "sandbox_id"
+	attrSandboxNamespace        = "sandbox_namespace"
+	attrSandboxStatusPhase      = "sandbox_status_phase"
+	attrNodeRefID               = "node_ref_id"
+	attrGSILmtSK                = "gsi_lmt_sk"
+	attrGSINamespacePhaseHK     = "gsi_namespace_phase_hk"
+	attrGSINamespaceNodeHK      = "gsi_namespace_node_hk"
+	attrGSINodePhaseHK          = "gsi_node_phase_hk"
+	attrGSINamespaceNodePhaseHK = "gsi_namespace_node_phase_hk"
+	attrSandboxVersion          = "sandbox_version"
+	attrSandboxPB               = "sandbox_pb"
+	attrSandboxContentDigest    = "sandbox_content_digest"
 )
 
 // initialVersion is the Metadata.Version stamped on every freshly-created
@@ -353,13 +355,14 @@ func toItem(sb *control_planev1alpha1.Sandbox, digest []byte) (map[string]types.
 		attrSandboxContentDigest: &types.AttributeValueMemberB{Value: digest},
 	}
 
-	// node_ref_id and gsi_namespace_node_hk are sparse: a row without an
-	// assigned node must be absent from both by_node_index and
-	// by_namespace_node_index. Gating both attributes on the same
-	// predicate keeps the two indexes consistent.
+	// All node-related attributes are sparse: a row without an assigned
+	// node must be absent from every node-keyed GSI. Gating them all
+	// behind the same predicate keeps the four indexes consistent.
 	if nodeID := sb.GetNode().GetId(); nodeID != "" {
 		item[attrNodeRefID] = &types.AttributeValueMemberS{Value: nodeID}
 		item[attrGSINamespaceNodeHK] = &types.AttributeValueMemberS{Value: gsiNamespaceNodeHK(sb)}
+		item[attrGSINodePhaseHK] = &types.AttributeValueMemberS{Value: gsiNodePhaseHK(sb)}
+		item[attrGSINamespaceNodePhaseHK] = &types.AttributeValueMemberS{Value: gsiNamespaceNodePhaseHK(sb)}
 	}
 
 	return item, nil
@@ -387,6 +390,23 @@ func gsiNamespacePhaseHK(sb *control_planev1alpha1.Sandbox) string {
 // when Node.Id is set, mirroring node_ref_id's sparseness.
 func gsiNamespaceNodeHK(sb *control_planev1alpha1.Sandbox) string {
 	return sb.GetMetadata().GetNamespace() + "#" + sb.GetNode().GetId()
+}
+
+// gsiNodePhaseHK builds the hash key of by_node_phase_index:
+// "{node_ref_id}#{status_phase}". Sparse: emitted only when Node.Id is set.
+// Lets list-by-node-and-phase queries hit a dedicated index instead of
+// filtering in-app after a by_node_index Query.
+func gsiNodePhaseHK(sb *control_planev1alpha1.Sandbox) string {
+	return sb.GetNode().GetId() + "#" + sb.GetStatus().GetPhase().String()
+}
+
+// gsiNamespaceNodePhaseHK builds the hash key of
+// by_namespace_node_phase_index: "{namespace}#{node_ref_id}#{status_phase}".
+// Sparse: emitted only when Node.Id is set. Lets list-by-namespace-node-
+// and-phase queries hit a dedicated index instead of filtering in-app after
+// a by_namespace_node_index Query.
+func gsiNamespaceNodePhaseHK(sb *control_planev1alpha1.Sandbox) string {
+	return sb.GetMetadata().GetNamespace() + "#" + sb.GetNode().GetId() + "#" + sb.GetStatus().GetPhase().String()
 }
 
 // contentDigest returns the SHA-256 of a deterministic, canonicalised proto

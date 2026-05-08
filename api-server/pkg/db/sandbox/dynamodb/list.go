@@ -16,27 +16,30 @@ import (
 
 // GSI names. Kept in sync with api-server/dynamodb-tables/sandboxes.json.
 const (
-	indexByNamespace     = "by_namespace_index"
-	indexByStatusPhase   = "by_status_phase_index"
-	indexByNode          = "by_node_index"
-	indexByNamespaceNode = "by_namespace_node_index"
+	indexByNamespace          = "by_namespace_index"
+	indexByStatusPhase        = "by_status_phase_index"
+	indexByNode               = "by_node_index"
+	indexByNamespaceNode      = "by_namespace_node_index"
+	indexByNodePhase          = "by_node_phase_index"
+	indexByNamespaceNodePhase = "by_namespace_node_phase_index"
 )
 
 // List implements [sandbox.DB].
 //
-// Index selection picks the most-selective GSI for the supplied
-// (Namespace, NodeID, StatusPhase) tuple:
+// Index selection picks a GSI that fully covers the supplied
+// (Namespace, NodeID, StatusPhase) tuple — every combination has a
+// dedicated index, so no in-app filtering is required and a returned
+// page always contains exactly the rows that matched (up to PageSize):
 //
 //	(ns)               -> by_namespace_index
-//	(ns, phase)        -> by_status_phase_index           (hk = ns#phase)
-//	(ns, node)         -> by_namespace_node_index         (hk = ns#node)
-//	(ns, node, phase)  -> by_namespace_node_index + filter on phase
+//	(ns, phase)        -> by_status_phase_index               (hk = ns#phase)
+//	(ns, node)         -> by_namespace_node_index             (hk = ns#node)
+//	(ns, node, phase)  -> by_namespace_node_phase_index       (hk = ns#node#phase)
 //	(node)             -> by_node_index
-//	(node, phase)      -> by_node_index + filter on phase
+//	(node, phase)      -> by_node_phase_index                 (hk = node#phase)
 //
-// Phase filtering is applied in the application after decoding sandbox_pb,
-// so pages may contain fewer than PageSize items. Sort order is encoded as
-// the GSI's ScanIndexForward flag against the gsi_lmt_sk range key.
+// Sort order is encoded as the GSI's ScanIndexForward flag against the
+// gsi_lmt_sk range key.
 //
 // Continuation tokens embed the index name they were issued for; replaying
 // a token against a different filter combination is rejected with
@@ -56,8 +59,6 @@ func (d *dynamoDB) List(ctx context.Context, opts sandboxdb.ListOptions) ([]*cpv
 	}
 
 	indexName, hkName, hkValue := selectIndex(opts)
-	needsPhaseFilter := opts.StatusPhase != cpv1.SandboxStatus_PHASE_UNSPECIFIED &&
-		(indexName == indexByNode || indexName == indexByNamespaceNode)
 
 	exclusiveStartKey, err := decodeContinuationToken(opts.ContinuationToken, indexName)
 	if err != nil {
@@ -87,9 +88,6 @@ func (d *dynamoDB) List(ctx context.Context, opts sandboxdb.ListOptions) ([]*cpv
 		if err != nil {
 			return nil, "", fmt.Errorf("list sandboxes: %w", err)
 		}
-		if needsPhaseFilter && sb.GetStatus().GetPhase() != opts.StatusPhase {
-			continue
-		}
 		sandboxes = append(sandboxes, sb)
 	}
 
@@ -116,19 +114,26 @@ func scanIndexForward(order cpv1.ListSandboxesRequest_Order) (bool, error) {
 	}
 }
 
-// selectIndex picks the most-selective GSI for the supplied filter
+// selectIndex picks the GSI that fully covers the supplied filter
 // combination and returns its name plus the hash-key attribute and the
-// concrete partition value to query. Callers must ensure at least one of
+// concrete partition value to query. Every legal combination has a
+// dedicated index — no in-app filtering — so callers always get a page
+// containing only matching rows. Callers must ensure at least one of
 // opts.Namespace or opts.NodeID is set.
 func selectIndex(opts sandboxdb.ListOptions) (indexName, hkName, hkValue string) {
 	hasPhase := opts.StatusPhase != cpv1.SandboxStatus_PHASE_UNSPECIFIED
 	switch {
+	case opts.Namespace != "" && opts.NodeID != "" && hasPhase:
+		return indexByNamespaceNodePhase, attrGSINamespaceNodePhaseHK,
+			opts.Namespace + "#" + opts.NodeID + "#" + opts.StatusPhase.String()
 	case opts.Namespace != "" && opts.NodeID != "":
 		return indexByNamespaceNode, attrGSINamespaceNodeHK, opts.Namespace + "#" + opts.NodeID
 	case opts.Namespace != "" && hasPhase:
 		return indexByStatusPhase, attrGSINamespacePhaseHK, opts.Namespace + "#" + opts.StatusPhase.String()
 	case opts.Namespace != "":
 		return indexByNamespace, attrSandboxNamespace, opts.Namespace
+	case opts.NodeID != "" && hasPhase:
+		return indexByNodePhase, attrGSINodePhaseHK, opts.NodeID + "#" + opts.StatusPhase.String()
 	default:
 		return indexByNode, attrNodeRefID, opts.NodeID
 	}
