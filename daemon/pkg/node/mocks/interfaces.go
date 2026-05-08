@@ -15,47 +15,7 @@ import (
 
 	gomock "go.uber.org/mock/gomock"
 	control_planev1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
-	node "golang.nuinfra.net/daemon/pkg/node"
 )
-
-// MockMetricsCollector is a mock of MetricsCollector interface.
-type MockMetricsCollector struct {
-	ctrl     *gomock.Controller
-	recorder *MockMetricsCollectorMockRecorder
-	isgomock struct{}
-}
-
-// MockMetricsCollectorMockRecorder is the mock recorder for MockMetricsCollector.
-type MockMetricsCollectorMockRecorder struct {
-	mock *MockMetricsCollector
-}
-
-// NewMockMetricsCollector creates a new mock instance.
-func NewMockMetricsCollector(ctrl *gomock.Controller) *MockMetricsCollector {
-	mock := &MockMetricsCollector{ctrl: ctrl}
-	mock.recorder = &MockMetricsCollectorMockRecorder{mock}
-	return mock
-}
-
-// EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockMetricsCollector) EXPECT() *MockMetricsCollectorMockRecorder {
-	return m.recorder
-}
-
-// Collect mocks base method.
-func (m *MockMetricsCollector) Collect(ctx context.Context) (*node.Metrics, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Collect", ctx)
-	ret0, _ := ret[0].(*node.Metrics)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// Collect indicates an expected call of Collect.
-func (mr *MockMetricsCollectorMockRecorder) Collect(ctx any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Collect", reflect.TypeOf((*MockMetricsCollector)(nil).Collect), ctx)
-}
 
 // MockReporter is a mock of Reporter interface.
 type MockReporter struct {

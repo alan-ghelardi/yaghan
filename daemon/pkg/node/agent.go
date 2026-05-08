@@ -18,6 +18,7 @@ import (
 	ec2imdsclient "golang.nuinfra.net/commons/pkg/aws/ec2imds"
 	"golang.nuinfra.net/daemon/pkg/config"
 	"golang.nuinfra.net/daemon/pkg/firecracker"
+	"golang.nuinfra.net/daemon/pkg/node/metrics"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -30,7 +31,7 @@ type Agent struct {
 	config           *config.Bundle
 	ec2Client        ec2client.Client
 	imdsClient       ec2imdsclient.Client
-	metricsCollector MetricsCollector
+	metricsCollector metrics.Collector
 	firecracker      firecracker.Provider
 	reporter         Reporter
 }
@@ -38,7 +39,7 @@ type Agent struct {
 // NewAgent returns an Agent wired with the given dependencies. The EC2 and
 // IMDS clients are read from ctx; callers must attach them via ec2.With and
 // ec2imds.With before calling NewAgent.
-func NewAgent(ctx context.Context, config *config.Bundle, firecracker firecracker.Provider, metricsCollector MetricsCollector, reporter Reporter) *Agent {
+func NewAgent(ctx context.Context, config *config.Bundle, firecracker firecracker.Provider, metricsCollector metrics.Collector, reporter Reporter) *Agent {
 	return &Agent{
 		config:           config,
 		ec2Client:        ec2client.Get(ctx),
@@ -147,23 +148,23 @@ func (a *Agent) metricsLoop(ctx context.Context) {
 }
 
 func (a *Agent) capacityAndMetrics(ctx context.Context) (*controlplanev1alpha1.NodeResources, *controlplanev1alpha1.NodeMetrics, error) {
-	metrics, err := a.metricsCollector.Collect(ctx)
+	sample, err := a.metricsCollector.Collect(ctx)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	nodeCapacity := &controlplanev1alpha1.NodeResources{
-		CpuCapacityMillicores: metrics.CPUCapacityMillicores,
-		MemoryCapacityBytes:   metrics.MemoryCapacityBytes,
-		DiskCapacityBytes:     metrics.DiskCapacityBytes,
+		CpuCapacityMillicores: sample.CPUCapacityMillicores,
+		MemoryCapacityBytes:   sample.MemoryCapacityBytes,
+		DiskCapacityBytes:     sample.DiskCapacityBytes,
 	}
 
 	nodeMetrics := &controlplanev1alpha1.NodeMetrics{
 		SampledAt:          timestamppb.Now(),
 		ActiveSandboxCount: uint32(a.firecracker.Len()),
-		CpuUsedMillicores:  metrics.CPUUsedMillicores,
-		MemoryUsedBytes:    metrics.MemoryUsedBytes,
-		DiskUsedBytes:      metrics.DiskUsedBytes,
+		CpuUsedMillicores:  sample.CPUUsedMillicores,
+		MemoryUsedBytes:    sample.MemoryUsedBytes,
+		DiskUsedBytes:      sample.DiskUsedBytes,
 	}
 
 	return nodeCapacity, nodeMetrics, nil

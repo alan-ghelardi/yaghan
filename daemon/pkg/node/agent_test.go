@@ -1,4 +1,4 @@
-package node_test
+package node
 
 import (
 	"context"
@@ -22,18 +22,19 @@ import (
 	imdsmocks "golang.nuinfra.net/commons/pkg/aws/ec2imds/mocks"
 	"golang.nuinfra.net/daemon/pkg/config"
 	fcmocks "golang.nuinfra.net/daemon/pkg/firecracker/mocks"
-	nodepkg "golang.nuinfra.net/daemon/pkg/node"
+	"golang.nuinfra.net/daemon/pkg/node/metrics"
+	metricsmocks "golang.nuinfra.net/daemon/pkg/node/metrics/mocks"
 	nodemocks "golang.nuinfra.net/daemon/pkg/node/mocks"
 )
 
 type agentFixture struct {
 	ctrl     *gomock.Controller
-	metrics  *nodemocks.MockMetricsCollector
+	metrics  *metricsmocks.MockCollector
 	reporter *nodemocks.MockReporter
 	provider *fcmocks.MockProvider
 	ec2API   *ec2mocks.MockClient
 	imdsAPI  *imdsmocks.MockClient
-	agent    *nodepkg.Agent
+	agent    *Agent
 }
 
 func newAgentFixture(t *testing.T, runtime config.NodeRuntime) *agentFixture {
@@ -41,7 +42,7 @@ func newAgentFixture(t *testing.T, runtime config.NodeRuntime) *agentFixture {
 	ctrl := gomock.NewController(t)
 	f := &agentFixture{
 		ctrl:     ctrl,
-		metrics:  nodemocks.NewMockMetricsCollector(ctrl),
+		metrics:  metricsmocks.NewMockCollector(ctrl),
 		reporter: nodemocks.NewMockReporter(ctrl),
 		provider: fcmocks.NewMockProvider(ctrl),
 		ec2API:   ec2mocks.NewMockClient(ctrl),
@@ -56,12 +57,12 @@ func newAgentFixture(t *testing.T, runtime config.NodeRuntime) *agentFixture {
 	}
 	ctx := ec2client.With(t.Context(), f.ec2API)
 	ctx = ec2imdsclient.With(ctx, f.imdsAPI)
-	f.agent = nodepkg.NewAgent(ctx, cfg, f.provider, f.metrics, f.reporter)
+	f.agent = NewAgent(ctx, cfg, f.provider, f.metrics, f.reporter)
 	return f
 }
 
-func sampleMetrics() *nodepkg.Metrics {
-	return &nodepkg.Metrics{
+func sampleMetrics() *metrics.Sample {
+	return &metrics.Sample{
 		CPUCapacityMillicores: 4000,
 		CPUUsedMillicores:     500,
 		MemoryCapacityBytes:   8 << 30,
@@ -336,7 +337,7 @@ func TestAgent_StatusPhaseAndMessage(t *testing.T) {
 			f := newAgentFixture(t, config.NodeRuntimeEC2)
 			f.ec2API.EXPECT().DescribeInstanceStatus(gomock.Any(), gomock.Any()).Return(tc.resp, tc.err)
 
-			phase, message := nodepkg.StatusPhaseAndMessage(f.agent, t.Context(), "i-test")
+			phase, message := f.agent.statusPhaseAndMessage(t.Context(), "i-test")
 
 			assert.Equal(t, tc.wantPhase, phase)
 			for _, sub := range tc.wantContains {
@@ -361,18 +362,18 @@ func TestAgent_CapacityAndMetrics_MapsFieldsAndSandboxCount(t *testing.T) {
 	f.metrics.EXPECT().Collect(gomock.Any()).Return(sampleMetrics(), nil)
 	f.provider.EXPECT().Len().Return(7)
 
-	resources, metrics, err := nodepkg.CapacityAndMetrics(f.agent, t.Context())
+	resources, nodeMetrics, err := f.agent.capacityAndMetrics(t.Context())
 	require.NoError(t, err)
 
 	assert.Equal(t, uint32(4000), resources.CpuCapacityMillicores)
 	assert.Equal(t, uint64(8<<30), resources.MemoryCapacityBytes)
 	assert.Equal(t, uint64(100<<30), resources.DiskCapacityBytes)
 
-	assert.Equal(t, uint32(500), metrics.CpuUsedMillicores)
-	assert.Equal(t, uint64(1<<30), metrics.MemoryUsedBytes)
-	assert.Equal(t, uint64(10<<30), metrics.DiskUsedBytes)
-	assert.Equal(t, uint32(7), metrics.ActiveSandboxCount)
-	require.NotNil(t, metrics.SampledAt)
+	assert.Equal(t, uint32(500), nodeMetrics.CpuUsedMillicores)
+	assert.Equal(t, uint64(1<<30), nodeMetrics.MemoryUsedBytes)
+	assert.Equal(t, uint64(10<<30), nodeMetrics.DiskUsedBytes)
+	assert.Equal(t, uint32(7), nodeMetrics.ActiveSandboxCount)
+	require.NotNil(t, nodeMetrics.SampledAt)
 }
 
 // ---------------------- metricsLoop ----------------------------------------
@@ -398,7 +399,7 @@ func TestAgent_MetricsLoop_ReportsAndExitsOnContextCancel(t *testing.T) {
 
 	finished := make(chan struct{})
 	go func() {
-		nodepkg.MetricsLoopForTest(f.agent, ctx)
+		f.agent.metricsLoop(ctx)
 		close(finished)
 	}()
 
@@ -422,7 +423,7 @@ func TestAgent_MetricsLoop_CollectorErrorDoesNotStopLoop(t *testing.T) {
 	var collects atomic.Int32
 	twoCollects := make(chan struct{}, 1)
 	f.metrics.EXPECT().Collect(gomock.Any()).DoAndReturn(
-		func(context.Context) (*nodepkg.Metrics, error) {
+		func(context.Context) (*metrics.Sample, error) {
 			if collects.Add(1) == 2 {
 				select {
 				case twoCollects <- struct{}{}:
@@ -437,7 +438,7 @@ func TestAgent_MetricsLoop_CollectorErrorDoesNotStopLoop(t *testing.T) {
 	defer cancel()
 	finished := make(chan struct{})
 	go func() {
-		nodepkg.MetricsLoopForTest(f.agent, ctx)
+		f.agent.metricsLoop(ctx)
 		close(finished)
 	}()
 
@@ -473,7 +474,7 @@ func TestAgent_MetricsLoop_ReporterErrorDoesNotStopLoop(t *testing.T) {
 	defer cancel()
 	finished := make(chan struct{})
 	go func() {
-		nodepkg.MetricsLoopForTest(f.agent, ctx)
+		f.agent.metricsLoop(ctx)
 		close(finished)
 	}()
 
@@ -527,7 +528,7 @@ func TestAgent_EC2HealthCheckLoop_ReportsOnPhaseTransition(t *testing.T) {
 	defer cancel()
 	finished := make(chan struct{})
 	go func() {
-		nodepkg.HealthCheckLoopForTest(f.agent, ctx, "i-test")
+		f.agent.ec2HealthCheckLoop(ctx, "i-test")
 		close(finished)
 	}()
 
@@ -570,7 +571,7 @@ func TestAgent_EC2HealthCheckLoop_DescribeErrorReportsUnknown(t *testing.T) {
 	defer cancel()
 	finished := make(chan struct{})
 	go func() {
-		nodepkg.HealthCheckLoopForTest(f.agent, ctx, "i-test")
+		f.agent.ec2HealthCheckLoop(ctx, "i-test")
 		close(finished)
 	}()
 
