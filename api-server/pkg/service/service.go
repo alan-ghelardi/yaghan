@@ -30,18 +30,15 @@ type apiServer struct {
 	// a *WatchableDB so successful writes also emit events on eventStream.
 	db sandboxdb.DB
 
-	// nodeDB is the database instance to persist and retrieve nodes. Reads
-	// (GetNode, ListNodes) flow straight through; there is no Watchable
-	// wrapper yet because no node-write RPC exists today.
+	// nodeDB is the database instance to persist and retrieve nodes. The
+	// EstablishSession handler creates / refreshes nodes here on every
+	// connect, and applies PatchNodeRequest patches in place.
 	nodeDB nodedb.DB
 
 	// eventStream is the WatchableStream EstablishSession registers watchers
 	// against. Reads of past events go through the redis stream's last-event-id
 	// machinery; new events are published via the *WatchableDB above.
 	eventStream watch.WatchableStream[*cpv1.Event]
-
-	// nodes tracks Nodes that currently hold an active EstablishSession.
-	nodes *nodeRegistry
 }
 
 var _ server.Service = (*apiServer)(nil)
@@ -83,7 +80,6 @@ func (a *apiServer) Setup(ctx context.Context) error {
 	a.eventStream = stream
 	a.db = NewWatchableDB(rawDB, stream)
 	a.nodeDB = nodedynamodb.New(ctx, a.config)
-	a.nodes = newNodeRegistry()
 	return nil
 }
 

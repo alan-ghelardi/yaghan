@@ -2,7 +2,9 @@ package service_test
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"io"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -10,18 +12,19 @@ import (
 	cpv1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-// seedNode persists a node directly through the harness's nodeDB.
-// Until a node-write RPC exists, this is the only path to populate
-// node fixtures for read-side tests.
+// seedNode persists a node directly through the harness's nodeDB. The DB
+// stamps version, created_at, and last_modified_at on success.
 func seedNode(ctx context.Context, t *testing.T, h *harness, id string, phase cpv1.NodeStatus_Phase) *cpv1.Node {
 	t.Helper()
 	n := &cpv1.Node{
 		Metadata: &cpv1.NodeMeta{Id: id},
 		Resources: &cpv1.NodeResources{
-			VcpuCount: 8,
-			MemoryMib: 16384,
+			CpuCapacityMillicores: 8000,
+			MemoryCapacityBytes:   16 * 1024 * 1024 * 1024,
+			DiskCapacityBytes:     100 * 1024 * 1024 * 1024,
 		},
 		Status: &cpv1.NodeStatus{Phase: phase},
 	}
@@ -171,4 +174,214 @@ func TestListNodes_RejectsGarbledContinuationToken(t *testing.T) {
 		ContinuationToken: "this-is-not-a-valid-token!!!",
 	})
 	assertCode(t, err, codes.InvalidArgument)
+}
+
+// connectWithNode opens an EstablishSession stream, sends a ConnectionRequest
+// carrying the supplied node, and waits for the acknowledgement. Useful when
+// tests need to control the full Node payload (resources, status, metrics).
+func connectWithNode(ctx context.Context, t *testing.T, h *harness, node *cpv1.Node) (cpv1.ClusterService_EstablishSessionClient, int64) {
+	t.Helper()
+	stream, err := h.cluster.EstablishSession(ctx)
+	require.NoError(t, err)
+
+	require.NoError(t, stream.Send(&cpv1.EstablishSessionRequest{
+		Operation: &cpv1.EstablishSessionRequest_Connect{
+			Connect: &cpv1.ConnectionRequest{Node: node},
+		},
+	}))
+
+	resp, err := stream.Recv()
+	require.NoError(t, err, "expected ConnectionResponse acknowledgement")
+	ack := resp.GetAcknowledge()
+	require.NotNil(t, ack, "first response must be an acknowledgement, got %T", resp.GetMessage())
+	require.Positive(t, ack.GetSessionId())
+	return stream, ack.GetSessionId()
+}
+
+// closeAndDrain half-closes the client side of the stream and reads until the
+// server flushes any in-flight responses and closes its end. After this
+// returns, all server-side request handlers have completed and the persisted
+// state is safe to assert against.
+func closeAndDrain(t *testing.T, stream cpv1.ClusterService_EstablishSessionClient) {
+	t.Helper()
+	require.NoError(t, stream.CloseSend())
+	for {
+		_, err := stream.Recv()
+		if err != nil {
+			require.True(t, errors.Is(err, io.EOF) || isCancelled(err),
+				"stream should close cleanly after CloseSend, got %v", err)
+			return
+		}
+	}
+}
+
+func TestEstablishSession_RegisterNodeCreatesOnFirstConnect(t *testing.T) {
+	h := startService(t, withEventStream())
+	ctx := t.Context()
+
+	stream, _ := connectAs(ctx, t, h, "node-fresh", 0)
+	defer func() { _ = stream.CloseSend() }()
+
+	got, err := h.nodeDB.Get(ctx, "node-fresh")
+	require.NoError(t, err, "the row must be persisted by the time the ack returns")
+
+	assert.Equal(t, "node-fresh", got.GetMetadata().GetId())
+	assert.Equal(t, int64(1), got.GetMetadata().GetVersion(),
+		"first registration must land at version 1")
+	assert.NotNil(t, got.GetMetadata().GetCreatedAt(), "DB must stamp created_at on create")
+	assert.NotNil(t, got.GetMetadata().GetLastModifiedAt())
+
+	// Resources should mirror what connectAs sent.
+	assert.Equal(t, uint32(4000), got.GetResources().GetCpuCapacityMillicores())
+	assert.Equal(t, uint64(8*1024*1024*1024), got.GetResources().GetMemoryCapacityBytes())
+	assert.Equal(t, uint64(100*1024*1024*1024), got.GetResources().GetDiskCapacityBytes())
+}
+
+func TestEstablishSession_RegisterNodeOverlaysOnReconnect(t *testing.T) {
+	h := startService(t, withEventStream())
+	ctx := t.Context()
+
+	// Pre-seed via the DB; this stamps version=1 and created_at.
+	seeded := seedNode(ctx, t, h, "node-reconnect", cpv1.NodeStatus_PHASE_HEALTHY)
+	originalCreatedAt := seeded.GetMetadata().GetCreatedAt().AsTime()
+	require.False(t, originalCreatedAt.IsZero(), "fixture must have a stamped created_at")
+
+	// Connect with a payload that differs from the seed in every
+	// daemon-owned field. The server must overlay these and bump version,
+	// while preserving created_at.
+	reconnectPayload := &cpv1.Node{
+		Metadata: &cpv1.NodeMeta{Id: "node-reconnect"},
+		Resources: &cpv1.NodeResources{
+			CpuCapacityMillicores: 16000,
+			MemoryCapacityBytes:   32 * 1024 * 1024 * 1024,
+			DiskCapacityBytes:     200 * 1024 * 1024 * 1024,
+		},
+		Status: &cpv1.NodeStatus{
+			Phase:   cpv1.NodeStatus_PHASE_UNHEALTHY,
+			Message: "test impairment",
+		},
+		Metrics: &cpv1.NodeMetrics{
+			SampledAt:          timestamppb.Now(),
+			ActiveSandboxCount: 7,
+			CpuUsedMillicores:  1234,
+			MemoryUsedBytes:    5 * 1024 * 1024 * 1024,
+			DiskUsedBytes:      10 * 1024 * 1024 * 1024,
+		},
+		ProviderMetadata: &cpv1.Node_AwsEc2{AwsEc2: &cpv1.EC2InstanceMeta{
+			InstanceId: "i-1234567890abcdef",
+			Region:     "us-east-1",
+		}},
+	}
+
+	stream, _ := connectWithNode(ctx, t, h, reconnectPayload)
+	defer func() { _ = stream.CloseSend() }()
+
+	got, err := h.nodeDB.Get(ctx, "node-reconnect")
+	require.NoError(t, err)
+
+	assert.Equal(t, int64(2), got.GetMetadata().GetVersion(),
+		"reconnect must bump version exactly once")
+	assert.True(t, originalCreatedAt.Equal(got.GetMetadata().GetCreatedAt().AsTime()),
+		"created_at must be preserved across reconnects")
+
+	// All daemon-owned fields are overlaid.
+	assert.Equal(t, uint32(16000), got.GetResources().GetCpuCapacityMillicores())
+	assert.Equal(t, uint64(32*1024*1024*1024), got.GetResources().GetMemoryCapacityBytes())
+	assert.Equal(t, cpv1.NodeStatus_PHASE_UNHEALTHY, got.GetStatus().GetPhase())
+	assert.Equal(t, "test impairment", got.GetStatus().GetMessage())
+	assert.Equal(t, uint32(7), got.GetMetrics().GetActiveSandboxCount())
+	assert.Equal(t, "i-1234567890abcdef", got.GetAwsEc2().GetInstanceId())
+}
+
+func TestEstablishSession_PatchNodeMetricsUpdatesOnlyMetrics(t *testing.T) {
+	h := startService(t, withEventStream())
+	ctx := t.Context()
+
+	stream, _ := connectAs(ctx, t, h, "node-patch-metrics", 0)
+	created, err := h.nodeDB.Get(ctx, "node-patch-metrics")
+	require.NoError(t, err)
+	priorVersion := created.GetMetadata().GetVersion()
+
+	patchedMetrics := &cpv1.NodeMetrics{
+		SampledAt:          timestamppb.Now(),
+		ActiveSandboxCount: 3,
+		CpuUsedMillicores:  2500,
+		MemoryUsedBytes:    2 * 1024 * 1024 * 1024,
+		DiskUsedBytes:      4 * 1024 * 1024 * 1024,
+	}
+	require.NoError(t, stream.Send(&cpv1.EstablishSessionRequest{
+		Operation: &cpv1.EstablishSessionRequest_PatchNode{
+			PatchNode: &cpv1.PatchNodeRequest{
+				Patch: &cpv1.PatchNodeRequest_NodeMetrics{NodeMetrics: patchedMetrics},
+			},
+		},
+	}))
+
+	closeAndDrain(t, stream)
+
+	got, err := h.nodeDB.Get(ctx, "node-patch-metrics")
+	require.NoError(t, err)
+	assert.Equal(t, priorVersion+1, got.GetMetadata().GetVersion(),
+		"patch must bump version exactly once")
+	assert.True(t, proto.Equal(patchedMetrics, got.GetMetrics()),
+		"persisted metrics must equal the patch payload")
+	assert.True(t, proto.Equal(created.GetResources(), got.GetResources()),
+		"resources must remain untouched by a metrics-only patch")
+}
+
+func TestEstablishSession_PatchNodeStatusUpdatesOnlyStatus(t *testing.T) {
+	h := startService(t, withEventStream())
+	ctx := t.Context()
+
+	stream, _ := connectAs(ctx, t, h, "node-patch-status", 0)
+	created, err := h.nodeDB.Get(ctx, "node-patch-status")
+	require.NoError(t, err)
+	priorVersion := created.GetMetadata().GetVersion()
+
+	patchedStatus := &cpv1.NodeStatus{
+		Phase:   cpv1.NodeStatus_PHASE_UNHEALTHY,
+		Message: "ebs check failed",
+	}
+	require.NoError(t, stream.Send(&cpv1.EstablishSessionRequest{
+		Operation: &cpv1.EstablishSessionRequest_PatchNode{
+			PatchNode: &cpv1.PatchNodeRequest{
+				Patch: &cpv1.PatchNodeRequest_NodeStatus{NodeStatus: patchedStatus},
+			},
+		},
+	}))
+
+	closeAndDrain(t, stream)
+
+	got, err := h.nodeDB.Get(ctx, "node-patch-status")
+	require.NoError(t, err)
+	assert.Equal(t, priorVersion+1, got.GetMetadata().GetVersion())
+	assert.True(t, proto.Equal(patchedStatus, got.GetStatus()),
+		"persisted status must equal the patch payload")
+	assert.True(t, proto.Equal(created.GetResources(), got.GetResources()),
+		"resources must remain untouched by a status-only patch")
+}
+
+func TestEstablishSession_PatchNodeWithEmptyPatchReturnsInBandError(t *testing.T) {
+	h := startService(t, withEventStream())
+	ctx := t.Context()
+
+	stream, _ := connectAs(ctx, t, h, "node-patch-empty", 0)
+	defer func() { _ = stream.CloseSend() }()
+
+	// Neither node_metrics nor node_status set on the oneof.
+	require.NoError(t, stream.Send(&cpv1.EstablishSessionRequest{
+		Operation: &cpv1.EstablishSessionRequest_PatchNode{
+			PatchNode: &cpv1.PatchNodeRequest{},
+		},
+	}))
+
+	resp := recvError(t, stream)
+	assert.Equal(t, int32(codes.InvalidArgument), resp.GetError().GetCode(),
+		"empty PatchNodeRequest must surface as InvalidArgument")
+
+	// The row must be untouched by the rejected patch.
+	got, err := h.nodeDB.Get(ctx, "node-patch-empty")
+	require.NoError(t, err)
+	assert.Equal(t, int64(1), got.GetMetadata().GetVersion(),
+		"a rejected patch must not bump version")
 }

@@ -49,8 +49,9 @@ func newFixture(opts ...func(*cpv1.Node)) *cpv1.Node {
 			LastModifiedAt: timestamppb.New(now),
 		},
 		Resources: &cpv1.NodeResources{
-			VcpuCount: 8,
-			MemoryMib: 16384,
+			CpuCapacityMillicores: 8000,
+			MemoryCapacityBytes:   16 * 1024 * 1024 * 1024,
+			DiskCapacityBytes:     100 * 1024 * 1024 * 1024,
 		},
 		Status: &cpv1.NodeStatus{
 			Phase: cpv1.NodeStatus_PHASE_HEALTHY,
@@ -70,8 +71,8 @@ func withVersion(v int64) func(*cpv1.Node) {
 	return func(n *cpv1.Node) { n.Metadata.Version = v }
 }
 
-func withVCPU(c uint32) func(*cpv1.Node) {
-	return func(n *cpv1.Node) { n.Resources.VcpuCount = c }
+func withCPUMillicores(c uint32) func(*cpv1.Node) {
+	return func(n *cpv1.Node) { n.Resources.CpuCapacityMillicores = c }
 }
 
 func withPhase(p cpv1.NodeStatus_Phase) func(*cpv1.Node) {
@@ -177,10 +178,10 @@ func TestPut_CreateHappyPath(t *testing.T) {
 func TestPut_CreateConflictOnDifferentBody(t *testing.T) {
 	db, ctx := setupDB(t)
 
-	original := newFixture(withID("node-conflict"), withVCPU(4))
+	original := newFixture(withID("node-conflict"), withCPUMillicores(4000))
 	require.NoError(t, db.Put(ctx, original))
 
-	conflicting := newFixture(withID("node-conflict"), withVCPU(8))
+	conflicting := newFixture(withID("node-conflict"), withCPUMillicores(8000))
 	err := db.Put(ctx, conflicting)
 	require.Error(t, err)
 	assert.True(t, errors.Is(err, dberrors.ErrAlreadyExists),
@@ -214,13 +215,13 @@ func TestPut_CreateIdempotentOnEquivalentRetry(t *testing.T) {
 func TestPut_UpdateHappyPath(t *testing.T) {
 	db, ctx := setupDB(t)
 
-	original := newFixture(withID("node-upd-1"), withVCPU(4))
+	original := newFixture(withID("node-upd-1"), withCPUMillicores(4000))
 	require.NoError(t, db.Put(ctx, original))
 	createdLmt := original.Metadata.LastModifiedAt.AsTime()
 	createdAt := original.Metadata.CreatedAt.AsTime()
 
 	updated := proto.CloneOf(original)
-	updated.Resources.VcpuCount = 16
+	updated.Resources.CpuCapacityMillicores = 16000
 	// Sleep enough to guarantee a strictly later LMT.
 	time.Sleep(2 * time.Millisecond)
 	require.NoError(t, db.Put(ctx, updated))
@@ -232,7 +233,7 @@ func TestPut_UpdateHappyPath(t *testing.T) {
 	storedPB := attrB(t, item, attrNodePB)
 	stored := &cpv1.Node{}
 	require.NoError(t, proto.Unmarshal(storedPB, stored))
-	assert.Equal(t, uint32(16), stored.Resources.VcpuCount,
+	assert.Equal(t, uint32(16000), stored.Resources.CpuCapacityMillicores,
 		"stored row must reflect the updated body")
 	assert.Equal(t, int64(2), stored.Metadata.Version)
 	assert.True(t, createdAt.Equal(stored.Metadata.CreatedAt.AsTime()),
@@ -251,12 +252,12 @@ func TestPut_UpdateVersionConflict(t *testing.T) {
 
 	// First update bumps version 1 → 2.
 	first := proto.CloneOf(original)
-	first.Resources.VcpuCount = 8
+	first.Resources.CpuCapacityMillicores = 8000
 	require.NoError(t, db.Put(ctx, first))
 
 	// Second update reuses the stale version 1 with a different body.
 	stale := proto.CloneOf(original)
-	stale.Resources.VcpuCount = 32
+	stale.Resources.CpuCapacityMillicores = 32000
 	err := db.Put(ctx, stale)
 	require.Error(t, err)
 	assert.True(t, errors.Is(err, dberrors.ErrVersionConflict),
@@ -276,11 +277,11 @@ func TestPut_UpdateNotFound(t *testing.T) {
 func TestPut_UpdateIdempotentOnEquivalentRetry(t *testing.T) {
 	db, ctx := setupDB(t)
 
-	original := newFixture(withID("node-idem-upd"), withVCPU(4))
+	original := newFixture(withID("node-idem-upd"), withCPUMillicores(4000))
 	require.NoError(t, db.Put(ctx, original))
 
 	first := proto.CloneOf(original)
-	first.Resources.VcpuCount = 8
+	first.Resources.CpuCapacityMillicores = 8000
 
 	// Clone the request body BEFORE the first Put — Put mutates
 	// Metadata.Version on success, and the retry must replay the version
@@ -312,7 +313,7 @@ func TestPut_StampsLastModifiedAtRegardlessOfInput(t *testing.T) {
 	require.NoError(t, db.Put(ctx, original))
 
 	updated := proto.CloneOf(original)
-	updated.Resources.VcpuCount = 12
+	updated.Resources.CpuCapacityMillicores = 12000
 	stale := time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
 	withLastModified(stale)(updated)
 

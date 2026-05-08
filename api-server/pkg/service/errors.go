@@ -29,6 +29,13 @@ func dbErrToStatus(ctx context.Context, entity, op, id string, err error) error 
 	switch {
 	case err == nil:
 		return nil
+	// Pass-through for errors that already carry a typed gRPC status —
+	// e.g. argument validation produced inside a handler before the DB
+	// is even consulted. Without this, those map to codes.Internal in
+	// the default branch below and the typed code (InvalidArgument,
+	// FailedPrecondition, …) is lost.
+	case isTypedGRPCError(err):
+		return err
 	case errors.Is(err, db.ErrAlreadyExists):
 		return status.Error(codes.AlreadyExists, err.Error())
 	case errors.Is(err, db.ErrNotFound):
@@ -46,4 +53,12 @@ func dbErrToStatus(ctx context.Context, entity, op, id string, err error) error 
 			zap.Error(err))
 		return status.Error(codes.Internal, "failed to "+op+" "+entity)
 	}
+}
+
+// isTypedGRPCError reports whether err already carries a gRPC status with a
+// meaningful code (i.e. anything other than Unknown, which is what
+// status.FromError returns for plain Go errors).
+func isTypedGRPCError(err error) bool {
+	st, ok := status.FromError(err)
+	return ok && st.Code() != codes.Unknown
 }

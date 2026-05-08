@@ -36,8 +36,9 @@ func connectAs(ctx context.Context, t *testing.T, h *harness, nodeID string, ses
 				Node: &cpv1.Node{
 					Metadata: &cpv1.NodeMeta{Id: nodeID},
 					Resources: &cpv1.NodeResources{
-						VcpuCount: 4,
-						MemoryMib: 8192,
+						CpuCapacityMillicores: 4000,
+						MemoryCapacityBytes:   8 * 1024 * 1024 * 1024,
+						DiskCapacityBytes:     100 * 1024 * 1024 * 1024,
 					},
 				},
 			},

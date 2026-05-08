@@ -8,26 +8,23 @@ import (
 
 	"github.com/grpc-ecosystem/go-grpc-middleware/logging/zap/ctxzap"
 	"go.uber.org/zap"
-	nodedb "golang.nuinfra.api-server/pkg/db/node"
 	"golang.nuinfra.api-server/pkg/watch"
 	cpv1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-// defaultListNodesPageSize is the page size applied when ListNodes callers
-// leave the field unset. Mirrors the documented default in the proto.
-const defaultListNodesPageSize int32 = 30
-
 // EstablishSession implements [cpv1.ClusterServiceServer]. It is a long-lived
 // bidirectional stream:
 //
 //   - The client must send a ConnectionRequest as its first message; the
-//     server registers a Watcher filtered by the node's id and acknowledges
-//     with the auto-generated (or resumed) session id.
-//   - Subsequent client messages are sandbox updates the data plane is
-//     applying. The server forwards them to the database and surfaces any
-//     per-message error in-band so the daemon can retry.
+//     server persists / refreshes the node's row, registers a Watcher
+//     filtered by the node's id, and acknowledges with the auto-generated
+//     (or resumed) session id.
+//   - Subsequent client messages are PatchNodeRequest (metrics / status
+//     patches against the persisted node row) or UpdateSandboxRequest
+//     (sandbox updates the data plane is applying). Per-message errors are
+//     surfaced in-band so the daemon can retry without reconnecting.
 //   - Asynchronously, sandbox events emitted via the WatchableDB are
 //     forwarded to the daemon as Event messages on the same stream.
 func (a *apiServer) EstablishSession(stream cpv1.ClusterService_EstablishSessionServer) error {
@@ -45,6 +42,10 @@ func (a *apiServer) EstablishSession(stream cpv1.ClusterService_EstablishSession
 	node := connect.GetNode()
 	nodeID := node.GetMetadata().GetId()
 
+	if err := a.registerNode(ctx, node); err != nil {
+		return dbErrToStatus(ctx, "node", "register", nodeID, err)
+	}
+
 	watcher, err := newSessionWatcher(connect.GetSessionId(), nodeID)
 	if err != nil {
 		return status.Error(codes.InvalidArgument, err.Error())
@@ -57,9 +58,7 @@ func (a *apiServer) EstablishSession(stream cpv1.ClusterService_EstablishSession
 		return status.Error(codes.Internal, "failed to register session")
 	}
 
-	a.nodes.put(node, watcher.GetID())
 	defer func() {
-		a.nodes.deleteIfOwned(nodeID, watcher.GetID())
 		if err := a.eventStream.StopWatching(ctx, watcher.GetID()); err != nil {
 			logger.Warn("EstablishSession: unable to stop watching",
 				zap.Int64("session.id", watcher.GetID()),
@@ -87,7 +86,7 @@ func (a *apiServer) EstablishSession(stream cpv1.ClusterService_EstablishSession
 	// (forwarder's <-watcher.Closed()).
 	errCh := make(chan error, 2)
 	go func() { errCh <- forwardEvents(ctx, watcher, send) }()
-	go func() { errCh <- a.receiveRequests(ctx, stream, send) }()
+	go func() { errCh <- a.receiveRequests(ctx, nodeID, stream, send) }()
 	return <-errCh
 }
 
@@ -166,12 +165,13 @@ func forwardEvents(ctx context.Context, watcher *watch.Watcher[*cpv1.Event], sen
 	}
 }
 
-// receiveRequests handles the second-and-subsequent messages. It applies
-// UpdateSandbox requests through the database and surfaces per-message errors
-// as in-band Error responses so the caller can retry without reconnecting.
-// A duplicate ConnectionRequest is treated as a protocol violation and
-// terminates the stream.
-func (a *apiServer) receiveRequests(ctx context.Context, stream cpv1.ClusterService_EstablishSessionServer, send func(*cpv1.EstablishSessionResponse) error) error {
+// receiveRequests handles the second-and-subsequent messages. PatchNodeRequest
+// updates the persisted node row in place; UpdateSandboxRequest writes through
+// the sandbox DB. Per-message errors (proto violations, version conflicts, …)
+// are returned as in-band Error responses so the caller can retry without
+// reconnecting. A duplicate ConnectionRequest is treated as a protocol
+// violation and terminates the stream.
+func (a *apiServer) receiveRequests(ctx context.Context, nodeID string, stream cpv1.ClusterService_EstablishSessionServer, send func(*cpv1.EstablishSessionResponse) error) error {
 	logger := ctxzap.Extract(ctx)
 
 	for {
@@ -188,6 +188,14 @@ func (a *apiServer) receiveRequests(ctx context.Context, stream cpv1.ClusterServ
 		switch op := req.GetOperation().(type) {
 		case *cpv1.EstablishSessionRequest_Connect:
 			return status.Error(codes.FailedPrecondition, "session is already established; do not send a second ConnectionRequest")
+
+		case *cpv1.EstablishSessionRequest_PatchNode:
+			if patchErr := a.applyNodePatch(ctx, nodeID, op.PatchNode); patchErr != nil {
+				grpcErr := dbErrToStatus(ctx, "node", "patch", nodeID, patchErr)
+				if err := send(errorResponse(grpcErr)); err != nil {
+					return err
+				}
+			}
 
 		case *cpv1.EstablishSessionRequest_UpdateSandbox:
 			sb := op.UpdateSandbox.GetSandbox()
@@ -218,42 +226,4 @@ func errorResponse(grpcErr error) *cpv1.EstablishSessionResponse {
 	return &cpv1.EstablishSessionResponse{
 		Message: &cpv1.EstablishSessionResponse_Error{Error: s.Proto()},
 	}
-}
-
-// GetNode implements [cpv1.ClusterServiceServer].
-func (a *apiServer) GetNode(ctx context.Context, req *cpv1.GetNodeRequest) (*cpv1.GetNodeResponse, error) {
-	id := req.GetNodeId()
-	n, err := a.nodeDB.Get(ctx, id)
-	if err != nil {
-		return nil, dbErrToStatus(ctx, "node", "get", id, err)
-	}
-	return &cpv1.GetNodeResponse{Node: n}, nil
-}
-
-// ListNodes implements [cpv1.ClusterServiceServer]. The protovalidate
-// interceptor has already enforced the page-size bounds; this layer
-// only fills in defaults for fields the client left unset and forwards
-// the rest to the DB. Empty results are valid.
-func (a *apiServer) ListNodes(ctx context.Context, req *cpv1.ListNodesRequest) (*cpv1.ListNodesResponse, error) {
-	opts := nodedb.ListOptions{
-		StatusPhase:       req.GetStatusPhase(),
-		SortOrder:         req.GetSortOrder(),
-		PageSize:          req.GetPageSize(),
-		ContinuationToken: req.GetContinuationToken(),
-	}
-	if opts.PageSize == 0 {
-		opts.PageSize = defaultListNodesPageSize
-	}
-	if opts.SortOrder == cpv1.ListNodesRequest_ORDER_UNSPECIFIED {
-		opts.SortOrder = cpv1.ListNodesRequest_ORDER_NEWEST_FIRST
-	}
-
-	nodes, nextToken, err := a.nodeDB.List(ctx, opts)
-	if err != nil {
-		return nil, dbErrToStatus(ctx, "node", "list", "", err)
-	}
-	return &cpv1.ListNodesResponse{
-		Nodes:             nodes,
-		ContinuationToken: nextToken,
-	}, nil
 }
