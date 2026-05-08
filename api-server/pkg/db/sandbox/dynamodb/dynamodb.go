@@ -390,11 +390,19 @@ func gsiNamespaceNodeHK(sb *control_planev1alpha1.Sandbox) string {
 }
 
 // contentDigest returns the SHA-256 of a deterministic, canonicalised proto
-// encoding of the sandbox. Server-set wall-clock fields and Version are zeroed
-// so that two retries of the same logical mutation produce the same digest —
-// even when one of them has already been applied and the stored row's version
-// has been incremented. Determinism is required because Go's default proto
-// marshalling does not guarantee stable map ordering.
+// encoding of the sandbox. Server-managed fields are zeroed so that two
+// retries of the same logical mutation produce the same digest — even
+// when one of them has already been applied. The stripped fields are:
+//
+//   - Metadata.Version, Metadata.CreatedAt, Metadata.LastModifiedAt: stamped
+//     by the DB on every successful write.
+//   - Node: assigned by the scheduler before Create. The random scheduler
+//     may pick a different node on retry, and the dedicated Node-change
+//     RPC is the only sanctioned path to alter Node post-Create — so
+//     callers must treat Node as server-owned for idempotency purposes.
+//
+// Determinism is required because Go's default proto marshalling does
+// not guarantee stable map ordering.
 func contentDigest(sb *control_planev1alpha1.Sandbox) ([]byte, error) {
 	canonical := proto.CloneOf(sb)
 	if meta := canonical.GetMetadata(); meta != nil {
@@ -402,6 +410,7 @@ func contentDigest(sb *control_planev1alpha1.Sandbox) ([]byte, error) {
 		meta.LastModifiedAt = nil
 		meta.Version = 0
 	}
+	canonical.Node = nil
 
 	encoded, err := proto.MarshalOptions{Deterministic: true}.Marshal(canonical)
 	if err != nil {

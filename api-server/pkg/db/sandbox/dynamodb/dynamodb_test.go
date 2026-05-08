@@ -226,6 +226,31 @@ func TestCreate_IdempotentOnEquivalentRetry(t *testing.T) {
 	)
 }
 
+func TestCreate_IdempotentAcrossDifferentScheduledNodes(t *testing.T) {
+	// The random scheduler may pick a different node on retry, which used
+	// to surface as ErrAlreadyExists because Node was part of the digest.
+	// Now Node is server-managed and excluded from the digest, so a retry
+	// with a different Node is still a no-op success.
+	db, ctx := setupDB(t)
+
+	first := newFixture(withID("sb-sched-idem"), withNode("node-A"))
+	require.NoError(t, db.Create(ctx, first))
+
+	retry := proto.Clone(first).(*cpv1.Sandbox)
+	withNode("node-B")(retry)
+	require.NoError(t, db.Create(ctx, retry),
+		"a retry with a different scheduled node must be a no-op success")
+
+	item := getItem(ctx, t, db, "sb-sched-idem")
+	storedPB := attrB(t, item, attrSandboxPB)
+	stored := &cpv1.Sandbox{}
+	require.NoError(t, proto.Unmarshal(storedPB, stored))
+	assert.Equal(t, "node-A", stored.GetNode().GetId(),
+		"the stored Node must reflect the FIRST attempt's choice, not the retry's")
+	assert.Equal(t, "node-A", attrS(t, item, attrNodeRefID),
+		"the GSI sparse column must also reflect the first-write Node")
+}
+
 func TestCreate_ConflictOnDifferentBody(t *testing.T) {
 	db, ctx := setupDB(t)
 
@@ -315,6 +340,22 @@ func TestContentDigest_IgnoresVersion(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.True(t, bytes.Equal(da, db), "digest must ignore Metadata.Version")
+}
+
+func TestContentDigest_IgnoresNode(t *testing.T) {
+	// Create idempotency under a non-deterministic scheduler depends on
+	// the digest being stable across Node changes — a retry that picks a
+	// different node must still hit the idempotent path.
+	a := newFixture(withID("sb-node-digest"), withNode("node-A"))
+	b := proto.Clone(a).(*cpv1.Sandbox)
+	withNode("node-B")(b)
+
+	da, err := contentDigest(a)
+	require.NoError(t, err)
+	dbDigest, err := contentDigest(b)
+	require.NoError(t, err)
+
+	assert.True(t, bytes.Equal(da, dbDigest), "digest must ignore Sandbox.Node")
 }
 
 func TestGet_HappyPath(t *testing.T) {

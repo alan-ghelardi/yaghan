@@ -465,6 +465,52 @@ func TestCreateSandbox_IdempotentRetry(t *testing.T) {
 		"stored CreatedAt must come from the first Create, not the retry")
 }
 
+// TestCreateSandbox_IdempotentAcrossDifferentScheduledNodes pins the
+// end-to-end behaviour of the digest fix: with two healthy candidates,
+// the random scheduler may pick different nodes across two calls with
+// the same sandbox id, but the second call must still be a no-op
+// (idempotent return) and the stored Node must reflect the first
+// attempt's choice.
+func TestCreateSandbox_IdempotentAcrossDifferentScheduledNodes(t *testing.T) {
+	h := startService(t) // also seeds defaultHarnessNodeID
+	ctx := t.Context()
+
+	// Add a second healthy node so the scheduler has a real choice
+	// between two candidates on each call.
+	require.NoError(t, h.nodeDB.Put(ctx, &cpv1.Node{
+		Metadata: &cpv1.NodeMeta{Id: "harness-node-2"},
+		Resources: &cpv1.NodeResources{
+			CpuCapacityMillicores: 8000,
+			MemoryCapacityBytes:   16 * 1024 * 1024 * 1024,
+			DiskCapacityBytes:     100 * 1024 * 1024 * 1024,
+		},
+		Status: &cpv1.NodeStatus{Phase: cpv1.NodeStatus_PHASE_HEALTHY},
+	}))
+
+	first, err := h.client.CreateSandbox(ctx, newCreateRequest(withID("sb-idem-multi")))
+	require.NoError(t, err)
+	firstNodeID := first.GetSandbox().GetNode().GetId()
+	require.NotEmpty(t, firstNodeID, "first attempt must have a scheduled node")
+
+	// The retry must not error. (Before the digest fix it would surface
+	// as AlreadyExists whenever the scheduler picked a different node.)
+	_, err = h.client.CreateSandbox(ctx, newCreateRequest(withID("sb-idem-multi")))
+	require.NoError(t, err,
+		"a retry must succeed even when the scheduler picks a different node")
+
+	// Authoritative assertion: the stored row reflects the FIRST attempt's
+	// scheduling choice, not the retry's. Read back through GetSandbox
+	// rather than the retry's response — the response carries the
+	// handler's in-memory sb (post-scheduling on the retry), which is a
+	// pre-existing inconsistency the digest fix does not change.
+	got, err := h.client.GetSandbox(ctx, &cpv1.GetSandboxRequest{SandboxId: "sb-idem-multi"})
+	require.NoError(t, err)
+	assert.Equal(t, firstNodeID, got.GetSandbox().GetNode().GetId(),
+		"stored Node must reflect the first attempt's scheduled node")
+	assert.Equal(t, int64(1), got.GetSandbox().GetMetadata().GetVersion(),
+		"idempotent retry must not advance the stored version")
+}
+
 func TestCreateSandbox_ConflictOnDifferentBody(t *testing.T) {
 	h := startService(t)
 	ctx := t.Context()
