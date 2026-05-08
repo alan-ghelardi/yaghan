@@ -41,7 +41,7 @@ func nodeIDs(resp *cpv1.ListNodesResponse) []string {
 }
 
 func TestGetNode_HappyPath(t *testing.T) {
-	h := startService(t)
+	h := startService(t, withoutDefaultNode())
 	ctx := t.Context()
 
 	seeded := seedNode(ctx, t, h, "node-get-1", cpv1.NodeStatus_PHASE_HEALTHY)
@@ -53,7 +53,7 @@ func TestGetNode_HappyPath(t *testing.T) {
 }
 
 func TestGetNode_NotFound(t *testing.T) {
-	h := startService(t)
+	h := startService(t, withoutDefaultNode())
 	ctx := t.Context()
 
 	_, err := h.cluster.GetNode(ctx, &cpv1.GetNodeRequest{NodeId: "no-such-node"})
@@ -61,7 +61,7 @@ func TestGetNode_NotFound(t *testing.T) {
 }
 
 func TestGetNode_ValidatesMissingId(t *testing.T) {
-	h := startService(t)
+	h := startService(t, withoutDefaultNode())
 	ctx := t.Context()
 
 	_, err := h.cluster.GetNode(ctx, &cpv1.GetNodeRequest{})
@@ -69,7 +69,7 @@ func TestGetNode_ValidatesMissingId(t *testing.T) {
 }
 
 func TestListNodes_HappyPath(t *testing.T) {
-	h := startService(t)
+	h := startService(t, withoutDefaultNode())
 	ctx := t.Context()
 
 	seedNode(ctx, t, h, "node-list-1", cpv1.NodeStatus_PHASE_HEALTHY)
@@ -86,7 +86,7 @@ func TestListNodes_HappyPath(t *testing.T) {
 }
 
 func TestListNodes_AppliesDefaults(t *testing.T) {
-	h := startService(t)
+	h := startService(t, withoutDefaultNode())
 	ctx := t.Context()
 
 	seedNode(ctx, t, h, "node-defaults", cpv1.NodeStatus_PHASE_HEALTHY)
@@ -99,7 +99,7 @@ func TestListNodes_AppliesDefaults(t *testing.T) {
 }
 
 func TestListNodes_FiltersByPhase(t *testing.T) {
-	h := startService(t)
+	h := startService(t, withoutDefaultNode())
 	ctx := t.Context()
 
 	seedNode(ctx, t, h, "node-h", cpv1.NodeStatus_PHASE_HEALTHY)
@@ -115,7 +115,7 @@ func TestListNodes_FiltersByPhase(t *testing.T) {
 }
 
 func TestListNodes_PaginatesAcrossPages(t *testing.T) {
-	h := startService(t)
+	h := startService(t, withoutDefaultNode())
 	ctx := t.Context()
 
 	const total = 5
@@ -147,7 +147,7 @@ func TestListNodes_PaginatesAcrossPages(t *testing.T) {
 }
 
 func TestListNodes_EmptyResultIsOK(t *testing.T) {
-	h := startService(t)
+	h := startService(t, withoutDefaultNode())
 	ctx := t.Context()
 
 	resp, err := h.cluster.ListNodes(ctx, &cpv1.ListNodesRequest{})
@@ -157,7 +157,7 @@ func TestListNodes_EmptyResultIsOK(t *testing.T) {
 }
 
 func TestListNodes_ValidatesPageSizeUpperBound(t *testing.T) {
-	h := startService(t)
+	h := startService(t, withoutDefaultNode())
 	ctx := t.Context()
 
 	_, err := h.cluster.ListNodes(ctx, &cpv1.ListNodesRequest{
@@ -167,7 +167,7 @@ func TestListNodes_ValidatesPageSizeUpperBound(t *testing.T) {
 }
 
 func TestListNodes_RejectsGarbledContinuationToken(t *testing.T) {
-	h := startService(t)
+	h := startService(t, withoutDefaultNode())
 	ctx := t.Context()
 
 	_, err := h.cluster.ListNodes(ctx, &cpv1.ListNodesRequest{

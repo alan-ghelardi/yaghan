@@ -66,7 +66,8 @@ type harness struct {
 }
 
 type harnessConfig struct {
-	withEventStream bool
+	withEventStream    bool
+	skipDefaultNode    bool
 }
 
 type harnessOption func(*harnessConfig)
@@ -77,6 +78,20 @@ type harnessOption func(*harnessConfig)
 func withEventStream() harnessOption { //nolint:unused // used by cluster_test.go
 	return func(c *harnessConfig) { c.withEventStream = true }
 }
+
+// withoutDefaultNode disables the harness's default seeded healthy node.
+// Use this in tests that assert on the exact set of nodes returned by
+// ListNodes / GetNode, or that need to exercise the no-healthy-nodes
+// scheduling path. Default behaviour seeds one healthy node so
+// CreateSandbox tests have somewhere to schedule to.
+func withoutDefaultNode() harnessOption { //nolint:unused // used across cluster_node_test.go and the no-healthy-nodes test
+	return func(c *harnessConfig) { c.skipDefaultNode = true }
+}
+
+// defaultHarnessNodeID is the id of the healthy node startService seeds
+// by default. CreateSandbox tests can assert that scheduled sandboxes
+// land on this node without coupling to test ordering.
+const defaultHarnessNodeID = "harness-node"
 
 // setSavedPhase rewrites the stored Status.Phase out-of-band so Pause/Resume
 // tests can simulate the data-plane reconciler advancing PENDING → RUNNING or
@@ -229,6 +244,21 @@ func startService(t *testing.T, opts ...harnessOption) *harness {
 		h.db = service.NewWatchableDB(rawDB, stream)
 	}
 
+	if !cfg.skipDefaultNode {
+		// Seed one healthy node so CreateSandbox tests have somewhere to
+		// schedule to. Tests that assert on the exact set of nodes
+		// returned by ListNodes / GetNode opt out via withoutDefaultNode.
+		require.NoError(t, h.nodeDB.Put(ctx, &cpv1.Node{
+			Metadata: &cpv1.NodeMeta{Id: defaultHarnessNodeID},
+			Resources: &cpv1.NodeResources{
+				CpuCapacityMillicores: 8000,
+				MemoryCapacityBytes:   16 * 1024 * 1024 * 1024,
+				DiskCapacityBytes:     100 * 1024 * 1024 * 1024,
+			},
+			Status: &cpv1.NodeStatus{Phase: cpv1.NodeStatus_PHASE_HEALTHY},
+		}))
+	}
+
 	return h
 }
 
@@ -317,7 +347,8 @@ func TestCreateSandbox_HappyPath(t *testing.T) {
 	assert.WithinDuration(t, time.Now(), sb.GetMetadata().GetCreatedAt().AsTime(), 5*time.Second)
 	assert.Equal(t, cpv1.SandboxStatus_PHASE_PENDING, sb.GetStatus().GetPhase())
 	assert.Equal(t, cpv1.SandboxStatus_PHASE_RUNNING, sb.GetIntent().GetPhase())
-	assert.Nil(t, sb.GetNode())
+	assert.Equal(t, defaultHarnessNodeID, sb.GetNode().GetId(),
+		"the scheduler must assign the only seeded healthy node")
 
 	// Read-back via GetSandbox confirms persistence.
 	got, err := h.client.GetSandbox(ctx, &cpv1.GetSandboxRequest{SandboxId: "sb-001"})
@@ -364,21 +395,33 @@ func TestCreateSandbox_IntentForcedToRunning(t *testing.T) {
 	}
 }
 
-func TestCreateSandbox_NodeZeroedOnCreate(t *testing.T) {
+func TestCreateSandbox_ClientNodeReplacedByScheduler(t *testing.T) {
 	h := startService(t)
 	ctx := t.Context()
 
 	req := newCreateRequest(
 		withID("sb-node"),
-		withClientNode("node-1"),
+		withClientNode("client-supplied-node"),
 	)
 	resp, err := h.client.CreateSandbox(ctx, req)
 	require.NoError(t, err)
-	assert.Nil(t, resp.GetSandbox().GetNode(), "Node must be zeroed on Create")
+	// The client-supplied node id is discarded; the scheduler picks
+	// the seeded harness node instead.
+	assert.Equal(t, defaultHarnessNodeID, resp.GetSandbox().GetNode().GetId(),
+		"server must replace client-supplied Node with the scheduler's choice")
 
 	got, err := h.client.GetSandbox(ctx, &cpv1.GetSandboxRequest{SandboxId: "sb-node"})
 	require.NoError(t, err)
-	assert.Nil(t, got.GetSandbox().GetNode(), "stored row must not carry the client-supplied Node")
+	assert.Equal(t, defaultHarnessNodeID, got.GetSandbox().GetNode().GetId(),
+		"stored row must carry the scheduler-chosen node, not the client-supplied one")
+}
+
+func TestCreateSandbox_NoHealthyNodes_ReturnsFailedPrecondition(t *testing.T) {
+	h := startService(t, withoutDefaultNode())
+	ctx := t.Context()
+
+	_, err := h.client.CreateSandbox(ctx, newCreateRequest(withID("sb-no-nodes")))
+	assertCode(t, err, codes.FailedPrecondition)
 }
 
 func TestCreateSandbox_TimestampsServerStamped(t *testing.T) {

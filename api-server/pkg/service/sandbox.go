@@ -2,9 +2,15 @@ package service
 
 import (
 	"context"
+	"errors"
 
+	"github.com/grpc-ecosystem/go-grpc-middleware/logging/zap/ctxzap"
+	"go.uber.org/zap"
 	sandboxdb "golang.nuinfra.api-server/pkg/db/sandbox"
+	"golang.nuinfra.api-server/pkg/scheduler"
 	cpv1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // defaultListSandboxesPageSize is the page size applied when ListSandboxes callers
@@ -15,10 +21,22 @@ const defaultListSandboxesPageSize int32 = 30
 //
 // Server-owned fields are set or zeroed regardless of what the client sends:
 // the DB layer stamps Version, CreatedAt and LastModifiedAt itself, and we
-// reset Node/Status/Intent here. Intent.Phase is always PHASE_RUNNING on
+// reset Status/Intent here. Intent.Phase is always PHASE_RUNNING on
 // creation; transitioning to other phases is the job of Pause/Resume.
 // Validation has already run in the interceptor by the time control reaches
 // here.
+//
+// Node placement runs synchronously before persistence: the configured
+// [scheduler.Scheduler] mutates sb.Node in place, and the row is then
+// persisted with the assigned node. If the cluster has no healthy nodes
+// available, the call surfaces as gRPC FailedPrecondition.
+//
+// Note: this couples idempotency to the scheduler's determinism. The
+// random scheduler picks a (potentially) different node on retry, which
+// changes the row's content digest and turns retries into AlreadyExists
+// errors. This is a known property of the dev/test scheduler; a
+// production scheduler will likely persist a placement decision before
+// the sandbox row, breaking the coupling.
 func (a *apiServer) CreateSandbox(ctx context.Context, req *cpv1.CreateSandboxRequest) (*cpv1.CreateSandboxResponse, error) {
 	sb := req.GetSandbox()
 
@@ -26,6 +44,16 @@ func (a *apiServer) CreateSandbox(ctx context.Context, req *cpv1.CreateSandboxRe
 	sb.Node = nil
 	sb.Status = &cpv1.SandboxStatus{Phase: cpv1.SandboxStatus_PHASE_PENDING}
 	sb.Intent = &cpv1.Intent{Phase: cpv1.SandboxStatus_PHASE_RUNNING}
+
+	if err := a.scheduler.Schedule(ctx, sb); err != nil {
+		if errors.Is(err, scheduler.ErrNoHealthyNodes) {
+			return nil, status.Error(codes.FailedPrecondition, err.Error())
+		}
+		ctxzap.Extract(ctx).Error("schedule sandbox failed",
+			zap.String("sandbox.id", sb.GetMetadata().GetId()),
+			zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to schedule sandbox")
+	}
 
 	if err := a.db.Create(ctx, sb); err != nil {
 		return nil, dbErrToStatus(ctx, "sandbox", "create", sb.GetMetadata().GetId(), err)

@@ -10,6 +10,8 @@ import (
 	nodedynamodb "golang.nuinfra.api-server/pkg/db/node/dynamodb"
 	sandboxdb "golang.nuinfra.api-server/pkg/db/sandbox"
 	"golang.nuinfra.api-server/pkg/db/sandbox/dynamodb"
+	"golang.nuinfra.api-server/pkg/scheduler"
+	"golang.nuinfra.api-server/pkg/scheduler/random"
 	"golang.nuinfra.api-server/pkg/watch"
 	"golang.nuinfra.api-server/pkg/watch/factory"
 	cpv1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
@@ -34,6 +36,12 @@ type apiServer struct {
 	// EstablishSession handler creates / refreshes nodes here on every
 	// connect, and applies PatchNodeRequest patches in place.
 	nodeDB nodedb.DB
+
+	// scheduler picks a node for each newly-created sandbox before the
+	// row is persisted. Production placement will swap this for a
+	// capacity-aware implementation; today it is the dev/test random
+	// scheduler.
+	scheduler scheduler.Scheduler
 
 	// eventStream is the WatchableStream EstablishSession registers watchers
 	// against. Reads of past events go through the redis stream's last-event-id
@@ -80,6 +88,7 @@ func (a *apiServer) Setup(ctx context.Context) error {
 	a.eventStream = stream
 	a.db = NewWatchableDB(rawDB, stream)
 	a.nodeDB = nodedynamodb.New(ctx, a.config)
+	a.scheduler = random.New(a.nodeDB)
 	return nil
 }
 
