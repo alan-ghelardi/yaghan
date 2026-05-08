@@ -21,6 +21,9 @@ type Context struct {
 	// ClientSet provides access to gRPC clients of control and data plane services.
 	ClientSet *ClientSet
 
+	// Prompter displays interactive prompts to collect user inputs.
+	Prompter Prompter
+
 	// IOStreams contains I/O streams (stdin, stdout and stderr).
 	IOStreams *IOStreams
 
@@ -42,7 +45,7 @@ type IOStreams struct {
 }
 
 // NewContext creates a new Context object.
-func NewContext(_ context.Context) *Context {
+func NewContext(_ context.Context, prompter Prompter) *Context {
 	clientSet := newClientSet()
 	Streams := &IOStreams{
 		Stdin:  os.Stdin,
@@ -52,6 +55,7 @@ func NewContext(_ context.Context) *Context {
 
 	return &Context{
 		ClientSet: clientSet,
+		Prompter:  prompter,
 		IOStreams: Streams,
 		Fatal:     defaultErrorHandler,
 	}

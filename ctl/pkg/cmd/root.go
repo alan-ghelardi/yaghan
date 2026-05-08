@@ -24,6 +24,7 @@ import (
 	"golang.nuinfra.net/ctl/pkg/cmd/node"
 	"golang.nuinfra.net/ctl/pkg/cmd/sandbox"
 	"golang.nuinfra.net/ctl/pkg/machinery"
+	"golang.nuinfra.net/ctl/pkg/machinery/prompt"
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -39,7 +40,9 @@ func Execute() {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGKILL, syscall.SIGTERM)
 	defer stop()
 
-	cmdCtx := machinery.NewContext(ctx)
+	prompter := prompt.NewPrompter()
+
+	cmdCtx := machinery.NewContext(ctx, prompter)
 
 	rootCmd.SetContext(ctx)
 	rootCmd.SilenceErrors = true

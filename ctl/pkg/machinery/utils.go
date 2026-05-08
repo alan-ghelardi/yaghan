@@ -14,8 +14,9 @@ import (
 const (
 	flagOutputFormat = "output-format"
 
-	OutputFormatJSON = "json"
-	OutputFormatYAML = "yaml"
+	OutputFormatJSON  = "json"
+	OutputFormatYAML  = "yaml"
+	OutputFormatTable = "table"
 )
 
 // AddOneOfFlag defines a flag that only accepts a predefined list of values.

@@ -12,9 +12,17 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	"golang.nuinfra.net/ctl/pkg/machinery"
+	machinerymocks "golang.nuinfra.net/ctl/pkg/machinery/mocks"
 )
 
 // NewContext creates a machinery.Context object for testing purposes.
+//
+// The Prompter field is wired to a gomock-generated mock so commands
+// that drive interactive flows (e.g. paginated table output) can
+// configure expectations via
+// ctx.Prompter.(*machinerymocks.MockPrompter).EXPECT(). Tests that
+// don't touch the prompter are unaffected — gomock only fails on
+// actual unexpected calls.
 func NewContext(t *testing.T) *machinery.Context {
 	mockCtrl := gomock.NewController(t)
 
@@ -24,6 +32,7 @@ func NewContext(t *testing.T) *machinery.Context {
 			SandboxService: cpmocks.NewMockSandboxServiceClient(mockCtrl),
 			DaemonService:  dpmocks.NewMockDaemonServiceClient(mockCtrl),
 		},
+		Prompter: machinerymocks.NewMockPrompter(mockCtrl),
 		IOStreams: &machinery.IOStreams{
 			Stdin:  strings.NewReader(""),
 			Stdout: new(strings.Builder),

@@ -31,8 +31,8 @@ func fixture() *controlplanev1alpha1.Node {
 			Id: "node-1",
 		},
 		Resources: &controlplanev1alpha1.NodeResources{
-			VcpuCount: 8,
-			MemoryMib: 16384,
+			CpuCapacityMillicores: 8000,
+			MemoryCapacityBytes:   16 * 1024 * 1024,
 		},
 		Status: &controlplanev1alpha1.NodeStatus{
 			Phase: controlplanev1alpha1.NodeStatus_PHASE_HEALTHY,
@@ -67,7 +67,7 @@ func TestGet(t *testing.T) {
 				"metadata:",
 				"id: node-1",
 				"resources:",
-				"vcpuCount: 8",
+				"cpuCapacityMillicores: 8000",
 				"phase: PHASE_HEALTHY",
 			},
 		},
@@ -77,7 +77,7 @@ func TestGet(t *testing.T) {
 			capture: func(_ *testing.T, _ *controlplanev1alpha1.GetNodeRequest) (*controlplanev1alpha1.GetNodeResponse, error) {
 				return &controlplanev1alpha1.GetNodeResponse{Node: fixture()}, nil
 			},
-			wantStdoutHas: []string{"id: node-1", "vcpuCount: 8"},
+			wantStdoutHas: []string{"id: node-1", "cpuCapacityMillicores: 8000"},
 		},
 		{
 			name: "-o json renders json with indent",
@@ -94,7 +94,7 @@ func TestGet(t *testing.T) {
 			wantStdoutPref: "{",
 			wantStdoutHas: []string{
 				`"node-1"`,
-				`"vcpu_count"`,
+				`"cpu_capacity_millicores"`,
 				`"PHASE_HEALTHY"`,
 			},
 		},

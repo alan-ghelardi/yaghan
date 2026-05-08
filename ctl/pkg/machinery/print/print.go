@@ -1,0 +1,37 @@
+package print
+
+import (
+	"strings"
+
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
+
+	cpv1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
+)
+
+// NodesTable returns a Table to display nodes.
+func NodesTable(getNodes GetItemsFunc[*cpv1alpha1.Node]) *Table[*cpv1alpha1.Node] {
+	return &Table[*cpv1alpha1.Node]{
+		GetItems: getNodes,
+		Columns: []Column[*cpv1alpha1.Node]{
+			NewColumn("Node ID", func(node *cpv1alpha1.Node) any {
+				return node.Metadata.Id
+			}),
+			NewColumn("Created at", func(node *cpv1alpha1.Node) any {
+				return node.Metadata.CreatedAt
+			}, DurationFormatter),
+			NewColumn("Last modified", func(node *cpv1alpha1.Node) any {
+				return node.Metadata.LastModifiedAt
+			}, DurationFormatter),
+			NewColumn("Status", func(node *cpv1alpha1.Node) any {
+				return humanFriendlyString(node.Status.Phase.String())
+			}),
+		},
+	}
+}
+
+func humanFriendlyString(s string) string {
+	s = strings.ReplaceAll(s, "_", " ")
+	s = strings.ToLower(s)
+	return cases.Title(language.AmericanEnglish).String(s)
+}
