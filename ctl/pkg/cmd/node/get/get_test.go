@@ -11,7 +11,7 @@ import (
 	controlplanev1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
 	cpmocks "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1/mocks"
 	"golang.nuinfra.net/ctl/pkg/cmd/node/get"
-	machinerytesting "golang.nuinfra.net/ctl/pkg/machinery/testing"
+	clitesting "golang.nuinfra.net/ctl/pkg/cli/testing"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -60,7 +60,7 @@ func TestGet(t *testing.T) {
 			},
 			// protoyaml emits camelCase keys (it does not honour the
 			// protojson UseProtoNames option); protojson on the
-			// machinery.Marshal path is configured with
+			// cli.Marshal path is configured with
 			// UseProtoNames=true and emits snake_case — that's the
 			// distinguishing marker between the two formats.
 			wantStdoutHas: []string{
@@ -138,7 +138,7 @@ func TestGet(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			cmdCtx := machinerytesting.NewContext(t)
+			cmdCtx := clitesting.NewContext(t)
 			clusterMock := cmdCtx.ClientSet.ClusterService.(*cpmocks.MockClusterServiceClient)
 
 			if tc.capture != nil {
@@ -164,7 +164,7 @@ func TestGet(t *testing.T) {
 			}
 			require.NoError(t, err)
 
-			stdout := machinerytesting.Read(t, cmdCtx.IOStreams.Stdout)
+			stdout := clitesting.Read(t, cmdCtx.IOStreams.Stdout)
 			if tc.wantStdoutPref != "" {
 				assert.True(t, strings.HasPrefix(strings.TrimSpace(stdout), tc.wantStdoutPref),
 					"stdout %q must start with %q", stdout, tc.wantStdoutPref)
@@ -176,11 +176,11 @@ func TestGet(t *testing.T) {
 	}
 }
 
-// splitArgs guards against machinerytesting.SplitArgs("") returning
+// splitArgs guards against clitesting.SplitArgs("") returning
 // []string{""}, which cobra would treat as one positional arg.
 func splitArgs(args string) []string {
 	if strings.TrimSpace(args) == "" {
 		return nil
 	}
-	return machinerytesting.SplitArgs(args)
+	return clitesting.SplitArgs(args)
 }

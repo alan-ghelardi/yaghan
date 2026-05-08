@@ -7,10 +7,10 @@ import (
 	"github.com/spf13/cobra"
 	"golang.nuinfra.net/ctl/pkg/cmd/node/get"
 	"golang.nuinfra.net/ctl/pkg/cmd/node/list"
-	"golang.nuinfra.net/ctl/pkg/machinery"
+	"golang.nuinfra.net/ctl/pkg/cli"
 )
 
-func New(ctx *machinery.Context) *cobra.Command {
+func New(ctx *cli.Context) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "node",
 		Short: "Manage nodes",

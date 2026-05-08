@@ -13,4 +13,4 @@ cur_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )"
 source $cur_dir/../../hack/helpers.sh
 
 # Call the function gen_mocks for each file containing interfaces to be mocked.
-gen_mocks pkg/machinery/interfaces.go
+gen_mocks pkg/cli/interfaces.go

@@ -6,7 +6,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"golang.nuinfra.net/ctl/pkg/machinery"
+	"golang.nuinfra.net/ctl/pkg/cli"
 )
 
 type keyInputModel struct {
@@ -32,7 +32,7 @@ func (k keyInputModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.Type {
 		case tea.KeyCtrlC, tea.KeyEsc:
-			k.err = machinery.ErrInterrupt
+			k.err = cli.ErrInterrupt
 			return k, tea.Quit
 
 		default:

@@ -11,7 +11,7 @@ import (
 	controlplanev1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
 	cpmocks "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1/mocks"
 	"golang.nuinfra.net/ctl/pkg/cmd/sandbox/resume"
-	machinerytesting "golang.nuinfra.net/ctl/pkg/machinery/testing"
+	clitesting "golang.nuinfra.net/ctl/pkg/cli/testing"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -96,7 +96,7 @@ func TestResume(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			cmdCtx := machinerytesting.NewContext(t)
+			cmdCtx := clitesting.NewContext(t)
 			sandboxMock := cmdCtx.ClientSet.SandboxService.(*cpmocks.MockSandboxServiceClient)
 
 			if tc.expectGet != nil {
@@ -129,7 +129,7 @@ func TestResume(t *testing.T) {
 			}
 			require.NoError(t, err)
 
-			stdout := machinerytesting.Read(t, cmdCtx.IOStreams.Stdout)
+			stdout := clitesting.Read(t, cmdCtx.IOStreams.Stdout)
 			for _, want := range tc.wantStdoutHas {
 				assert.Contains(t, stdout, want)
 			}
@@ -141,5 +141,5 @@ func splitArgs(args string) []string {
 	if strings.TrimSpace(args) == "" {
 		return nil
 	}
-	return machinerytesting.SplitArgs(args)
+	return clitesting.SplitArgs(args)
 }

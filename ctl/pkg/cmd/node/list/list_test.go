@@ -11,9 +11,9 @@ import (
 	cpv1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
 	cpmocks "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1/mocks"
 	"golang.nuinfra.net/ctl/pkg/cmd/node/list"
-	"golang.nuinfra.net/ctl/pkg/machinery"
-	machinerymocks "golang.nuinfra.net/ctl/pkg/machinery/mocks"
-	machinerytesting "golang.nuinfra.net/ctl/pkg/machinery/testing"
+	"golang.nuinfra.net/ctl/pkg/cli"
+	climocks "golang.nuinfra.net/ctl/pkg/cli/mocks"
+	clitesting "golang.nuinfra.net/ctl/pkg/cli/testing"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -202,7 +202,7 @@ func TestList(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			cmdCtx := machinerytesting.NewContext(t)
+			cmdCtx := clitesting.NewContext(t)
 			clusterMock := cmdCtx.ClientSet.ClusterService.(*cpmocks.MockClusterServiceClient)
 
 			if tc.usesTable {
@@ -232,7 +232,7 @@ func TestList(t *testing.T) {
 			}
 			require.NoError(t, err)
 
-			stdout := machinerytesting.Read(t, cmdCtx.IOStreams.Stdout)
+			stdout := clitesting.Read(t, cmdCtx.IOStreams.Stdout)
 			if tc.wantStdoutPref != "" {
 				assert.True(t, strings.HasPrefix(strings.TrimSpace(stdout), tc.wantStdoutPref),
 					"stdout %q must start with %q", stdout, tc.wantStdoutPref)
@@ -248,9 +248,9 @@ func TestList(t *testing.T) {
 // returns a continuation token, the user presses 'l', and page 2
 // finishes the listing.
 func TestList_Pagination(t *testing.T) {
-	cmdCtx := machinerytesting.NewContext(t)
+	cmdCtx := clitesting.NewContext(t)
 	clusterMock := cmdCtx.ClientSet.ClusterService.(*cpmocks.MockClusterServiceClient)
-	prompter := cmdCtx.Prompter.(*machinerymocks.MockPrompter)
+	prompter := cmdCtx.Prompter.(*climocks.MockPrompter)
 
 	wirePrompterForTable(t, cmdCtx)
 
@@ -296,7 +296,7 @@ func TestList_Pagination(t *testing.T) {
 
 	require.NoError(t, cmd.Execute())
 
-	stdout := machinerytesting.Read(t, cmdCtx.IOStreams.Stdout)
+	stdout := clitesting.Read(t, cmdCtx.IOStreams.Stdout)
 	assert.Contains(t, stdout, "node-1")
 	assert.Contains(t, stdout, "node-2")
 }
@@ -306,21 +306,21 @@ func TestList_Pagination(t *testing.T) {
 // Position() resolves to a zero position. Tests that drive
 // pagination layer their own KeyInput / ClearBelow expectations on
 // top.
-func wirePrompterForTable(t *testing.T, ctx *machinery.Context) {
+func wirePrompterForTable(t *testing.T, ctx *cli.Context) {
 	t.Helper()
 	ctrl := gomock.NewController(t)
-	cursor := machinerymocks.NewMockCursor(ctrl)
-	cursor.EXPECT().Position().Return(machinery.Position{}, nil).AnyTimes()
+	cursor := climocks.NewMockCursor(ctrl)
+	cursor.EXPECT().Position().Return(cli.Position{}, nil).AnyTimes()
 
-	prompter := ctx.Prompter.(*machinerymocks.MockPrompter)
+	prompter := ctx.Prompter.(*climocks.MockPrompter)
 	prompter.EXPECT().Cursor().Return(cursor).AnyTimes()
 }
 
-// splitArgs guards against machinerytesting.SplitArgs("") returning
+// splitArgs guards against clitesting.SplitArgs("") returning
 // []string{""}, which cobra would treat as one positional arg.
 func splitArgs(args string) []string {
 	if strings.TrimSpace(args) == "" {
 		return nil
 	}
-	return machinerytesting.SplitArgs(args)
+	return clitesting.SplitArgs(args)
 }

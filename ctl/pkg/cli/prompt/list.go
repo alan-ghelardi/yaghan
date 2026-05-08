@@ -5,7 +5,7 @@ import (
 	"io"
 	"strings"
 
-	"golang.nuinfra.net/ctl/pkg/machinery"
+	"golang.nuinfra.net/ctl/pkg/cli"
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
@@ -27,7 +27,7 @@ var (
 )
 
 type listItemContainer struct {
-	listItem machinery.ListItem
+	listItem cli.ListItem
 }
 
 func (i listItemContainer) FilterValue() string {
@@ -64,11 +64,11 @@ func (listItemDelegate) Render(writer io.Writer, model list.Model, index int, li
 
 type listModel struct {
 	list         list.Model
-	selectedItem machinery.ListItem
+	selectedItem cli.ListItem
 	err          error
 }
 
-func newListModel(label string, items []machinery.ListItem) listModel {
+func newListModel(label string, items []cli.ListItem) listModel {
 	list := list.New(convertToBubblesListItems(items), listItemDelegate{}, listWidth, listHeight)
 	list.Title = label
 	list.SetShowStatusBar(false)
@@ -80,7 +80,7 @@ func newListModel(label string, items []machinery.ListItem) listModel {
 	return listModel{list: list}
 }
 
-func convertToBubblesListItems(items []machinery.ListItem) []list.Item {
+func convertToBubblesListItems(items []cli.ListItem) []list.Item {
 	out := make([]list.Item, len(items))
 	for i, item := range items {
 		out[i] = listItemContainer{listItem: item}
@@ -101,7 +101,7 @@ func (l listModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch keypress := msg.String(); keypress {
 		case "q", "ctrl+c":
-			l.err = machinery.ErrInterrupt
+			l.err = cli.ErrInterrupt
 			return l, tea.Quit
 
 		case "enter":

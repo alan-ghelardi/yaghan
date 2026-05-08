@@ -12,7 +12,7 @@ import (
 	controlplanev1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
 	cpmocks "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1/mocks"
 	"golang.nuinfra.net/ctl/pkg/cmd/sandbox/lifecycle"
-	machinerytesting "golang.nuinfra.net/ctl/pkg/machinery/testing"
+	clitesting "golang.nuinfra.net/ctl/pkg/cli/testing"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -30,7 +30,7 @@ func commandWithVersionFlag(t *testing.T) *cobra.Command {
 }
 
 func TestResolveVersion_UsesFlagWhenSupplied(t *testing.T) {
-	cmdCtx := machinerytesting.NewContext(t)
+	cmdCtx := clitesting.NewContext(t)
 	sandboxMock := cmdCtx.ClientSet.SandboxService.(*cpmocks.MockSandboxServiceClient)
 	// No GetSandbox call expected — gomock's controller fails on any
 	// unexpected invocation, so the absence of EXPECT is the assertion.
@@ -49,7 +49,7 @@ func TestResolveVersion_UsesFlagWhenSupplied(t *testing.T) {
 }
 
 func TestResolveVersion_AutoFetchesWhenFlagOmitted(t *testing.T) {
-	cmdCtx := machinerytesting.NewContext(t)
+	cmdCtx := clitesting.NewContext(t)
 	sandboxMock := cmdCtx.ClientSet.SandboxService.(*cpmocks.MockSandboxServiceClient)
 
 	sandboxMock.EXPECT().
@@ -71,12 +71,12 @@ func TestResolveVersion_AutoFetchesWhenFlagOmitted(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, int64(12), got)
 
-	stdout := machinerytesting.Read(t, cmdCtx.IOStreams.Stdout)
+	stdout := clitesting.Read(t, cmdCtx.IOStreams.Stdout)
 	assert.Contains(t, stdout, "Reading current version of sandbox")
 }
 
 func TestResolveVersion_AutoFetchPropagatesNotFound(t *testing.T) {
-	cmdCtx := machinerytesting.NewContext(t)
+	cmdCtx := clitesting.NewContext(t)
 	sandboxMock := cmdCtx.ClientSet.SandboxService.(*cpmocks.MockSandboxServiceClient)
 
 	sandboxMock.EXPECT().
@@ -90,7 +90,7 @@ func TestResolveVersion_AutoFetchPropagatesNotFound(t *testing.T) {
 }
 
 func TestResolveVersion_AutoFetchHandlesNilSandbox(t *testing.T) {
-	cmdCtx := machinerytesting.NewContext(t)
+	cmdCtx := clitesting.NewContext(t)
 	sandboxMock := cmdCtx.ClientSet.SandboxService.(*cpmocks.MockSandboxServiceClient)
 
 	sandboxMock.EXPECT().
@@ -107,7 +107,7 @@ func TestResolveVersion_AutoFetchHandlesNilSandbox(t *testing.T) {
 // cleanly with errors.Is. The wrapper uses %w, so unwrapping back to
 // the underlying gRPC status code remains possible from caller code.
 func TestResolveVersion_ErrorIsUnwrappable(t *testing.T) {
-	cmdCtx := machinerytesting.NewContext(t)
+	cmdCtx := clitesting.NewContext(t)
 	sandboxMock := cmdCtx.ClientSet.SandboxService.(*cpmocks.MockSandboxServiceClient)
 
 	rpcErr := status.Error(codes.Unavailable, "down")

@@ -5,7 +5,7 @@ import (
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
-	"golang.nuinfra.net/ctl/pkg/machinery"
+	"golang.nuinfra.net/ctl/pkg/cli"
 )
 
 const (
@@ -19,7 +19,7 @@ type textInputModel struct {
 	err       error
 }
 
-func newTextInputModel(label string, opts machinery.TextInputOptions) textInputModel {
+func newTextInputModel(label string, opts cli.TextInputOptions) textInputModel {
 	if opts.CharLimit == 0 {
 		opts.CharLimit = defaultTextInputCharLimit
 	}
@@ -51,7 +51,7 @@ func (t textInputModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.Type {
 		case tea.KeyEnter, tea.KeyCtrlC, tea.KeyEsc:
-			t.err = machinery.ErrInterrupt
+			t.err = cli.ErrInterrupt
 			return t, tea.Quit
 		}
 

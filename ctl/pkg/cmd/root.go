@@ -23,8 +23,8 @@ import (
 	"github.com/spf13/cobra"
 	"golang.nuinfra.net/ctl/pkg/cmd/node"
 	"golang.nuinfra.net/ctl/pkg/cmd/sandbox"
-	"golang.nuinfra.net/ctl/pkg/machinery"
-	"golang.nuinfra.net/ctl/pkg/machinery/prompt"
+	"golang.nuinfra.net/ctl/pkg/cli"
+	"golang.nuinfra.net/ctl/pkg/cli/prompt"
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -42,7 +42,7 @@ func Execute() {
 
 	prompter := prompt.NewPrompter()
 
-	cmdCtx := machinery.NewContext(ctx, prompter)
+	cmdCtx := cli.NewContext(ctx, prompter)
 
 	rootCmd.SetContext(ctx)
 	rootCmd.SilenceErrors = true

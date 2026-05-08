@@ -12,7 +12,7 @@ import (
 	controlplanev1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
 	cpmocks "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1/mocks"
 	"golang.nuinfra.net/ctl/pkg/cmd/sandbox/create"
-	machinerytesting "golang.nuinfra.net/ctl/pkg/machinery/testing"
+	clitesting "golang.nuinfra.net/ctl/pkg/cli/testing"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -126,7 +126,7 @@ func TestCreate(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			cmdCtx := machinerytesting.NewContext(t)
+			cmdCtx := clitesting.NewContext(t)
 			sandboxMock := cmdCtx.ClientSet.SandboxService.(*cpmocks.MockSandboxServiceClient)
 
 			if tc.capture != nil {
@@ -157,7 +157,7 @@ func TestCreate(t *testing.T) {
 			require.NoError(t, err)
 			if tc.wantStdout != "" {
 				assert.Contains(t,
-					machinerytesting.Read(t, cmdCtx.IOStreams.Stdout),
+					clitesting.Read(t, cmdCtx.IOStreams.Stdout),
 					tc.wantStdout)
 			}
 		})
@@ -171,12 +171,12 @@ func echo(req *controlplanev1alpha1.CreateSandboxRequest) *controlplanev1alpha1.
 	return &controlplanev1alpha1.CreateSandboxResponse{Sandbox: req.GetSandbox()}
 }
 
-// splitArgs is a thin guard around machinerytesting.SplitArgs: the
+// splitArgs is a thin guard around clitesting.SplitArgs: the
 // upstream helper returns []string{""} for an empty string, which cobra
 // treats as one positional argument; we want zero.
 func splitArgs(args string) []string {
 	if strings.TrimSpace(args) == "" {
 		return nil
 	}
-	return machinerytesting.SplitArgs(args)
+	return clitesting.SplitArgs(args)
 }

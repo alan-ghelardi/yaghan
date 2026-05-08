@@ -16,8 +16,8 @@ import (
 	dataplanev1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/data_plane/v1alpha1"
 	dpmocks "golang.nuinfra.net/apis/gen/nuinfra/data_plane/v1alpha1/mocks"
 	"golang.nuinfra.net/ctl/pkg/cmd/sandbox/exec"
-	"golang.nuinfra.net/ctl/pkg/machinery"
-	machinerytesting "golang.nuinfra.net/ctl/pkg/machinery/testing"
+	"golang.nuinfra.net/ctl/pkg/cli"
+	clitesting "golang.nuinfra.net/ctl/pkg/cli/testing"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -137,7 +137,7 @@ func processResult(code int32) *dataplanev1alpha1.ExecResponse {
 
 // runCmd builds the exec command, injects a stream the test controls,
 // runs Execute and returns the resulting error.
-func runCmd(t *testing.T, cmdCtx *machinery.Context, fake *fakeExecStream, args string) error {
+func runCmd(t *testing.T, cmdCtx *cli.Context, fake *fakeExecStream, args string) error {
 	t.Helper()
 	daemonMock := cmdCtx.ClientSet.DaemonService.(*dpmocks.MockDaemonServiceClient)
 	if fake != nil {
@@ -160,13 +160,13 @@ func splitArgs(args string) []string {
 	if strings.TrimSpace(args) == "" {
 		return nil
 	}
-	return machinerytesting.SplitArgs(args)
+	return clitesting.SplitArgs(args)
 }
 
 // --- happy paths ---------------------------------------------------------
 
 func TestExec_HappyPath_NoFlags(t *testing.T) {
-	cmdCtx := machinerytesting.NewContext(t)
+	cmdCtx := clitesting.NewContext(t)
 	fake := newFakeExecStream(t.Context(), 4)
 	fake.emit(streamChunk(dataplanev1alpha1.StreamChunk_STREAM_TYPE_STDOUT, "hello\n"))
 	fake.emit(processResult(0))
@@ -175,7 +175,7 @@ func TestExec_HappyPath_NoFlags(t *testing.T) {
 	require.NoError(t, runCmd(t, cmdCtx, fake, "sb-1 -- echo hello"))
 
 	assert.Equal(t, "hello\n",
-		machinerytesting.Read(t, cmdCtx.IOStreams.Stdout),
+		clitesting.Read(t, cmdCtx.IOStreams.Stdout),
 		"stdout chunks must reach IOStreams.Stdout")
 	assert.True(t, fake.closed.Load(),
 		"non-interactive run must CloseSend immediately so the agent stdin drains")
@@ -193,7 +193,7 @@ func TestExec_HappyPath_NoFlags(t *testing.T) {
 }
 
 func TestExec_StderrIsDemuxed(t *testing.T) {
-	cmdCtx := machinerytesting.NewContext(t)
+	cmdCtx := clitesting.NewContext(t)
 	fake := newFakeExecStream(t.Context(), 4)
 	fake.emit(streamChunk(dataplanev1alpha1.StreamChunk_STREAM_TYPE_STDOUT, "out"))
 	fake.emit(streamChunk(dataplanev1alpha1.StreamChunk_STREAM_TYPE_STDERR, "err"))
@@ -202,12 +202,12 @@ func TestExec_StderrIsDemuxed(t *testing.T) {
 
 	require.NoError(t, runCmd(t, cmdCtx, fake, "sb-1 -- whatever"))
 
-	assert.Equal(t, "out", machinerytesting.Read(t, cmdCtx.IOStreams.Stdout))
-	assert.Equal(t, "err", machinerytesting.Read(t, cmdCtx.IOStreams.Stderr))
+	assert.Equal(t, "out", clitesting.Read(t, cmdCtx.IOStreams.Stdout))
+	assert.Equal(t, "err", clitesting.Read(t, cmdCtx.IOStreams.Stderr))
 }
 
 func TestExec_NonZeroExitSurfacesAsExitCodeError(t *testing.T) {
-	cmdCtx := machinerytesting.NewContext(t)
+	cmdCtx := clitesting.NewContext(t)
 	fake := newFakeExecStream(t.Context(), 2)
 	fake.emit(processResult(7))
 	fake.closeRecv()
@@ -215,13 +215,13 @@ func TestExec_NonZeroExitSurfacesAsExitCodeError(t *testing.T) {
 	err := runCmd(t, cmdCtx, fake, "sb-1 -- false")
 
 	require.Error(t, err)
-	var ec *machinery.ExitCodeError
-	require.ErrorAs(t, err, &ec, "must surface as *machinery.ExitCodeError")
+	var ec *cli.ExitCodeError
+	require.ErrorAs(t, err, &ec, "must surface as *cli.ExitCodeError")
 	assert.Equal(t, 7, ec.Code)
 }
 
 func TestExec_ZeroExitDoesNotProduceExitCodeError(t *testing.T) {
-	cmdCtx := machinerytesting.NewContext(t)
+	cmdCtx := clitesting.NewContext(t)
 	fake := newFakeExecStream(t.Context(), 2)
 	fake.emit(processResult(0))
 	fake.closeRecv()
@@ -234,7 +234,7 @@ func TestExec_ZeroExitDoesNotProduceExitCodeError(t *testing.T) {
 // --- env -----------------------------------------------------------------
 
 func TestExec_EnvIsForwarded(t *testing.T) {
-	cmdCtx := machinerytesting.NewContext(t)
+	cmdCtx := clitesting.NewContext(t)
 	fake := newFakeExecStream(t.Context(), 2)
 	fake.emit(processResult(0))
 	fake.closeRecv()
@@ -262,7 +262,7 @@ func TestExec_EnvValidationRejectsBadEntries(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			cmdCtx := machinerytesting.NewContext(t)
+			cmdCtx := clitesting.NewContext(t)
 
 			// No EXPECT() — Exec must NOT be invoked when validation fails
 			// upstream. gomock fails the test if it is.
@@ -283,7 +283,7 @@ func TestExec_EnvValidationRejectsBadEntries(t *testing.T) {
 // --- cwd / args ----------------------------------------------------------
 
 func TestExec_CWDAndArgsForwarded(t *testing.T) {
-	cmdCtx := machinerytesting.NewContext(t)
+	cmdCtx := clitesting.NewContext(t)
 	fake := newFakeExecStream(t.Context(), 2)
 	fake.emit(processResult(0))
 	fake.closeRecv()
@@ -300,12 +300,12 @@ func TestExec_CWDAndArgsForwarded(t *testing.T) {
 // --- stdin forwarding ----------------------------------------------------
 
 // withStdin replaces the IOStreams.Stdin reader on cmdCtx.
-func withStdin(cmdCtx *machinery.Context, content string) {
+func withStdin(cmdCtx *cli.Context, content string) {
 	cmdCtx.IOStreams.Stdin = strings.NewReader(content)
 }
 
 func TestExec_InteractiveForwardsStdin(t *testing.T) {
-	cmdCtx := machinerytesting.NewContext(t)
+	cmdCtx := clitesting.NewContext(t)
 	withStdin(cmdCtx, "hi")
 
 	fake := newFakeExecStream(t.Context(), 4)
@@ -361,7 +361,7 @@ func TestExec_InteractiveForwardsStdin(t *testing.T) {
 }
 
 func TestExec_TTYImpliesInteractive(t *testing.T) {
-	cmdCtx := machinerytesting.NewContext(t)
+	cmdCtx := clitesting.NewContext(t)
 	withStdin(cmdCtx, "x")
 
 	fake := newFakeExecStream(t.Context(), 4)
@@ -410,7 +410,7 @@ func TestExec_TTYImpliesInteractive(t *testing.T) {
 // --- argument validation -------------------------------------------------
 
 func TestExec_RequiresDoubleDashSeparator(t *testing.T) {
-	cmdCtx := machinerytesting.NewContext(t)
+	cmdCtx := clitesting.NewContext(t)
 
 	cmd := exec.New(cmdCtx)
 	cmd.SilenceErrors = true
@@ -423,7 +423,7 @@ func TestExec_RequiresDoubleDashSeparator(t *testing.T) {
 }
 
 func TestExec_RequiresCommandAfterDash(t *testing.T) {
-	cmdCtx := machinerytesting.NewContext(t)
+	cmdCtx := clitesting.NewContext(t)
 
 	cmd := exec.New(cmdCtx)
 	cmd.SilenceErrors = true
@@ -436,7 +436,7 @@ func TestExec_RequiresCommandAfterDash(t *testing.T) {
 }
 
 func TestExec_RequiresSandboxIdBeforeDash(t *testing.T) {
-	cmdCtx := machinerytesting.NewContext(t)
+	cmdCtx := clitesting.NewContext(t)
 
 	cmd := exec.New(cmdCtx)
 	cmd.SilenceErrors = true
@@ -453,7 +453,7 @@ func TestExec_RequiresSandboxIdBeforeDash(t *testing.T) {
 // --- daemon errors -------------------------------------------------------
 
 func TestExec_DaemonStreamErrorPropagates(t *testing.T) {
-	cmdCtx := machinerytesting.NewContext(t)
+	cmdCtx := clitesting.NewContext(t)
 
 	fake := newFakeExecStream(t.Context(), 2)
 	fake.emitErr(status.Error(codes.NotFound, "no such sandbox"))
@@ -468,7 +468,7 @@ func TestExec_DaemonStreamErrorPropagates(t *testing.T) {
 }
 
 func TestExec_AgentClosesWithoutResult(t *testing.T) {
-	cmdCtx := machinerytesting.NewContext(t)
+	cmdCtx := clitesting.NewContext(t)
 
 	fake := newFakeExecStream(t.Context(), 2)
 	fake.emit(streamChunk(dataplanev1alpha1.StreamChunk_STREAM_TYPE_STDOUT, "partial"))
@@ -507,7 +507,7 @@ func TestSendResize_ForwardsFrame(t *testing.T) {
 // --- Exec dial-time error -----------------------------------------------
 
 func TestExec_DialErrorPropagates(t *testing.T) {
-	cmdCtx := machinerytesting.NewContext(t)
+	cmdCtx := clitesting.NewContext(t)
 	daemonMock := cmdCtx.ClientSet.DaemonService.(*dpmocks.MockDaemonServiceClient)
 
 	dialErr := errors.New("daemon unavailable")

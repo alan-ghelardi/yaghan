@@ -9,10 +9,10 @@ import (
 	"github.com/spf13/cobra"
 	controlplanev1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
 	"golang.nuinfra.net/ctl/pkg/cmd/sandbox/lifecycle"
-	"golang.nuinfra.net/ctl/pkg/machinery"
+	"golang.nuinfra.net/ctl/pkg/cli"
 )
 
-func New(ctx *machinery.Context) *cobra.Command {
+func New(ctx *cli.Context) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "resume <id>",
 		Short: "Resume a paused sandbox",
@@ -37,7 +37,7 @@ sandbox to read the version before issuing the resume request.`,
 	return cmd
 }
 
-func run(ctx *machinery.Context, cmd *cobra.Command, args []string) error {
+func run(ctx *cli.Context, cmd *cobra.Command, args []string) error {
 	id := args[0]
 	version, err := lifecycle.ResolveVersion(ctx, cmd, id)
 	if err != nil {

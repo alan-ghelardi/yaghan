@@ -9,7 +9,7 @@ import (
 
 	"github.com/spf13/cobra"
 	controlplanev1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
-	"golang.nuinfra.net/ctl/pkg/machinery"
+	"golang.nuinfra.net/ctl/pkg/cli"
 )
 
 // FlagVersion is the flag name. Callers reference it via this const so
@@ -29,7 +29,7 @@ func AddVersionFlag(cmd *cobra.Command) {
 // otherwise it calls GetSandbox and returns metadata.version. The
 // pre-fetch path emits a short status line so users see why an extra
 // roundtrip happened.
-func ResolveVersion(ctx *machinery.Context, cmd *cobra.Command, sandboxID string) (int64, error) {
+func ResolveVersion(ctx *cli.Context, cmd *cobra.Command, sandboxID string) (int64, error) {
 	if cmd.Flags().Changed(FlagVersion) {
 		return cmd.Flags().GetInt64(FlagVersion)
 	}

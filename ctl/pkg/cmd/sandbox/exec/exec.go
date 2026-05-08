@@ -1,7 +1,7 @@
 // Package exec implements `sindri sandbox exec`. It opens a
 // bidirectional stream against the daemon's Exec RPC and shuttles
 // stdin/stdout/stderr between the local terminal and a guest process,
-// forwarding the guest's exit code via machinery.ExitCodeError.
+// forwarding the guest's exit code via cli.ExitCodeError.
 package exec
 
 import (
@@ -18,7 +18,7 @@ import (
 
 	"github.com/spf13/cobra"
 	dataplanev1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/data_plane/v1alpha1"
-	"golang.nuinfra.net/ctl/pkg/machinery"
+	"golang.nuinfra.net/ctl/pkg/cli"
 	"golang.org/x/term"
 )
 
@@ -46,7 +46,7 @@ const (
 // Values may be empty or contain '=' (we split on the FIRST '=' only).
 var envKeyPattern = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`)
 
-func New(ctx *machinery.Context) *cobra.Command {
+func New(ctx *cli.Context) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "exec <id> -- <command> [args...]",
 		Short: "Run a command inside a sandbox",
@@ -110,7 +110,7 @@ func validateArgs(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func run(ctx *machinery.Context, cmd *cobra.Command, args []string) error {
+func run(ctx *cli.Context, cmd *cobra.Command, args []string) error {
 	id := args[0]
 	cmdAndArgs := args[1:]
 
@@ -242,7 +242,7 @@ func run(ctx *machinery.Context, cmd *cobra.Command, args []string) error {
 		return errors.New("agent did not return a process result")
 	}
 	if exitCode != 0 {
-		return &machinery.ExitCodeError{Code: int(exitCode)}
+		return &cli.ExitCodeError{Code: int(exitCode)}
 	}
 	return nil
 }

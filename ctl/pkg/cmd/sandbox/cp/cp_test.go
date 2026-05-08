@@ -13,8 +13,8 @@ import (
 	dataplanev1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/data_plane/v1alpha1"
 	dpmocks "golang.nuinfra.net/apis/gen/nuinfra/data_plane/v1alpha1/mocks"
 	"golang.nuinfra.net/ctl/pkg/cmd/sandbox/cp"
-	"golang.nuinfra.net/ctl/pkg/machinery"
-	machinerytesting "golang.nuinfra.net/ctl/pkg/machinery/testing"
+	"golang.nuinfra.net/ctl/pkg/cli"
+	clitesting "golang.nuinfra.net/ctl/pkg/cli/testing"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -24,13 +24,13 @@ import (
 // closure that runs `sandbox cp <src> <dst>` against them. Cuts a
 // dozen lines of boilerplate from each test case.
 type fixture struct {
-	ctx  *machinery.Context
+	ctx  *cli.Context
 	mock *dpmocks.MockDaemonServiceClient
 }
 
 func newFixture(t *testing.T) (*fixture, func(src, dst string) error) {
 	t.Helper()
-	cmdCtx := machinerytesting.NewContext(t)
+	cmdCtx := clitesting.NewContext(t)
 	mock := cmdCtx.ClientSet.DaemonService.(*dpmocks.MockDaemonServiceClient)
 
 	exec := func(src, dst string) error {
@@ -146,7 +146,7 @@ func TestUploadHappyPath(t *testing.T) {
 
 	require.NoError(t, run(srcPath, "sb-1:/srv/payload.bin"))
 
-	stdout := machinerytesting.Read(t, fix.ctx.IOStreams.Stdout)
+	stdout := clitesting.Read(t, fix.ctx.IOStreams.Stdout)
 	assert.Contains(t, stdout, "copied")
 	assert.Contains(t, stdout, "sb-1:/srv/payload.bin")
 }
@@ -217,7 +217,7 @@ func TestDownloadHappyPath(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, []byte("from sandbox"), got)
 
-	stdout := machinerytesting.Read(t, fix.ctx.IOStreams.Stdout)
+	stdout := clitesting.Read(t, fix.ctx.IOStreams.Stdout)
 	assert.Contains(t, stdout, "copied sb-1:/var/log/app.log")
 	assert.Contains(t, stdout, target)
 }

@@ -9,10 +9,10 @@ import (
 	"golang.nuinfra.net/ctl/pkg/cmd/sandbox/get"
 	"golang.nuinfra.net/ctl/pkg/cmd/sandbox/pause"
 	"golang.nuinfra.net/ctl/pkg/cmd/sandbox/resume"
-	"golang.nuinfra.net/ctl/pkg/machinery"
+	"golang.nuinfra.net/ctl/pkg/cli"
 )
 
-func New(ctx *machinery.Context) *cobra.Command {
+func New(ctx *cli.Context) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "sandbox",
 		Aliases: []string{"sbx"},

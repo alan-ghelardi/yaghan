@@ -1,7 +1,7 @@
 // Package get implements `sindri sandbox get`. It calls
 // SandboxService.GetSandbox and renders the response in the
 // user-selected output format using the helpers in
-// ctl/pkg/machinery.
+// ctl/pkg/cli.
 package get
 
 import (
@@ -9,10 +9,10 @@ import (
 
 	"github.com/spf13/cobra"
 	controlplanev1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
-	"golang.nuinfra.net/ctl/pkg/machinery"
+	"golang.nuinfra.net/ctl/pkg/cli"
 )
 
-func New(ctx *machinery.Context) *cobra.Command {
+func New(ctx *cli.Context) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "get <id>",
 		Aliases: []string{"describe"},
@@ -34,18 +34,18 @@ added in a future release.`,
 		},
 	}
 
-	machinery.AddOutputFormatFlag(cmd,
-		machinery.OutputFormatYAML,
-		machinery.OutputFormatYAML, machinery.OutputFormatJSON)
+	cli.AddOutputFormatFlag(cmd,
+		cli.OutputFormatYAML,
+		cli.OutputFormatYAML, cli.OutputFormatJSON)
 
 	return cmd
 }
 
-func run(ctx *machinery.Context, cmd *cobra.Command, args []string) error {
+func run(ctx *cli.Context, cmd *cobra.Command, args []string) error {
 	id := args[0]
 
-	format, err := machinery.GetOutputFormat(cmd,
-		machinery.OutputFormatYAML, machinery.OutputFormatJSON)
+	format, err := cli.GetOutputFormat(cmd,
+		cli.OutputFormatYAML, cli.OutputFormatJSON)
 	if err != nil {
 		return err
 	}
@@ -59,7 +59,7 @@ func run(ctx *machinery.Context, cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("sandbox %q not found", id)
 	}
 
-	out, err := machinery.Marshal(resp.GetSandbox(), format)
+	out, err := cli.Marshal(resp.GetSandbox(), format)
 	if err != nil {
 		return fmt.Errorf("marshal sandbox: %w", err)
 	}

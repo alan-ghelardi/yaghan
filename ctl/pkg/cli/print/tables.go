@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/charmbracelet/lipgloss"
-	"golang.nuinfra.net/ctl/pkg/machinery"
+	"golang.nuinfra.net/ctl/pkg/cli"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -31,7 +31,7 @@ type Table[T any] struct {
 
 // Render prints a formatted table containing the table items to the standard
 // output.
-func (t *Table[T]) Render(ctx *machinery.Context) error {
+func (t *Table[T]) Render(ctx *cli.Context) error {
 	if len(t.Columns) == 0 {
 		return errors.New("no columns")
 	}

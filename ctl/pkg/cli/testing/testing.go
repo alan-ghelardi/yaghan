@@ -11,29 +11,29 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
-	"golang.nuinfra.net/ctl/pkg/machinery"
-	machinerymocks "golang.nuinfra.net/ctl/pkg/machinery/mocks"
+	"golang.nuinfra.net/ctl/pkg/cli"
+	climocks "golang.nuinfra.net/ctl/pkg/cli/mocks"
 )
 
-// NewContext creates a machinery.Context object for testing purposes.
+// NewContext creates a cli.Context object for testing purposes.
 //
 // The Prompter field is wired to a gomock-generated mock so commands
 // that drive interactive flows (e.g. paginated table output) can
 // configure expectations via
-// ctx.Prompter.(*machinerymocks.MockPrompter).EXPECT(). Tests that
+// ctx.Prompter.(*climocks.MockPrompter).EXPECT(). Tests that
 // don't touch the prompter are unaffected — gomock only fails on
 // actual unexpected calls.
-func NewContext(t *testing.T) *machinery.Context {
+func NewContext(t *testing.T) *cli.Context {
 	mockCtrl := gomock.NewController(t)
 
-	return &machinery.Context{
-		ClientSet: &machinery.ClientSet{
+	return &cli.Context{
+		ClientSet: &cli.ClientSet{
 			ClusterService: cpmocks.NewMockClusterServiceClient(mockCtrl),
 			SandboxService: cpmocks.NewMockSandboxServiceClient(mockCtrl),
 			DaemonService:  dpmocks.NewMockDaemonServiceClient(mockCtrl),
 		},
-		Prompter: machinerymocks.NewMockPrompter(mockCtrl),
-		IOStreams: &machinery.IOStreams{
+		Prompter: climocks.NewMockPrompter(mockCtrl),
+		IOStreams: &cli.IOStreams{
 			Stdin:  strings.NewReader(""),
 			Stdout: new(strings.Builder),
 			Stderr: new(strings.Builder),
@@ -46,7 +46,7 @@ func NewContext(t *testing.T) *machinery.Context {
 
 // AssertStdoutIsEqual asserts that the stdout's content is equal to the
 // expected value.
-func AssertStdoutIsEqual(ctx *machinery.Context, t *testing.T, expected string) {
+func AssertStdoutIsEqual(ctx *cli.Context, t *testing.T, expected string) {
 	t.Helper()
 	assert.Equal(t, expected, Read(t, ctx.IOStreams.Stdout), "mismatch in the standard output")
 }

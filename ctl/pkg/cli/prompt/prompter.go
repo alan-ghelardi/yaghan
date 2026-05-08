@@ -10,7 +10,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/x/ansi"
 	"github.com/charmbracelet/x/term"
-	"golang.nuinfra.net/ctl/pkg/machinery"
+	"golang.nuinfra.net/ctl/pkg/cli"
 )
 
 var (
@@ -21,32 +21,32 @@ var (
 type bubblesPrompter struct {
 }
 
-var _ machinery.Prompter = (*bubblesPrompter)(nil)
+var _ cli.Prompter = (*bubblesPrompter)(nil)
 
 // NewPrompter returns the default Prompter implementation.
-func NewPrompter() machinery.Prompter {
+func NewPrompter() cli.Prompter {
 	return &bubblesPrompter{}
 }
 
-// Confirmation implements machinery.Prompter.
+// Confirmation implements cli.Prompter.
 func (b *bubblesPrompter) Confirmation(message string) (bool, error) {
 	key, err := b.KeyInput(fmt.Sprintf("\u26A0\ufe0f %s (y/n)", message), []rune{'y', 'n'})
 	return key == 'y', err
 }
 
-// ClearBelow implements machinery.Prompter.
-func (b *bubblesPrompter) ClearBelow(position machinery.Position) {
+// ClearBelow implements cli.Prompter.
+func (b *bubblesPrompter) ClearBelow(position cli.Position) {
 	cursor := b.Cursor()
 	cursor.Move(position)
 	ansi.Execute(os.Stdout, ansi.EraseScreenBelow)
 }
 
-// Cursor implements machinery.Prompter.
-func (b *bubblesPrompter) Cursor() machinery.Cursor {
+// Cursor implements cli.Prompter.
+func (b *bubblesPrompter) Cursor() cli.Cursor {
 	return &standardCursor{}
 }
 
-// KeyInput implements machinery.Prompter.
+// KeyInput implements cli.Prompter.
 func (b *bubblesPrompter) KeyInput(label string, acceptedKeys []rune) (rune, error) {
 	model := newKeyInputModel(label, acceptedKeys)
 	program := tea.NewProgram(model)
@@ -59,7 +59,7 @@ func (b *bubblesPrompter) KeyInput(label string, acceptedKeys []rune) (rune, err
 }
 
 // Select implements Prompter.
-func (b *bubblesPrompter) Select(label string, items []machinery.ListItem) (selectedValue any, err error) {
+func (b *bubblesPrompter) Select(label string, items []cli.ListItem) (selectedValue any, err error) {
 	model := newListModel(label, items)
 	program := tea.NewProgram(model)
 	updatedModel, err := program.Run()
@@ -74,8 +74,8 @@ func (b *bubblesPrompter) Select(label string, items []machinery.ListItem) (sele
 	return selectedValue, model.err
 }
 
-// TextInput implements machinery.Prompter.
-func (b *bubblesPrompter) TextInput(label string, opts machinery.TextInputOptions) (string, error) {
+// TextInput implements cli.Prompter.
+func (b *bubblesPrompter) TextInput(label string, opts cli.TextInputOptions) (string, error) {
 	model := newTextInputModel(label, opts)
 	program := tea.NewProgram(model)
 	updatedModel, err := program.Run()
@@ -89,33 +89,33 @@ func (b *bubblesPrompter) TextInput(label string, opts machinery.TextInputOption
 type standardCursor struct {
 }
 
-var _ machinery.Cursor = (*standardCursor)(nil)
+var _ cli.Cursor = (*standardCursor)(nil)
 
-// Move implements machinery.Cursor.
-func (s *standardCursor) Move(position machinery.Position) {
+// Move implements cli.Cursor.
+func (s *standardCursor) Move(position cli.Position) {
 	ansi.Execute(os.Stdout, ansi.CursorPosition(position.Column, position.Row))
 }
 
-// Position implements machinery.Cursor.
-func (s *standardCursor) Position() (machinery.Position, error) {
+// Position implements cli.Cursor.
+func (s *standardCursor) Position() (cli.Position, error) {
 	if strings.HasSuffix(os.Getenv("INSIDE_EMACS"), ",comint") {
-		return machinery.Position{Row: 1, Column: 1}, nil
+		return cli.Position{Row: 1, Column: 1}, nil
 	}
 
 	position, err := getCursorPosition()
 	if err != nil {
-		return machinery.Position{}, fmt.Errorf("unable to read current cursor's position: %w", err)
+		return cli.Position{}, fmt.Errorf("unable to read current cursor's position: %w", err)
 	}
 	return position, nil
 }
 
-func getCursorPosition() (machinery.Position, error) {
+func getCursorPosition() (cli.Position, error) {
 	fd := os.Stdin.Fd()
 
 	// Ensure we are in raw mode to read input correctly
 	oldState, err := term.MakeRaw(fd)
 	if err != nil {
-		return machinery.Position{}, err
+		return cli.Position{}, err
 	}
 	defer term.Restore(fd, oldState)
 
@@ -125,7 +125,7 @@ func getCursorPosition() (machinery.Position, error) {
 	buffer := make([]byte, 32)
 	n, err := os.Stdin.Read(buffer)
 	if err != nil {
-		return machinery.Position{}, err
+		return cli.Position{}, err
 	}
 
 	// Parse response of the form "\x1b[<row>;<col>R"
@@ -135,17 +135,17 @@ func getCursorPosition() (machinery.Position, error) {
 
 	rowAndColumn := strings.Split(response, ";")
 	if len(rowAndColumn) != 2 {
-		return machinery.Position{}, fmt.Errorf("invalid response from terminal: %q", response)
+		return cli.Position{}, fmt.Errorf("invalid response from terminal: %q", response)
 	}
 
 	row, err := strconv.Atoi(rowAndColumn[0])
 	if err != nil {
-		return machinery.Position{}, err
+		return cli.Position{}, err
 	}
 	column, err := strconv.Atoi(rowAndColumn[1])
 	if err != nil {
-		return machinery.Position{}, err
+		return cli.Position{}, err
 	}
 
-	return machinery.Position{Row: row, Column: column}, nil
+	return cli.Position{Row: row, Column: column}, nil
 }

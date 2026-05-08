@@ -13,7 +13,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/spf13/cobra"
 	controlplanev1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
-	"golang.nuinfra.net/ctl/pkg/machinery"
+	"golang.nuinfra.net/ctl/pkg/cli"
 )
 
 const (
@@ -35,8 +35,8 @@ var memoryPattern = regexp.MustCompile(`^(\d+)(MiB|GiB)$`)
 
 // New constructs the `sandbox create` command. ctx is threaded through so
 // tests can swap the gRPC clients and I/O streams via
-// machinery/testing.NewContext.
-func New(ctx *machinery.Context) *cobra.Command {
+// cli/testing.NewContext.
+func New(ctx *cli.Context) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "create [id]",
 		Aliases: []string{"new"},
@@ -76,7 +76,7 @@ client-side and printed back.`,
 	return cmd
 }
 
-func run(ctx *machinery.Context, cmd *cobra.Command, args []string) error {
+func run(ctx *cli.Context, cmd *cobra.Command, args []string) error {
 	id := resolveID(args)
 
 	namespace, err := cmd.Flags().GetString(flagNamespace)

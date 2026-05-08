@@ -1,4 +1,4 @@
-package machinery
+package cli
 
 import (
 	"fmt"

@@ -9,8 +9,8 @@ import (
 
 	"github.com/spf13/cobra"
 	controlplanev1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
-	"golang.nuinfra.net/ctl/pkg/machinery"
-	"golang.nuinfra.net/ctl/pkg/machinery/print"
+	"golang.nuinfra.net/ctl/pkg/cli"
+	"golang.nuinfra.net/ctl/pkg/cli/print"
 )
 
 const (
@@ -28,7 +28,7 @@ var (
 	allowedSorts  = []string{"newest-first", "oldest-first"}
 )
 
-func New(ctx *machinery.Context) *cobra.Command {
+func New(ctx *cli.Context) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list",
 		Short: "List nodes",
@@ -52,9 +52,9 @@ the continuation_token — so callers can drive their own pagination.`,
 		},
 	}
 
-	machinery.AddOutputFormatFlag(cmd,
-		machinery.OutputFormatTable,
-		machinery.OutputFormatTable, machinery.OutputFormatJSON, machinery.OutputFormatYAML)
+	cli.AddOutputFormatFlag(cmd,
+		cli.OutputFormatTable,
+		cli.OutputFormatTable, cli.OutputFormatJSON, cli.OutputFormatYAML)
 
 	cmd.Flags().StringP(flagContinuationToken, "c", "",
 		"Token for paginating JSON or YAML output. Has no effect on other formats.")
@@ -69,9 +69,9 @@ the continuation_token — so callers can drive their own pagination.`,
 	return cmd
 }
 
-func run(ctx *machinery.Context, cmd *cobra.Command) error {
-	format, err := machinery.GetOutputFormat(cmd,
-		machinery.OutputFormatTable, machinery.OutputFormatJSON, machinery.OutputFormatYAML)
+func run(ctx *cli.Context, cmd *cobra.Command) error {
+	format, err := cli.GetOutputFormat(cmd,
+		cli.OutputFormatTable, cli.OutputFormatJSON, cli.OutputFormatYAML)
 	if err != nil {
 		return err
 	}
@@ -107,14 +107,14 @@ func run(ctx *machinery.Context, cmd *cobra.Command) error {
 	}
 
 	switch format {
-	case machinery.OutputFormatTable:
+	case cli.OutputFormatTable:
 		return renderTable(ctx, listOnce, noPagination)
-	case machinery.OutputFormatJSON, machinery.OutputFormatYAML:
+	case cli.OutputFormatJSON, cli.OutputFormatYAML:
 		resp, err := listOnce(contToken)
 		if err != nil {
 			return err
 		}
-		out, err := machinery.Marshal(resp, format)
+		out, err := cli.Marshal(resp, format)
 		if err != nil {
 			return fmt.Errorf("marshal response: %w", err)
 		}
@@ -130,7 +130,7 @@ func run(ctx *machinery.Context, cmd *cobra.Command) error {
 // (triggered when the user presses 'l' to load more) reuses the
 // token returned by the previous response.
 func renderTable(
-	ctx *machinery.Context,
+	ctx *cli.Context,
 	listOnce func(string) (*controlplanev1alpha1.ListNodesResponse, error),
 	noPagination bool,
 ) error {

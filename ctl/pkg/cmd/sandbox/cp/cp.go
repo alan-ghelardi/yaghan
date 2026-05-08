@@ -15,7 +15,7 @@ import (
 
 	"github.com/spf13/cobra"
 	dataplanev1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/data_plane/v1alpha1"
-	"golang.nuinfra.net/ctl/pkg/machinery"
+	"golang.nuinfra.net/ctl/pkg/cli"
 )
 
 // localFileMode is the mode used when writing a downloaded file. The
@@ -77,7 +77,7 @@ func hasLocalPrefix(arg string) bool {
 	return false
 }
 
-func New(ctx *machinery.Context) *cobra.Command {
+func New(ctx *cli.Context) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "cp <source> <target>",
 		Aliases: []string{"copy"},
@@ -107,7 +107,7 @@ automatically, matching POSIX cp.`,
 	return cmd
 }
 
-func run(ctx *machinery.Context, cmd *cobra.Command, args []string) error {
+func run(ctx *cli.Context, cmd *cobra.Command, args []string) error {
 	src, err := parseReference(args[0])
 	if err != nil {
 		return fmt.Errorf("source: %w", err)
@@ -137,7 +137,7 @@ func run(ctx *machinery.Context, cmd *cobra.Command, args []string) error {
 // `<dest>/<basename(source)>` so `cp ./x.txt sb:/srv/` lands at
 // `/srv/x.txt` rather than failing because `/srv/` doesn't exist as a
 // regular file.
-func runUpload(ctx *machinery.Context, cmd *cobra.Command, src, dst reference) error {
+func runUpload(ctx *cli.Context, cmd *cobra.Command, src, dst reference) error {
 	content, err := os.ReadFile(src.Path) // #nosec G304 -- caller-supplied path is the feature.
 	if err != nil {
 		return fmt.Errorf("read local source: %w", err)
@@ -166,7 +166,7 @@ func runUpload(ctx *machinery.Context, cmd *cobra.Command, src, dst reference) e
 // runDownload fetches the remote file via DownloadFile and writes it
 // to the local target. Trailing-slash and existing-directory targets
 // are expanded to `<target>/<basename(source)>`.
-func runDownload(ctx *machinery.Context, cmd *cobra.Command, src, dst reference) error {
+func runDownload(ctx *cli.Context, cmd *cobra.Command, src, dst reference) error {
 	resp, err := ctx.ClientSet.DaemonService.DownloadFile(cmd.Context(),
 		&dataplanev1alpha1.DownloadFileRequest{
 			SandboxId: src.Sandbox,
