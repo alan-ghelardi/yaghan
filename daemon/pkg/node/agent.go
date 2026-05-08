@@ -22,6 +22,10 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
+// Agent owns the daemon's view of node-local state. It builds the Node
+// identity sent to the api-server at session establishment, collects node
+// resource metrics on a cadence, and (on EC2) polls the instance health API.
+// Updates are pushed back to the api-server through a Reporter.
 type Agent struct {
 	config           *config.Bundle
 	ec2Client        ec2client.Client
@@ -31,7 +35,9 @@ type Agent struct {
 	reporter         Reporter
 }
 
-// NewAgent ...
+// NewAgent returns an Agent wired with the given dependencies. The EC2 and
+// IMDS clients are read from ctx; callers must attach them via ec2.With and
+// ec2imds.With before calling NewAgent.
 func NewAgent(ctx context.Context, config *config.Bundle, firecracker firecracker.Provider, metricsCollector MetricsCollector, reporter Reporter) *Agent {
 	return &Agent{
 		config:           config,
@@ -44,10 +50,13 @@ func NewAgent(ctx context.Context, config *config.Bundle, firecracker firecracke
 }
 
 // BuildNode constructs the Node identity that the controller sends to the
-// api-server when establishing a session. In EC2 runtime mode it pulls the
-// instance metadata from IMDS and the initial health snapshot from the EC2
-// status API; in local runtime mode it generates a UUID and reports a healthy
-// placeholder status, since no provider health source is available.
+// api-server when establishing a session. In EC2 runtime it pulls instance
+// metadata from IMDS and an initial health snapshot from the EC2 status API.
+// In local runtime it generates a UUID and reports a healthy placeholder
+// status, since no provider health source is available.
+//
+// BuildNode is one-shot: subsequent metric and status updates are pushed by
+// ReportPeriodically.
 func (a *Agent) BuildNode(ctx context.Context) (*controlplanev1alpha1.Node, error) {
 	resources, metrics, err := a.capacityAndMetrics(ctx)
 	if err != nil {
@@ -80,8 +89,15 @@ func (a *Agent) BuildNode(ctx context.Context) (*controlplanev1alpha1.Node, erro
 	return node, nil
 }
 
-// Run ...
-func (a *Agent) Run(ctx context.Context, nodeID string) {
+// ReportPeriodically blocks until ctx is canceled, sampling node metrics on
+// every config.NodeAgent.MetricsReportInterval tick and (in EC2 runtime)
+// polling the instance health API on every config.NodeAgent.HealthReportInterval
+// tick. Changes are pushed to the configured Reporter; transient collection
+// or transport failures are logged and do not stop the loops.
+//
+// nodeID is the EC2 instance id used to query DescribeInstanceStatus and is
+// ignored in local runtime.
+func (a *Agent) ReportPeriodically(ctx context.Context, nodeID string) {
 	var wg sync.WaitGroup
 
 	wg.Go(func() {

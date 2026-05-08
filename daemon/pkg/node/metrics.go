@@ -59,7 +59,9 @@ func (d *defaultMetricsCollector) Collect(ctx context.Context) (*Metrics, error)
 	return metrics, nil
 }
 
-// NewMetricsCollector returns a new MetricsCollector object.
+// NewMetricsCollector returns the default MetricsCollector, backed by
+// gopsutil. Disk usage is measured against config.Firecracker.ChrootBaseDir
+// when set, falling back to "/" otherwise.
 func NewMetricsCollector(config *config.Bundle) MetricsCollector {
 	return &defaultMetricsCollector{config: config}
 }

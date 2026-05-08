@@ -584,9 +584,9 @@ func TestAgent_EC2HealthCheckLoop_DescribeErrorReportsUnknown(t *testing.T) {
 	<-finished
 }
 
-// ---------------------- Run ------------------------------------------------
+// ---------------------- ReportPeriodically --------------------------------
 
-func TestAgent_Run_LocalRuntime_DoesNotPollEC2(t *testing.T) {
+func TestAgent_ReportPeriodically_LocalRuntime_DoesNotPollEC2(t *testing.T) {
 	f := newAgentFixture(t, config.NodeRuntimeLocal)
 	f.metrics.EXPECT().Collect(gomock.Any()).Return(sampleMetrics(), nil).AnyTimes()
 	f.provider.EXPECT().Len().Return(0).AnyTimes()
@@ -606,7 +606,7 @@ func TestAgent_Run_LocalRuntime_DoesNotPollEC2(t *testing.T) {
 	defer cancel()
 	finished := make(chan struct{})
 	go func() {
-		f.agent.Run(ctx, "ignored-in-local")
+		f.agent.ReportPeriodically(ctx, "ignored-in-local")
 		close(finished)
 	}()
 
@@ -619,11 +619,11 @@ func TestAgent_Run_LocalRuntime_DoesNotPollEC2(t *testing.T) {
 	select {
 	case <-finished:
 	case <-time.After(time.Second):
-		t.Fatal("Run did not return after cancel")
+		t.Fatal("ReportPeriodically did not return after cancel")
 	}
 }
 
-func TestAgent_Run_EC2Runtime_StartsBothLoops(t *testing.T) {
+func TestAgent_ReportPeriodically_EC2Runtime_StartsBothLoops(t *testing.T) {
 	f := newAgentFixture(t, config.NodeRuntimeEC2)
 	f.metrics.EXPECT().Collect(gomock.Any()).Return(sampleMetrics(), nil).AnyTimes()
 	f.provider.EXPECT().Len().Return(0).AnyTimes()
@@ -659,7 +659,7 @@ func TestAgent_Run_EC2Runtime_StartsBothLoops(t *testing.T) {
 	defer cancel()
 	finished := make(chan struct{})
 	go func() {
-		f.agent.Run(ctx, "i-test")
+		f.agent.ReportPeriodically(ctx, "i-test")
 		close(finished)
 	}()
 
@@ -679,6 +679,6 @@ func TestAgent_Run_EC2Runtime_StartsBothLoops(t *testing.T) {
 	select {
 	case <-finished:
 	case <-time.After(time.Second):
-		t.Fatal("Run did not return after cancel")
+		t.Fatal("ReportPeriodically did not return after cancel")
 	}
 }
