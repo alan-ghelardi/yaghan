@@ -35,19 +35,19 @@ const (
 // startup jitter so fleet-wide rolling restarts don't synchronise
 // onto the api-server simultaneously; each subsequent tick is
 // further jittered by ±resyncCadenceJitterFactor.
-func (c *Controller) runResyncLoop(ctx context.Context) {
+func (c *Controller) runResyncLoop(ctx context.Context, nodeID string) {
 	interval := c.config.Controller.ResyncInterval
 
 	if !sleepFor(ctx, startupJitter(interval)) {
 		return
 	}
-	c.resync(ctx)
+	c.resync(ctx, nodeID)
 
 	for {
 		if !sleepFor(ctx, jitteredInterval(interval, resyncCadenceJitterFactor)) {
 			return
 		}
-		c.resync(ctx)
+		c.resync(ctx, nodeID)
 	}
 }
 
@@ -63,12 +63,12 @@ func (c *Controller) runResyncLoop(ctx context.Context) {
 // A failure on any page aborts the pass with a warning. The next
 // tick will retry from the start; transient api-server errors
 // don't accumulate state.
-func (c *Controller) resync(ctx context.Context) {
+func (c *Controller) resync(ctx context.Context, nodeID string) {
 	logger := ctxzap.Extract(ctx)
 	var token string
 	for page := 0; page < resyncMaxPages; page++ {
 		resp, err := c.sandboxClient.ListSandboxes(ctx, &cpv1.ListSandboxesRequest{
-			NodeId:            hardcodedNode().GetMetadata().GetId(),
+			NodeId:            nodeID,
 			SortOrder:         cpv1.ListSandboxesRequest_ORDER_NEWEST_FIRST,
 			PageSize:          resyncPageSize,
 			ContinuationToken: token,

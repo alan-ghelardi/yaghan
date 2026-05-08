@@ -14,6 +14,8 @@ import (
 	"golang.nuinfra.net/daemon/pkg/controller"
 	"golang.nuinfra.net/daemon/pkg/firecracker"
 	"golang.nuinfra.net/daemon/pkg/network"
+	"golang.nuinfra.net/daemon/pkg/node"
+	"golang.nuinfra.net/daemon/pkg/node/metrics"
 	"golang.nuinfra.net/daemon/pkg/reconciler"
 	"google.golang.org/grpc"
 )
@@ -66,9 +68,18 @@ func (d *daemon) RegisterRESTGateway(context.Context, *runtime.ServeMux, *grpc.C
 func (d *daemon) Setup(ctx context.Context) error {
 	reconciler := reconciler.New(d.firecracker, d.networkDriver, d.config)
 
-	controller := controller.New(d.clusterServiceClient, d.sandboxServiceClient, reconciler, d.config)
+	// The controller and node Agent share a circular dependency: the
+	// Agent needs the controller as its node.Reporter, while the
+	// controller needs the Agent to build the Node identity at connect
+	// time. We resolve it by constructing the controller first, then
+	// wiring the Agent via SetAgent before Run.
+	ctrl := controller.New(d.clusterServiceClient, d.sandboxServiceClient, reconciler, d.config)
+	metricsCollector := metrics.NewCollector(d.config)
+	agent := node.NewAgent(ctx, d.config, d.firecracker, metricsCollector, ctrl)
+	ctrl.SetAgent(agent)
+
 	go func() {
-		err := controller.Run(ctx)
+		err := ctrl.Run(ctx)
 		if err != nil {
 			logger := ctxzap.Extract(ctx)
 			logger.Fatal("setup: failed to start controller", zap.Error(err))

@@ -33,14 +33,31 @@ type Reconciler interface {
 	Reconcile(ctx context.Context, sandbox *controlplanev1alpha1.Sandbox) error
 }
 
+// Agent is the subset of *node.Agent the controller depends on. BuildNode
+// produces the Node identity sent in the ConnectionRequest; ReportPeriodically
+// runs the metric and (in EC2 runtime) health-check loops, calling the
+// Reporter methods on this Controller as samples land. Defining the interface
+// here keeps controller_test.go free of node-package dependencies.
+type Agent interface {
+	BuildNode(ctx context.Context) (*controlplanev1alpha1.Node, error)
+	ReportPeriodically(ctx context.Context, nodeID string)
+}
+
 // Controller orchestrates the daemon's reconciliation loop against
 // the control plane. Run is the only public entry point; all other
 // methods coordinate the stream reader, the indexer, the work queue,
 // and the reconciliation worker.
+//
+// *Controller also implements [node.Reporter]: ReportNodeMetrics and
+// ReportStatusPhase forward node-agent samples to the api-server as
+// PatchNodeRequest messages on the same stream that carries sandbox
+// updates. Sharing the stream (and the streamMu lock) keeps node and
+// sandbox writes naturally serialised.
 type Controller struct {
 	client        controlplanev1alpha1.ClusterServiceClient
 	sandboxClient controlplanev1alpha1.SandboxServiceClient
 	reconciler    Reconciler
+	agent         Agent
 	config        *config.Bundle
 
 	indexer *indexer
@@ -48,9 +65,9 @@ type Controller struct {
 	session *sessionStore
 
 	// streamMu guards stream. The reader loop swaps it on connect /
-	// disconnect; the worker reads it inside sendUpdate. Send concurrent
-	// with Recv on a gRPC bidi stream is safe; two concurrent Sends are
-	// not, and the mutex serialises them too.
+	// disconnect; the worker reads it inside sendUpdate / sendPatch.
+	// Send concurrent with Recv on a gRPC bidi stream is safe; two
+	// concurrent Sends are not, and the mutex serialises them too.
 	streamMu sync.Mutex
 	stream   controlplanev1alpha1.ClusterService_EstablishSessionClient
 }
@@ -60,6 +77,11 @@ type Controller struct {
 // connect attempt; constructing the Controller does no I/O. The
 // sandboxClient is used by the periodic resync loop to recover from
 // missed events; pass nil only in tests that do not exercise resync.
+//
+// The Agent is wired separately via SetAgent. This breaks the
+// chicken-and-egg between the Agent (which needs *Controller as its
+// Reporter at construction) and the Controller (which needs the Agent
+// to build the Node payload at connect time).
 func New(client controlplanev1alpha1.ClusterServiceClient, sandboxClient controlplanev1alpha1.SandboxServiceClient, reconciler Reconciler, config *config.Bundle) *Controller {
 	return &Controller{
 		client:        client,
@@ -74,12 +96,37 @@ func New(client controlplanev1alpha1.ClusterServiceClient, sandboxClient control
 	}
 }
 
-// Run blocks until ctx is cancelled. It launches a worker goroutine
-// to drain the reconcile queue and runs the connect / read loop on
-// the calling goroutine, reconnecting with exponential backoff
-// whenever the stream drops.
+// SetAgent attaches the node Agent to this Controller. Must be called
+// before Run. Splitting this from New lets the Agent be constructed with
+// *Controller as its Reporter without an initialisation cycle.
+func (c *Controller) SetAgent(agent Agent) {
+	c.agent = agent
+}
+
+// Run blocks until ctx is cancelled. It launches a worker goroutine to
+// drain the reconcile queue, the node agent's reporting loops, and
+// runs the connect / read loop on the calling goroutine, reconnecting
+// with exponential backoff whenever the stream drops.
+//
+// SetAgent must have been called first.
 func (c *Controller) Run(ctx context.Context) error {
 	logger := ctxzap.Extract(ctx)
+
+	if c.agent == nil {
+		return errors.New("controller: agent is not set; call SetAgent before Run")
+	}
+
+	// BuildNode is one-shot: in EC2 the instance id is intrinsically
+	// stable; in local runtime it generates a UUID, and re-running it on
+	// every reconnect would multiply ghost rows in the api-server. The
+	// cached Node is re-sent on every reconnect; the api-server's
+	// reconnect-overlay path handles freshness server-side.
+	node, err := c.agent.BuildNode(ctx)
+	if err != nil {
+		return fmt.Errorf("controller: build node identity: %w", err)
+	}
+	nodeID := node.GetMetadata().GetId()
+	logger.Info("controller: node identity built", zap.String("node.id", nodeID))
 
 	workerDone := make(chan struct{})
 	go func() {
@@ -88,12 +135,24 @@ func (c *Controller) Run(ctx context.Context) error {
 	}()
 
 	if c.config.Controller.ResyncInterval > 0 {
-		go c.runResyncLoop(ctx)
+		go c.runResyncLoop(ctx, nodeID)
 	}
+
+	// ReportPeriodically owns its own ticker-driven loops; it must run
+	// for the lifetime of the controller, independent of the stream's
+	// connect/reconnect cycle. Per-tick send failures (when the stream
+	// is mid-reconnect) are logged inside the agent and recovered on
+	// the next tick.
+	reporterDone := make(chan struct{})
+	go func() {
+		defer close(reporterDone)
+		c.agent.ReportPeriodically(ctx, nodeID)
+	}()
 
 	defer func() {
 		c.queue.ShutDown()
 		<-workerDone
+		<-reporterDone
 	}()
 
 	for {
@@ -101,7 +160,7 @@ func (c *Controller) Run(ctx context.Context) error {
 			return nil
 		}
 
-		stream, err := c.connect(ctx)
+		stream, err := c.connect(ctx, node)
 		if err != nil {
 			if ctx.Err() != nil {
 				return nil
@@ -123,11 +182,12 @@ func (c *Controller) Run(ctx context.Context) error {
 }
 
 // connect opens a fresh EstablishSession stream, sends the initial
-// ConnectionRequest (including the persisted session id, if any), and
-// blocks on the server's acknowledgement before returning. The whole
-// sequence is wrapped in cenkalti/v5 exponential backoff with jitter:
-// while ctx is alive we retry indefinitely.
-func (c *Controller) connect(ctx context.Context) (controlplanev1alpha1.ClusterService_EstablishSessionClient, error) {
+// ConnectionRequest (carrying the cached Node identity and the
+// persisted session id, if any), and blocks on the server's
+// acknowledgement before returning. The whole sequence is wrapped in
+// cenkalti/v5 exponential backoff with jitter: while ctx is alive we
+// retry indefinitely.
+func (c *Controller) connect(ctx context.Context, node *controlplanev1alpha1.Node) (controlplanev1alpha1.ClusterService_EstablishSessionClient, error) {
 	logger := ctxzap.Extract(ctx)
 
 	expBackoff := backoff.NewExponentialBackOff()
@@ -160,7 +220,7 @@ func (c *Controller) connect(ctx context.Context) (controlplanev1alpha1.ClusterS
 			Operation: &controlplanev1alpha1.EstablishSessionRequest_Connect{
 				Connect: &controlplanev1alpha1.ConnectionRequest{
 					SessionId: sessionID,
-					Node:      hardcodedNode(),
+					Node:      node,
 				},
 			},
 		}
@@ -330,33 +390,55 @@ func (c *Controller) markFailed(ctx context.Context, id string, reconcileErr err
 // over the current stream. Returns an error when the stream is not
 // connected; the worker re-enqueues in that case.
 func (c *Controller) sendUpdate(sandbox *controlplanev1alpha1.Sandbox) error {
-	c.streamMu.Lock()
-	defer c.streamMu.Unlock()
-	if c.stream == nil {
-		return errors.New("stream is not connected")
-	}
-	return c.stream.Send(&controlplanev1alpha1.EstablishSessionRequest{
+	return c.sendOnStream(&controlplanev1alpha1.EstablishSessionRequest{
 		Operation: &controlplanev1alpha1.EstablishSessionRequest_UpdateSandbox{
 			UpdateSandbox: &controlplanev1alpha1.UpdateSandboxRequest{Sandbox: sandbox},
 		},
 	})
 }
 
+// ReportNodeMetrics implements [node.Reporter]. The metric sample is
+// wrapped in a PatchNodeRequest and sent on the same EstablishSession
+// stream that carries sandbox updates. The api-server applies it as a
+// last-writer-wins patch against the persisted node row.
+func (c *Controller) ReportNodeMetrics(_ context.Context, metrics *controlplanev1alpha1.NodeMetrics) error {
+	return c.sendOnStream(&controlplanev1alpha1.EstablishSessionRequest{
+		Operation: &controlplanev1alpha1.EstablishSessionRequest_PatchNode{
+			PatchNode: &controlplanev1alpha1.PatchNodeRequest{
+				Patch: &controlplanev1alpha1.PatchNodeRequest_NodeMetrics{NodeMetrics: metrics},
+			},
+		},
+	})
+}
+
+// ReportStatusPhase implements [node.Reporter]. See ReportNodeMetrics.
+func (c *Controller) ReportStatusPhase(_ context.Context, phase controlplanev1alpha1.NodeStatus_Phase, message string) error {
+	return c.sendOnStream(&controlplanev1alpha1.EstablishSessionRequest{
+		Operation: &controlplanev1alpha1.EstablishSessionRequest_PatchNode{
+			PatchNode: &controlplanev1alpha1.PatchNodeRequest{
+				Patch: &controlplanev1alpha1.PatchNodeRequest_NodeStatus{
+					NodeStatus: &controlplanev1alpha1.NodeStatus{Phase: phase, Message: message},
+				},
+			},
+		},
+	})
+}
+
+// sendOnStream is the single chokepoint through which all client-to-server
+// messages flow after the initial handshake. It serialises Sends behind
+// streamMu and surfaces a clean "not connected" error to callers when the
+// stream is mid-reconnect.
+func (c *Controller) sendOnStream(req *controlplanev1alpha1.EstablishSessionRequest) error {
+	c.streamMu.Lock()
+	defer c.streamMu.Unlock()
+	if c.stream == nil {
+		return errors.New("stream is not connected")
+	}
+	return c.stream.Send(req)
+}
+
 func (c *Controller) setStream(stream controlplanev1alpha1.ClusterService_EstablishSessionClient) {
 	c.streamMu.Lock()
 	c.stream = stream
 	c.streamMu.Unlock()
-}
-
-// hardcodedNode is a placeholder identity for the daemon's host.
-// TODO: derive from /etc/hostname / /proc/cpuinfo / config once the
-// node-discovery story is settled.
-func hardcodedNode() *controlplanev1alpha1.Node {
-	return &controlplanev1alpha1.Node{
-		Metadata: &controlplanev1alpha1.NodeMeta{Id: "node-local"},
-		Resources: &controlplanev1alpha1.NodeResources{
-			VcpuCount: 4,
-			MemoryMib: 8192,
-		},
-	}
 }

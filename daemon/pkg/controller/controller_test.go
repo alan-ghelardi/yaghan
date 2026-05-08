@@ -111,6 +111,20 @@ func sandboxFor(id string, version int64, phase cpv1.SandboxStatus_Phase) *cpv1.
 	}
 }
 
+// nodeFor builds a minimal Node payload that satisfies the connect
+// path's "metadata.id is required" check. Tests pass it into c.connect
+// directly, mirroring what *node.Agent.BuildNode produces in production.
+func nodeFor(id string) *cpv1.Node {
+	return &cpv1.Node{
+		Metadata: &cpv1.NodeMeta{Id: id},
+		Resources: &cpv1.NodeResources{
+			CpuCapacityMillicores: 4000,
+			MemoryCapacityBytes:   8 * 1024 * 1024 * 1024,
+			DiskCapacityBytes:     100 * 1024 * 1024 * 1024,
+		},
+	}
+}
+
 // receiveSent pulls one client-to-server frame off the fake stream
 // with a generous timeout so test failures show the surrounding
 // goroutine state rather than just hanging.
@@ -145,7 +159,7 @@ func TestController_ConnectSendsConnectionRequestAndPersistsSessionID(t *testing
 		},
 	})
 
-	got, err := c.connect(ctx)
+	got, err := c.connect(ctx, nodeFor("test-node"))
 	require.NoError(t, err)
 	require.NotNil(t, got)
 
@@ -182,7 +196,7 @@ func TestController_ConnectResumesWithPersistedSessionID(t *testing.T) {
 		},
 	})
 
-	_, err := c.connect(ctx)
+	_, err := c.connect(ctx, nodeFor("test-node"))
 	require.NoError(t, err)
 
 	connectReq := receiveSent(t, stream)
@@ -349,6 +363,66 @@ func TestController_SendUpdateFailsWhenStreamMissing(t *testing.T) {
 	err := c.sendUpdate(sandboxFor("sb", 1, cpv1.SandboxStatus_PHASE_RUNNING))
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "not connected")
+}
+
+func TestController_ReportNodeMetricsWrapsAsPatch(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	c := New(cpmocks.NewMockClusterServiceClient(ctrl), nil, &fakeReconciler{}, newFixtureBundle(t))
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	stream := newFakeStream(ctx)
+	c.setStream(stream)
+
+	sample := &cpv1.NodeMetrics{
+		ActiveSandboxCount: 5,
+		CpuUsedMillicores:  1500,
+		MemoryUsedBytes:    2 * 1024 * 1024 * 1024,
+	}
+	require.NoError(t, c.ReportNodeMetrics(ctx, sample))
+
+	sent := receiveSent(t, stream)
+	patch := sent.GetPatchNode()
+	require.NotNil(t, patch, "ReportNodeMetrics must emit a PatchNodeRequest, got %T", sent.GetOperation())
+	assert.True(t, proto.Equal(sample, patch.GetNodeMetrics()),
+		"the patch must carry the supplied NodeMetrics verbatim")
+	assert.Nil(t, patch.GetNodeStatus(), "metrics patch must not set node_status")
+}
+
+func TestController_ReportStatusPhaseWrapsAsPatch(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	c := New(cpmocks.NewMockClusterServiceClient(ctrl), nil, &fakeReconciler{}, newFixtureBundle(t))
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	stream := newFakeStream(ctx)
+	c.setStream(stream)
+
+	require.NoError(t, c.ReportStatusPhase(ctx, cpv1.NodeStatus_PHASE_UNHEALTHY, "ebs check failed"))
+
+	sent := receiveSent(t, stream)
+	patch := sent.GetPatchNode()
+	require.NotNil(t, patch)
+	assert.Equal(t, cpv1.NodeStatus_PHASE_UNHEALTHY, patch.GetNodeStatus().GetPhase())
+	assert.Equal(t, "ebs check failed", patch.GetNodeStatus().GetMessage())
+	assert.Nil(t, patch.GetNodeMetrics(), "status patch must not set node_metrics")
+}
+
+func TestController_ReportNodeMetricsFailsWhenStreamMissing(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	c := New(cpmocks.NewMockClusterServiceClient(ctrl), nil, &fakeReconciler{}, newFixtureBundle(t))
+	err := c.ReportNodeMetrics(context.Background(), &cpv1.NodeMetrics{})
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "not connected")
+}
+
+func TestController_RunRequiresAgent(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	c := New(cpmocks.NewMockClusterServiceClient(ctrl), nil, &fakeReconciler{}, newFixtureBundle(t))
+	// No SetAgent — Run must refuse to start.
+	err := c.Run(context.Background())
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "agent is not set")
 }
 
 // Compile-time assertion that fakeStream satisfies the bidi-stream

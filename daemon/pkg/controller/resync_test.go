@@ -13,6 +13,11 @@ import (
 	cpmocks "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1/mocks"
 )
 
+// testNodeID is the canonical node id threaded into resync calls in
+// every test in this file. It must match the assertion in
+// TestResync_PaginatesAndEnqueues.
+const testNodeID = "test-node"
+
 // resyncFixture spins up a Controller wired to the supplied mock
 // SandboxServiceClient, with the cluster client and reconciler stubbed
 // out: the resync code path doesn't touch them, but New requires
@@ -70,7 +75,7 @@ func TestResync_PaginatesAndEnqueues(t *testing.T) {
 	mock.EXPECT().
 		ListSandboxes(gomock.Any(), gomock.AssignableToTypeOf(&cpv1.ListSandboxesRequest{})).
 		DoAndReturn(func(_ context.Context, req *cpv1.ListSandboxesRequest, _ ...any) (*cpv1.ListSandboxesResponse, error) {
-			assert.Equal(t, "node-local", req.GetNodeId(),
+			assert.Equal(t, testNodeID, req.GetNodeId(),
 				"resync must filter by the local node id")
 			assert.Equal(t, cpv1.ListSandboxesRequest_ORDER_NEWEST_FIRST, req.GetSortOrder(),
 				"resync must request newest-first ordering")
@@ -93,7 +98,7 @@ func TestResync_PaginatesAndEnqueues(t *testing.T) {
 			return &cpv1.ListSandboxesResponse{Sandboxes: page2}, nil
 		})
 
-	c.resync(ctx)
+	c.resync(ctx, testNodeID)
 
 	// Every sandbox must end up in the indexer and on the queue.
 	for _, sb := range append(page1, page2...) {
@@ -118,7 +123,7 @@ func TestResync_FiltersNilIntent(t *testing.T) {
 			},
 		}, nil)
 
-	c.resync(ctx)
+	c.resync(ctx, testNodeID)
 
 	assert.Nil(t, c.indexer.Get("sb-converged"),
 		"sandboxes without Intent must not be indexed")
@@ -141,7 +146,7 @@ func TestResync_StaleVersionDoesNotEnqueue(t *testing.T) {
 			Sandboxes: []*cpv1.Sandbox{sandboxWithIntent("sb-stale", 4)},
 		}, nil)
 
-	c.resync(ctx)
+	c.resync(ctx, testNodeID)
 
 	stored := c.indexer.Get("sb-stale")
 	require.NotNil(t, stored)
@@ -160,7 +165,7 @@ func TestResync_ListSandboxesErrorAbortsThePass(t *testing.T) {
 		Return(nil, errors.New("temporary api-server error"))
 
 	// Must not panic; must not enqueue anything.
-	c.resync(ctx)
+	c.resync(ctx, testNodeID)
 	assert.Empty(t, drainQueue(c))
 
 	// A subsequent successful pass still works — one bad pass does not
@@ -171,7 +176,7 @@ func TestResync_ListSandboxesErrorAbortsThePass(t *testing.T) {
 			Sandboxes: []*cpv1.Sandbox{sandboxWithIntent("sb-recovered", 1)},
 		}, nil)
 
-	c.resync(ctx)
+	c.resync(ctx, testNodeID)
 	assert.Equal(t, []string{"sb-recovered"}, drainQueue(c))
 }
 
@@ -191,7 +196,7 @@ func TestResync_HitsMaxPageSafetyCap(t *testing.T) {
 		}).
 		Times(resyncMaxPages)
 
-	c.resync(ctx)
+	c.resync(ctx, testNodeID)
 	// The fact that we got here without timing out is the assertion;
 	// the .Times(resyncMaxPages) above pins the call count.
 }
