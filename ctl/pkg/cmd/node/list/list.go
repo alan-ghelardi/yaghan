@@ -47,7 +47,7 @@ the continuation_token — so callers can drive their own pagination.`,
   sindri node list -o json
   sindri node list -o json -c <token-from-previous-response>`,
 		Args: cobra.NoArgs,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			return run(ctx, cmd)
 		},
 	}
@@ -190,4 +190,3 @@ func parseSortOrder(s string) (controlplanev1alpha1.ListNodesRequest_Order, erro
 			s, flagSortOrder, strings.Join(allowedSorts, ", "))
 	}
 }
-

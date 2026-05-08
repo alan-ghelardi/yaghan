@@ -5,9 +5,9 @@ package node
 
 import (
 	"github.com/spf13/cobra"
+	"golang.nuinfra.net/ctl/pkg/cli"
 	"golang.nuinfra.net/ctl/pkg/cmd/node/get"
 	"golang.nuinfra.net/ctl/pkg/cmd/node/list"
-	"golang.nuinfra.net/ctl/pkg/cli"
 )
 
 func New(ctx *cli.Context) *cobra.Command {

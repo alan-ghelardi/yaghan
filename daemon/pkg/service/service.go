@@ -80,10 +80,20 @@ func (d *daemon) Setup(ctx context.Context) error {
 
 	go func() {
 		err := ctrl.Run(ctx)
-		if err != nil {
-			logger := ctxzap.Extract(ctx)
-			logger.Fatal("setup: failed to start controller", zap.Error(err))
+		if err == nil {
+			return
 		}
+		logger := ctxzap.Extract(ctx)
+		// A non-nil error after ctx cancellation is normal shutdown
+		// (e.g. an in-flight metrics collection wrapping ctx.Err()).
+		// Don't Fatal in that case — it would tear the process down
+		// during graceful shutdown and turn clean exits into errors
+		// in tests.
+		if ctx.Err() != nil {
+			logger.Warn("setup: controller exited during shutdown", zap.Error(err))
+			return
+		}
+		logger.Fatal("setup: failed to start controller", zap.Error(err))
 	}()
 
 	return nil

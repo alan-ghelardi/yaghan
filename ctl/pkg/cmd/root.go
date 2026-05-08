@@ -21,10 +21,10 @@ import (
 	"syscall"
 
 	"github.com/spf13/cobra"
-	"golang.nuinfra.net/ctl/pkg/cmd/node"
-	"golang.nuinfra.net/ctl/pkg/cmd/sandbox"
 	"golang.nuinfra.net/ctl/pkg/cli"
 	"golang.nuinfra.net/ctl/pkg/cli/prompt"
+	"golang.nuinfra.net/ctl/pkg/cmd/node"
+	"golang.nuinfra.net/ctl/pkg/cmd/sandbox"
 )
 
 // rootCmd represents the base command when called without any subcommands

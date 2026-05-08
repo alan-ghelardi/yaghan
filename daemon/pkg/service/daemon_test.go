@@ -19,6 +19,10 @@ import (
 	cpv1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
 	cpv1mocks "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1/mocks"
 	dataplanev1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/data_plane/v1alpha1"
+	ec2client "golang.nuinfra.net/commons/pkg/aws/ec2"
+	ec2mocks "golang.nuinfra.net/commons/pkg/aws/ec2/mocks"
+	ec2imdsclient "golang.nuinfra.net/commons/pkg/aws/ec2imds"
+	ec2imdsmocks "golang.nuinfra.net/commons/pkg/aws/ec2imds/mocks"
 	commonsconfig "golang.nuinfra.net/commons/pkg/config"
 	commonsserver "golang.nuinfra.net/commons/pkg/server"
 	servertesting "golang.nuinfra.net/commons/pkg/server/testing"
@@ -115,6 +119,13 @@ func newHarness(t *testing.T) *harness {
 			return &blockingClusterStream{ctx: streamCtx}, nil
 		}).
 		AnyTimes()
+
+	// node.NewAgent (called from daemon.Setup) eagerly fetches an EC2
+	// client and an IMDS client from the context. Inject mocks so the
+	// constructor doesn't panic; the test bundle leaves NodeAgent unset,
+	// so runtimeIsEC2() is false and no calls are issued on either mock.
+	ctx = ec2client.With(ctx, ec2mocks.NewMockClient(ctrl))
+	ctx = ec2imdsclient.With(ctx, ec2imdsmocks.NewMockClient(ctrl))
 
 	ctx = commonsserver.WithListener(ctx, listener)
 	servertesting.StartServer(ctx, t, service.New(provider, driver, clusterClient, nil, bundle))

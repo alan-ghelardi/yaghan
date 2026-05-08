@@ -7,8 +7,8 @@ import (
 
 	"github.com/spf13/cobra"
 	controlplanev1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
-	"golang.nuinfra.net/ctl/pkg/cmd/sandbox/lifecycle"
 	"golang.nuinfra.net/ctl/pkg/cli"
+	"golang.nuinfra.net/ctl/pkg/cmd/sandbox/lifecycle"
 )
 
 func New(ctx *cli.Context) *cobra.Command {

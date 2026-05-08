@@ -10,23 +10,26 @@ import (
 	"go.uber.org/mock/gomock"
 	cpv1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
 	cpmocks "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1/mocks"
-	"golang.nuinfra.net/ctl/pkg/cmd/node/list"
 	"golang.nuinfra.net/ctl/pkg/cli"
 	climocks "golang.nuinfra.net/ctl/pkg/cli/mocks"
 	clitesting "golang.nuinfra.net/ctl/pkg/cli/testing"
+	"golang.nuinfra.net/ctl/pkg/cmd/node/list"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-// node is a tiny fixture builder used across cases. The fields not
-// set here (CreatedAt / LastModifiedAt / Resources) are not asserted
-// on by these tests — DurationFormatter is nil-safe via protobuf
-// getter conventions, so the table renderer doesn't panic on them.
-func node(id string, phase cpv1.NodeStatus_Phase) *cpv1.Node {
+// node is a tiny fixture builder used across cases. Phase is hard-coded
+// to HEALTHY because no test in this file exercises the renderer's
+// other-phase paths — passing it as a parameter just adds boilerplate
+// at every callsite. The fields not set here (CreatedAt /
+// LastModifiedAt / Resources) are not asserted on by these tests —
+// DurationFormatter is nil-safe via protobuf getter conventions, so
+// the table renderer doesn't panic on them.
+func node(id string) *cpv1.Node {
 	return &cpv1.Node{
 		Metadata: &cpv1.NodeMeta{Id: id},
-		Status:   &cpv1.NodeStatus{Phase: phase},
+		Status:   &cpv1.NodeStatus{Phase: cpv1.NodeStatus_PHASE_HEALTHY},
 	}
 }
 
@@ -62,7 +65,7 @@ func TestList(t *testing.T) {
 				assert.Equal(t, cpv1.NodeStatus_PHASE_UNSPECIFIED, req.GetStatusPhase())
 				assert.Equal(t, cpv1.ListNodesRequest_ORDER_UNSPECIFIED, req.GetSortOrder())
 				return &cpv1.ListNodesResponse{
-					Nodes: []*cpv1.Node{node("node-1", cpv1.NodeStatus_PHASE_HEALTHY)},
+					Nodes: []*cpv1.Node{node("node-1")},
 				}, nil
 			},
 			wantStdoutHas: []string{"Node ID", "Status", "node-1", "Healthy"},
@@ -80,7 +83,7 @@ func TestList(t *testing.T) {
 			args: "-o yaml",
 			capture: func(_ *testing.T, _ *cpv1.ListNodesRequest) (*cpv1.ListNodesResponse, error) {
 				return &cpv1.ListNodesResponse{
-					Nodes:             []*cpv1.Node{node("node-1", cpv1.NodeStatus_PHASE_HEALTHY)},
+					Nodes:             []*cpv1.Node{node("node-1")},
 					ContinuationToken: "next",
 				}, nil
 			},
@@ -96,7 +99,7 @@ func TestList(t *testing.T) {
 			args: "-o json",
 			capture: func(_ *testing.T, _ *cpv1.ListNodesRequest) (*cpv1.ListNodesResponse, error) {
 				return &cpv1.ListNodesResponse{
-					Nodes:             []*cpv1.Node{node("node-1", cpv1.NodeStatus_PHASE_HEALTHY)},
+					Nodes:             []*cpv1.Node{node("node-1")},
 					ContinuationToken: "next",
 				}, nil
 			},
@@ -124,7 +127,7 @@ func TestList(t *testing.T) {
 				assert.Equal(t, "", req.GetContinuationToken(),
 					"table mode drives its own pagination; the flag must not seed the first request")
 				return &cpv1.ListNodesResponse{
-					Nodes: []*cpv1.Node{node("node-1", cpv1.NodeStatus_PHASE_HEALTHY)},
+					Nodes: []*cpv1.Node{node("node-1")},
 				}, nil
 			},
 			wantStdoutHas: []string{"node-1"},
@@ -164,7 +167,7 @@ func TestList(t *testing.T) {
 			// fail on an unexpected call).
 			capture: func(_ *testing.T, _ *cpv1.ListNodesRequest) (*cpv1.ListNodesResponse, error) {
 				return &cpv1.ListNodesResponse{
-					Nodes:             []*cpv1.Node{node("node-1", cpv1.NodeStatus_PHASE_HEALTHY)},
+					Nodes:             []*cpv1.Node{node("node-1")},
 					ContinuationToken: "more",
 				}, nil
 			},
@@ -272,14 +275,14 @@ func TestList_Pagination(t *testing.T) {
 			case 1:
 				assert.Equal(t, "", req.GetContinuationToken(), "first page must use the empty token")
 				return &cpv1.ListNodesResponse{
-					Nodes:             []*cpv1.Node{node("node-1", cpv1.NodeStatus_PHASE_HEALTHY)},
+					Nodes:             []*cpv1.Node{node("node-1")},
 					ContinuationToken: "page2",
 				}, nil
 			case 2:
 				assert.Equal(t, "page2", req.GetContinuationToken(),
 					"second page must reuse the token from the previous response")
 				return &cpv1.ListNodesResponse{
-					Nodes: []*cpv1.Node{node("node-2", cpv1.NodeStatus_PHASE_HEALTHY)},
+					Nodes: []*cpv1.Node{node("node-2")},
 				}, nil
 			default:
 				t.Fatalf("unexpected ListNodes call #%d", calls)

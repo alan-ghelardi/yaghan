@@ -2,6 +2,7 @@ package sandbox
 
 import (
 	"github.com/spf13/cobra"
+	"golang.nuinfra.net/ctl/pkg/cli"
 	"golang.nuinfra.net/ctl/pkg/cmd/sandbox/cp"
 	"golang.nuinfra.net/ctl/pkg/cmd/sandbox/create"
 	deletecmd "golang.nuinfra.net/ctl/pkg/cmd/sandbox/delete"
@@ -9,7 +10,6 @@ import (
 	"golang.nuinfra.net/ctl/pkg/cmd/sandbox/get"
 	"golang.nuinfra.net/ctl/pkg/cmd/sandbox/pause"
 	"golang.nuinfra.net/ctl/pkg/cmd/sandbox/resume"
-	"golang.nuinfra.net/ctl/pkg/cli"
 )
 
 func New(ctx *cli.Context) *cobra.Command {
