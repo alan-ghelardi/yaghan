@@ -16,6 +16,9 @@ import (
 	"github.com/grpc-ecosystem/go-grpc-middleware/logging/zap/ctxzap"
 	"go.uber.org/zap"
 	controlplanev1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
+	awsconfig "golang.nuinfra.net/commons/pkg/aws/config"
+	"golang.nuinfra.net/commons/pkg/aws/ec2"
+	"golang.nuinfra.net/commons/pkg/aws/ec2imds"
 	"golang.nuinfra.net/commons/pkg/logger"
 	"golang.nuinfra.net/commons/pkg/server"
 	"golang.nuinfra.net/daemon/pkg/config"
@@ -49,6 +52,12 @@ func main() {
 		log.Fatalf("daemon: init logger: %v", err)
 	}
 	ctx = ctxzap.ToContext(ctx, zapLogger)
+
+	if bundle.NodeAgent.Runtime == config.NodeRuntimeEC2 {
+		ctx = awsconfig.With(ctx, awsconfig.New(ctx))
+		ctx = ec2.With(ctx, ec2.New(ctx, ec2.Config{}))
+		ctx = ec2imds.With(ctx, ec2imds.New(ctx, ec2imds.Config{}))
+	}
 
 	provider, err := firecracker.New(
 		firecracker.WithFirecrackerPath(filepath.Join(bundle.AssetsDir, bundle.Firecracker.BinaryName)),

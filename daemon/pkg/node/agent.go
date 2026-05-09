@@ -39,15 +39,18 @@ type Agent struct {
 // NewAgent returns an Agent wired with the given dependencies. The EC2 and
 // IMDS clients are read from ctx; callers must attach them via ec2.With and
 // ec2imds.With before calling NewAgent.
-func NewAgent(ctx context.Context, config *config.Bundle, firecracker firecracker.Provider, metricsCollector metrics.Collector, reporter Reporter) *Agent {
-	return &Agent{
-		config:           config,
-		ec2Client:        ec2client.Get(ctx),
-		imdsClient:       ec2imdsclient.Get(ctx),
+func NewAgent(ctx context.Context, cfg *config.Bundle, firecracker firecracker.Provider, metricsCollector metrics.Collector, reporter Reporter) *Agent {
+	agent := &Agent{
+		config:           cfg,
 		firecracker:      firecracker,
 		metricsCollector: metricsCollector,
 		reporter:         reporter,
 	}
+	if cfg.NodeAgent != nil && cfg.NodeAgent.Runtime == config.NodeRuntimeEC2 {
+		agent.ec2Client = ec2client.Get(ctx)
+		agent.imdsClient = ec2imdsclient.Get(ctx)
+	}
+	return agent
 }
 
 // BuildNode constructs the Node identity that the controller sends to the
