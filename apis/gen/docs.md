@@ -344,7 +344,7 @@ Request message for listing sandboxes with optional filtering and pagination.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| namespace | [string](#string) |  | Filters sandboxes by namespace. Must match the format: - starts with a lowercase letter - contains only lowercase alphanumeric characters or hyphens - ends with an alphanumeric character Example: &#34;default&#34;, &#34;team-a&#34; |
+| namespace | [string](#string) |  | Filters sandboxes by namespace. When provided, must match the format: - starts with a lowercase letter - contains only lowercase alphanumeric characters or hyphens - ends with an alphanumeric character Example: &#34;default&#34;, &#34;team-a&#34; May be empty when node_id is supplied (e.g. the data-plane daemon&#39;s per-node resync scan). |
 | node_id | [string](#string) |  | Filters sandboxes by the ID of the node where they are scheduled or running. |
 | status_phase | [SandboxStatus.Phase](#nuinfra-control_plane-v1alpha1-SandboxStatus-Phase) |  | Filters sandboxes by their current lifecycle phase. If unset, sandboxes in all phases are returned. |
 | continuation_token | [string](#string) |  | Token used for pagination. Pass the value returned in a previous response to retrieve the next page of results. Leave empty to start listing from the beginning. |

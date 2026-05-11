@@ -46,11 +46,13 @@ headingLevel: 2
 #### Detailed descriptions
 
 **namespace**: Filters sandboxes by namespace.
-Must match the format:
+When provided, must match the format:
 - starts with a lowercase letter
 - contains only lowercase alphanumeric characters or hyphens
 - ends with an alphanumeric character
 Example: "default", "team-a"
+May be empty when node_id is supplied (e.g. the data-plane daemon's
+per-node resync scan).
 
 **statusPhase**: Filters sandboxes by their current lifecycle phase.
 If unset, sandboxes in all phases are returned.

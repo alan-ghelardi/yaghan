@@ -811,11 +811,13 @@ func (x *GetSandboxResponse) GetSandbox() *Sandbox {
 type ListSandboxesRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Filters sandboxes by namespace.
-	// Must match the format:
+	// When provided, must match the format:
 	// - starts with a lowercase letter
 	// - contains only lowercase alphanumeric characters or hyphens
 	// - ends with an alphanumeric character
 	// Example: "default", "team-a"
+	// May be empty when node_id is supplied (e.g. the data-plane daemon's
+	// per-node resync scan).
 	Namespace string `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
 	// Filters sandboxes by the ID of the node where they are scheduled or running.
 	NodeId string `protobuf:"bytes,2,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
@@ -1419,9 +1421,9 @@ const file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDesc = "" +
 	"\n" +
 	"sandbox_id\x18\x01 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\tsandboxId\"W\n" +
 	"\x12GetSandboxResponse\x12A\n" +
-	"\asandbox\x18\x01 \x01(\v2'.nuinfra.control_plane.v1alpha1.SandboxR\asandbox\"\xf7\x04\n" +
-	"\x14ListSandboxesRequest\x12C\n" +
-	"\tnamespace\x18\x01 \x01(\tB%\xbaH\"r 2\x1e^[a-z][a-z0-9-]{0,61}[a-z0-9]$R\tnamespace\x12\x17\n" +
+	"\asandbox\x18\x01 \x01(\v2'.nuinfra.control_plane.v1alpha1.SandboxR\asandbox\"\x91\x06\n" +
+	"\x14ListSandboxesRequest\x12\x1c\n" +
+	"\tnamespace\x18\x01 \x01(\tR\tnamespace\x12\x17\n" +
 	"\anode_id\x18\x02 \x01(\tR\x06nodeId\x12V\n" +
 	"\fstatus_phase\x18\x03 \x01(\x0e23.nuinfra.control_plane.v1alpha1.SandboxStatus.PhaseR\vstatusPhase\x12-\n" +
 	"\x12continuation_token\x18\x04 \x01(\tR\x11continuationToken\x12'\n" +
@@ -1432,8 +1434,9 @@ const file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDesc = "" +
 	"\x05Order\x12\x15\n" +
 	"\x11ORDER_UNSPECIFIED\x10\x00\x12\x16\n" +
 	"\x12ORDER_NEWEST_FIRST\x10\x01\x12\x16\n" +
-	"\x12ORDER_OLDEST_FIRST\x10\x02:\xa5\x01\xbaH\xa1\x01\x1a\x9e\x01\n" +
-	"$ListSandboxesRequest.required_fields\x12LAt least one of `namespace` or `node_id` must be provided to list sandboxes.\x1a(has(this.namespace) || has(this.node_id)\"\x8d\x01\n" +
+	"\x12ORDER_OLDEST_FIRST\x10\x02:\xe6\x02\xbaH\xe2\x02\x1a\x9e\x01\n" +
+	"$ListSandboxesRequest.required_fields\x12LAt least one of `namespace` or `node_id` must be provided to list sandboxes.\x1a(has(this.namespace) || has(this.node_id)\x1a\xbe\x01\n" +
+	"&ListSandboxesRequest.namespace_pattern\x12Bnamespace must match ^[a-z][a-z0-9-]{0,61}[a-z0-9]$ when provided.\x1aPthis.namespace == '' || this.namespace.matches('^[a-z][a-z0-9-]{0,61}[a-z0-9]$')\"\x8d\x01\n" +
 	"\x15ListSandboxesResponse\x12E\n" +
 	"\tsandboxes\x18\x01 \x03(\v2'.nuinfra.control_plane.v1alpha1.SandboxR\tsandboxes\x12-\n" +
 	"\x12continuation_token\x18\x02 \x01(\tR\x11continuationToken\"^\n" +

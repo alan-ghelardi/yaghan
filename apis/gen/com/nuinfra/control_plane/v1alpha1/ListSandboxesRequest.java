@@ -204,14 +204,16 @@ private static final long serialVersionUID = 0L;
   /**
    * <pre>
    * Filters sandboxes by namespace.
-   * Must match the format:
+   * When provided, must match the format:
    * - starts with a lowercase letter
    * - contains only lowercase alphanumeric characters or hyphens
    * - ends with an alphanumeric character
    * Example: "default", "team-a"
+   * May be empty when node_id is supplied (e.g. the data-plane daemon's
+   * per-node resync scan).
    * </pre>
    *
-   * <code>string namespace = 1 [json_name = "namespace", (.buf.validate.field) = { ... }</code>
+   * <code>string namespace = 1 [json_name = "namespace"];</code>
    * @return The namespace.
    */
   @java.lang.Override
@@ -230,14 +232,16 @@ private static final long serialVersionUID = 0L;
   /**
    * <pre>
    * Filters sandboxes by namespace.
-   * Must match the format:
+   * When provided, must match the format:
    * - starts with a lowercase letter
    * - contains only lowercase alphanumeric characters or hyphens
    * - ends with an alphanumeric character
    * Example: "default", "team-a"
+   * May be empty when node_id is supplied (e.g. the data-plane daemon's
+   * per-node resync scan).
    * </pre>
    *
-   * <code>string namespace = 1 [json_name = "namespace", (.buf.validate.field) = { ... }</code>
+   * <code>string namespace = 1 [json_name = "namespace"];</code>
    * @return The bytes for namespace.
    */
   @java.lang.Override
@@ -841,14 +845,16 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * Filters sandboxes by namespace.
-     * Must match the format:
+     * When provided, must match the format:
      * - starts with a lowercase letter
      * - contains only lowercase alphanumeric characters or hyphens
      * - ends with an alphanumeric character
      * Example: "default", "team-a"
+     * May be empty when node_id is supplied (e.g. the data-plane daemon's
+     * per-node resync scan).
      * </pre>
      *
-     * <code>string namespace = 1 [json_name = "namespace", (.buf.validate.field) = { ... }</code>
+     * <code>string namespace = 1 [json_name = "namespace"];</code>
      * @return The namespace.
      */
     public java.lang.String getNamespace() {
@@ -866,14 +872,16 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * Filters sandboxes by namespace.
-     * Must match the format:
+     * When provided, must match the format:
      * - starts with a lowercase letter
      * - contains only lowercase alphanumeric characters or hyphens
      * - ends with an alphanumeric character
      * Example: "default", "team-a"
+     * May be empty when node_id is supplied (e.g. the data-plane daemon's
+     * per-node resync scan).
      * </pre>
      *
-     * <code>string namespace = 1 [json_name = "namespace", (.buf.validate.field) = { ... }</code>
+     * <code>string namespace = 1 [json_name = "namespace"];</code>
      * @return The bytes for namespace.
      */
     public com.google.protobuf.ByteString
@@ -892,14 +900,16 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * Filters sandboxes by namespace.
-     * Must match the format:
+     * When provided, must match the format:
      * - starts with a lowercase letter
      * - contains only lowercase alphanumeric characters or hyphens
      * - ends with an alphanumeric character
      * Example: "default", "team-a"
+     * May be empty when node_id is supplied (e.g. the data-plane daemon's
+     * per-node resync scan).
      * </pre>
      *
-     * <code>string namespace = 1 [json_name = "namespace", (.buf.validate.field) = { ... }</code>
+     * <code>string namespace = 1 [json_name = "namespace"];</code>
      * @param value The namespace to set.
      * @return This builder for chaining.
      */
@@ -914,14 +924,16 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * Filters sandboxes by namespace.
-     * Must match the format:
+     * When provided, must match the format:
      * - starts with a lowercase letter
      * - contains only lowercase alphanumeric characters or hyphens
      * - ends with an alphanumeric character
      * Example: "default", "team-a"
+     * May be empty when node_id is supplied (e.g. the data-plane daemon's
+     * per-node resync scan).
      * </pre>
      *
-     * <code>string namespace = 1 [json_name = "namespace", (.buf.validate.field) = { ... }</code>
+     * <code>string namespace = 1 [json_name = "namespace"];</code>
      * @return This builder for chaining.
      */
     public Builder clearNamespace() {
@@ -933,14 +945,16 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * Filters sandboxes by namespace.
-     * Must match the format:
+     * When provided, must match the format:
      * - starts with a lowercase letter
      * - contains only lowercase alphanumeric characters or hyphens
      * - ends with an alphanumeric character
      * Example: "default", "team-a"
+     * May be empty when node_id is supplied (e.g. the data-plane daemon's
+     * per-node resync scan).
      * </pre>
      *
-     * <code>string namespace = 1 [json_name = "namespace", (.buf.validate.field) = { ... }</code>
+     * <code>string namespace = 1 [json_name = "namespace"];</code>
      * @param value The bytes for namespace to set.
      * @return This builder for chaining.
      */

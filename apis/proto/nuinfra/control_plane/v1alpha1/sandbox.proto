@@ -121,12 +121,14 @@ message GetSandboxResponse {
 // Request message for listing sandboxes with optional filtering and pagination.
 message ListSandboxesRequest {
   // Filters sandboxes by namespace.
-  // Must match the format:
+  // When provided, must match the format:
   // - starts with a lowercase letter
   // - contains only lowercase alphanumeric characters or hyphens
   // - ends with an alphanumeric character
   // Example: "default", "team-a"
-  string namespace = 1 [(buf.validate.field).string.pattern = "^[a-z][a-z0-9-]{0,61}[a-z0-9]$"];
+  // May be empty when node_id is supplied (e.g. the data-plane daemon's
+  // per-node resync scan).
+  string namespace = 1;
 
   // Filters sandboxes by the ID of the node where they are scheduled or running.
   string node_id = 2;
@@ -168,6 +170,17 @@ message ListSandboxesRequest {
     id: "ListSandboxesRequest.required_fields"
     expression: "has(this.namespace) || has(this.node_id)"
     message: "At least one of `namespace` or `node_id` must be provided to list sandboxes."
+  };
+
+  // Validation rule: when namespace is provided, it must match the
+  // canonical pattern. Encoded at the message level (not as a
+  // field-level string.pattern) so an empty namespace — valid when
+  // node_id alone narrows the query — doesn't trip the regex on the
+  // zero value.
+  option (buf.validate.message).cel = {
+    id: "ListSandboxesRequest.namespace_pattern"
+    expression: "this.namespace == '' || this.namespace.matches('^[a-z][a-z0-9-]{0,61}[a-z0-9]$')"
+    message: "namespace must match ^[a-z][a-z0-9-]{0,61}[a-z0-9]$ when provided."
   };
 }
 

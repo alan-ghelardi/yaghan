@@ -36,7 +36,7 @@
         "parameters": [
           {
             "name": "namespace",
-            "description": "Filters sandboxes by namespace.\nMust match the format:\n- starts with a lowercase letter\n- contains only lowercase alphanumeric characters or hyphens\n- ends with an alphanumeric character\nExample: \"default\", \"team-a\"",
+            "description": "Filters sandboxes by namespace.\nWhen provided, must match the format:\n- starts with a lowercase letter\n- contains only lowercase alphanumeric characters or hyphens\n- ends with an alphanumeric character\nExample: \"default\", \"team-a\"\nMay be empty when node_id is supplied (e.g. the data-plane daemon's\nper-node resync scan).",
             "in": "query",
             "required": false,
             "type": "string"
