@@ -71,7 +71,7 @@ func (d *daemon) Setup(ctx context.Context) error {
 	// Snapshot durable storage is optional: deployments that don't need
 	// off-host snapshots (local development, tests) leave Snapshots unset
 	// and the reconciler is wired with a nil store. The snapshot
-	// reconcile path is only entered when Intent.CreateSnapshot is true,
+	// reconcile path is only entered when Intent.CreateSnapshot is set,
 	// so nil is safe for configurations that never request one.
 	var snapshotStore *snapshot.Store
 	if d.config.Snapshots != nil && d.config.Snapshots.S3 != nil {

@@ -412,7 +412,9 @@ func TestReconcile_CreateSnapshotClearsFlag(t *testing.T) {
 
 	sandbox := fixtureSandbox("sb-snap")
 	sandbox.Status.Phase = cpv1.SandboxStatus_PHASE_RUNNING
-	sandbox.Intent = &cpv1.Intent{CreateSnapshot: true}
+	sandbox.Intent = &cpv1.Intent{
+		CreateSnapshot: &cpv1.CreateSnapshotInput{Description: "before-deploy"},
+	}
 
 	localRef := stubLocalRefWithFiles(t, "snap-1")
 
@@ -435,6 +437,37 @@ func TestReconcile_CreateSnapshotClearsFlag(t *testing.T) {
 		"LastSnapshot.CreatedAt must be stamped during the reconcile")
 }
 
+// TestReconcile_CreateSnapshotDropsDescription pins the current behavior:
+// the daemon does not forward the user-supplied Description into
+// LastSnapshot or anywhere else. The day we want to forward it (into
+// the snapshot manifest, an S3 object tag, etc.) this test must be
+// updated explicitly so the change is intentional.
+func TestReconcile_CreateSnapshotDropsDescription(t *testing.T) {
+	r, provider, _, vm, durableStore := newReconcilerFixture(t)
+	ctx := context.Background()
+
+	sandbox := fixtureSandbox("sb-snap-desc")
+	sandbox.Status.Phase = cpv1.SandboxStatus_PHASE_RUNNING
+	sandbox.Intent = &cpv1.Intent{
+		CreateSnapshot: &cpv1.CreateSnapshotInput{Description: "pre-deploy snapshot"},
+	}
+
+	localRef := stubLocalRefWithFiles(t, "snap-desc")
+	gomock.InOrder(
+		provider.EXPECT().GetMicroVM("sb-snap-desc").Return(vm),
+		vm.EXPECT().CreateSnapshot(ctx).Return(localRef, nil),
+		durableStore.EXPECT().Put(ctx, "snap-desc", gomock.Any()).Return(nil),
+	)
+
+	require.NoError(t, r.Reconcile(ctx, sandbox))
+
+	// Description currently goes nowhere — neither LastSnapshot nor any
+	// proto field carries it. When we wire it through, expand the
+	// LastSnapshot proto and update this assertion.
+	require.NotNil(t, sandbox.GetLastSnapshot())
+	assert.Equal(t, "snap-desc", sandbox.GetLastSnapshot().GetSnapshotId())
+}
+
 func TestReconcile_CombinedIntentsAreAppliedInOrderAndCleared(t *testing.T) {
 	r, provider, driver, vm, durableStore := newReconcilerFixture(t)
 	ctx := context.Background()
@@ -443,7 +476,7 @@ func TestReconcile_CombinedIntentsAreAppliedInOrderAndCleared(t *testing.T) {
 	sandbox.Intent = &cpv1.Intent{
 		Phase:          cpv1.SandboxStatus_PHASE_RUNNING,
 		Resources:      &cpv1.Resources{VcpuCount: 4, MemoryMib: 4096},
-		CreateSnapshot: true,
+		CreateSnapshot: &cpv1.CreateSnapshotInput{},
 	}
 
 	nsh := fixtureNamespaceHandle(0)
@@ -480,7 +513,7 @@ func TestReconcile_PhaseFailureSkipsResourcesAndSnapshot(t *testing.T) {
 	sandbox.Intent = &cpv1.Intent{
 		Phase:          cpv1.SandboxStatus_PHASE_RUNNING,
 		Resources:      &cpv1.Resources{VcpuCount: 4, MemoryMib: 4096},
-		CreateSnapshot: true,
+		CreateSnapshot: &cpv1.CreateSnapshotInput{},
 	}
 
 	bootErr := errors.New("kernel panic during boot")
@@ -497,7 +530,7 @@ func TestReconcile_PhaseFailureSkipsResourcesAndSnapshot(t *testing.T) {
 	require.NotNil(t, sandbox.Intent, "Intent stays set so the retry resumes")
 	assert.Equal(t, cpv1.SandboxStatus_PHASE_RUNNING, sandbox.GetIntent().GetPhase())
 	require.NotNil(t, sandbox.GetIntent().GetResources())
-	assert.True(t, sandbox.GetIntent().GetCreateSnapshot())
+	assert.NotNil(t, sandbox.GetIntent().GetCreateSnapshot())
 }
 
 func TestReconcile_UnsupportedPhaseReturnsError(t *testing.T) {

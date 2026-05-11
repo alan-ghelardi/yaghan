@@ -255,10 +255,13 @@ func (r *Reconciler) reconcileResources(ctx context.Context, sandbox *controlpla
 }
 
 // reconcileSnapshot triggers a snapshot when the corresponding intent
-// flag is set.
+// is set. The caller's Description is currently dropped on the floor —
+// the daemon only needs the trigger signal today. Forwarding it into
+// the snapshot manifest is a separate concern (where the description
+// is persisted hasn't been decided yet).
 func (r *Reconciler) reconcileSnapshot(ctx context.Context, sandbox *controlplanev1alpha1.Sandbox) error {
 	intent := sandbox.GetIntent()
-	if !intent.GetCreateSnapshot() {
+	if intent.GetCreateSnapshot() == nil {
 		return nil
 	}
 
@@ -275,8 +278,8 @@ func (r *Reconciler) reconcileSnapshot(ctx context.Context, sandbox *controlplan
 		return fmt.Errorf("persist snapshot: %w", err)
 	}
 
-	intent.CreateSnapshot = false
-	sandbox.LastSnapshot = &controlplanev1alpha1.CreateSnapshotResult{
+	intent.CreateSnapshot = nil
+	sandbox.LastSnapshot = &controlplanev1alpha1.CreateSnapshotOutput{
 		SnapshotId: localRef.SnapshotID,
 		CreatedAt:  timestamppb.Now(),
 	}
