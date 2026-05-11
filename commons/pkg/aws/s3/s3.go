@@ -112,7 +112,7 @@ func newSDKClient(ctx context.Context, config Config) *s3.Client {
 		})
 	}
 
-	if config.Region != "" {
+	if len(config.Region) != 0 {
 		options = append(options, func(opts *s3.Options) {
 			opts.Region = config.Region
 		})
