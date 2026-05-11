@@ -5,6 +5,7 @@ import (
 	"golang.nuinfra.net/ctl/pkg/cli"
 	"golang.nuinfra.net/ctl/pkg/cmd/sandbox/cp"
 	"golang.nuinfra.net/ctl/pkg/cmd/sandbox/create"
+	"golang.nuinfra.net/ctl/pkg/cmd/sandbox/createsnapshot"
 	deletecmd "golang.nuinfra.net/ctl/pkg/cmd/sandbox/delete"
 	"golang.nuinfra.net/ctl/pkg/cmd/sandbox/exec"
 	"golang.nuinfra.net/ctl/pkg/cmd/sandbox/get"
@@ -25,6 +26,7 @@ func New(ctx *cli.Context) *cobra.Command {
 	cmd.AddCommand(pause.New(ctx))
 	cmd.AddCommand(resume.New(ctx))
 	cmd.AddCommand(deletecmd.New(ctx))
+	cmd.AddCommand(createsnapshot.New(ctx))
 	cmd.AddCommand(exec.New(ctx))
 	cmd.AddCommand(cp.New(ctx))
 
