@@ -655,7 +655,6 @@ func (f *firecrackerVM) CreateSnapshot(ctx context.Context) (*Snapshot, error) {
 
 	return &Snapshot{
 		ID:            id,
-		Dir:           snapHostDir,
 		MemFilePath:   filepath.Join(snapHostDir, memSnapFile),
 		StateFilePath: filepath.Join(snapHostDir, stateSnapFile),
 	}, nil

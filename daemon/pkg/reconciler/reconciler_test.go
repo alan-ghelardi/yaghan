@@ -394,7 +394,6 @@ func TestReconcile_CreateSnapshotClearsFlag(t *testing.T) {
 		provider.EXPECT().GetMicroVM("sb-snap").Return(vm),
 		vm.EXPECT().CreateSnapshot(ctx).Return(&firecracker.Snapshot{
 			ID:            "snap-1",
-			Dir:           "/tmp/snap-1",
 			MemFilePath:   "/tmp/snap-1/mem",
 			StateFilePath: "/tmp/snap-1/state",
 		}, nil),

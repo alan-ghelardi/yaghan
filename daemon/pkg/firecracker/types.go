@@ -148,7 +148,6 @@ type UpdateResourcesInput struct {
 
 type Snapshot struct {
 	ID            string
-	Dir           string
 	MemFilePath   string
 	StateFilePath string
 }
