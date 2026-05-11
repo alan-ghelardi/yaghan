@@ -172,6 +172,21 @@
         }
       }
     },
+    "v1alpha1CreateSnapshotResult": {
+      "type": "object",
+      "properties": {
+        "snapshotId": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "error": {
+          "$ref": "#/definitions/rpcStatus"
+        }
+      }
+    },
     "v1alpha1EC2InstanceMeta": {
       "type": "object",
       "properties": {
@@ -451,6 +466,9 @@
         },
         "intent": {
           "$ref": "#/definitions/v1alpha1Intent"
+        },
+        "lastSnapshot": {
+          "$ref": "#/definitions/v1alpha1CreateSnapshotResult"
         },
         "status": {
           "$ref": "#/definitions/v1alpha1SandboxStatus"

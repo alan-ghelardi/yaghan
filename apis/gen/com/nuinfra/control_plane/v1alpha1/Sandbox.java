@@ -148,18 +148,44 @@ private static final long serialVersionUID = 0L;
     return intent_ == null ? com.nuinfra.control_plane.v1alpha1.Intent.getDefaultInstance() : intent_;
   }
 
-  public static final int STATUS_FIELD_NUMBER = 5;
+  public static final int LAST_SNAPSHOT_FIELD_NUMBER = 5;
+  private com.nuinfra.control_plane.v1alpha1.CreateSnapshotResult lastSnapshot_;
+  /**
+   * <code>.nuinfra.control_plane.v1alpha1.CreateSnapshotResult last_snapshot = 5 [json_name = "lastSnapshot"];</code>
+   * @return Whether the lastSnapshot field is set.
+   */
+  @java.lang.Override
+  public boolean hasLastSnapshot() {
+    return ((bitField0_ & 0x00000010) != 0);
+  }
+  /**
+   * <code>.nuinfra.control_plane.v1alpha1.CreateSnapshotResult last_snapshot = 5 [json_name = "lastSnapshot"];</code>
+   * @return The lastSnapshot.
+   */
+  @java.lang.Override
+  public com.nuinfra.control_plane.v1alpha1.CreateSnapshotResult getLastSnapshot() {
+    return lastSnapshot_ == null ? com.nuinfra.control_plane.v1alpha1.CreateSnapshotResult.getDefaultInstance() : lastSnapshot_;
+  }
+  /**
+   * <code>.nuinfra.control_plane.v1alpha1.CreateSnapshotResult last_snapshot = 5 [json_name = "lastSnapshot"];</code>
+   */
+  @java.lang.Override
+  public com.nuinfra.control_plane.v1alpha1.CreateSnapshotResultOrBuilder getLastSnapshotOrBuilder() {
+    return lastSnapshot_ == null ? com.nuinfra.control_plane.v1alpha1.CreateSnapshotResult.getDefaultInstance() : lastSnapshot_;
+  }
+
+  public static final int STATUS_FIELD_NUMBER = 6;
   private com.nuinfra.control_plane.v1alpha1.SandboxStatus status_;
   /**
-   * <code>.nuinfra.control_plane.v1alpha1.SandboxStatus status = 5 [json_name = "status"];</code>
+   * <code>.nuinfra.control_plane.v1alpha1.SandboxStatus status = 6 [json_name = "status"];</code>
    * @return Whether the status field is set.
    */
   @java.lang.Override
   public boolean hasStatus() {
-    return ((bitField0_ & 0x00000010) != 0);
+    return ((bitField0_ & 0x00000020) != 0);
   }
   /**
-   * <code>.nuinfra.control_plane.v1alpha1.SandboxStatus status = 5 [json_name = "status"];</code>
+   * <code>.nuinfra.control_plane.v1alpha1.SandboxStatus status = 6 [json_name = "status"];</code>
    * @return The status.
    */
   @java.lang.Override
@@ -167,7 +193,7 @@ private static final long serialVersionUID = 0L;
     return status_ == null ? com.nuinfra.control_plane.v1alpha1.SandboxStatus.getDefaultInstance() : status_;
   }
   /**
-   * <code>.nuinfra.control_plane.v1alpha1.SandboxStatus status = 5 [json_name = "status"];</code>
+   * <code>.nuinfra.control_plane.v1alpha1.SandboxStatus status = 6 [json_name = "status"];</code>
    */
   @java.lang.Override
   public com.nuinfra.control_plane.v1alpha1.SandboxStatusOrBuilder getStatusOrBuilder() {
@@ -201,7 +227,10 @@ private static final long serialVersionUID = 0L;
       output.writeMessage(4, getIntent());
     }
     if (((bitField0_ & 0x00000010) != 0)) {
-      output.writeMessage(5, getStatus());
+      output.writeMessage(5, getLastSnapshot());
+    }
+    if (((bitField0_ & 0x00000020) != 0)) {
+      output.writeMessage(6, getStatus());
     }
     getUnknownFields().writeTo(output);
   }
@@ -230,7 +259,11 @@ private static final long serialVersionUID = 0L;
     }
     if (((bitField0_ & 0x00000010) != 0)) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(5, getStatus());
+        .computeMessageSize(5, getLastSnapshot());
+    }
+    if (((bitField0_ & 0x00000020) != 0)) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(6, getStatus());
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -267,6 +300,11 @@ private static final long serialVersionUID = 0L;
       if (!getIntent()
           .equals(other.getIntent())) return false;
     }
+    if (hasLastSnapshot() != other.hasLastSnapshot()) return false;
+    if (hasLastSnapshot()) {
+      if (!getLastSnapshot()
+          .equals(other.getLastSnapshot())) return false;
+    }
     if (hasStatus() != other.hasStatus()) return false;
     if (hasStatus()) {
       if (!getStatus()
@@ -298,6 +336,10 @@ private static final long serialVersionUID = 0L;
     if (hasIntent()) {
       hash = (37 * hash) + INTENT_FIELD_NUMBER;
       hash = (53 * hash) + getIntent().hashCode();
+    }
+    if (hasLastSnapshot()) {
+      hash = (37 * hash) + LAST_SNAPSHOT_FIELD_NUMBER;
+      hash = (53 * hash) + getLastSnapshot().hashCode();
     }
     if (hasStatus()) {
       hash = (37 * hash) + STATUS_FIELD_NUMBER;
@@ -437,6 +479,7 @@ private static final long serialVersionUID = 0L;
         internalGetResourcesFieldBuilder();
         internalGetNodeFieldBuilder();
         internalGetIntentFieldBuilder();
+        internalGetLastSnapshotFieldBuilder();
         internalGetStatusFieldBuilder();
       }
     }
@@ -463,6 +506,11 @@ private static final long serialVersionUID = 0L;
       if (intentBuilder_ != null) {
         intentBuilder_.dispose();
         intentBuilder_ = null;
+      }
+      lastSnapshot_ = null;
+      if (lastSnapshotBuilder_ != null) {
+        lastSnapshotBuilder_.dispose();
+        lastSnapshotBuilder_ = null;
       }
       status_ = null;
       if (statusBuilder_ != null) {
@@ -528,10 +576,16 @@ private static final long serialVersionUID = 0L;
         to_bitField0_ |= 0x00000008;
       }
       if (((from_bitField0_ & 0x00000010) != 0)) {
+        result.lastSnapshot_ = lastSnapshotBuilder_ == null
+            ? lastSnapshot_
+            : lastSnapshotBuilder_.build();
+        to_bitField0_ |= 0x00000010;
+      }
+      if (((from_bitField0_ & 0x00000020) != 0)) {
         result.status_ = statusBuilder_ == null
             ? status_
             : statusBuilder_.build();
-        to_bitField0_ |= 0x00000010;
+        to_bitField0_ |= 0x00000020;
       }
       result.bitField0_ |= to_bitField0_;
     }
@@ -559,6 +613,9 @@ private static final long serialVersionUID = 0L;
       }
       if (other.hasIntent()) {
         mergeIntent(other.getIntent());
+      }
+      if (other.hasLastSnapshot()) {
+        mergeLastSnapshot(other.getLastSnapshot());
       }
       if (other.hasStatus()) {
         mergeStatus(other.getStatus());
@@ -619,11 +676,18 @@ private static final long serialVersionUID = 0L;
             } // case 34
             case 42: {
               input.readMessage(
-                  internalGetStatusFieldBuilder().getBuilder(),
+                  internalGetLastSnapshotFieldBuilder().getBuilder(),
                   extensionRegistry);
               bitField0_ |= 0x00000010;
               break;
             } // case 42
+            case 50: {
+              input.readMessage(
+                  internalGetStatusFieldBuilder().getBuilder(),
+                  extensionRegistry);
+              bitField0_ |= 0x00000020;
+              break;
+            } // case 50
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -1125,18 +1189,139 @@ private static final long serialVersionUID = 0L;
       return intentBuilder_;
     }
 
+    private com.nuinfra.control_plane.v1alpha1.CreateSnapshotResult lastSnapshot_;
+    private com.google.protobuf.SingleFieldBuilder<
+        com.nuinfra.control_plane.v1alpha1.CreateSnapshotResult, com.nuinfra.control_plane.v1alpha1.CreateSnapshotResult.Builder, com.nuinfra.control_plane.v1alpha1.CreateSnapshotResultOrBuilder> lastSnapshotBuilder_;
+    /**
+     * <code>.nuinfra.control_plane.v1alpha1.CreateSnapshotResult last_snapshot = 5 [json_name = "lastSnapshot"];</code>
+     * @return Whether the lastSnapshot field is set.
+     */
+    public boolean hasLastSnapshot() {
+      return ((bitField0_ & 0x00000010) != 0);
+    }
+    /**
+     * <code>.nuinfra.control_plane.v1alpha1.CreateSnapshotResult last_snapshot = 5 [json_name = "lastSnapshot"];</code>
+     * @return The lastSnapshot.
+     */
+    public com.nuinfra.control_plane.v1alpha1.CreateSnapshotResult getLastSnapshot() {
+      if (lastSnapshotBuilder_ == null) {
+        return lastSnapshot_ == null ? com.nuinfra.control_plane.v1alpha1.CreateSnapshotResult.getDefaultInstance() : lastSnapshot_;
+      } else {
+        return lastSnapshotBuilder_.getMessage();
+      }
+    }
+    /**
+     * <code>.nuinfra.control_plane.v1alpha1.CreateSnapshotResult last_snapshot = 5 [json_name = "lastSnapshot"];</code>
+     */
+    public Builder setLastSnapshot(com.nuinfra.control_plane.v1alpha1.CreateSnapshotResult value) {
+      if (lastSnapshotBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        lastSnapshot_ = value;
+      } else {
+        lastSnapshotBuilder_.setMessage(value);
+      }
+      bitField0_ |= 0x00000010;
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>.nuinfra.control_plane.v1alpha1.CreateSnapshotResult last_snapshot = 5 [json_name = "lastSnapshot"];</code>
+     */
+    public Builder setLastSnapshot(
+        com.nuinfra.control_plane.v1alpha1.CreateSnapshotResult.Builder builderForValue) {
+      if (lastSnapshotBuilder_ == null) {
+        lastSnapshot_ = builderForValue.build();
+      } else {
+        lastSnapshotBuilder_.setMessage(builderForValue.build());
+      }
+      bitField0_ |= 0x00000010;
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>.nuinfra.control_plane.v1alpha1.CreateSnapshotResult last_snapshot = 5 [json_name = "lastSnapshot"];</code>
+     */
+    public Builder mergeLastSnapshot(com.nuinfra.control_plane.v1alpha1.CreateSnapshotResult value) {
+      if (lastSnapshotBuilder_ == null) {
+        if (((bitField0_ & 0x00000010) != 0) &&
+          lastSnapshot_ != null &&
+          lastSnapshot_ != com.nuinfra.control_plane.v1alpha1.CreateSnapshotResult.getDefaultInstance()) {
+          getLastSnapshotBuilder().mergeFrom(value);
+        } else {
+          lastSnapshot_ = value;
+        }
+      } else {
+        lastSnapshotBuilder_.mergeFrom(value);
+      }
+      if (lastSnapshot_ != null) {
+        bitField0_ |= 0x00000010;
+        onChanged();
+      }
+      return this;
+    }
+    /**
+     * <code>.nuinfra.control_plane.v1alpha1.CreateSnapshotResult last_snapshot = 5 [json_name = "lastSnapshot"];</code>
+     */
+    public Builder clearLastSnapshot() {
+      bitField0_ = (bitField0_ & ~0x00000010);
+      lastSnapshot_ = null;
+      if (lastSnapshotBuilder_ != null) {
+        lastSnapshotBuilder_.dispose();
+        lastSnapshotBuilder_ = null;
+      }
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>.nuinfra.control_plane.v1alpha1.CreateSnapshotResult last_snapshot = 5 [json_name = "lastSnapshot"];</code>
+     */
+    public com.nuinfra.control_plane.v1alpha1.CreateSnapshotResult.Builder getLastSnapshotBuilder() {
+      bitField0_ |= 0x00000010;
+      onChanged();
+      return internalGetLastSnapshotFieldBuilder().getBuilder();
+    }
+    /**
+     * <code>.nuinfra.control_plane.v1alpha1.CreateSnapshotResult last_snapshot = 5 [json_name = "lastSnapshot"];</code>
+     */
+    public com.nuinfra.control_plane.v1alpha1.CreateSnapshotResultOrBuilder getLastSnapshotOrBuilder() {
+      if (lastSnapshotBuilder_ != null) {
+        return lastSnapshotBuilder_.getMessageOrBuilder();
+      } else {
+        return lastSnapshot_ == null ?
+            com.nuinfra.control_plane.v1alpha1.CreateSnapshotResult.getDefaultInstance() : lastSnapshot_;
+      }
+    }
+    /**
+     * <code>.nuinfra.control_plane.v1alpha1.CreateSnapshotResult last_snapshot = 5 [json_name = "lastSnapshot"];</code>
+     */
+    private com.google.protobuf.SingleFieldBuilder<
+        com.nuinfra.control_plane.v1alpha1.CreateSnapshotResult, com.nuinfra.control_plane.v1alpha1.CreateSnapshotResult.Builder, com.nuinfra.control_plane.v1alpha1.CreateSnapshotResultOrBuilder> 
+        internalGetLastSnapshotFieldBuilder() {
+      if (lastSnapshotBuilder_ == null) {
+        lastSnapshotBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+            com.nuinfra.control_plane.v1alpha1.CreateSnapshotResult, com.nuinfra.control_plane.v1alpha1.CreateSnapshotResult.Builder, com.nuinfra.control_plane.v1alpha1.CreateSnapshotResultOrBuilder>(
+                getLastSnapshot(),
+                getParentForChildren(),
+                isClean());
+        lastSnapshot_ = null;
+      }
+      return lastSnapshotBuilder_;
+    }
+
     private com.nuinfra.control_plane.v1alpha1.SandboxStatus status_;
     private com.google.protobuf.SingleFieldBuilder<
         com.nuinfra.control_plane.v1alpha1.SandboxStatus, com.nuinfra.control_plane.v1alpha1.SandboxStatus.Builder, com.nuinfra.control_plane.v1alpha1.SandboxStatusOrBuilder> statusBuilder_;
     /**
-     * <code>.nuinfra.control_plane.v1alpha1.SandboxStatus status = 5 [json_name = "status"];</code>
+     * <code>.nuinfra.control_plane.v1alpha1.SandboxStatus status = 6 [json_name = "status"];</code>
      * @return Whether the status field is set.
      */
     public boolean hasStatus() {
-      return ((bitField0_ & 0x00000010) != 0);
+      return ((bitField0_ & 0x00000020) != 0);
     }
     /**
-     * <code>.nuinfra.control_plane.v1alpha1.SandboxStatus status = 5 [json_name = "status"];</code>
+     * <code>.nuinfra.control_plane.v1alpha1.SandboxStatus status = 6 [json_name = "status"];</code>
      * @return The status.
      */
     public com.nuinfra.control_plane.v1alpha1.SandboxStatus getStatus() {
@@ -1147,7 +1332,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.nuinfra.control_plane.v1alpha1.SandboxStatus status = 5 [json_name = "status"];</code>
+     * <code>.nuinfra.control_plane.v1alpha1.SandboxStatus status = 6 [json_name = "status"];</code>
      */
     public Builder setStatus(com.nuinfra.control_plane.v1alpha1.SandboxStatus value) {
       if (statusBuilder_ == null) {
@@ -1158,12 +1343,12 @@ private static final long serialVersionUID = 0L;
       } else {
         statusBuilder_.setMessage(value);
       }
-      bitField0_ |= 0x00000010;
+      bitField0_ |= 0x00000020;
       onChanged();
       return this;
     }
     /**
-     * <code>.nuinfra.control_plane.v1alpha1.SandboxStatus status = 5 [json_name = "status"];</code>
+     * <code>.nuinfra.control_plane.v1alpha1.SandboxStatus status = 6 [json_name = "status"];</code>
      */
     public Builder setStatus(
         com.nuinfra.control_plane.v1alpha1.SandboxStatus.Builder builderForValue) {
@@ -1172,16 +1357,16 @@ private static final long serialVersionUID = 0L;
       } else {
         statusBuilder_.setMessage(builderForValue.build());
       }
-      bitField0_ |= 0x00000010;
+      bitField0_ |= 0x00000020;
       onChanged();
       return this;
     }
     /**
-     * <code>.nuinfra.control_plane.v1alpha1.SandboxStatus status = 5 [json_name = "status"];</code>
+     * <code>.nuinfra.control_plane.v1alpha1.SandboxStatus status = 6 [json_name = "status"];</code>
      */
     public Builder mergeStatus(com.nuinfra.control_plane.v1alpha1.SandboxStatus value) {
       if (statusBuilder_ == null) {
-        if (((bitField0_ & 0x00000010) != 0) &&
+        if (((bitField0_ & 0x00000020) != 0) &&
           status_ != null &&
           status_ != com.nuinfra.control_plane.v1alpha1.SandboxStatus.getDefaultInstance()) {
           getStatusBuilder().mergeFrom(value);
@@ -1192,16 +1377,16 @@ private static final long serialVersionUID = 0L;
         statusBuilder_.mergeFrom(value);
       }
       if (status_ != null) {
-        bitField0_ |= 0x00000010;
+        bitField0_ |= 0x00000020;
         onChanged();
       }
       return this;
     }
     /**
-     * <code>.nuinfra.control_plane.v1alpha1.SandboxStatus status = 5 [json_name = "status"];</code>
+     * <code>.nuinfra.control_plane.v1alpha1.SandboxStatus status = 6 [json_name = "status"];</code>
      */
     public Builder clearStatus() {
-      bitField0_ = (bitField0_ & ~0x00000010);
+      bitField0_ = (bitField0_ & ~0x00000020);
       status_ = null;
       if (statusBuilder_ != null) {
         statusBuilder_.dispose();
@@ -1211,15 +1396,15 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.nuinfra.control_plane.v1alpha1.SandboxStatus status = 5 [json_name = "status"];</code>
+     * <code>.nuinfra.control_plane.v1alpha1.SandboxStatus status = 6 [json_name = "status"];</code>
      */
     public com.nuinfra.control_plane.v1alpha1.SandboxStatus.Builder getStatusBuilder() {
-      bitField0_ |= 0x00000010;
+      bitField0_ |= 0x00000020;
       onChanged();
       return internalGetStatusFieldBuilder().getBuilder();
     }
     /**
-     * <code>.nuinfra.control_plane.v1alpha1.SandboxStatus status = 5 [json_name = "status"];</code>
+     * <code>.nuinfra.control_plane.v1alpha1.SandboxStatus status = 6 [json_name = "status"];</code>
      */
     public com.nuinfra.control_plane.v1alpha1.SandboxStatusOrBuilder getStatusOrBuilder() {
       if (statusBuilder_ != null) {
@@ -1230,7 +1415,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.nuinfra.control_plane.v1alpha1.SandboxStatus status = 5 [json_name = "status"];</code>
+     * <code>.nuinfra.control_plane.v1alpha1.SandboxStatus status = 6 [json_name = "status"];</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         com.nuinfra.control_plane.v1alpha1.SandboxStatus, com.nuinfra.control_plane.v1alpha1.SandboxStatus.Builder, com.nuinfra.control_plane.v1alpha1.SandboxStatusOrBuilder> 

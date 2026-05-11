@@ -5,6 +5,7 @@
 import type { GenEnum, GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
 import type { Message } from "@bufbuild/protobuf";
 import type { Timestamp } from "@bufbuild/protobuf/wkt";
+import type { Status } from "../../../google/rpc/status_pb";
 
 /**
  * Describes the file nuinfra/control_plane/v1alpha1/sandbox.proto.
@@ -36,7 +37,12 @@ export declare type Sandbox = Message<"nuinfra.control_plane.v1alpha1.Sandbox"> 
   intent?: Intent;
 
   /**
-   * @generated from field: nuinfra.control_plane.v1alpha1.SandboxStatus status = 5;
+   * @generated from field: nuinfra.control_plane.v1alpha1.CreateSnapshotResult last_snapshot = 5;
+   */
+  lastSnapshot?: CreateSnapshotResult;
+
+  /**
+   * @generated from field: nuinfra.control_plane.v1alpha1.SandboxStatus status = 6;
    */
   status?: SandboxStatus;
 };
@@ -159,6 +165,32 @@ export declare type Intent = Message<"nuinfra.control_plane.v1alpha1.Intent"> & 
  * Use `create(IntentSchema)` to create a new message.
  */
 export declare const IntentSchema: GenMessage<Intent>;
+
+/**
+ * @generated from message nuinfra.control_plane.v1alpha1.CreateSnapshotResult
+ */
+export declare type CreateSnapshotResult = Message<"nuinfra.control_plane.v1alpha1.CreateSnapshotResult"> & {
+  /**
+   * @generated from field: string snapshot_id = 1;
+   */
+  snapshotId: string;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp created_at = 2;
+   */
+  createdAt?: Timestamp;
+
+  /**
+   * @generated from field: google.rpc.Status error = 3;
+   */
+  error?: Status;
+};
+
+/**
+ * Describes the message nuinfra.control_plane.v1alpha1.CreateSnapshotResult.
+ * Use `create(CreateSnapshotResultSchema)` to create a new message.
+ */
+export declare const CreateSnapshotResultSchema: GenMessage<CreateSnapshotResult>;
 
 /**
  * @generated from message nuinfra.control_plane.v1alpha1.SandboxStatus

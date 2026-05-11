@@ -16,6 +16,7 @@ import (
 	gomock "go.uber.org/mock/gomock"
 	transport "golang.nuinfra.net/agent/transport"
 	firecracker "golang.nuinfra.net/daemon/pkg/firecracker"
+	snapshot "golang.nuinfra.net/daemon/pkg/snapshot"
 )
 
 // MockProvider is a mock of Provider interface.
@@ -138,10 +139,10 @@ func (m *MockMicroVM) EXPECT() *MockMicroVMMockRecorder {
 }
 
 // CreateSnapshot mocks base method.
-func (m *MockMicroVM) CreateSnapshot(ctx context.Context) (*firecracker.Snapshot, error) {
+func (m *MockMicroVM) CreateSnapshot(ctx context.Context) (*snapshot.LocalReference, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateSnapshot", ctx)
-	ret0, _ := ret[0].(*firecracker.Snapshot)
+	ret0, _ := ret[0].(*snapshot.LocalReference)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

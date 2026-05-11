@@ -7,7 +7,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"path/filepath"
 
 	"github.com/go-openapi/swag/conv"
@@ -15,8 +14,10 @@ import (
 	"golang.nuinfra.net/daemon/pkg/config"
 	"golang.nuinfra.net/daemon/pkg/firecracker"
 	"golang.nuinfra.net/daemon/pkg/network"
+	"golang.nuinfra.net/daemon/pkg/snapshot"
 	"golang.nuinfra.net/firecracker-client/models"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 // Reconciler drives a Sandbox towards the state expressed in its Intent
@@ -25,20 +26,22 @@ import (
 // daemon restart does not lose track of which namespace belongs to
 // which VM.
 type Reconciler struct {
-	provider firecracker.Provider
-	driver   network.Driver
-	config   *config.Bundle
+	config        *config.Bundle
+	provider      firecracker.Provider
+	driver        network.Driver
+	snapshotStore *snapshot.Store
 }
 
 // New constructs a Reconciler bound to the given provider, driver and
 // daemon configuration. The Bundle's MicroVM section supplies the
 // per-VM template constants (kernel paths, agent vsock port, guest MAC,
 // …) used when composing a CreateMicroVMInput.
-func New(provider firecracker.Provider, driver network.Driver, config *config.Bundle) *Reconciler {
+func New(config *config.Bundle, provider firecracker.Provider, driver network.Driver, snapshotStore *snapshot.Store) *Reconciler {
 	return &Reconciler{
-		provider: provider,
-		driver:   driver,
-		config:   config,
+		config:        config,
+		provider:      provider,
+		driver:        driver,
+		snapshotStore: snapshotStore,
 	}
 }
 
@@ -252,9 +255,7 @@ func (r *Reconciler) reconcileResources(ctx context.Context, sandbox *controlpla
 }
 
 // reconcileSnapshot triggers a snapshot when the corresponding intent
-// flag is set. The snapshot's id and host paths are logged; a future
-// PR will route them through a SnapshotStore so callers can fetch the
-// artefacts.
+// flag is set.
 func (r *Reconciler) reconcileSnapshot(ctx context.Context, sandbox *controlplanev1alpha1.Sandbox) error {
 	intent := sandbox.GetIntent()
 	if !intent.GetCreateSnapshot() {
@@ -266,14 +267,20 @@ func (r *Reconciler) reconcileSnapshot(ctx context.Context, sandbox *controlplan
 		return err
 	}
 
-	snap, err := vm.CreateSnapshot(ctx)
+	localRef, err := vm.CreateSnapshot(ctx)
 	if err != nil {
 		return fmt.Errorf("create snapshot: %w", err)
 	}
-	log.Printf("reconciler: snapshot created sandbox=%s id=%s state=%s mem=%s",
-		sandbox.GetMetadata().GetId(), snap.ID, snap.StateFilePath, snap.MemFilePath)
+	if err := r.snapshotStore.Put(ctx, localRef); err != nil {
+		return fmt.Errorf("persist snapshot: %w", err)
+	}
 
 	intent.CreateSnapshot = false
+	sandbox.LastSnapshot = &controlplanev1alpha1.CreateSnapshotResult{
+		SnapshotId: localRef.SnapshotID,
+		CreatedAt:  timestamppb.Now(),
+	}
+
 	return nil
 }
 

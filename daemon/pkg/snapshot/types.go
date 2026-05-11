@@ -17,10 +17,10 @@ const (
 	stateSnapFile = "state"
 	partialSuffix = ".partial"
 
-	// snapshotDirMode matches firecrackerVM.CreateSnapshot's host-side
+	// DirMode matches firecrackerVM.CreateSnapshot's host-side
 	// mkdir so a Load doesn't change permissions from what the jailer
 	// expects on the same path.
-	snapshotDirMode = 0o755
+	DirMode = 0o755
 )
 
 // ErrSnapshotNotFound is returned when a snapshot cannot be found in durable storage.
@@ -139,7 +139,7 @@ func (s *Store) Load(ctx context.Context, chroot, snapshotID string) (*LocalRefe
 		return ref, nil
 	}
 
-	if err := os.MkdirAll(filepath.Dir(ref.MemFilePath), snapshotDirMode); err != nil {
+	if err := os.MkdirAll(filepath.Dir(ref.MemFilePath), DirMode); err != nil {
 		return nil, fmt.Errorf("create snapshot dir: %w", err)
 	}
 

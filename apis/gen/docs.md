@@ -12,6 +12,7 @@
 - [nuinfra/control_plane/v1alpha1/sandbox.proto](#nuinfra_control_plane_v1alpha1_sandbox-proto)
     - [CreateSandboxRequest](#nuinfra-control_plane-v1alpha1-CreateSandboxRequest)
     - [CreateSandboxResponse](#nuinfra-control_plane-v1alpha1-CreateSandboxResponse)
+    - [CreateSnapshotResult](#nuinfra-control_plane-v1alpha1-CreateSnapshotResult)
     - [DeleteSandboxRequest](#nuinfra-control_plane-v1alpha1-DeleteSandboxRequest)
     - [DeleteSandboxResponse](#nuinfra-control_plane-v1alpha1-DeleteSandboxResponse)
     - [GetSandboxRequest](#nuinfra-control_plane-v1alpha1-GetSandboxRequest)
@@ -184,6 +185,23 @@ InsufficientScopes provides further details on unauthorized errors.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | sandbox | [Sandbox](#nuinfra-control_plane-v1alpha1-Sandbox) |  |  |
+
+
+
+
+
+
+<a name="nuinfra-control_plane-v1alpha1-CreateSnapshotResult"></a>
+
+### CreateSnapshotResult
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| snapshot_id | [string](#string) |  |  |
+| created_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  |  |
+| error | [google.rpc.Status](#google-rpc-Status) |  |  |
 
 
 
@@ -394,6 +412,7 @@ Response message containing a page of sandboxes.
 | resources | [Resources](#nuinfra-control_plane-v1alpha1-Resources) |  |  |
 | node | [NodeRef](#nuinfra-control_plane-v1alpha1-NodeRef) |  |  |
 | intent | [Intent](#nuinfra-control_plane-v1alpha1-Intent) |  |  |
+| last_snapshot | [CreateSnapshotResult](#nuinfra-control_plane-v1alpha1-CreateSnapshotResult) |  |  |
 | status | [SandboxStatus](#nuinfra-control_plane-v1alpha1-SandboxStatus) |  |  |
 
 

@@ -17,3 +17,4 @@ gen_mocks pkg/firecracker/types.go
 gen_mocks pkg/network/driver.go
 gen_mocks pkg/node/metrics/metrics.go
 gen_mocks pkg/node/reporter.go
+gen_mocks pkg/snapshot/types.go

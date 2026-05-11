@@ -6,6 +6,7 @@ import (
 
 	"golang.nuinfra.net/agent/transport"
 	"golang.nuinfra.net/daemon/pkg/network"
+	"golang.nuinfra.net/daemon/pkg/snapshot"
 	"golang.nuinfra.net/firecracker-client/models"
 )
 
@@ -119,7 +120,7 @@ type MicroVM interface {
 
 	UpdateResources(ctx context.Context, input UpdateResourcesInput) error
 
-	CreateSnapshot(ctx context.Context) (*Snapshot, error)
+	CreateSnapshot(ctx context.Context) (*snapshot.LocalReference, error)
 
 	Pause(ctx context.Context) error
 
@@ -144,12 +145,6 @@ type UpdateResourcesInput struct {
 	VCPUCount int64
 
 	MemoryMiB int64
-}
-
-type Snapshot struct {
-	ID            string
-	MemFilePath   string
-	StateFilePath string
 }
 
 type MicroVMInfo struct {

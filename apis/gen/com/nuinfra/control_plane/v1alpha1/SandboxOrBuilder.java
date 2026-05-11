@@ -71,17 +71,32 @@ public interface SandboxOrBuilder extends
   com.nuinfra.control_plane.v1alpha1.IntentOrBuilder getIntentOrBuilder();
 
   /**
-   * <code>.nuinfra.control_plane.v1alpha1.SandboxStatus status = 5 [json_name = "status"];</code>
+   * <code>.nuinfra.control_plane.v1alpha1.CreateSnapshotResult last_snapshot = 5 [json_name = "lastSnapshot"];</code>
+   * @return Whether the lastSnapshot field is set.
+   */
+  boolean hasLastSnapshot();
+  /**
+   * <code>.nuinfra.control_plane.v1alpha1.CreateSnapshotResult last_snapshot = 5 [json_name = "lastSnapshot"];</code>
+   * @return The lastSnapshot.
+   */
+  com.nuinfra.control_plane.v1alpha1.CreateSnapshotResult getLastSnapshot();
+  /**
+   * <code>.nuinfra.control_plane.v1alpha1.CreateSnapshotResult last_snapshot = 5 [json_name = "lastSnapshot"];</code>
+   */
+  com.nuinfra.control_plane.v1alpha1.CreateSnapshotResultOrBuilder getLastSnapshotOrBuilder();
+
+  /**
+   * <code>.nuinfra.control_plane.v1alpha1.SandboxStatus status = 6 [json_name = "status"];</code>
    * @return Whether the status field is set.
    */
   boolean hasStatus();
   /**
-   * <code>.nuinfra.control_plane.v1alpha1.SandboxStatus status = 5 [json_name = "status"];</code>
+   * <code>.nuinfra.control_plane.v1alpha1.SandboxStatus status = 6 [json_name = "status"];</code>
    * @return The status.
    */
   com.nuinfra.control_plane.v1alpha1.SandboxStatus getStatus();
   /**
-   * <code>.nuinfra.control_plane.v1alpha1.SandboxStatus status = 5 [json_name = "status"];</code>
+   * <code>.nuinfra.control_plane.v1alpha1.SandboxStatus status = 6 [json_name = "status"];</code>
    */
   com.nuinfra.control_plane.v1alpha1.SandboxStatusOrBuilder getStatusOrBuilder();
 }

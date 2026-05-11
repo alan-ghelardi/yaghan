@@ -5,6 +5,7 @@ package nuinfra.control_plane.v1alpha1;
 import "buf/validate/validate.proto";
 import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
+import "google/rpc/status.proto";
 
 message Sandbox {
   SandboxMeta metadata = 1 [(buf.validate.field).required = true];
@@ -15,7 +16,9 @@ message Sandbox {
 
   Intent intent = 4;
 
-  SandboxStatus status = 5;
+  CreateSnapshotResult last_snapshot = 5;
+
+  SandboxStatus status = 6;
 }
 
 message SandboxMeta {
@@ -69,6 +72,12 @@ message Intent {
   SandboxStatus.Phase phase = 1;
   Resources resources = 2;
   bool create_snapshot = 3;
+}
+
+message CreateSnapshotResult {
+  string snapshot_id = 1;
+  google.protobuf.Timestamp created_at = 2;
+  google.rpc.Status error = 3;
 }
 
 message SandboxStatus {

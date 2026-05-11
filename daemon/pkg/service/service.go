@@ -66,7 +66,11 @@ func (d *daemon) RegisterRESTGateway(context.Context, *runtime.ServeMux, *grpc.C
 
 // Setup implements [server.Service].
 func (d *daemon) Setup(ctx context.Context) error {
-	reconciler := reconciler.New(d.firecracker, d.networkDriver, d.config)
+	// TODO: wire snapshot.Store once Bundle.Snapshots is plumbed and an
+	// S3 DurableStore is constructed at startup. Until then the
+	// reconciler accepts a nil store; the snapshot path is exercised
+	// only by tests today.
+	reconciler := reconciler.New(d.config, d.firecracker, d.networkDriver, nil)
 
 	// The controller and node Agent share a circular dependency: the
 	// Agent needs the controller as its node.Reporter, while the

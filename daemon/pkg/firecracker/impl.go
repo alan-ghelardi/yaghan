@@ -18,9 +18,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/google/uuid"
 	"golang.nuinfra.net/agent/transport"
 	localclient "golang.nuinfra.net/daemon/pkg/firecracker/client"
+	"golang.nuinfra.net/daemon/pkg/snapshot"
 	fcclient "golang.nuinfra.net/firecracker-client/client"
 	"golang.nuinfra.net/firecracker-client/client/operations"
 	"golang.nuinfra.net/firecracker-client/models"
@@ -36,9 +36,6 @@ const (
 	// reached from the host by joining under jailRoot.
 	vmConfigFile   = "vm_config.json"
 	apiSocketFile  = "firecracker.sock"
-	snapshotsDir   = "snapshots"
-	memSnapFile    = "mem"
-	stateSnapFile  = "state"
 	jailRootSubDir = "root" // jailer creates <vmDir>/root/ as the chroot
 
 	// vmMetaFile is a daemon-owned sidecar that persists per-VM
@@ -630,34 +627,26 @@ func (f *firecrackerVM) instanceState(ctx context.Context) (string, error) {
 // CreateSnapshot implements [MicroVM]. Snapshot files live inside the jail
 // (firecracker can only write to paths within its chroot); we return
 // host-absolute paths for the caller's convenience.
-func (f *firecrackerVM) CreateSnapshot(ctx context.Context) (*Snapshot, error) {
-	id := uuid.NewString()
-
-	// Path firecracker sees, rooted at / inside its chroot.
-	memJailPath := filepath.Join("/", snapshotsDir, id, memSnapFile)
-	stateJailPath := filepath.Join("/", snapshotsDir, id, stateSnapFile)
-
-	// Same dir on the host, under the chroot root.
-	snapHostDir := filepath.Join(f.jailRoot, snapshotsDir, id)
-	if err := os.MkdirAll(snapHostDir, 0o755); err != nil {
+func (f *firecrackerVM) CreateSnapshot(ctx context.Context) (*snapshot.LocalReference, error) {
+	localRef := snapshot.MakeLocalReference(f.jailRoot)
+	snapshotDir := filepath.Dir(localRef.MemFilePath)
+	if err := os.MkdirAll(snapshotDir, snapshot.DirMode); err != nil {
 		return nil, fmt.Errorf("create snapshot dir: %w", err)
 	}
 
+	memFilePath := snapshot.MemFilePath(localRef.SnapshotID)
+	stateFilePath := snapshot.StateFilePath(localRef.SnapshotID)
 	params := operations.NewCreateSnapshotParamsWithContext(ctx).
 		WithBody(&models.SnapshotCreateParams{
-			MemFilePath:  &memJailPath,
-			SnapshotPath: &stateJailPath,
+			MemFilePath:  &memFilePath,
+			SnapshotPath: &stateFilePath,
 		})
 	if _, err := f.client.Operations.CreateSnapshot(params); err != nil {
-		_ = os.RemoveAll(snapHostDir)
+		_ = os.RemoveAll(snapshotDir)
 		return nil, fmt.Errorf("create snapshot: %w", err)
 	}
 
-	return &Snapshot{
-		ID:            id,
-		MemFilePath:   filepath.Join(snapHostDir, memSnapFile),
-		StateFilePath: filepath.Join(snapHostDir, stateSnapFile),
-	}, nil
+	return localRef, nil
 }
 
 // destroy tears down the underlying firecracker process and wipes the

@@ -429,6 +429,40 @@ You can find out more about this error model and how to work with it in the
 |---|---|---|---|---|
 |sessionId|string(int64)|false|none|none|
 
+<h2 id="tocS_v1alpha1CreateSnapshotResult">v1alpha1CreateSnapshotResult</h2>
+<!-- backwards compatibility -->
+<a id="schemav1alpha1createsnapshotresult"></a>
+<a id="schema_v1alpha1CreateSnapshotResult"></a>
+<a id="tocSv1alpha1createsnapshotresult"></a>
+<a id="tocsv1alpha1createsnapshotresult"></a>
+
+```json
+{
+  "snapshotId": "string",
+  "createdAt": "2019-08-24T14:15:22Z",
+  "error": {
+    "code": 0,
+    "message": "string",
+    "details": [
+      {
+        "@type": "string",
+        "property1": null,
+        "property2": null
+      }
+    ]
+  }
+}
+
+```
+
+### Properties
+
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|snapshotId|string|false|none|none|
+|createdAt|string(date-time)|false|none|none|
+|error|[rpcStatus](#schemarpcstatus)|false|none|The `Status` type defines a logical error model that is suitable for<br>different programming environments, including REST APIs and RPC APIs. It is<br>used by [gRPC](https://github.com/grpc). Each `Status` message contains<br>three pieces of data: error code, error message, and error details.<br><br>You can find out more about this error model and how to work with it in the<br>[API Design Guide](https://cloud.google.com/apis/design/errors).|
+
 <h2 id="tocS_v1alpha1EC2InstanceMeta">v1alpha1EC2InstanceMeta</h2>
 <!-- backwards compatibility -->
 <a id="schemav1alpha1ec2instancemeta"></a>
@@ -507,6 +541,21 @@ You can find out more about this error model and how to work with it in the
         },
         "createSnapshot": true
       },
+      "lastSnapshot": {
+        "snapshotId": "string",
+        "createdAt": "2019-08-24T14:15:22Z",
+        "error": {
+          "code": 0,
+          "message": "string",
+          "details": [
+            {
+              "@type": "string",
+              "property1": null,
+              "property2": null
+            }
+          ]
+        }
+      },
       "status": {
         "phase": "PHASE_UNSPECIFIED",
         "message": "string"
@@ -573,6 +622,21 @@ You can find out more about this error model and how to work with it in the
         "memoryMib": "string"
       },
       "createSnapshot": true
+    },
+    "lastSnapshot": {
+      "snapshotId": "string",
+      "createdAt": "2019-08-24T14:15:22Z",
+      "error": {
+        "code": 0,
+        "message": "string",
+        "details": [
+          {
+            "@type": "string",
+            "property1": null,
+            "property2": null
+          }
+        ]
+      }
     },
     "status": {
       "phase": "PHASE_UNSPECIFIED",
@@ -1065,6 +1129,21 @@ Response message containing a page of nodes.
     },
     "createSnapshot": true
   },
+  "lastSnapshot": {
+    "snapshotId": "string",
+    "createdAt": "2019-08-24T14:15:22Z",
+    "error": {
+      "code": 0,
+      "message": "string",
+      "details": [
+        {
+          "@type": "string",
+          "property1": null,
+          "property2": null
+        }
+      ]
+    }
+  },
   "status": {
     "phase": "PHASE_UNSPECIFIED",
     "message": "string"
@@ -1081,6 +1160,7 @@ Response message containing a page of nodes.
 |resources|[v1alpha1Resources](#schemav1alpha1resources)|false|none|none|
 |node|[v1alpha1NodeRef](#schemav1alpha1noderef)|false|none|none|
 |intent|[v1alpha1Intent](#schemav1alpha1intent)|false|none|none|
+|lastSnapshot|[v1alpha1CreateSnapshotResult](#schemav1alpha1createsnapshotresult)|false|none|none|
 |status|[v1alpha1SandboxStatus](#schemav1alpha1sandboxstatus)|false|none|none|
 
 <h2 id="tocS_v1alpha1SandboxMeta">v1alpha1SandboxMeta</h2>
@@ -1206,6 +1286,21 @@ Response message containing a page of nodes.
         "memoryMib": "string"
       },
       "createSnapshot": true
+    },
+    "lastSnapshot": {
+      "snapshotId": "string",
+      "createdAt": "2019-08-24T14:15:22Z",
+      "error": {
+        "code": 0,
+        "message": "string",
+        "details": [
+          {
+            "@type": "string",
+            "property1": null,
+            "property2": null
+          }
+        ]
+      }
     },
     "status": {
       "phase": "PHASE_UNSPECIFIED",
