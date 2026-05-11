@@ -1126,6 +1126,24 @@ func TestListSandboxes_ValidatesNamespacePattern(t *testing.T) {
 	assertCode(t, err, codes.InvalidArgument)
 }
 
+// TestListSandboxes_NodeOnlyFilterAcceptsEmptyNamespace pins the fix for
+// the controller's resync request, which omits namespace entirely and
+// filters by node_id alone. Previously the field-level pattern fired on
+// the empty string and rejected the request before it reached the
+// handler; the namespace pattern now lives in a conditional message-level
+// CEL rule that only enforces when the field is non-empty.
+func TestListSandboxes_NodeOnlyFilterAcceptsEmptyNamespace(t *testing.T) {
+	h := startService(t)
+	ctx := t.Context()
+
+	resp, err := h.client.ListSandboxes(ctx, &cpv1.ListSandboxesRequest{
+		NodeId:    "harness-node",
+		SortOrder: cpv1.ListSandboxesRequest_ORDER_NEWEST_FIRST,
+	})
+	require.NoError(t, err)
+	assert.NotNil(t, resp)
+}
+
 func TestListSandboxes_ValidatesPageSizeUpperBound(t *testing.T) {
 	h := startService(t)
 	ctx := t.Context()
