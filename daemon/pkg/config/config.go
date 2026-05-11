@@ -208,6 +208,25 @@ type NodeAgent struct {
 	HealthReportInterval time.Duration `mapstructure:"health-report-interval"`
 }
 
+// Snapshots configures how the daemon interacts with snapshot durable storage.
+type Snapshots struct {
+	// S3 configures the daemon to use Amazon S3 as the durable storage.
+	S3 *S3 `validate:"required"`
+}
+
+// S3 provides configurations to talk to Amazon S3 API.
+type S3 struct {
+	// BucketName is the S3 bucket where objects should be stored.
+	BucketName string `mapstructure:"bucket-name" validate:"required"`
+
+	// Endpoint URL to make requests to S3 API. Useful in local tests.
+	Endpoint string
+
+	// UsePathStyle configures the S3 client to use path style addressing
+	// instead of virtual hosted bucket addressing. Useful for local tests.
+	UsePathStyle bool `mapstructure:"use-path-style"`
+}
+
 // NewFromFile loads configuration from filename into a [Bundle], applying
 // daemon-level defaults before viper's unmarshal step.
 func NewFromFile(filename string) (*Bundle, error) {
