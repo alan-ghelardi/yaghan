@@ -6,6 +6,7 @@ import (
 	"math"
 	"net"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -679,19 +680,27 @@ func TestPauseSandbox_HappyPath(t *testing.T) {
 		Version:   version,
 	})
 	require.NoError(t, err)
-	require.NotNil(t, resp)
+	require.NotNil(t, resp.GetSandbox(),
+		"PauseSandboxResponse must carry the updated Sandbox")
 
-	got, err := h.client.GetSandbox(ctx, &cpv1.GetSandboxRequest{SandboxId: "sb-pause-ok"})
-	require.NoError(t, err)
-	assert.Equal(t, cpv1.SandboxStatus_PHASE_PAUSING, got.GetSandbox().GetStatus().GetPhase(),
+	respSb := resp.GetSandbox()
+	assert.Equal(t, cpv1.SandboxStatus_PHASE_PAUSING, respSb.GetStatus().GetPhase(),
 		"Pause must set Status.Phase to PHASE_PAUSING (in-progress marker)")
-	assert.Equal(t, cpv1.SandboxStatus_PHASE_PAUSED, got.GetSandbox().GetIntent().GetPhase(),
+	assert.Equal(t, cpv1.SandboxStatus_PHASE_PAUSED, respSb.GetIntent().GetPhase(),
 		"Pause must set Intent.Phase to PHASE_PAUSED")
-	assert.Equal(t, int64(2), got.GetSandbox().GetMetadata().GetVersion(),
+	assert.Equal(t, int64(2), respSb.GetMetadata().GetVersion(),
 		"successful Update must increment the stored version")
 	assert.True(t,
-		got.GetSandbox().GetMetadata().GetLastModifiedAt().AsTime().After(originalLastModified),
+		respSb.GetMetadata().GetLastModifiedAt().AsTime().After(originalLastModified),
 		"transition must advance Metadata.LastModifiedAt")
+
+	// Cross-check: response Sandbox matches what's stored. Kept on Pause
+	// only (the cheapest of the three) as a guard against the in-process
+	// db.Update mutation diverging from the row written to DynamoDB.
+	got, err := h.client.GetSandbox(ctx, &cpv1.GetSandboxRequest{SandboxId: "sb-pause-ok"})
+	require.NoError(t, err)
+	assert.True(t, proto.Equal(respSb, got.GetSandbox()),
+		"response Sandbox must round-trip through GetSandbox")
 }
 
 func TestPauseSandbox_NotFound(t *testing.T) {
@@ -759,15 +768,15 @@ func TestResumeSandbox_HappyPath(t *testing.T) {
 		Version:   version,
 	})
 	require.NoError(t, err)
-	require.NotNil(t, resp)
+	require.NotNil(t, resp.GetSandbox(),
+		"ResumeSandboxResponse must carry the updated Sandbox")
 
-	got, err := h.client.GetSandbox(ctx, &cpv1.GetSandboxRequest{SandboxId: "sb-resume-ok"})
-	require.NoError(t, err)
-	assert.Equal(t, cpv1.SandboxStatus_PHASE_RESUMING, got.GetSandbox().GetStatus().GetPhase(),
+	respSb := resp.GetSandbox()
+	assert.Equal(t, cpv1.SandboxStatus_PHASE_RESUMING, respSb.GetStatus().GetPhase(),
 		"Resume must set Status.Phase to PHASE_RESUMING (in-progress marker)")
-	assert.Equal(t, cpv1.SandboxStatus_PHASE_RUNNING, got.GetSandbox().GetIntent().GetPhase(),
+	assert.Equal(t, cpv1.SandboxStatus_PHASE_RUNNING, respSb.GetIntent().GetPhase(),
 		"Resume must set Intent.Phase to PHASE_RUNNING (PHASE_RESUMED no longer exists)")
-	assert.Equal(t, int64(2), got.GetSandbox().GetMetadata().GetVersion())
+	assert.Equal(t, int64(2), respSb.GetMetadata().GetVersion())
 }
 
 func TestResumeSandbox_NotFound(t *testing.T) {
@@ -848,15 +857,15 @@ func TestDeleteSandbox_HappyPath(t *testing.T) {
 				Version:   version,
 			})
 			require.NoError(t, err)
-			require.NotNil(t, resp)
+			require.NotNil(t, resp.GetSandbox(),
+				"DeleteSandboxResponse must carry the updated Sandbox")
 
-			got, err := h.client.GetSandbox(ctx, &cpv1.GetSandboxRequest{SandboxId: id})
-			require.NoError(t, err)
-			assert.Equal(t, cpv1.SandboxStatus_PHASE_DELETING, got.GetSandbox().GetStatus().GetPhase(),
+			respSb := resp.GetSandbox()
+			assert.Equal(t, cpv1.SandboxStatus_PHASE_DELETING, respSb.GetStatus().GetPhase(),
 				"Delete must set Status.Phase to PHASE_DELETING (in-progress marker)")
-			assert.Equal(t, cpv1.SandboxStatus_PHASE_DELETED, got.GetSandbox().GetIntent().GetPhase(),
+			assert.Equal(t, cpv1.SandboxStatus_PHASE_DELETED, respSb.GetIntent().GetPhase(),
 				"Delete must set Intent.Phase to PHASE_DELETED (terminal target)")
-			assert.Equal(t, int64(2), got.GetSandbox().GetMetadata().GetVersion())
+			assert.Equal(t, int64(2), respSb.GetMetadata().GetVersion())
 		})
 	}
 }
@@ -898,6 +907,149 @@ func TestDeleteSandbox_ValidatesMissingVersion(t *testing.T) {
 	ctx := t.Context()
 
 	_, err := h.client.DeleteSandbox(ctx, &cpv1.DeleteSandboxRequest{SandboxId: "sb-x"})
+	assertCode(t, err, codes.InvalidArgument)
+}
+
+func TestCreateSnapshot_HappyPath(t *testing.T) {
+	h := startService(t)
+	ctx := t.Context()
+
+	// Phase doesn't matter for the control-plane CreateSnapshot — the
+	// reconciler decides when to actually act on the intent. Seed
+	// PENDING; the request just records the intent.
+	version := createForTransition(ctx, t, h, "sb-snap-ok", cpv1.SandboxStatus_PHASE_PENDING)
+
+	created, err := h.client.GetSandbox(ctx, &cpv1.GetSandboxRequest{SandboxId: "sb-snap-ok"})
+	require.NoError(t, err)
+	originalLastModified := created.GetSandbox().GetMetadata().GetLastModifiedAt().AsTime()
+
+	resp, err := h.client.CreateSnapshot(ctx, &cpv1.CreateSnapshotRequest{
+		SandboxId:   "sb-snap-ok",
+		Version:     version,
+		Description: "before-deploy",
+	})
+	require.NoError(t, err)
+	require.NotNil(t, resp.GetSandbox(),
+		"CreateSnapshotResponse must carry the updated Sandbox")
+
+	respSb := resp.GetSandbox()
+	require.NotNil(t, respSb.GetIntent().GetCreateSnapshot(),
+		"Intent.CreateSnapshot must be set so the reconciler picks it up")
+	assert.Equal(t, "before-deploy", respSb.GetIntent().GetCreateSnapshot().GetDescription())
+	assert.Equal(t, int64(2), respSb.GetMetadata().GetVersion(),
+		"successful Update must increment the stored version")
+	assert.True(t,
+		respSb.GetMetadata().GetLastModifiedAt().AsTime().After(originalLastModified),
+		"CreateSnapshot must advance Metadata.LastModifiedAt")
+
+	got, err := h.client.GetSandbox(ctx, &cpv1.GetSandboxRequest{SandboxId: "sb-snap-ok"})
+	require.NoError(t, err)
+	assert.True(t, proto.Equal(respSb, got.GetSandbox()),
+		"response Sandbox must round-trip through GetSandbox")
+}
+
+func TestCreateSnapshot_PreservesExistingIntent(t *testing.T) {
+	h := startService(t)
+	ctx := t.Context()
+
+	// CreateSandbox unconditionally sets Intent.Phase = PHASE_RUNNING
+	// (see CreateSandbox handler). Use that as the pre-existing Intent
+	// the snapshot request must not clobber. A more thorough test that
+	// seeds Intent.Phase via Pause is currently blocked by the DB
+	// state-machine guard — see TestCreateSnapshot_BrokenDuringPause.
+	version := createForTransition(ctx, t, h, "sb-snap-preserve", cpv1.SandboxStatus_PHASE_PENDING)
+
+	resp, err := h.client.CreateSnapshot(ctx, &cpv1.CreateSnapshotRequest{
+		SandboxId:   "sb-snap-preserve",
+		Version:     version,
+		Description: "with-running-intent",
+	})
+	require.NoError(t, err)
+	respSb := resp.GetSandbox()
+
+	require.NotNil(t, respSb.GetIntent().GetCreateSnapshot())
+	assert.Equal(t, "with-running-intent",
+		respSb.GetIntent().GetCreateSnapshot().GetDescription())
+	assert.Equal(t, cpv1.SandboxStatus_PHASE_RUNNING, respSb.GetIntent().GetPhase(),
+		"pre-existing Intent.Phase set by CreateSandbox must survive the snapshot request")
+}
+
+// TestCreateSnapshot_BrokenDuringPause pins a known limitation: the DB
+// Update layer requires saved Status.Phase == RUNNING when target ==
+// PAUSING, so a snapshot request that lands while a Pause is mid-flight
+// (Status.Phase already PAUSING) is rejected as FailedPrecondition. The
+// handler doesn't intend to set PAUSING — it passes the stored value
+// back unchanged — but the DB can't tell the difference. Fixing this
+// means relaxing requiredPriorPhase() to allow no-op writes; tracked as
+// a follow-up. Delete this test when the DB guard is fixed.
+func TestCreateSnapshot_BrokenDuringPause(t *testing.T) {
+	h := startService(t)
+	ctx := t.Context()
+
+	version := createForTransition(ctx, t, h, "sb-snap-inflight", cpv1.SandboxStatus_PHASE_RUNNING)
+
+	pauseResp, err := h.client.PauseSandbox(ctx, &cpv1.PauseSandboxRequest{
+		SandboxId: "sb-snap-inflight",
+		Version:   version,
+	})
+	require.NoError(t, err)
+
+	_, err = h.client.CreateSnapshot(ctx, &cpv1.CreateSnapshotRequest{
+		SandboxId: "sb-snap-inflight",
+		Version:   pauseResp.GetSandbox().GetMetadata().GetVersion(),
+	})
+	assertCode(t, err, codes.FailedPrecondition)
+}
+
+func TestCreateSnapshot_NotFound(t *testing.T) {
+	h := startService(t)
+	ctx := t.Context()
+
+	_, err := h.client.CreateSnapshot(ctx, &cpv1.CreateSnapshotRequest{
+		SandboxId: "no-such-sandbox",
+		Version:   1,
+	})
+	assertCode(t, err, codes.NotFound)
+}
+
+func TestCreateSnapshot_VersionConflict(t *testing.T) {
+	h := startService(t)
+	ctx := t.Context()
+
+	createForTransition(ctx, t, h, "sb-snap-stale", cpv1.SandboxStatus_PHASE_RUNNING)
+
+	_, err := h.client.CreateSnapshot(ctx, &cpv1.CreateSnapshotRequest{
+		SandboxId: "sb-snap-stale",
+		Version:   99,
+	})
+	assertCode(t, err, codes.Aborted)
+}
+
+func TestCreateSnapshot_ValidatesMissingId(t *testing.T) {
+	h := startService(t)
+	ctx := t.Context()
+
+	_, err := h.client.CreateSnapshot(ctx, &cpv1.CreateSnapshotRequest{Version: 1})
+	assertCode(t, err, codes.InvalidArgument)
+}
+
+func TestCreateSnapshot_ValidatesMissingVersion(t *testing.T) {
+	h := startService(t)
+	ctx := t.Context()
+
+	_, err := h.client.CreateSnapshot(ctx, &cpv1.CreateSnapshotRequest{SandboxId: "sb-x"})
+	assertCode(t, err, codes.InvalidArgument)
+}
+
+func TestCreateSnapshot_ValidatesDescriptionTooLong(t *testing.T) {
+	h := startService(t)
+	ctx := t.Context()
+
+	_, err := h.client.CreateSnapshot(ctx, &cpv1.CreateSnapshotRequest{
+		SandboxId:   "sb-x",
+		Version:     1,
+		Description: strings.Repeat("a", 257), // exceeds buf.validate max_len = 256
+	})
 	assertCode(t, err, codes.InvalidArgument)
 }
 

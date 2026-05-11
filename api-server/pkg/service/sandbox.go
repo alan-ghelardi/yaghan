@@ -106,11 +106,12 @@ func (a *apiServer) ListSandboxes(ctx context.Context, req *cpv1.ListSandboxesRe
 // must be PHASE_RUNNING; on success the row is left at status=PAUSING +
 // intent=PAUSED so the data-plane reconciler can converge.
 func (a *apiServer) PauseSandbox(ctx context.Context, req *cpv1.PauseSandboxRequest) (*cpv1.PauseSandboxResponse, error) {
-	if err := a.transitionPhase(ctx, req.GetSandboxId(), req.GetVersion(),
-		cpv1.SandboxStatus_PHASE_PAUSING, cpv1.SandboxStatus_PHASE_PAUSED, "pause"); err != nil {
+	sb, err := a.transitionPhase(ctx, req.GetSandboxId(), req.GetVersion(),
+		cpv1.SandboxStatus_PHASE_PAUSING, cpv1.SandboxStatus_PHASE_PAUSED, "pause")
+	if err != nil {
 		return nil, err
 	}
-	return &cpv1.PauseSandboxResponse{}, nil
+	return &cpv1.PauseSandboxResponse{Sandbox: sb}, nil
 }
 
 // ResumeSandbox implements [cpv1.SandboxServiceServer]. The saved Status.Phase
@@ -119,28 +120,32 @@ func (a *apiServer) PauseSandbox(ctx context.Context, req *cpv1.PauseSandboxRequ
 // closes the loop, status converges to RUNNING, identical to a freshly booted
 // VM.
 func (a *apiServer) ResumeSandbox(ctx context.Context, req *cpv1.ResumeSandboxRequest) (*cpv1.ResumeSandboxResponse, error) {
-	if err := a.transitionPhase(ctx, req.GetSandboxId(), req.GetVersion(),
-		cpv1.SandboxStatus_PHASE_RESUMING, cpv1.SandboxStatus_PHASE_RUNNING, "resume"); err != nil {
+	sb, err := a.transitionPhase(ctx, req.GetSandboxId(), req.GetVersion(),
+		cpv1.SandboxStatus_PHASE_RESUMING, cpv1.SandboxStatus_PHASE_RUNNING, "resume")
+	if err != nil {
 		return nil, err
 	}
-	return &cpv1.ResumeSandboxResponse{}, nil
+	return &cpv1.ResumeSandboxResponse{Sandbox: sb}, nil
 }
 
 // transitionPhase reads the sandbox by id, stamps the caller's read version
 // onto the proto (arming the DB's optimistic-lock check), atomically flips
 // Status.Phase to targetStatus and Intent.Phase to targetIntent, and writes
 // back through DB.Update — which also enforces the state-machine guard
-// derived from the new targetStatus.
+// derived from the new targetStatus. The returned *Sandbox is the
+// post-update proto (DB.Update mutates in place: bumped Version, stamped
+// LastModifiedAt), suitable for inclusion in the RPC response so clients
+// don't need a follow-up GetSandbox.
 func (a *apiServer) transitionPhase(
 	ctx context.Context,
 	id string,
 	version int64,
 	targetStatus, targetIntent cpv1.SandboxStatus_Phase,
 	op string,
-) error {
+) (*cpv1.Sandbox, error) {
 	sb, err := a.db.Get(ctx, id)
 	if err != nil {
-		return dbErrToStatus(ctx, "sandbox", op, id, err)
+		return nil, dbErrToStatus(ctx, "sandbox", op, id, err)
 	}
 
 	sb.Metadata.Version = version
@@ -148,9 +153,9 @@ func (a *apiServer) transitionPhase(
 	sb.Intent = &cpv1.Intent{Phase: targetIntent}
 
 	if err := a.db.Update(ctx, sb); err != nil {
-		return dbErrToStatus(ctx, "sandbox", op, id, err)
+		return nil, dbErrToStatus(ctx, "sandbox", op, id, err)
 	}
-	return nil
+	return sb, nil
 }
 
 // DeleteSandbox implements [cpv1.SandboxServiceServer]. The control plane
@@ -159,9 +164,51 @@ func (a *apiServer) transitionPhase(
 // Delete is accepted from any saved phase — the reconciler decides what to
 // actually do based on the current Status.
 func (a *apiServer) DeleteSandbox(ctx context.Context, req *cpv1.DeleteSandboxRequest) (*cpv1.DeleteSandboxResponse, error) {
-	if err := a.transitionPhase(ctx, req.GetSandboxId(), req.GetVersion(),
-		cpv1.SandboxStatus_PHASE_DELETING, cpv1.SandboxStatus_PHASE_DELETED, "delete"); err != nil {
+	sb, err := a.transitionPhase(ctx, req.GetSandboxId(), req.GetVersion(),
+		cpv1.SandboxStatus_PHASE_DELETING, cpv1.SandboxStatus_PHASE_DELETED, "delete")
+	if err != nil {
 		return nil, err
 	}
-	return &cpv1.DeleteSandboxResponse{}, nil
+	return &cpv1.DeleteSandboxResponse{Sandbox: sb}, nil
+}
+
+// CreateSnapshot implements [cpv1.SandboxServiceServer]. The control plane
+// only records the user's intent to snapshot; the data-plane reconciler
+// triggers the firecracker CreateSnapshot, persists the artifacts to
+// durable storage, clears the intent, and stamps Sandbox.LastSnapshot.
+//
+// Unlike Pause/Resume/Delete, CreateSnapshot does not transition the
+// sandbox's phase — it only sets Intent.CreateSnapshot, preserving any
+// existing Intent.Phase / Intent.Resources so a snapshot request
+// piggybacked onto a pending phase or resize transition doesn't clobber
+// the work the reconciler is supposed to do.
+//
+// Known limitation: the DB Update layer enforces a state-machine guard
+// on target Status.Phase ∈ {PAUSING, RESUMING} that requires saved phase
+// to be {RUNNING, PAUSED} respectively. Because this handler passes the
+// stored Status.Phase back through unchanged, calling CreateSnapshot
+// while a Pause/Resume is mid-flight currently surfaces as
+// FailedPrecondition. Relaxing the guard to permit no-op Status writes
+// is a separate change.
+//
+// Preflight: existence is enforced by db.Get returning db.ErrNotFound
+// (→ codes.NotFound); version conflicts surface as codes.Aborted.
+// Description max-len 256 is enforced by the protovalidate interceptor.
+func (a *apiServer) CreateSnapshot(ctx context.Context, req *cpv1.CreateSnapshotRequest) (*cpv1.CreateSnapshotResponse, error) {
+	id := req.GetSandboxId()
+	sb, err := a.db.Get(ctx, id)
+	if err != nil {
+		return nil, dbErrToStatus(ctx, "sandbox", "create snapshot", id, err)
+	}
+
+	sb.Metadata.Version = req.GetVersion()
+	if sb.Intent == nil {
+		sb.Intent = &cpv1.Intent{}
+	}
+	sb.Intent.CreateSnapshot = &cpv1.CreateSnapshotInput{Description: req.GetDescription()}
+
+	if err := a.db.Update(ctx, sb); err != nil {
+		return nil, dbErrToStatus(ctx, "sandbox", "create snapshot", id, err)
+	}
+	return &cpv1.CreateSnapshotResponse{Sandbox: sb}, nil
 }
