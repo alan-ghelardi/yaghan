@@ -73,3 +73,13 @@ controller:
   session-id-file: /var/lib/nuinfra/daemon/session.id
   max-retries: 10
   reconnect-max-interval: 2m
+
+# Snapshot durable storage. Points at the local MinIO brought up by
+# daemon/dev/docker-compose.yml. use-path-style is required for MinIO
+# (it doesn't serve virtual-hosted bucket URLs). The bucket is created
+# by start.sh before the daemon boots.
+snapshots:
+  s3:
+    bucket-name: microvm-snapshots
+    endpoint: http://localhost:9000
+    use-path-style: true

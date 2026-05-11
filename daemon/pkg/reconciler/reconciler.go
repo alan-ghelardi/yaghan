@@ -311,20 +311,20 @@ func (r *Reconciler) buildCreateInput(sandbox *controlplanev1alpha1.Sandbox, nsh
 		},
 		Drives: []*models.Drive{
 			{
-				DriveID:      conv.Pointer("rootfs"),
+				DriveID:      new("rootfs"),
 				PathOnHost:   rootfsJail,
-				IsRootDevice: conv.Pointer(true),
+				IsRootDevice: new(true),
 				IsReadOnly:   false,
 			},
 		},
 		MachineConfig: &models.MachineConfiguration{
-			VcpuCount:  conv.Pointer(int64(sandbox.GetResources().GetVcpuCount())),
-			MemSizeMib: conv.Pointer(int64(sandbox.GetResources().GetMemoryMib())),
+			VcpuCount:  new(int64(sandbox.GetResources().GetVcpuCount())),
+			MemSizeMib: new(int64(sandbox.GetResources().GetMemoryMib())),
 		},
 		NetworkInterfaces: []*models.NetworkInterface{
 			{
-				IfaceID:     conv.Pointer("eth0"),
-				HostDevName: conv.Pointer(nsh.TapDeviceName),
+				IfaceID:     new("eth0"),
+				HostDevName: new(nsh.TapDeviceName),
 				GuestMac:    tmpl.GuestMAC,
 			},
 		},
@@ -333,8 +333,8 @@ func (r *Reconciler) buildCreateInput(sandbox *controlplanev1alpha1.Sandbox, nsh
 			Level:   conv.Pointer(models.LoggerLevelInfo),
 		},
 		Vsock: &models.Vsock{
-			GuestCid: conv.Pointer(tmpl.GuestCID),
-			UdsPath:  conv.Pointer(vsockUDSJail),
+			GuestCid: new(tmpl.GuestCID),
+			UdsPath:  new(vsockUDSJail),
 		},
 	}
 

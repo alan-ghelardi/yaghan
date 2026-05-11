@@ -1,0 +1,24 @@
+---
+# Docker compose stack for local development of the daemon.
+#
+# - minio: S3-compatible object storage on tcp/9000 (S3 API) and
+#   tcp/9001 (web console). Backs the snapshot.DurableStore in this
+#   dev profile; the daemon talks to it via the snapshots.s3 section
+#   of config.yaml. The container has no `aws` CLI, curl, or nc
+#   built in, so we don't declare a container-internal healthcheck —
+#   start.sh polls readiness from the host with the AWS CLI.
+#
+# Default root credentials below match what start.sh exports as
+# AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY; the daemon picks them up
+# the same way (default AWS SDK credential chain) since it runs in
+# the same shell session.
+services:
+  minio:
+    image: minio/minio:latest
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
