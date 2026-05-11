@@ -43,6 +43,33 @@ private static final long serialVersionUID = 0L;
             com.nuinfra.control_plane.v1alpha1.ResumeSandboxResponse.class, com.nuinfra.control_plane.v1alpha1.ResumeSandboxResponse.Builder.class);
   }
 
+  private int bitField0_;
+  public static final int SANDBOX_FIELD_NUMBER = 1;
+  private com.nuinfra.control_plane.v1alpha1.Sandbox sandbox_;
+  /**
+   * <code>.nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
+   * @return Whether the sandbox field is set.
+   */
+  @java.lang.Override
+  public boolean hasSandbox() {
+    return ((bitField0_ & 0x00000001) != 0);
+  }
+  /**
+   * <code>.nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
+   * @return The sandbox.
+   */
+  @java.lang.Override
+  public com.nuinfra.control_plane.v1alpha1.Sandbox getSandbox() {
+    return sandbox_ == null ? com.nuinfra.control_plane.v1alpha1.Sandbox.getDefaultInstance() : sandbox_;
+  }
+  /**
+   * <code>.nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
+   */
+  @java.lang.Override
+  public com.nuinfra.control_plane.v1alpha1.SandboxOrBuilder getSandboxOrBuilder() {
+    return sandbox_ == null ? com.nuinfra.control_plane.v1alpha1.Sandbox.getDefaultInstance() : sandbox_;
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -57,6 +84,9 @@ private static final long serialVersionUID = 0L;
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output)
                       throws java.io.IOException {
+    if (((bitField0_ & 0x00000001) != 0)) {
+      output.writeMessage(1, getSandbox());
+    }
     getUnknownFields().writeTo(output);
   }
 
@@ -66,6 +96,10 @@ private static final long serialVersionUID = 0L;
     if (size != -1) return size;
 
     size = 0;
+    if (((bitField0_ & 0x00000001) != 0)) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(1, getSandbox());
+    }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
@@ -81,6 +115,11 @@ private static final long serialVersionUID = 0L;
     }
     com.nuinfra.control_plane.v1alpha1.ResumeSandboxResponse other = (com.nuinfra.control_plane.v1alpha1.ResumeSandboxResponse) obj;
 
+    if (hasSandbox() != other.hasSandbox()) return false;
+    if (hasSandbox()) {
+      if (!getSandbox()
+          .equals(other.getSandbox())) return false;
+    }
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -92,6 +131,10 @@ private static final long serialVersionUID = 0L;
     }
     int hash = 41;
     hash = (19 * hash) + getDescriptor().hashCode();
+    if (hasSandbox()) {
+      hash = (37 * hash) + SANDBOX_FIELD_NUMBER;
+      hash = (53 * hash) + getSandbox().hashCode();
+    }
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -211,17 +254,29 @@ private static final long serialVersionUID = 0L;
 
     // Construct using com.nuinfra.control_plane.v1alpha1.ResumeSandboxResponse.newBuilder()
     private Builder() {
-
+      maybeForceBuilderInitialization();
     }
 
     private Builder(
         com.google.protobuf.GeneratedMessage.BuilderParent parent) {
       super(parent);
-
+      maybeForceBuilderInitialization();
+    }
+    private void maybeForceBuilderInitialization() {
+      if (com.google.protobuf.GeneratedMessage
+              .alwaysUseFieldBuilders) {
+        internalGetSandboxFieldBuilder();
+      }
     }
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
+      sandbox_ = null;
+      if (sandboxBuilder_ != null) {
+        sandboxBuilder_.dispose();
+        sandboxBuilder_ = null;
+      }
       return this;
     }
 
@@ -248,8 +303,21 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public com.nuinfra.control_plane.v1alpha1.ResumeSandboxResponse buildPartial() {
       com.nuinfra.control_plane.v1alpha1.ResumeSandboxResponse result = new com.nuinfra.control_plane.v1alpha1.ResumeSandboxResponse(this);
+      if (bitField0_ != 0) { buildPartial0(result); }
       onBuilt();
       return result;
+    }
+
+    private void buildPartial0(com.nuinfra.control_plane.v1alpha1.ResumeSandboxResponse result) {
+      int from_bitField0_ = bitField0_;
+      int to_bitField0_ = 0;
+      if (((from_bitField0_ & 0x00000001) != 0)) {
+        result.sandbox_ = sandboxBuilder_ == null
+            ? sandbox_
+            : sandboxBuilder_.build();
+        to_bitField0_ |= 0x00000001;
+      }
+      result.bitField0_ |= to_bitField0_;
     }
 
     @java.lang.Override
@@ -264,6 +332,9 @@ private static final long serialVersionUID = 0L;
 
     public Builder mergeFrom(com.nuinfra.control_plane.v1alpha1.ResumeSandboxResponse other) {
       if (other == com.nuinfra.control_plane.v1alpha1.ResumeSandboxResponse.getDefaultInstance()) return this;
+      if (other.hasSandbox()) {
+        mergeSandbox(other.getSandbox());
+      }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
@@ -290,6 +361,13 @@ private static final long serialVersionUID = 0L;
             case 0:
               done = true;
               break;
+            case 10: {
+              input.readMessage(
+                  internalGetSandboxFieldBuilder().getBuilder(),
+                  extensionRegistry);
+              bitField0_ |= 0x00000001;
+              break;
+            } // case 10
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -304,6 +382,128 @@ private static final long serialVersionUID = 0L;
         onChanged();
       } // finally
       return this;
+    }
+    private int bitField0_;
+
+    private com.nuinfra.control_plane.v1alpha1.Sandbox sandbox_;
+    private com.google.protobuf.SingleFieldBuilder<
+        com.nuinfra.control_plane.v1alpha1.Sandbox, com.nuinfra.control_plane.v1alpha1.Sandbox.Builder, com.nuinfra.control_plane.v1alpha1.SandboxOrBuilder> sandboxBuilder_;
+    /**
+     * <code>.nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
+     * @return Whether the sandbox field is set.
+     */
+    public boolean hasSandbox() {
+      return ((bitField0_ & 0x00000001) != 0);
+    }
+    /**
+     * <code>.nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
+     * @return The sandbox.
+     */
+    public com.nuinfra.control_plane.v1alpha1.Sandbox getSandbox() {
+      if (sandboxBuilder_ == null) {
+        return sandbox_ == null ? com.nuinfra.control_plane.v1alpha1.Sandbox.getDefaultInstance() : sandbox_;
+      } else {
+        return sandboxBuilder_.getMessage();
+      }
+    }
+    /**
+     * <code>.nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
+     */
+    public Builder setSandbox(com.nuinfra.control_plane.v1alpha1.Sandbox value) {
+      if (sandboxBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        sandbox_ = value;
+      } else {
+        sandboxBuilder_.setMessage(value);
+      }
+      bitField0_ |= 0x00000001;
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>.nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
+     */
+    public Builder setSandbox(
+        com.nuinfra.control_plane.v1alpha1.Sandbox.Builder builderForValue) {
+      if (sandboxBuilder_ == null) {
+        sandbox_ = builderForValue.build();
+      } else {
+        sandboxBuilder_.setMessage(builderForValue.build());
+      }
+      bitField0_ |= 0x00000001;
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>.nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
+     */
+    public Builder mergeSandbox(com.nuinfra.control_plane.v1alpha1.Sandbox value) {
+      if (sandboxBuilder_ == null) {
+        if (((bitField0_ & 0x00000001) != 0) &&
+          sandbox_ != null &&
+          sandbox_ != com.nuinfra.control_plane.v1alpha1.Sandbox.getDefaultInstance()) {
+          getSandboxBuilder().mergeFrom(value);
+        } else {
+          sandbox_ = value;
+        }
+      } else {
+        sandboxBuilder_.mergeFrom(value);
+      }
+      if (sandbox_ != null) {
+        bitField0_ |= 0x00000001;
+        onChanged();
+      }
+      return this;
+    }
+    /**
+     * <code>.nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
+     */
+    public Builder clearSandbox() {
+      bitField0_ = (bitField0_ & ~0x00000001);
+      sandbox_ = null;
+      if (sandboxBuilder_ != null) {
+        sandboxBuilder_.dispose();
+        sandboxBuilder_ = null;
+      }
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>.nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
+     */
+    public com.nuinfra.control_plane.v1alpha1.Sandbox.Builder getSandboxBuilder() {
+      bitField0_ |= 0x00000001;
+      onChanged();
+      return internalGetSandboxFieldBuilder().getBuilder();
+    }
+    /**
+     * <code>.nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
+     */
+    public com.nuinfra.control_plane.v1alpha1.SandboxOrBuilder getSandboxOrBuilder() {
+      if (sandboxBuilder_ != null) {
+        return sandboxBuilder_.getMessageOrBuilder();
+      } else {
+        return sandbox_ == null ?
+            com.nuinfra.control_plane.v1alpha1.Sandbox.getDefaultInstance() : sandbox_;
+      }
+    }
+    /**
+     * <code>.nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
+     */
+    private com.google.protobuf.SingleFieldBuilder<
+        com.nuinfra.control_plane.v1alpha1.Sandbox, com.nuinfra.control_plane.v1alpha1.Sandbox.Builder, com.nuinfra.control_plane.v1alpha1.SandboxOrBuilder> 
+        internalGetSandboxFieldBuilder() {
+      if (sandboxBuilder_ == null) {
+        sandboxBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+            com.nuinfra.control_plane.v1alpha1.Sandbox, com.nuinfra.control_plane.v1alpha1.Sandbox.Builder, com.nuinfra.control_plane.v1alpha1.SandboxOrBuilder>(
+                getSandbox(),
+                getParentForChildren(),
+                isClean());
+        sandbox_ = null;
+      }
+      return sandboxBuilder_;
     }
 
     // @@protoc_insertion_point(builder_scope:nuinfra.control_plane.v1alpha1.ResumeSandboxResponse)

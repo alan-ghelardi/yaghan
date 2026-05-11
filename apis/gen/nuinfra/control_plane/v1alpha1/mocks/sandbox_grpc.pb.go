@@ -62,6 +62,26 @@ func (mr *MockSandboxServiceClientMockRecorder) CreateSandbox(ctx, in any, opts 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSandbox", reflect.TypeOf((*MockSandboxServiceClient)(nil).CreateSandbox), varargs...)
 }
 
+// CreateSnapshot mocks base method.
+func (m *MockSandboxServiceClient) CreateSnapshot(ctx context.Context, in *control_planev1alpha1.CreateSnapshotRequest, opts ...grpc.CallOption) (*control_planev1alpha1.CreateSnapshotResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "CreateSnapshot", varargs...)
+	ret0, _ := ret[0].(*control_planev1alpha1.CreateSnapshotResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateSnapshot indicates an expected call of CreateSnapshot.
+func (mr *MockSandboxServiceClientMockRecorder) CreateSnapshot(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSnapshot", reflect.TypeOf((*MockSandboxServiceClient)(nil).CreateSnapshot), varargs...)
+}
+
 // DeleteSandbox mocks base method.
 func (m *MockSandboxServiceClient) DeleteSandbox(ctx context.Context, in *control_planev1alpha1.DeleteSandboxRequest, opts ...grpc.CallOption) (*control_planev1alpha1.DeleteSandboxResponse, error) {
 	m.ctrl.T.Helper()
@@ -199,6 +219,21 @@ func (m *MockSandboxServiceServer) CreateSandbox(arg0 context.Context, arg1 *con
 func (mr *MockSandboxServiceServerMockRecorder) CreateSandbox(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSandbox", reflect.TypeOf((*MockSandboxServiceServer)(nil).CreateSandbox), arg0, arg1)
+}
+
+// CreateSnapshot mocks base method.
+func (m *MockSandboxServiceServer) CreateSnapshot(arg0 context.Context, arg1 *control_planev1alpha1.CreateSnapshotRequest) (*control_planev1alpha1.CreateSnapshotResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateSnapshot", arg0, arg1)
+	ret0, _ := ret[0].(*control_planev1alpha1.CreateSnapshotResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateSnapshot indicates an expected call of CreateSnapshot.
+func (mr *MockSandboxServiceServerMockRecorder) CreateSnapshot(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSnapshot", reflect.TypeOf((*MockSandboxServiceServer)(nil).CreateSnapshot), arg0, arg1)
 }
 
 // DeleteSandbox mocks base method.

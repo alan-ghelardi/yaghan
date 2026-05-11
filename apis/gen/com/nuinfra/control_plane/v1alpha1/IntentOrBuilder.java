@@ -37,8 +37,17 @@ public interface IntentOrBuilder extends
   com.nuinfra.control_plane.v1alpha1.ResourcesOrBuilder getResourcesOrBuilder();
 
   /**
-   * <code>bool create_snapshot = 3 [json_name = "createSnapshot"];</code>
+   * <code>.nuinfra.control_plane.v1alpha1.CreateSnapshotInput create_snapshot = 3 [json_name = "createSnapshot"];</code>
+   * @return Whether the createSnapshot field is set.
+   */
+  boolean hasCreateSnapshot();
+  /**
+   * <code>.nuinfra.control_plane.v1alpha1.CreateSnapshotInput create_snapshot = 3 [json_name = "createSnapshot"];</code>
    * @return The createSnapshot.
    */
-  boolean getCreateSnapshot();
+  com.nuinfra.control_plane.v1alpha1.CreateSnapshotInput getCreateSnapshot();
+  /**
+   * <code>.nuinfra.control_plane.v1alpha1.CreateSnapshotInput create_snapshot = 3 [json_name = "createSnapshot"];</code>
+   */
+  com.nuinfra.control_plane.v1alpha1.CreateSnapshotInputOrBuilder getCreateSnapshotOrBuilder();
 }

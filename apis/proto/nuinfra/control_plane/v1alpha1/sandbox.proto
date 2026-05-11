@@ -16,7 +16,7 @@ message Sandbox {
 
   Intent intent = 4;
 
-  CreateSnapshotResult last_snapshot = 5;
+  CreateSnapshotOutput last_snapshot = 5;
 
   SandboxStatus status = 6;
 }
@@ -71,10 +71,14 @@ message NodeRef {
 message Intent {
   SandboxStatus.Phase phase = 1;
   Resources resources = 2;
-  bool create_snapshot = 3;
+  CreateSnapshotInput create_snapshot = 3;
 }
 
-message CreateSnapshotResult {
+message CreateSnapshotInput {
+  string description = 1 [(buf.validate.field).string.max_len = 256];
+}
+
+message CreateSnapshotOutput {
   string snapshot_id = 1;
   google.protobuf.Timestamp created_at = 2;
   google.rpc.Status error = 3;
@@ -182,21 +186,39 @@ message PauseSandboxRequest {
   int64 version = 2 [(buf.validate.field).required = true];
 }
 
-message PauseSandboxResponse {}
+message PauseSandboxResponse {
+  Sandbox sandbox = 1;
+}
 
 message ResumeSandboxRequest {
   string sandbox_id = 1 [(buf.validate.field).required = true];
   int64 version = 2 [(buf.validate.field).required = true];
 }
 
-message ResumeSandboxResponse {}
+message ResumeSandboxResponse {
+  Sandbox sandbox = 1;
+}
 
 message DeleteSandboxRequest {
   string sandbox_id = 1 [(buf.validate.field).required = true];
   int64 version = 2 [(buf.validate.field).required = true];
 }
 
-message DeleteSandboxResponse {}
+message DeleteSandboxResponse {
+  Sandbox sandbox = 1;
+}
+
+message CreateSnapshotRequest {
+  string sandbox_id = 1 [(buf.validate.field).required = true];
+
+  int64 version = 2 [(buf.validate.field).required = true];
+
+  string description = 3 [(buf.validate.field).string.max_len = 256];
+}
+
+message CreateSnapshotResponse {
+  Sandbox sandbox = 1;
+}
 
 service SandboxService {
   rpc CreateSandbox(CreateSandboxRequest) returns (CreateSandboxResponse) {
@@ -224,5 +246,12 @@ service SandboxService {
 
   rpc DeleteSandbox(DeleteSandboxRequest) returns (DeleteSandboxResponse) {
     option (google.api.http) = {delete: "/v1alpha1/sandboxes/{sandbox_id}"};
+  }
+
+  rpc CreateSnapshot(CreateSnapshotRequest) returns (CreateSnapshotResponse) {
+    option (google.api.http) = {
+      post: "/v1alpha1/sandboxes/{sandbox_id}/snapshots"
+      body: "*"
+    };
   }
 }

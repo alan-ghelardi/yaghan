@@ -19,12 +19,13 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	SandboxService_CreateSandbox_FullMethodName = "/nuinfra.control_plane.v1alpha1.SandboxService/CreateSandbox"
-	SandboxService_GetSandbox_FullMethodName    = "/nuinfra.control_plane.v1alpha1.SandboxService/GetSandbox"
-	SandboxService_ListSandboxes_FullMethodName = "/nuinfra.control_plane.v1alpha1.SandboxService/ListSandboxes"
-	SandboxService_PauseSandbox_FullMethodName  = "/nuinfra.control_plane.v1alpha1.SandboxService/PauseSandbox"
-	SandboxService_ResumeSandbox_FullMethodName = "/nuinfra.control_plane.v1alpha1.SandboxService/ResumeSandbox"
-	SandboxService_DeleteSandbox_FullMethodName = "/nuinfra.control_plane.v1alpha1.SandboxService/DeleteSandbox"
+	SandboxService_CreateSandbox_FullMethodName  = "/nuinfra.control_plane.v1alpha1.SandboxService/CreateSandbox"
+	SandboxService_GetSandbox_FullMethodName     = "/nuinfra.control_plane.v1alpha1.SandboxService/GetSandbox"
+	SandboxService_ListSandboxes_FullMethodName  = "/nuinfra.control_plane.v1alpha1.SandboxService/ListSandboxes"
+	SandboxService_PauseSandbox_FullMethodName   = "/nuinfra.control_plane.v1alpha1.SandboxService/PauseSandbox"
+	SandboxService_ResumeSandbox_FullMethodName  = "/nuinfra.control_plane.v1alpha1.SandboxService/ResumeSandbox"
+	SandboxService_DeleteSandbox_FullMethodName  = "/nuinfra.control_plane.v1alpha1.SandboxService/DeleteSandbox"
+	SandboxService_CreateSnapshot_FullMethodName = "/nuinfra.control_plane.v1alpha1.SandboxService/CreateSnapshot"
 )
 
 // SandboxServiceClient is the client API for SandboxService service.
@@ -37,6 +38,7 @@ type SandboxServiceClient interface {
 	PauseSandbox(ctx context.Context, in *PauseSandboxRequest, opts ...grpc.CallOption) (*PauseSandboxResponse, error)
 	ResumeSandbox(ctx context.Context, in *ResumeSandboxRequest, opts ...grpc.CallOption) (*ResumeSandboxResponse, error)
 	DeleteSandbox(ctx context.Context, in *DeleteSandboxRequest, opts ...grpc.CallOption) (*DeleteSandboxResponse, error)
+	CreateSnapshot(ctx context.Context, in *CreateSnapshotRequest, opts ...grpc.CallOption) (*CreateSnapshotResponse, error)
 }
 
 type sandboxServiceClient struct {
@@ -107,6 +109,16 @@ func (c *sandboxServiceClient) DeleteSandbox(ctx context.Context, in *DeleteSand
 	return out, nil
 }
 
+func (c *sandboxServiceClient) CreateSnapshot(ctx context.Context, in *CreateSnapshotRequest, opts ...grpc.CallOption) (*CreateSnapshotResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreateSnapshotResponse)
+	err := c.cc.Invoke(ctx, SandboxService_CreateSnapshot_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // SandboxServiceServer is the server API for SandboxService service.
 // All implementations must embed UnimplementedSandboxServiceServer
 // for forward compatibility.
@@ -117,6 +129,7 @@ type SandboxServiceServer interface {
 	PauseSandbox(context.Context, *PauseSandboxRequest) (*PauseSandboxResponse, error)
 	ResumeSandbox(context.Context, *ResumeSandboxRequest) (*ResumeSandboxResponse, error)
 	DeleteSandbox(context.Context, *DeleteSandboxRequest) (*DeleteSandboxResponse, error)
+	CreateSnapshot(context.Context, *CreateSnapshotRequest) (*CreateSnapshotResponse, error)
 	mustEmbedUnimplementedSandboxServiceServer()
 }
 
@@ -144,6 +157,9 @@ func (UnimplementedSandboxServiceServer) ResumeSandbox(context.Context, *ResumeS
 }
 func (UnimplementedSandboxServiceServer) DeleteSandbox(context.Context, *DeleteSandboxRequest) (*DeleteSandboxResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteSandbox not implemented")
+}
+func (UnimplementedSandboxServiceServer) CreateSnapshot(context.Context, *CreateSnapshotRequest) (*CreateSnapshotResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateSnapshot not implemented")
 }
 func (UnimplementedSandboxServiceServer) mustEmbedUnimplementedSandboxServiceServer() {}
 func (UnimplementedSandboxServiceServer) testEmbeddedByValue()                        {}
@@ -274,6 +290,24 @@ func _SandboxService_DeleteSandbox_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _SandboxService_CreateSnapshot_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateSnapshotRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SandboxServiceServer).CreateSnapshot(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SandboxService_CreateSnapshot_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SandboxServiceServer).CreateSnapshot(ctx, req.(*CreateSnapshotRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // SandboxService_ServiceDesc is the grpc.ServiceDesc for SandboxService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -304,6 +338,10 @@ var SandboxService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteSandbox",
 			Handler:    _SandboxService_DeleteSandbox_Handler,
+		},
+		{
+			MethodName: "CreateSnapshot",
+			Handler:    _SandboxService_CreateSnapshot_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -9,4 +9,19 @@ package com.nuinfra.control_plane.v1alpha1;
 public interface ResumeSandboxResponseOrBuilder extends
     // @@protoc_insertion_point(interface_extends:nuinfra.control_plane.v1alpha1.ResumeSandboxResponse)
     com.google.protobuf.MessageOrBuilder {
+
+  /**
+   * <code>.nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
+   * @return Whether the sandbox field is set.
+   */
+  boolean hasSandbox();
+  /**
+   * <code>.nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
+   * @return The sandbox.
+   */
+  com.nuinfra.control_plane.v1alpha1.Sandbox getSandbox();
+  /**
+   * <code>.nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1 [json_name = "sandbox"];</code>
+   */
+  com.nuinfra.control_plane.v1alpha1.SandboxOrBuilder getSandboxOrBuilder();
 }

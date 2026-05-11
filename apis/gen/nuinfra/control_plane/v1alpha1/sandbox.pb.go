@@ -89,7 +89,7 @@ func (x SandboxStatus_Phase) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use SandboxStatus_Phase.Descriptor instead.
 func (SandboxStatus_Phase) EnumDescriptor() ([]byte, []int) {
-	return file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{6, 0}
+	return file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{7, 0}
 }
 
 // Controls how results are ordered by last modification time.
@@ -141,7 +141,7 @@ func (x ListSandboxesRequest_Order) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ListSandboxesRequest_Order.Descriptor instead.
 func (ListSandboxesRequest_Order) EnumDescriptor() ([]byte, []int) {
-	return file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{11, 0}
+	return file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{12, 0}
 }
 
 type Sandbox struct {
@@ -150,7 +150,7 @@ type Sandbox struct {
 	Resources     *Resources             `protobuf:"bytes,2,opt,name=resources,proto3" json:"resources,omitempty"`
 	Node          *NodeRef               `protobuf:"bytes,3,opt,name=node,proto3" json:"node,omitempty"`
 	Intent        *Intent                `protobuf:"bytes,4,opt,name=intent,proto3" json:"intent,omitempty"`
-	LastSnapshot  *CreateSnapshotResult  `protobuf:"bytes,5,opt,name=last_snapshot,json=lastSnapshot,proto3" json:"last_snapshot,omitempty"`
+	LastSnapshot  *CreateSnapshotOutput  `protobuf:"bytes,5,opt,name=last_snapshot,json=lastSnapshot,proto3" json:"last_snapshot,omitempty"`
 	Status        *SandboxStatus         `protobuf:"bytes,6,opt,name=status,proto3" json:"status,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -214,7 +214,7 @@ func (x *Sandbox) GetIntent() *Intent {
 	return nil
 }
 
-func (x *Sandbox) GetLastSnapshot() *CreateSnapshotResult {
+func (x *Sandbox) GetLastSnapshot() *CreateSnapshotOutput {
 	if x != nil {
 		return x.LastSnapshot
 	}
@@ -419,7 +419,7 @@ type Intent struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
 	Phase          SandboxStatus_Phase    `protobuf:"varint,1,opt,name=phase,proto3,enum=nuinfra.control_plane.v1alpha1.SandboxStatus_Phase" json:"phase,omitempty"`
 	Resources      *Resources             `protobuf:"bytes,2,opt,name=resources,proto3" json:"resources,omitempty"`
-	CreateSnapshot bool                   `protobuf:"varint,3,opt,name=create_snapshot,json=createSnapshot,proto3" json:"create_snapshot,omitempty"`
+	CreateSnapshot *CreateSnapshotInput   `protobuf:"bytes,3,opt,name=create_snapshot,json=createSnapshot,proto3" json:"create_snapshot,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -468,36 +468,34 @@ func (x *Intent) GetResources() *Resources {
 	return nil
 }
 
-func (x *Intent) GetCreateSnapshot() bool {
+func (x *Intent) GetCreateSnapshot() *CreateSnapshotInput {
 	if x != nil {
 		return x.CreateSnapshot
 	}
-	return false
+	return nil
 }
 
-type CreateSnapshotResult struct {
+type CreateSnapshotInput struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	SnapshotId    string                 `protobuf:"bytes,1,opt,name=snapshot_id,json=snapshotId,proto3" json:"snapshot_id,omitempty"`
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	Error         *status.Status         `protobuf:"bytes,3,opt,name=error,proto3" json:"error,omitempty"`
+	Description   string                 `protobuf:"bytes,1,opt,name=description,proto3" json:"description,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *CreateSnapshotResult) Reset() {
-	*x = CreateSnapshotResult{}
+func (x *CreateSnapshotInput) Reset() {
+	*x = CreateSnapshotInput{}
 	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *CreateSnapshotResult) String() string {
+func (x *CreateSnapshotInput) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*CreateSnapshotResult) ProtoMessage() {}
+func (*CreateSnapshotInput) ProtoMessage() {}
 
-func (x *CreateSnapshotResult) ProtoReflect() protoreflect.Message {
+func (x *CreateSnapshotInput) ProtoReflect() protoreflect.Message {
 	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -509,26 +507,72 @@ func (x *CreateSnapshotResult) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use CreateSnapshotResult.ProtoReflect.Descriptor instead.
-func (*CreateSnapshotResult) Descriptor() ([]byte, []int) {
+// Deprecated: Use CreateSnapshotInput.ProtoReflect.Descriptor instead.
+func (*CreateSnapshotInput) Descriptor() ([]byte, []int) {
 	return file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *CreateSnapshotResult) GetSnapshotId() string {
+func (x *CreateSnapshotInput) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+type CreateSnapshotOutput struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	SnapshotId    string                 `protobuf:"bytes,1,opt,name=snapshot_id,json=snapshotId,proto3" json:"snapshot_id,omitempty"`
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	Error         *status.Status         `protobuf:"bytes,3,opt,name=error,proto3" json:"error,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateSnapshotOutput) Reset() {
+	*x = CreateSnapshotOutput{}
+	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateSnapshotOutput) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateSnapshotOutput) ProtoMessage() {}
+
+func (x *CreateSnapshotOutput) ProtoReflect() protoreflect.Message {
+	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateSnapshotOutput.ProtoReflect.Descriptor instead.
+func (*CreateSnapshotOutput) Descriptor() ([]byte, []int) {
+	return file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *CreateSnapshotOutput) GetSnapshotId() string {
 	if x != nil {
 		return x.SnapshotId
 	}
 	return ""
 }
 
-func (x *CreateSnapshotResult) GetCreatedAt() *timestamppb.Timestamp {
+func (x *CreateSnapshotOutput) GetCreatedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.CreatedAt
 	}
 	return nil
 }
 
-func (x *CreateSnapshotResult) GetError() *status.Status {
+func (x *CreateSnapshotOutput) GetError() *status.Status {
 	if x != nil {
 		return x.Error
 	}
@@ -545,7 +589,7 @@ type SandboxStatus struct {
 
 func (x *SandboxStatus) Reset() {
 	*x = SandboxStatus{}
-	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[6]
+	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -557,7 +601,7 @@ func (x *SandboxStatus) String() string {
 func (*SandboxStatus) ProtoMessage() {}
 
 func (x *SandboxStatus) ProtoReflect() protoreflect.Message {
-	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[6]
+	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -570,7 +614,7 @@ func (x *SandboxStatus) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SandboxStatus.ProtoReflect.Descriptor instead.
 func (*SandboxStatus) Descriptor() ([]byte, []int) {
-	return file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{6}
+	return file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *SandboxStatus) GetPhase() SandboxStatus_Phase {
@@ -596,7 +640,7 @@ type CreateSandboxRequest struct {
 
 func (x *CreateSandboxRequest) Reset() {
 	*x = CreateSandboxRequest{}
-	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[7]
+	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -608,7 +652,7 @@ func (x *CreateSandboxRequest) String() string {
 func (*CreateSandboxRequest) ProtoMessage() {}
 
 func (x *CreateSandboxRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[7]
+	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -621,7 +665,7 @@ func (x *CreateSandboxRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateSandboxRequest.ProtoReflect.Descriptor instead.
 func (*CreateSandboxRequest) Descriptor() ([]byte, []int) {
-	return file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{7}
+	return file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *CreateSandboxRequest) GetSandbox() *Sandbox {
@@ -640,7 +684,7 @@ type CreateSandboxResponse struct {
 
 func (x *CreateSandboxResponse) Reset() {
 	*x = CreateSandboxResponse{}
-	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[8]
+	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -652,7 +696,7 @@ func (x *CreateSandboxResponse) String() string {
 func (*CreateSandboxResponse) ProtoMessage() {}
 
 func (x *CreateSandboxResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[8]
+	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -665,7 +709,7 @@ func (x *CreateSandboxResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateSandboxResponse.ProtoReflect.Descriptor instead.
 func (*CreateSandboxResponse) Descriptor() ([]byte, []int) {
-	return file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{8}
+	return file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *CreateSandboxResponse) GetSandbox() *Sandbox {
@@ -684,7 +728,7 @@ type GetSandboxRequest struct {
 
 func (x *GetSandboxRequest) Reset() {
 	*x = GetSandboxRequest{}
-	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[9]
+	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -696,7 +740,7 @@ func (x *GetSandboxRequest) String() string {
 func (*GetSandboxRequest) ProtoMessage() {}
 
 func (x *GetSandboxRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[9]
+	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -709,7 +753,7 @@ func (x *GetSandboxRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSandboxRequest.ProtoReflect.Descriptor instead.
 func (*GetSandboxRequest) Descriptor() ([]byte, []int) {
-	return file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{9}
+	return file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *GetSandboxRequest) GetSandboxId() string {
@@ -728,7 +772,7 @@ type GetSandboxResponse struct {
 
 func (x *GetSandboxResponse) Reset() {
 	*x = GetSandboxResponse{}
-	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[10]
+	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -740,7 +784,7 @@ func (x *GetSandboxResponse) String() string {
 func (*GetSandboxResponse) ProtoMessage() {}
 
 func (x *GetSandboxResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[10]
+	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -753,7 +797,7 @@ func (x *GetSandboxResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSandboxResponse.ProtoReflect.Descriptor instead.
 func (*GetSandboxResponse) Descriptor() ([]byte, []int) {
-	return file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{10}
+	return file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *GetSandboxResponse) GetSandbox() *Sandbox {
@@ -794,7 +838,7 @@ type ListSandboxesRequest struct {
 
 func (x *ListSandboxesRequest) Reset() {
 	*x = ListSandboxesRequest{}
-	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[11]
+	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -806,7 +850,7 @@ func (x *ListSandboxesRequest) String() string {
 func (*ListSandboxesRequest) ProtoMessage() {}
 
 func (x *ListSandboxesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[11]
+	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -819,7 +863,7 @@ func (x *ListSandboxesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSandboxesRequest.ProtoReflect.Descriptor instead.
 func (*ListSandboxesRequest) Descriptor() ([]byte, []int) {
-	return file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{11}
+	return file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *ListSandboxesRequest) GetNamespace() string {
@@ -878,7 +922,7 @@ type ListSandboxesResponse struct {
 
 func (x *ListSandboxesResponse) Reset() {
 	*x = ListSandboxesResponse{}
-	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[12]
+	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -890,7 +934,7 @@ func (x *ListSandboxesResponse) String() string {
 func (*ListSandboxesResponse) ProtoMessage() {}
 
 func (x *ListSandboxesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[12]
+	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -903,7 +947,7 @@ func (x *ListSandboxesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSandboxesResponse.ProtoReflect.Descriptor instead.
 func (*ListSandboxesResponse) Descriptor() ([]byte, []int) {
-	return file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{12}
+	return file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *ListSandboxesResponse) GetSandboxes() []*Sandbox {
@@ -930,7 +974,7 @@ type PauseSandboxRequest struct {
 
 func (x *PauseSandboxRequest) Reset() {
 	*x = PauseSandboxRequest{}
-	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[13]
+	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -942,7 +986,7 @@ func (x *PauseSandboxRequest) String() string {
 func (*PauseSandboxRequest) ProtoMessage() {}
 
 func (x *PauseSandboxRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[13]
+	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -955,7 +999,7 @@ func (x *PauseSandboxRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PauseSandboxRequest.ProtoReflect.Descriptor instead.
 func (*PauseSandboxRequest) Descriptor() ([]byte, []int) {
-	return file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{13}
+	return file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *PauseSandboxRequest) GetSandboxId() string {
@@ -974,13 +1018,14 @@ func (x *PauseSandboxRequest) GetVersion() int64 {
 
 type PauseSandboxResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
+	Sandbox       *Sandbox               `protobuf:"bytes,1,opt,name=sandbox,proto3" json:"sandbox,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *PauseSandboxResponse) Reset() {
 	*x = PauseSandboxResponse{}
-	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[14]
+	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -992,7 +1037,7 @@ func (x *PauseSandboxResponse) String() string {
 func (*PauseSandboxResponse) ProtoMessage() {}
 
 func (x *PauseSandboxResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[14]
+	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1005,7 +1050,14 @@ func (x *PauseSandboxResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PauseSandboxResponse.ProtoReflect.Descriptor instead.
 func (*PauseSandboxResponse) Descriptor() ([]byte, []int) {
-	return file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{14}
+	return file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *PauseSandboxResponse) GetSandbox() *Sandbox {
+	if x != nil {
+		return x.Sandbox
+	}
+	return nil
 }
 
 type ResumeSandboxRequest struct {
@@ -1018,7 +1070,7 @@ type ResumeSandboxRequest struct {
 
 func (x *ResumeSandboxRequest) Reset() {
 	*x = ResumeSandboxRequest{}
-	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[15]
+	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1030,7 +1082,7 @@ func (x *ResumeSandboxRequest) String() string {
 func (*ResumeSandboxRequest) ProtoMessage() {}
 
 func (x *ResumeSandboxRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[15]
+	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1043,7 +1095,7 @@ func (x *ResumeSandboxRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResumeSandboxRequest.ProtoReflect.Descriptor instead.
 func (*ResumeSandboxRequest) Descriptor() ([]byte, []int) {
-	return file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{15}
+	return file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *ResumeSandboxRequest) GetSandboxId() string {
@@ -1062,13 +1114,14 @@ func (x *ResumeSandboxRequest) GetVersion() int64 {
 
 type ResumeSandboxResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
+	Sandbox       *Sandbox               `protobuf:"bytes,1,opt,name=sandbox,proto3" json:"sandbox,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ResumeSandboxResponse) Reset() {
 	*x = ResumeSandboxResponse{}
-	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[16]
+	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1080,7 +1133,7 @@ func (x *ResumeSandboxResponse) String() string {
 func (*ResumeSandboxResponse) ProtoMessage() {}
 
 func (x *ResumeSandboxResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[16]
+	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1093,7 +1146,14 @@ func (x *ResumeSandboxResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResumeSandboxResponse.ProtoReflect.Descriptor instead.
 func (*ResumeSandboxResponse) Descriptor() ([]byte, []int) {
-	return file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{16}
+	return file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *ResumeSandboxResponse) GetSandbox() *Sandbox {
+	if x != nil {
+		return x.Sandbox
+	}
+	return nil
 }
 
 type DeleteSandboxRequest struct {
@@ -1106,7 +1166,7 @@ type DeleteSandboxRequest struct {
 
 func (x *DeleteSandboxRequest) Reset() {
 	*x = DeleteSandboxRequest{}
-	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[17]
+	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1118,7 +1178,7 @@ func (x *DeleteSandboxRequest) String() string {
 func (*DeleteSandboxRequest) ProtoMessage() {}
 
 func (x *DeleteSandboxRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[17]
+	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1131,7 +1191,7 @@ func (x *DeleteSandboxRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteSandboxRequest.ProtoReflect.Descriptor instead.
 func (*DeleteSandboxRequest) Descriptor() ([]byte, []int) {
-	return file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{17}
+	return file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *DeleteSandboxRequest) GetSandboxId() string {
@@ -1150,13 +1210,14 @@ func (x *DeleteSandboxRequest) GetVersion() int64 {
 
 type DeleteSandboxResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
+	Sandbox       *Sandbox               `protobuf:"bytes,1,opt,name=sandbox,proto3" json:"sandbox,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *DeleteSandboxResponse) Reset() {
 	*x = DeleteSandboxResponse{}
-	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[18]
+	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1168,7 +1229,7 @@ func (x *DeleteSandboxResponse) String() string {
 func (*DeleteSandboxResponse) ProtoMessage() {}
 
 func (x *DeleteSandboxResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[18]
+	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1181,7 +1242,118 @@ func (x *DeleteSandboxResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteSandboxResponse.ProtoReflect.Descriptor instead.
 func (*DeleteSandboxResponse) Descriptor() ([]byte, []int) {
-	return file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{18}
+	return file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *DeleteSandboxResponse) GetSandbox() *Sandbox {
+	if x != nil {
+		return x.Sandbox
+	}
+	return nil
+}
+
+type CreateSnapshotRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	SandboxId     string                 `protobuf:"bytes,1,opt,name=sandbox_id,json=sandboxId,proto3" json:"sandbox_id,omitempty"`
+	Version       int64                  `protobuf:"varint,2,opt,name=version,proto3" json:"version,omitempty"`
+	Description   string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateSnapshotRequest) Reset() {
+	*x = CreateSnapshotRequest{}
+	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateSnapshotRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateSnapshotRequest) ProtoMessage() {}
+
+func (x *CreateSnapshotRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateSnapshotRequest.ProtoReflect.Descriptor instead.
+func (*CreateSnapshotRequest) Descriptor() ([]byte, []int) {
+	return file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *CreateSnapshotRequest) GetSandboxId() string {
+	if x != nil {
+		return x.SandboxId
+	}
+	return ""
+}
+
+func (x *CreateSnapshotRequest) GetVersion() int64 {
+	if x != nil {
+		return x.Version
+	}
+	return 0
+}
+
+func (x *CreateSnapshotRequest) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+type CreateSnapshotResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Sandbox       *Sandbox               `protobuf:"bytes,1,opt,name=sandbox,proto3" json:"sandbox,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateSnapshotResponse) Reset() {
+	*x = CreateSnapshotResponse{}
+	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateSnapshotResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateSnapshotResponse) ProtoMessage() {}
+
+func (x *CreateSnapshotResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateSnapshotResponse.ProtoReflect.Descriptor instead.
+func (*CreateSnapshotResponse) Descriptor() ([]byte, []int) {
+	return file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *CreateSnapshotResponse) GetSandbox() *Sandbox {
+	if x != nil {
+		return x.Sandbox
+	}
+	return nil
 }
 
 var File_nuinfra_control_plane_v1alpha1_sandbox_proto protoreflect.FileDescriptor
@@ -1194,7 +1366,7 @@ const file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDesc = "" +
 	"\tresources\x18\x02 \x01(\v2).nuinfra.control_plane.v1alpha1.ResourcesB\x06\xbaH\x03\xc8\x01\x01R\tresources\x12;\n" +
 	"\x04node\x18\x03 \x01(\v2'.nuinfra.control_plane.v1alpha1.NodeRefR\x04node\x12>\n" +
 	"\x06intent\x18\x04 \x01(\v2&.nuinfra.control_plane.v1alpha1.IntentR\x06intent\x12Y\n" +
-	"\rlast_snapshot\x18\x05 \x01(\v24.nuinfra.control_plane.v1alpha1.CreateSnapshotResultR\flastSnapshot\x12E\n" +
+	"\rlast_snapshot\x18\x05 \x01(\v24.nuinfra.control_plane.v1alpha1.CreateSnapshotOutputR\flastSnapshot\x12E\n" +
 	"\x06status\x18\x06 \x01(\v2-.nuinfra.control_plane.v1alpha1.SandboxStatusR\x06status\"\x81\x04\n" +
 	"\vSandboxMeta\x12\x16\n" +
 	"\x02id\x18\x01 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x02id\x12F\n" +
@@ -1213,12 +1385,14 @@ const file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDesc = "" +
 	"\n" +
 	"memory_mib\x18\x02 \x01(\x04B\f\xbaH\t2\a\x18\x80\x80\b(\x80\x01R\tmemoryMib\"\x19\n" +
 	"\aNodeRef\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"\xc5\x01\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"\xfa\x01\n" +
 	"\x06Intent\x12I\n" +
 	"\x05phase\x18\x01 \x01(\x0e23.nuinfra.control_plane.v1alpha1.SandboxStatus.PhaseR\x05phase\x12G\n" +
-	"\tresources\x18\x02 \x01(\v2).nuinfra.control_plane.v1alpha1.ResourcesR\tresources\x12'\n" +
-	"\x0fcreate_snapshot\x18\x03 \x01(\bR\x0ecreateSnapshot\"\x9c\x01\n" +
-	"\x14CreateSnapshotResult\x12\x1f\n" +
+	"\tresources\x18\x02 \x01(\v2).nuinfra.control_plane.v1alpha1.ResourcesR\tresources\x12\\\n" +
+	"\x0fcreate_snapshot\x18\x03 \x01(\v23.nuinfra.control_plane.v1alpha1.CreateSnapshotInputR\x0ecreateSnapshot\"A\n" +
+	"\x13CreateSnapshotInput\x12*\n" +
+	"\vdescription\x18\x01 \x01(\tB\b\xbaH\x05r\x03\x18\x80\x02R\vdescription\"\x9c\x01\n" +
+	"\x14CreateSnapshotOutput\x12\x1f\n" +
 	"\vsnapshot_id\x18\x01 \x01(\tR\n" +
 	"snapshotId\x129\n" +
 	"\n" +
@@ -1266,18 +1440,28 @@ const file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDesc = "" +
 	"\x13PauseSandboxRequest\x12%\n" +
 	"\n" +
 	"sandbox_id\x18\x01 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\tsandboxId\x12 \n" +
-	"\aversion\x18\x02 \x01(\x03B\x06\xbaH\x03\xc8\x01\x01R\aversion\"\x16\n" +
-	"\x14PauseSandboxResponse\"_\n" +
+	"\aversion\x18\x02 \x01(\x03B\x06\xbaH\x03\xc8\x01\x01R\aversion\"Y\n" +
+	"\x14PauseSandboxResponse\x12A\n" +
+	"\asandbox\x18\x01 \x01(\v2'.nuinfra.control_plane.v1alpha1.SandboxR\asandbox\"_\n" +
 	"\x14ResumeSandboxRequest\x12%\n" +
 	"\n" +
 	"sandbox_id\x18\x01 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\tsandboxId\x12 \n" +
-	"\aversion\x18\x02 \x01(\x03B\x06\xbaH\x03\xc8\x01\x01R\aversion\"\x17\n" +
-	"\x15ResumeSandboxResponse\"_\n" +
+	"\aversion\x18\x02 \x01(\x03B\x06\xbaH\x03\xc8\x01\x01R\aversion\"Z\n" +
+	"\x15ResumeSandboxResponse\x12A\n" +
+	"\asandbox\x18\x01 \x01(\v2'.nuinfra.control_plane.v1alpha1.SandboxR\asandbox\"_\n" +
 	"\x14DeleteSandboxRequest\x12%\n" +
 	"\n" +
 	"sandbox_id\x18\x01 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\tsandboxId\x12 \n" +
-	"\aversion\x18\x02 \x01(\x03B\x06\xbaH\x03\xc8\x01\x01R\aversion\"\x17\n" +
-	"\x15DeleteSandboxResponse2\xf0\a\n" +
+	"\aversion\x18\x02 \x01(\x03B\x06\xbaH\x03\xc8\x01\x01R\aversion\"Z\n" +
+	"\x15DeleteSandboxResponse\x12A\n" +
+	"\asandbox\x18\x01 \x01(\v2'.nuinfra.control_plane.v1alpha1.SandboxR\asandbox\"\x8c\x01\n" +
+	"\x15CreateSnapshotRequest\x12%\n" +
+	"\n" +
+	"sandbox_id\x18\x01 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\tsandboxId\x12 \n" +
+	"\aversion\x18\x02 \x01(\x03B\x06\xbaH\x03\xc8\x01\x01R\aversion\x12*\n" +
+	"\vdescription\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\x80\x02R\vdescription\"[\n" +
+	"\x16CreateSnapshotResponse\x12A\n" +
+	"\asandbox\x18\x01 \x01(\v2'.nuinfra.control_plane.v1alpha1.SandboxR\asandbox2\xa9\t\n" +
 	"\x0eSandboxService\x12\x9c\x01\n" +
 	"\rCreateSandbox\x124.nuinfra.control_plane.v1alpha1.CreateSandboxRequest\x1a5.nuinfra.control_plane.v1alpha1.CreateSandboxResponse\"\x1e\x82\xd3\xe4\x93\x02\x18:\x01*\"\x13/v1alpha1/sandboxes\x12\x9d\x01\n" +
 	"\n" +
@@ -1285,7 +1469,8 @@ const file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDesc = "" +
 	"\rListSandboxes\x124.nuinfra.control_plane.v1alpha1.ListSandboxesRequest\x1a5.nuinfra.control_plane.v1alpha1.ListSandboxesResponse\"\x1b\x82\xd3\xe4\x93\x02\x15\x12\x13/v1alpha1/sandboxes\x12\xa9\x01\n" +
 	"\fPauseSandbox\x123.nuinfra.control_plane.v1alpha1.PauseSandboxRequest\x1a4.nuinfra.control_plane.v1alpha1.PauseSandboxResponse\".\x82\xd3\xe4\x93\x02(\x1a&/v1alpha1/sandboxes/{sandbox_id}/pause\x12\xad\x01\n" +
 	"\rResumeSandbox\x124.nuinfra.control_plane.v1alpha1.ResumeSandboxRequest\x1a5.nuinfra.control_plane.v1alpha1.ResumeSandboxResponse\"/\x82\xd3\xe4\x93\x02)\x1a'/v1alpha1/sandboxes/{sandbox_id}/resume\x12\xa6\x01\n" +
-	"\rDeleteSandbox\x124.nuinfra.control_plane.v1alpha1.DeleteSandboxRequest\x1a5.nuinfra.control_plane.v1alpha1.DeleteSandboxResponse\"(\x82\xd3\xe4\x93\x02\"* /v1alpha1/sandboxes/{sandbox_id}B\x9a\x02\n" +
+	"\rDeleteSandbox\x124.nuinfra.control_plane.v1alpha1.DeleteSandboxRequest\x1a5.nuinfra.control_plane.v1alpha1.DeleteSandboxResponse\"(\x82\xd3\xe4\x93\x02\"* /v1alpha1/sandboxes/{sandbox_id}\x12\xb6\x01\n" +
+	"\x0eCreateSnapshot\x125.nuinfra.control_plane.v1alpha1.CreateSnapshotRequest\x1a6.nuinfra.control_plane.v1alpha1.CreateSnapshotResponse\"5\x82\xd3\xe4\x93\x02/:\x01*\"*/v1alpha1/sandboxes/{sandbox_id}/snapshotsB\x9a\x02\n" +
 	"\"com.nuinfra.control_plane.v1alpha1B\fSandboxProtoP\x01ZPgolang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1;control_planev1alpha1\xa2\x02\x03NCX\xaa\x02\x1dNuinfra.ControlPlane.V1alpha1\xca\x02\x1dNuinfra\\ControlPlane\\V1alpha1\xe2\x02)Nuinfra\\ControlPlane\\V1alpha1\\GPBMetadata\xea\x02\x1fNuinfra::ControlPlane::V1alpha1b\x06proto3"
 
 var (
@@ -1301,7 +1486,7 @@ func file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDescGZIP() []byte {
 }
 
 var file_nuinfra_control_plane_v1alpha1_sandbox_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes = make([]protoimpl.MessageInfo, 20)
+var file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes = make([]protoimpl.MessageInfo, 23)
 var file_nuinfra_control_plane_v1alpha1_sandbox_proto_goTypes = []any{
 	(SandboxStatus_Phase)(0),        // 0: nuinfra.control_plane.v1alpha1.SandboxStatus.Phase
 	(ListSandboxesRequest_Order)(0), // 1: nuinfra.control_plane.v1alpha1.ListSandboxesRequest.Order
@@ -1310,62 +1495,72 @@ var file_nuinfra_control_plane_v1alpha1_sandbox_proto_goTypes = []any{
 	(*Resources)(nil),               // 4: nuinfra.control_plane.v1alpha1.Resources
 	(*NodeRef)(nil),                 // 5: nuinfra.control_plane.v1alpha1.NodeRef
 	(*Intent)(nil),                  // 6: nuinfra.control_plane.v1alpha1.Intent
-	(*CreateSnapshotResult)(nil),    // 7: nuinfra.control_plane.v1alpha1.CreateSnapshotResult
-	(*SandboxStatus)(nil),           // 8: nuinfra.control_plane.v1alpha1.SandboxStatus
-	(*CreateSandboxRequest)(nil),    // 9: nuinfra.control_plane.v1alpha1.CreateSandboxRequest
-	(*CreateSandboxResponse)(nil),   // 10: nuinfra.control_plane.v1alpha1.CreateSandboxResponse
-	(*GetSandboxRequest)(nil),       // 11: nuinfra.control_plane.v1alpha1.GetSandboxRequest
-	(*GetSandboxResponse)(nil),      // 12: nuinfra.control_plane.v1alpha1.GetSandboxResponse
-	(*ListSandboxesRequest)(nil),    // 13: nuinfra.control_plane.v1alpha1.ListSandboxesRequest
-	(*ListSandboxesResponse)(nil),   // 14: nuinfra.control_plane.v1alpha1.ListSandboxesResponse
-	(*PauseSandboxRequest)(nil),     // 15: nuinfra.control_plane.v1alpha1.PauseSandboxRequest
-	(*PauseSandboxResponse)(nil),    // 16: nuinfra.control_plane.v1alpha1.PauseSandboxResponse
-	(*ResumeSandboxRequest)(nil),    // 17: nuinfra.control_plane.v1alpha1.ResumeSandboxRequest
-	(*ResumeSandboxResponse)(nil),   // 18: nuinfra.control_plane.v1alpha1.ResumeSandboxResponse
-	(*DeleteSandboxRequest)(nil),    // 19: nuinfra.control_plane.v1alpha1.DeleteSandboxRequest
-	(*DeleteSandboxResponse)(nil),   // 20: nuinfra.control_plane.v1alpha1.DeleteSandboxResponse
-	nil,                             // 21: nuinfra.control_plane.v1alpha1.SandboxMeta.LabelsEntry
-	(*timestamppb.Timestamp)(nil),   // 22: google.protobuf.Timestamp
-	(*status.Status)(nil),           // 23: google.rpc.Status
+	(*CreateSnapshotInput)(nil),     // 7: nuinfra.control_plane.v1alpha1.CreateSnapshotInput
+	(*CreateSnapshotOutput)(nil),    // 8: nuinfra.control_plane.v1alpha1.CreateSnapshotOutput
+	(*SandboxStatus)(nil),           // 9: nuinfra.control_plane.v1alpha1.SandboxStatus
+	(*CreateSandboxRequest)(nil),    // 10: nuinfra.control_plane.v1alpha1.CreateSandboxRequest
+	(*CreateSandboxResponse)(nil),   // 11: nuinfra.control_plane.v1alpha1.CreateSandboxResponse
+	(*GetSandboxRequest)(nil),       // 12: nuinfra.control_plane.v1alpha1.GetSandboxRequest
+	(*GetSandboxResponse)(nil),      // 13: nuinfra.control_plane.v1alpha1.GetSandboxResponse
+	(*ListSandboxesRequest)(nil),    // 14: nuinfra.control_plane.v1alpha1.ListSandboxesRequest
+	(*ListSandboxesResponse)(nil),   // 15: nuinfra.control_plane.v1alpha1.ListSandboxesResponse
+	(*PauseSandboxRequest)(nil),     // 16: nuinfra.control_plane.v1alpha1.PauseSandboxRequest
+	(*PauseSandboxResponse)(nil),    // 17: nuinfra.control_plane.v1alpha1.PauseSandboxResponse
+	(*ResumeSandboxRequest)(nil),    // 18: nuinfra.control_plane.v1alpha1.ResumeSandboxRequest
+	(*ResumeSandboxResponse)(nil),   // 19: nuinfra.control_plane.v1alpha1.ResumeSandboxResponse
+	(*DeleteSandboxRequest)(nil),    // 20: nuinfra.control_plane.v1alpha1.DeleteSandboxRequest
+	(*DeleteSandboxResponse)(nil),   // 21: nuinfra.control_plane.v1alpha1.DeleteSandboxResponse
+	(*CreateSnapshotRequest)(nil),   // 22: nuinfra.control_plane.v1alpha1.CreateSnapshotRequest
+	(*CreateSnapshotResponse)(nil),  // 23: nuinfra.control_plane.v1alpha1.CreateSnapshotResponse
+	nil,                             // 24: nuinfra.control_plane.v1alpha1.SandboxMeta.LabelsEntry
+	(*timestamppb.Timestamp)(nil),   // 25: google.protobuf.Timestamp
+	(*status.Status)(nil),           // 26: google.rpc.Status
 }
 var file_nuinfra_control_plane_v1alpha1_sandbox_proto_depIdxs = []int32{
 	3,  // 0: nuinfra.control_plane.v1alpha1.Sandbox.metadata:type_name -> nuinfra.control_plane.v1alpha1.SandboxMeta
 	4,  // 1: nuinfra.control_plane.v1alpha1.Sandbox.resources:type_name -> nuinfra.control_plane.v1alpha1.Resources
 	5,  // 2: nuinfra.control_plane.v1alpha1.Sandbox.node:type_name -> nuinfra.control_plane.v1alpha1.NodeRef
 	6,  // 3: nuinfra.control_plane.v1alpha1.Sandbox.intent:type_name -> nuinfra.control_plane.v1alpha1.Intent
-	7,  // 4: nuinfra.control_plane.v1alpha1.Sandbox.last_snapshot:type_name -> nuinfra.control_plane.v1alpha1.CreateSnapshotResult
-	8,  // 5: nuinfra.control_plane.v1alpha1.Sandbox.status:type_name -> nuinfra.control_plane.v1alpha1.SandboxStatus
-	22, // 6: nuinfra.control_plane.v1alpha1.SandboxMeta.created_at:type_name -> google.protobuf.Timestamp
-	22, // 7: nuinfra.control_plane.v1alpha1.SandboxMeta.last_modified_at:type_name -> google.protobuf.Timestamp
-	21, // 8: nuinfra.control_plane.v1alpha1.SandboxMeta.labels:type_name -> nuinfra.control_plane.v1alpha1.SandboxMeta.LabelsEntry
+	8,  // 4: nuinfra.control_plane.v1alpha1.Sandbox.last_snapshot:type_name -> nuinfra.control_plane.v1alpha1.CreateSnapshotOutput
+	9,  // 5: nuinfra.control_plane.v1alpha1.Sandbox.status:type_name -> nuinfra.control_plane.v1alpha1.SandboxStatus
+	25, // 6: nuinfra.control_plane.v1alpha1.SandboxMeta.created_at:type_name -> google.protobuf.Timestamp
+	25, // 7: nuinfra.control_plane.v1alpha1.SandboxMeta.last_modified_at:type_name -> google.protobuf.Timestamp
+	24, // 8: nuinfra.control_plane.v1alpha1.SandboxMeta.labels:type_name -> nuinfra.control_plane.v1alpha1.SandboxMeta.LabelsEntry
 	0,  // 9: nuinfra.control_plane.v1alpha1.Intent.phase:type_name -> nuinfra.control_plane.v1alpha1.SandboxStatus.Phase
 	4,  // 10: nuinfra.control_plane.v1alpha1.Intent.resources:type_name -> nuinfra.control_plane.v1alpha1.Resources
-	22, // 11: nuinfra.control_plane.v1alpha1.CreateSnapshotResult.created_at:type_name -> google.protobuf.Timestamp
-	23, // 12: nuinfra.control_plane.v1alpha1.CreateSnapshotResult.error:type_name -> google.rpc.Status
-	0,  // 13: nuinfra.control_plane.v1alpha1.SandboxStatus.phase:type_name -> nuinfra.control_plane.v1alpha1.SandboxStatus.Phase
-	2,  // 14: nuinfra.control_plane.v1alpha1.CreateSandboxRequest.sandbox:type_name -> nuinfra.control_plane.v1alpha1.Sandbox
-	2,  // 15: nuinfra.control_plane.v1alpha1.CreateSandboxResponse.sandbox:type_name -> nuinfra.control_plane.v1alpha1.Sandbox
-	2,  // 16: nuinfra.control_plane.v1alpha1.GetSandboxResponse.sandbox:type_name -> nuinfra.control_plane.v1alpha1.Sandbox
-	0,  // 17: nuinfra.control_plane.v1alpha1.ListSandboxesRequest.status_phase:type_name -> nuinfra.control_plane.v1alpha1.SandboxStatus.Phase
-	1,  // 18: nuinfra.control_plane.v1alpha1.ListSandboxesRequest.sort_order:type_name -> nuinfra.control_plane.v1alpha1.ListSandboxesRequest.Order
-	2,  // 19: nuinfra.control_plane.v1alpha1.ListSandboxesResponse.sandboxes:type_name -> nuinfra.control_plane.v1alpha1.Sandbox
-	9,  // 20: nuinfra.control_plane.v1alpha1.SandboxService.CreateSandbox:input_type -> nuinfra.control_plane.v1alpha1.CreateSandboxRequest
-	11, // 21: nuinfra.control_plane.v1alpha1.SandboxService.GetSandbox:input_type -> nuinfra.control_plane.v1alpha1.GetSandboxRequest
-	13, // 22: nuinfra.control_plane.v1alpha1.SandboxService.ListSandboxes:input_type -> nuinfra.control_plane.v1alpha1.ListSandboxesRequest
-	15, // 23: nuinfra.control_plane.v1alpha1.SandboxService.PauseSandbox:input_type -> nuinfra.control_plane.v1alpha1.PauseSandboxRequest
-	17, // 24: nuinfra.control_plane.v1alpha1.SandboxService.ResumeSandbox:input_type -> nuinfra.control_plane.v1alpha1.ResumeSandboxRequest
-	19, // 25: nuinfra.control_plane.v1alpha1.SandboxService.DeleteSandbox:input_type -> nuinfra.control_plane.v1alpha1.DeleteSandboxRequest
-	10, // 26: nuinfra.control_plane.v1alpha1.SandboxService.CreateSandbox:output_type -> nuinfra.control_plane.v1alpha1.CreateSandboxResponse
-	12, // 27: nuinfra.control_plane.v1alpha1.SandboxService.GetSandbox:output_type -> nuinfra.control_plane.v1alpha1.GetSandboxResponse
-	14, // 28: nuinfra.control_plane.v1alpha1.SandboxService.ListSandboxes:output_type -> nuinfra.control_plane.v1alpha1.ListSandboxesResponse
-	16, // 29: nuinfra.control_plane.v1alpha1.SandboxService.PauseSandbox:output_type -> nuinfra.control_plane.v1alpha1.PauseSandboxResponse
-	18, // 30: nuinfra.control_plane.v1alpha1.SandboxService.ResumeSandbox:output_type -> nuinfra.control_plane.v1alpha1.ResumeSandboxResponse
-	20, // 31: nuinfra.control_plane.v1alpha1.SandboxService.DeleteSandbox:output_type -> nuinfra.control_plane.v1alpha1.DeleteSandboxResponse
-	26, // [26:32] is the sub-list for method output_type
-	20, // [20:26] is the sub-list for method input_type
-	20, // [20:20] is the sub-list for extension type_name
-	20, // [20:20] is the sub-list for extension extendee
-	0,  // [0:20] is the sub-list for field type_name
+	7,  // 11: nuinfra.control_plane.v1alpha1.Intent.create_snapshot:type_name -> nuinfra.control_plane.v1alpha1.CreateSnapshotInput
+	25, // 12: nuinfra.control_plane.v1alpha1.CreateSnapshotOutput.created_at:type_name -> google.protobuf.Timestamp
+	26, // 13: nuinfra.control_plane.v1alpha1.CreateSnapshotOutput.error:type_name -> google.rpc.Status
+	0,  // 14: nuinfra.control_plane.v1alpha1.SandboxStatus.phase:type_name -> nuinfra.control_plane.v1alpha1.SandboxStatus.Phase
+	2,  // 15: nuinfra.control_plane.v1alpha1.CreateSandboxRequest.sandbox:type_name -> nuinfra.control_plane.v1alpha1.Sandbox
+	2,  // 16: nuinfra.control_plane.v1alpha1.CreateSandboxResponse.sandbox:type_name -> nuinfra.control_plane.v1alpha1.Sandbox
+	2,  // 17: nuinfra.control_plane.v1alpha1.GetSandboxResponse.sandbox:type_name -> nuinfra.control_plane.v1alpha1.Sandbox
+	0,  // 18: nuinfra.control_plane.v1alpha1.ListSandboxesRequest.status_phase:type_name -> nuinfra.control_plane.v1alpha1.SandboxStatus.Phase
+	1,  // 19: nuinfra.control_plane.v1alpha1.ListSandboxesRequest.sort_order:type_name -> nuinfra.control_plane.v1alpha1.ListSandboxesRequest.Order
+	2,  // 20: nuinfra.control_plane.v1alpha1.ListSandboxesResponse.sandboxes:type_name -> nuinfra.control_plane.v1alpha1.Sandbox
+	2,  // 21: nuinfra.control_plane.v1alpha1.PauseSandboxResponse.sandbox:type_name -> nuinfra.control_plane.v1alpha1.Sandbox
+	2,  // 22: nuinfra.control_plane.v1alpha1.ResumeSandboxResponse.sandbox:type_name -> nuinfra.control_plane.v1alpha1.Sandbox
+	2,  // 23: nuinfra.control_plane.v1alpha1.DeleteSandboxResponse.sandbox:type_name -> nuinfra.control_plane.v1alpha1.Sandbox
+	2,  // 24: nuinfra.control_plane.v1alpha1.CreateSnapshotResponse.sandbox:type_name -> nuinfra.control_plane.v1alpha1.Sandbox
+	10, // 25: nuinfra.control_plane.v1alpha1.SandboxService.CreateSandbox:input_type -> nuinfra.control_plane.v1alpha1.CreateSandboxRequest
+	12, // 26: nuinfra.control_plane.v1alpha1.SandboxService.GetSandbox:input_type -> nuinfra.control_plane.v1alpha1.GetSandboxRequest
+	14, // 27: nuinfra.control_plane.v1alpha1.SandboxService.ListSandboxes:input_type -> nuinfra.control_plane.v1alpha1.ListSandboxesRequest
+	16, // 28: nuinfra.control_plane.v1alpha1.SandboxService.PauseSandbox:input_type -> nuinfra.control_plane.v1alpha1.PauseSandboxRequest
+	18, // 29: nuinfra.control_plane.v1alpha1.SandboxService.ResumeSandbox:input_type -> nuinfra.control_plane.v1alpha1.ResumeSandboxRequest
+	20, // 30: nuinfra.control_plane.v1alpha1.SandboxService.DeleteSandbox:input_type -> nuinfra.control_plane.v1alpha1.DeleteSandboxRequest
+	22, // 31: nuinfra.control_plane.v1alpha1.SandboxService.CreateSnapshot:input_type -> nuinfra.control_plane.v1alpha1.CreateSnapshotRequest
+	11, // 32: nuinfra.control_plane.v1alpha1.SandboxService.CreateSandbox:output_type -> nuinfra.control_plane.v1alpha1.CreateSandboxResponse
+	13, // 33: nuinfra.control_plane.v1alpha1.SandboxService.GetSandbox:output_type -> nuinfra.control_plane.v1alpha1.GetSandboxResponse
+	15, // 34: nuinfra.control_plane.v1alpha1.SandboxService.ListSandboxes:output_type -> nuinfra.control_plane.v1alpha1.ListSandboxesResponse
+	17, // 35: nuinfra.control_plane.v1alpha1.SandboxService.PauseSandbox:output_type -> nuinfra.control_plane.v1alpha1.PauseSandboxResponse
+	19, // 36: nuinfra.control_plane.v1alpha1.SandboxService.ResumeSandbox:output_type -> nuinfra.control_plane.v1alpha1.ResumeSandboxResponse
+	21, // 37: nuinfra.control_plane.v1alpha1.SandboxService.DeleteSandbox:output_type -> nuinfra.control_plane.v1alpha1.DeleteSandboxResponse
+	23, // 38: nuinfra.control_plane.v1alpha1.SandboxService.CreateSnapshot:output_type -> nuinfra.control_plane.v1alpha1.CreateSnapshotResponse
+	32, // [32:39] is the sub-list for method output_type
+	25, // [25:32] is the sub-list for method input_type
+	25, // [25:25] is the sub-list for extension type_name
+	25, // [25:25] is the sub-list for extension extendee
+	0,  // [0:25] is the sub-list for field type_name
 }
 
 func init() { file_nuinfra_control_plane_v1alpha1_sandbox_proto_init() }
@@ -1379,7 +1574,7 @@ func file_nuinfra_control_plane_v1alpha1_sandbox_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDesc), len(file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDesc)),
 			NumEnums:      2,
-			NumMessages:   20,
+			NumMessages:   23,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

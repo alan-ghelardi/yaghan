@@ -172,7 +172,15 @@
         }
       }
     },
-    "v1alpha1CreateSnapshotResult": {
+    "v1alpha1CreateSnapshotInput": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string"
+        }
+      }
+    },
+    "v1alpha1CreateSnapshotOutput": {
       "type": "object",
       "properties": {
         "snapshotId": {
@@ -269,7 +277,7 @@
           "$ref": "#/definitions/v1alpha1Resources"
         },
         "createSnapshot": {
-          "type": "boolean"
+          "$ref": "#/definitions/v1alpha1CreateSnapshotInput"
         }
       }
     },
@@ -468,7 +476,7 @@
           "$ref": "#/definitions/v1alpha1Intent"
         },
         "lastSnapshot": {
-          "$ref": "#/definitions/v1alpha1CreateSnapshotResult"
+          "$ref": "#/definitions/v1alpha1CreateSnapshotOutput"
         },
         "status": {
           "$ref": "#/definitions/v1alpha1SandboxStatus"

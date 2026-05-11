@@ -90,14 +90,29 @@ private static final long serialVersionUID = 0L;
   }
 
   public static final int CREATE_SNAPSHOT_FIELD_NUMBER = 3;
-  private boolean createSnapshot_ = false;
+  private com.nuinfra.control_plane.v1alpha1.CreateSnapshotInput createSnapshot_;
   /**
-   * <code>bool create_snapshot = 3 [json_name = "createSnapshot"];</code>
+   * <code>.nuinfra.control_plane.v1alpha1.CreateSnapshotInput create_snapshot = 3 [json_name = "createSnapshot"];</code>
+   * @return Whether the createSnapshot field is set.
+   */
+  @java.lang.Override
+  public boolean hasCreateSnapshot() {
+    return ((bitField0_ & 0x00000002) != 0);
+  }
+  /**
+   * <code>.nuinfra.control_plane.v1alpha1.CreateSnapshotInput create_snapshot = 3 [json_name = "createSnapshot"];</code>
    * @return The createSnapshot.
    */
   @java.lang.Override
-  public boolean getCreateSnapshot() {
-    return createSnapshot_;
+  public com.nuinfra.control_plane.v1alpha1.CreateSnapshotInput getCreateSnapshot() {
+    return createSnapshot_ == null ? com.nuinfra.control_plane.v1alpha1.CreateSnapshotInput.getDefaultInstance() : createSnapshot_;
+  }
+  /**
+   * <code>.nuinfra.control_plane.v1alpha1.CreateSnapshotInput create_snapshot = 3 [json_name = "createSnapshot"];</code>
+   */
+  @java.lang.Override
+  public com.nuinfra.control_plane.v1alpha1.CreateSnapshotInputOrBuilder getCreateSnapshotOrBuilder() {
+    return createSnapshot_ == null ? com.nuinfra.control_plane.v1alpha1.CreateSnapshotInput.getDefaultInstance() : createSnapshot_;
   }
 
   private byte memoizedIsInitialized = -1;
@@ -120,8 +135,8 @@ private static final long serialVersionUID = 0L;
     if (((bitField0_ & 0x00000001) != 0)) {
       output.writeMessage(2, getResources());
     }
-    if (createSnapshot_ != false) {
-      output.writeBool(3, createSnapshot_);
+    if (((bitField0_ & 0x00000002) != 0)) {
+      output.writeMessage(3, getCreateSnapshot());
     }
     getUnknownFields().writeTo(output);
   }
@@ -140,9 +155,9 @@ private static final long serialVersionUID = 0L;
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(2, getResources());
     }
-    if (createSnapshot_ != false) {
+    if (((bitField0_ & 0x00000002) != 0)) {
       size += com.google.protobuf.CodedOutputStream
-        .computeBoolSize(3, createSnapshot_);
+        .computeMessageSize(3, getCreateSnapshot());
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -165,8 +180,11 @@ private static final long serialVersionUID = 0L;
       if (!getResources()
           .equals(other.getResources())) return false;
     }
-    if (getCreateSnapshot()
-        != other.getCreateSnapshot()) return false;
+    if (hasCreateSnapshot() != other.hasCreateSnapshot()) return false;
+    if (hasCreateSnapshot()) {
+      if (!getCreateSnapshot()
+          .equals(other.getCreateSnapshot())) return false;
+    }
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -184,9 +202,10 @@ private static final long serialVersionUID = 0L;
       hash = (37 * hash) + RESOURCES_FIELD_NUMBER;
       hash = (53 * hash) + getResources().hashCode();
     }
-    hash = (37 * hash) + CREATE_SNAPSHOT_FIELD_NUMBER;
-    hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
-        getCreateSnapshot());
+    if (hasCreateSnapshot()) {
+      hash = (37 * hash) + CREATE_SNAPSHOT_FIELD_NUMBER;
+      hash = (53 * hash) + getCreateSnapshot().hashCode();
+    }
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -318,6 +337,7 @@ private static final long serialVersionUID = 0L;
       if (com.google.protobuf.GeneratedMessage
               .alwaysUseFieldBuilders) {
         internalGetResourcesFieldBuilder();
+        internalGetCreateSnapshotFieldBuilder();
       }
     }
     @java.lang.Override
@@ -330,7 +350,11 @@ private static final long serialVersionUID = 0L;
         resourcesBuilder_.dispose();
         resourcesBuilder_ = null;
       }
-      createSnapshot_ = false;
+      createSnapshot_ = null;
+      if (createSnapshotBuilder_ != null) {
+        createSnapshotBuilder_.dispose();
+        createSnapshotBuilder_ = null;
+      }
       return this;
     }
 
@@ -375,7 +399,10 @@ private static final long serialVersionUID = 0L;
         to_bitField0_ |= 0x00000001;
       }
       if (((from_bitField0_ & 0x00000004) != 0)) {
-        result.createSnapshot_ = createSnapshot_;
+        result.createSnapshot_ = createSnapshotBuilder_ == null
+            ? createSnapshot_
+            : createSnapshotBuilder_.build();
+        to_bitField0_ |= 0x00000002;
       }
       result.bitField0_ |= to_bitField0_;
     }
@@ -398,8 +425,8 @@ private static final long serialVersionUID = 0L;
       if (other.hasResources()) {
         mergeResources(other.getResources());
       }
-      if (other.getCreateSnapshot() != false) {
-        setCreateSnapshot(other.getCreateSnapshot());
+      if (other.hasCreateSnapshot()) {
+        mergeCreateSnapshot(other.getCreateSnapshot());
       }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
@@ -439,11 +466,13 @@ private static final long serialVersionUID = 0L;
               bitField0_ |= 0x00000002;
               break;
             } // case 18
-            case 24: {
-              createSnapshot_ = input.readBool();
+            case 26: {
+              input.readMessage(
+                  internalGetCreateSnapshotFieldBuilder().getBuilder(),
+                  extensionRegistry);
               bitField0_ |= 0x00000004;
               break;
-            } // case 24
+            } // case 26
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -633,36 +662,125 @@ private static final long serialVersionUID = 0L;
       return resourcesBuilder_;
     }
 
-    private boolean createSnapshot_ ;
+    private com.nuinfra.control_plane.v1alpha1.CreateSnapshotInput createSnapshot_;
+    private com.google.protobuf.SingleFieldBuilder<
+        com.nuinfra.control_plane.v1alpha1.CreateSnapshotInput, com.nuinfra.control_plane.v1alpha1.CreateSnapshotInput.Builder, com.nuinfra.control_plane.v1alpha1.CreateSnapshotInputOrBuilder> createSnapshotBuilder_;
     /**
-     * <code>bool create_snapshot = 3 [json_name = "createSnapshot"];</code>
-     * @return The createSnapshot.
+     * <code>.nuinfra.control_plane.v1alpha1.CreateSnapshotInput create_snapshot = 3 [json_name = "createSnapshot"];</code>
+     * @return Whether the createSnapshot field is set.
      */
-    @java.lang.Override
-    public boolean getCreateSnapshot() {
-      return createSnapshot_;
+    public boolean hasCreateSnapshot() {
+      return ((bitField0_ & 0x00000004) != 0);
     }
     /**
-     * <code>bool create_snapshot = 3 [json_name = "createSnapshot"];</code>
-     * @param value The createSnapshot to set.
-     * @return This builder for chaining.
+     * <code>.nuinfra.control_plane.v1alpha1.CreateSnapshotInput create_snapshot = 3 [json_name = "createSnapshot"];</code>
+     * @return The createSnapshot.
      */
-    public Builder setCreateSnapshot(boolean value) {
-
-      createSnapshot_ = value;
+    public com.nuinfra.control_plane.v1alpha1.CreateSnapshotInput getCreateSnapshot() {
+      if (createSnapshotBuilder_ == null) {
+        return createSnapshot_ == null ? com.nuinfra.control_plane.v1alpha1.CreateSnapshotInput.getDefaultInstance() : createSnapshot_;
+      } else {
+        return createSnapshotBuilder_.getMessage();
+      }
+    }
+    /**
+     * <code>.nuinfra.control_plane.v1alpha1.CreateSnapshotInput create_snapshot = 3 [json_name = "createSnapshot"];</code>
+     */
+    public Builder setCreateSnapshot(com.nuinfra.control_plane.v1alpha1.CreateSnapshotInput value) {
+      if (createSnapshotBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        createSnapshot_ = value;
+      } else {
+        createSnapshotBuilder_.setMessage(value);
+      }
       bitField0_ |= 0x00000004;
       onChanged();
       return this;
     }
     /**
-     * <code>bool create_snapshot = 3 [json_name = "createSnapshot"];</code>
-     * @return This builder for chaining.
+     * <code>.nuinfra.control_plane.v1alpha1.CreateSnapshotInput create_snapshot = 3 [json_name = "createSnapshot"];</code>
+     */
+    public Builder setCreateSnapshot(
+        com.nuinfra.control_plane.v1alpha1.CreateSnapshotInput.Builder builderForValue) {
+      if (createSnapshotBuilder_ == null) {
+        createSnapshot_ = builderForValue.build();
+      } else {
+        createSnapshotBuilder_.setMessage(builderForValue.build());
+      }
+      bitField0_ |= 0x00000004;
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>.nuinfra.control_plane.v1alpha1.CreateSnapshotInput create_snapshot = 3 [json_name = "createSnapshot"];</code>
+     */
+    public Builder mergeCreateSnapshot(com.nuinfra.control_plane.v1alpha1.CreateSnapshotInput value) {
+      if (createSnapshotBuilder_ == null) {
+        if (((bitField0_ & 0x00000004) != 0) &&
+          createSnapshot_ != null &&
+          createSnapshot_ != com.nuinfra.control_plane.v1alpha1.CreateSnapshotInput.getDefaultInstance()) {
+          getCreateSnapshotBuilder().mergeFrom(value);
+        } else {
+          createSnapshot_ = value;
+        }
+      } else {
+        createSnapshotBuilder_.mergeFrom(value);
+      }
+      if (createSnapshot_ != null) {
+        bitField0_ |= 0x00000004;
+        onChanged();
+      }
+      return this;
+    }
+    /**
+     * <code>.nuinfra.control_plane.v1alpha1.CreateSnapshotInput create_snapshot = 3 [json_name = "createSnapshot"];</code>
      */
     public Builder clearCreateSnapshot() {
       bitField0_ = (bitField0_ & ~0x00000004);
-      createSnapshot_ = false;
+      createSnapshot_ = null;
+      if (createSnapshotBuilder_ != null) {
+        createSnapshotBuilder_.dispose();
+        createSnapshotBuilder_ = null;
+      }
       onChanged();
       return this;
+    }
+    /**
+     * <code>.nuinfra.control_plane.v1alpha1.CreateSnapshotInput create_snapshot = 3 [json_name = "createSnapshot"];</code>
+     */
+    public com.nuinfra.control_plane.v1alpha1.CreateSnapshotInput.Builder getCreateSnapshotBuilder() {
+      bitField0_ |= 0x00000004;
+      onChanged();
+      return internalGetCreateSnapshotFieldBuilder().getBuilder();
+    }
+    /**
+     * <code>.nuinfra.control_plane.v1alpha1.CreateSnapshotInput create_snapshot = 3 [json_name = "createSnapshot"];</code>
+     */
+    public com.nuinfra.control_plane.v1alpha1.CreateSnapshotInputOrBuilder getCreateSnapshotOrBuilder() {
+      if (createSnapshotBuilder_ != null) {
+        return createSnapshotBuilder_.getMessageOrBuilder();
+      } else {
+        return createSnapshot_ == null ?
+            com.nuinfra.control_plane.v1alpha1.CreateSnapshotInput.getDefaultInstance() : createSnapshot_;
+      }
+    }
+    /**
+     * <code>.nuinfra.control_plane.v1alpha1.CreateSnapshotInput create_snapshot = 3 [json_name = "createSnapshot"];</code>
+     */
+    private com.google.protobuf.SingleFieldBuilder<
+        com.nuinfra.control_plane.v1alpha1.CreateSnapshotInput, com.nuinfra.control_plane.v1alpha1.CreateSnapshotInput.Builder, com.nuinfra.control_plane.v1alpha1.CreateSnapshotInputOrBuilder> 
+        internalGetCreateSnapshotFieldBuilder() {
+      if (createSnapshotBuilder_ == null) {
+        createSnapshotBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+            com.nuinfra.control_plane.v1alpha1.CreateSnapshotInput, com.nuinfra.control_plane.v1alpha1.CreateSnapshotInput.Builder, com.nuinfra.control_plane.v1alpha1.CreateSnapshotInputOrBuilder>(
+                getCreateSnapshot(),
+                getParentForChildren(),
+                isClean());
+        createSnapshot_ = null;
+      }
+      return createSnapshotBuilder_;
     }
 
     // @@protoc_insertion_point(builder_scope:nuinfra.control_plane.v1alpha1.Intent)

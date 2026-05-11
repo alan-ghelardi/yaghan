@@ -37,9 +37,9 @@ export declare type Sandbox = Message<"nuinfra.control_plane.v1alpha1.Sandbox"> 
   intent?: Intent;
 
   /**
-   * @generated from field: nuinfra.control_plane.v1alpha1.CreateSnapshotResult last_snapshot = 5;
+   * @generated from field: nuinfra.control_plane.v1alpha1.CreateSnapshotOutput last_snapshot = 5;
    */
-  lastSnapshot?: CreateSnapshotResult;
+  lastSnapshot?: CreateSnapshotOutput;
 
   /**
    * @generated from field: nuinfra.control_plane.v1alpha1.SandboxStatus status = 6;
@@ -155,9 +155,9 @@ export declare type Intent = Message<"nuinfra.control_plane.v1alpha1.Intent"> & 
   resources?: Resources;
 
   /**
-   * @generated from field: bool create_snapshot = 3;
+   * @generated from field: nuinfra.control_plane.v1alpha1.CreateSnapshotInput create_snapshot = 3;
    */
-  createSnapshot: boolean;
+  createSnapshot?: CreateSnapshotInput;
 };
 
 /**
@@ -167,9 +167,25 @@ export declare type Intent = Message<"nuinfra.control_plane.v1alpha1.Intent"> & 
 export declare const IntentSchema: GenMessage<Intent>;
 
 /**
- * @generated from message nuinfra.control_plane.v1alpha1.CreateSnapshotResult
+ * @generated from message nuinfra.control_plane.v1alpha1.CreateSnapshotInput
  */
-export declare type CreateSnapshotResult = Message<"nuinfra.control_plane.v1alpha1.CreateSnapshotResult"> & {
+export declare type CreateSnapshotInput = Message<"nuinfra.control_plane.v1alpha1.CreateSnapshotInput"> & {
+  /**
+   * @generated from field: string description = 1;
+   */
+  description: string;
+};
+
+/**
+ * Describes the message nuinfra.control_plane.v1alpha1.CreateSnapshotInput.
+ * Use `create(CreateSnapshotInputSchema)` to create a new message.
+ */
+export declare const CreateSnapshotInputSchema: GenMessage<CreateSnapshotInput>;
+
+/**
+ * @generated from message nuinfra.control_plane.v1alpha1.CreateSnapshotOutput
+ */
+export declare type CreateSnapshotOutput = Message<"nuinfra.control_plane.v1alpha1.CreateSnapshotOutput"> & {
   /**
    * @generated from field: string snapshot_id = 1;
    */
@@ -187,10 +203,10 @@ export declare type CreateSnapshotResult = Message<"nuinfra.control_plane.v1alph
 };
 
 /**
- * Describes the message nuinfra.control_plane.v1alpha1.CreateSnapshotResult.
- * Use `create(CreateSnapshotResultSchema)` to create a new message.
+ * Describes the message nuinfra.control_plane.v1alpha1.CreateSnapshotOutput.
+ * Use `create(CreateSnapshotOutputSchema)` to create a new message.
  */
-export declare const CreateSnapshotResultSchema: GenMessage<CreateSnapshotResult>;
+export declare const CreateSnapshotOutputSchema: GenMessage<CreateSnapshotOutput>;
 
 /**
  * @generated from message nuinfra.control_plane.v1alpha1.SandboxStatus
@@ -481,6 +497,10 @@ export declare const PauseSandboxRequestSchema: GenMessage<PauseSandboxRequest>;
  * @generated from message nuinfra.control_plane.v1alpha1.PauseSandboxResponse
  */
 export declare type PauseSandboxResponse = Message<"nuinfra.control_plane.v1alpha1.PauseSandboxResponse"> & {
+  /**
+   * @generated from field: nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1;
+   */
+  sandbox?: Sandbox;
 };
 
 /**
@@ -514,6 +534,10 @@ export declare const ResumeSandboxRequestSchema: GenMessage<ResumeSandboxRequest
  * @generated from message nuinfra.control_plane.v1alpha1.ResumeSandboxResponse
  */
 export declare type ResumeSandboxResponse = Message<"nuinfra.control_plane.v1alpha1.ResumeSandboxResponse"> & {
+  /**
+   * @generated from field: nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1;
+   */
+  sandbox?: Sandbox;
 };
 
 /**
@@ -547,6 +571,10 @@ export declare const DeleteSandboxRequestSchema: GenMessage<DeleteSandboxRequest
  * @generated from message nuinfra.control_plane.v1alpha1.DeleteSandboxResponse
  */
 export declare type DeleteSandboxResponse = Message<"nuinfra.control_plane.v1alpha1.DeleteSandboxResponse"> & {
+  /**
+   * @generated from field: nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1;
+   */
+  sandbox?: Sandbox;
 };
 
 /**
@@ -554,6 +582,48 @@ export declare type DeleteSandboxResponse = Message<"nuinfra.control_plane.v1alp
  * Use `create(DeleteSandboxResponseSchema)` to create a new message.
  */
 export declare const DeleteSandboxResponseSchema: GenMessage<DeleteSandboxResponse>;
+
+/**
+ * @generated from message nuinfra.control_plane.v1alpha1.CreateSnapshotRequest
+ */
+export declare type CreateSnapshotRequest = Message<"nuinfra.control_plane.v1alpha1.CreateSnapshotRequest"> & {
+  /**
+   * @generated from field: string sandbox_id = 1;
+   */
+  sandboxId: string;
+
+  /**
+   * @generated from field: int64 version = 2;
+   */
+  version: bigint;
+
+  /**
+   * @generated from field: string description = 3;
+   */
+  description: string;
+};
+
+/**
+ * Describes the message nuinfra.control_plane.v1alpha1.CreateSnapshotRequest.
+ * Use `create(CreateSnapshotRequestSchema)` to create a new message.
+ */
+export declare const CreateSnapshotRequestSchema: GenMessage<CreateSnapshotRequest>;
+
+/**
+ * @generated from message nuinfra.control_plane.v1alpha1.CreateSnapshotResponse
+ */
+export declare type CreateSnapshotResponse = Message<"nuinfra.control_plane.v1alpha1.CreateSnapshotResponse"> & {
+  /**
+   * @generated from field: nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1;
+   */
+  sandbox?: Sandbox;
+};
+
+/**
+ * Describes the message nuinfra.control_plane.v1alpha1.CreateSnapshotResponse.
+ * Use `create(CreateSnapshotResponseSchema)` to create a new message.
+ */
+export declare const CreateSnapshotResponseSchema: GenMessage<CreateSnapshotResponse>;
 
 /**
  * @generated from service nuinfra.control_plane.v1alpha1.SandboxService
@@ -606,6 +676,14 @@ export declare const SandboxService: GenService<{
     methodKind: "unary";
     input: typeof DeleteSandboxRequestSchema;
     output: typeof DeleteSandboxResponseSchema;
+  },
+  /**
+   * @generated from rpc nuinfra.control_plane.v1alpha1.SandboxService.CreateSnapshot
+   */
+  createSnapshot: {
+    methodKind: "unary";
+    input: typeof CreateSnapshotRequestSchema;
+    output: typeof CreateSnapshotResponseSchema;
   },
 }>;
 
