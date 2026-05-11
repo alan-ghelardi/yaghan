@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 
 	"github.com/google/uuid"
-	"golang.nuinfra.net/daemon/pkg/config"
 )
 
 const (
@@ -17,6 +16,11 @@ const (
 	memSnapFile   = "mem"
 	stateSnapFile = "state"
 	partialSuffix = ".partial"
+
+	// snapshotDirMode matches firecrackerVM.CreateSnapshot's host-side
+	// mkdir so a Load doesn't change permissions from what the jailer
+	// expects on the same path.
+	snapshotDirMode = 0o755
 )
 
 // ErrSnapshotNotFound is returned when a snapshot cannot be found in durable storage.
@@ -71,34 +75,26 @@ type DurableStore interface {
 
 // Store provides access to snapshot files stored locally and in durable remote storage.
 type Store struct {
-	config *config.Bundle
-
 	durableStore DurableStore
 }
 
 // NewStore constructs a new Store object.
-func NewStore(config *config.Bundle, durableStore DurableStore) *Store {
-	if config == nil {
-		panic("NewStore: nil config")
-	}
+func NewStore(durableStore DurableStore) *Store {
 	if durableStore == nil {
 		panic("NewStore: nil durableStore")
 	}
-	return &Store{
-		config:       config,
-		durableStore: durableStore,
-	}
+	return &Store{durableStore: durableStore}
 }
 
-// MakeLocalReference creates a new LocalReference object.
-func (s *Store) MakeLocalReference() *LocalReference {
-	return s.localReferenceFor(uuid.NewString())
+// MakeLocalReference returns a LocalReference for a freshly-generated
+// snapshot id rooted at chroot.
+func MakeLocalReference(chroot string) *LocalReference {
+	return localReferenceFor(chroot, uuid.NewString())
 }
 
-// localReferenceFor builds a LocalReference rooted at the configured
-// chroot base directory. Shared by MakeLocalReference and Load.
-func (s *Store) localReferenceFor(snapshotID string) *LocalReference {
-	chroot := s.config.Firecracker.ChrootBaseDir
+// localReferenceFor builds a LocalReference for an existing snapshot id
+// under chroot. Shared by MakeLocalReference and Store.Load.
+func localReferenceFor(chroot, snapshotID string) *LocalReference {
 	return &LocalReference{
 		SnapshotID:    snapshotID,
 		MemFilePath:   filepath.Join(chroot, MemFilePath(snapshotID)),
@@ -130,19 +126,20 @@ func (s *Store) Put(ctx context.Context, localRef *LocalReference) error {
 	return nil
 }
 
-// Load retrieves the snapshot from durable storage and copies its contents into local storage.
+// Load retrieves the snapshot from durable storage and copies its contents
+// into local storage under chroot.
 //
 // It returns a LocalReference describing the local file paths for the snapshot.
 // If the snapshot is already present locally, Load is a no-op.
 // It returns ErrSnapshotNotFound when the snapshot does not exist in durable storage.
-func (s *Store) Load(ctx context.Context, snapshotID string) (*LocalReference, error) {
-	ref := s.localReferenceFor(snapshotID)
+func (s *Store) Load(ctx context.Context, chroot, snapshotID string) (*LocalReference, error) {
+	ref := localReferenceFor(chroot, snapshotID)
 
 	if exists(ref.MemFilePath) && exists(ref.StateFilePath) {
 		return ref, nil
 	}
 
-	if err := os.MkdirAll(filepath.Dir(ref.MemFilePath), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(ref.MemFilePath), snapshotDirMode); err != nil {
 		return nil, fmt.Errorf("create snapshot dir: %w", err)
 	}
 

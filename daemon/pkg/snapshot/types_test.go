@@ -11,7 +11,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"golang.nuinfra.net/daemon/pkg/config"
 )
 
 const (
@@ -67,16 +66,13 @@ func (f *fakeDurableStore) Get(_ context.Context, _ string, contents *ContentsWr
 	return nil
 }
 
-// newStoreFixture wires a Store rooted at a fresh tempdir chroot, returning
-// the store and the fake durable backend so tests can drive both sides.
-func newStoreFixture(t *testing.T) (*Store, *fakeDurableStore) {
+// newStoreFixture wires a Store backed by a fake durable store and returns
+// the store, the fake (so tests can drive both sides), and a fresh tempdir
+// to use as the chroot argument to MakeLocalReference / Store.Load.
+func newStoreFixture(t *testing.T) (*Store, *fakeDurableStore, string) {
 	t.Helper()
-	chroot := t.TempDir()
-	bundle := &config.Bundle{
-		Firecracker: &config.Firecracker{ChrootBaseDir: chroot},
-	}
 	fake := &fakeDurableStore{t: t}
-	return NewStore(bundle, fake), fake
+	return NewStore(fake), fake, t.TempDir()
 }
 
 // writeSnapshotFiles creates the mem/state files that Store.Put expects to
@@ -101,10 +97,9 @@ func TestStateFilePath(t *testing.T) {
 }
 
 func TestMakeLocalReference(t *testing.T) {
-	store, _ := newStoreFixture(t)
-	chroot := store.config.Firecracker.ChrootBaseDir
+	chroot := t.TempDir()
 
-	ref := store.MakeLocalReference()
+	ref := MakeLocalReference(chroot)
 
 	require.NotNil(t, ref)
 	_, err := uuid.Parse(ref.SnapshotID)
@@ -114,20 +109,14 @@ func TestMakeLocalReference(t *testing.T) {
 }
 
 func TestNewStorePanics(t *testing.T) {
-	bundle := &config.Bundle{Firecracker: &config.Firecracker{ChrootBaseDir: "/tmp"}}
-	fake := &fakeDurableStore{t: t}
-
-	assert.PanicsWithValue(t, "NewStore: nil config", func() {
-		NewStore(nil, fake)
-	})
 	assert.PanicsWithValue(t, "NewStore: nil durableStore", func() {
-		NewStore(bundle, nil)
+		NewStore(nil)
 	})
 }
 
 func TestStorePut(t *testing.T) {
-	store, fake := newStoreFixture(t)
-	ref := store.MakeLocalReference()
+	store, fake, chroot := newStoreFixture(t)
+	ref := MakeLocalReference(chroot)
 	writeSnapshotFiles(t, ref)
 
 	require.NoError(t, store.Put(t.Context(), ref))
@@ -139,8 +128,8 @@ func TestStorePut(t *testing.T) {
 }
 
 func TestStorePut_MissingLocalFile(t *testing.T) {
-	store, _ := newStoreFixture(t)
-	ref := store.MakeLocalReference()
+	store, _, chroot := newStoreFixture(t)
+	ref := MakeLocalReference(chroot)
 	// Do NOT write the files.
 
 	err := store.Put(t.Context(), ref)
@@ -148,12 +137,12 @@ func TestStorePut_MissingLocalFile(t *testing.T) {
 }
 
 func TestStoreLoad_HappyPath(t *testing.T) {
-	store, fake := newStoreFixture(t)
+	store, fake, chroot := newStoreFixture(t)
 	fake.memOut = []byte(memPayload)
 	fake.stateOut = []byte(statePayload)
 
 	snapshotID := uuid.NewString()
-	ref, err := store.Load(t.Context(), snapshotID)
+	ref, err := store.Load(t.Context(), chroot, snapshotID)
 	require.NoError(t, err)
 	require.NotNil(t, ref)
 	assert.Equal(t, snapshotID, ref.SnapshotID)
@@ -172,12 +161,12 @@ func TestStoreLoad_HappyPath(t *testing.T) {
 }
 
 func TestStoreLoad_NoOpWhenLocal(t *testing.T) {
-	store, fake := newStoreFixture(t)
+	store, fake, chroot := newStoreFixture(t)
 	snapshotID := uuid.NewString()
-	ref := store.localReferenceFor(snapshotID)
+	ref := localReferenceFor(chroot, snapshotID)
 	writeSnapshotFiles(t, ref)
 
-	loaded, err := store.Load(t.Context(), snapshotID)
+	loaded, err := store.Load(t.Context(), chroot, snapshotID)
 	require.NoError(t, err)
 	assert.Equal(t, ref.MemFilePath, loaded.MemFilePath)
 	assert.Equal(t, ref.StateFilePath, loaded.StateFilePath)
@@ -185,26 +174,26 @@ func TestStoreLoad_NoOpWhenLocal(t *testing.T) {
 }
 
 func TestStoreLoad_NotFound(t *testing.T) {
-	store, fake := newStoreFixture(t)
+	store, fake, chroot := newStoreFixture(t)
 	fake.getErr = ErrSnapshotNotFound
 
 	snapshotID := uuid.NewString()
-	ref, err := store.Load(t.Context(), snapshotID)
+	ref, err := store.Load(t.Context(), chroot, snapshotID)
 	assert.Nil(t, ref)
 	assert.ErrorIs(t, err, ErrSnapshotNotFound)
 
 	// Partial files must not linger after the failed Get.
-	memPartial := filepath.Join(store.config.Firecracker.ChrootBaseDir, "snapshots", snapshotID, "mem"+partialSuffix)
-	statePartial := filepath.Join(store.config.Firecracker.ChrootBaseDir, "snapshots", snapshotID, "state"+partialSuffix)
+	memPartial := filepath.Join(chroot, "snapshots", snapshotID, "mem"+partialSuffix)
+	statePartial := filepath.Join(chroot, "snapshots", snapshotID, "state"+partialSuffix)
 	assert.NoFileExists(t, memPartial)
 	assert.NoFileExists(t, statePartial)
 }
 
 func TestStoreLoad_PropagatesArbitraryError(t *testing.T) {
-	store, fake := newStoreFixture(t)
+	store, fake, chroot := newStoreFixture(t)
 	custom := errors.New("network down")
 	fake.getErr = custom
 
-	_, err := store.Load(t.Context(), uuid.NewString())
+	_, err := store.Load(t.Context(), chroot, uuid.NewString())
 	assert.ErrorIs(t, err, custom)
 }
