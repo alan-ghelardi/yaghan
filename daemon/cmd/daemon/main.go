@@ -53,8 +53,11 @@ func main() {
 	}
 	ctx = ctxzap.ToContext(ctx, zapLogger)
 
-	if bundle.NodeAgent.Runtime == config.NodeRuntimeEC2 {
+	if bundle.NodeAgent.Runtime == config.NodeRuntimeEC2 || (bundle.Snapshots != nil && bundle.Snapshots.S3 != nil) {
 		ctx = awsconfig.With(ctx, awsconfig.New(ctx))
+	}
+
+	if bundle.NodeAgent.Runtime == config.NodeRuntimeEC2 {
 		ctx = ec2.With(ctx, ec2.New(ctx, ec2.Config{}))
 		ctx = ec2imds.With(ctx, ec2imds.New(ctx, ec2imds.Config{}))
 	}

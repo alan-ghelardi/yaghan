@@ -78,6 +78,9 @@ type Bundle struct {
 
 	// NodeAgent tunes the daemon's node metrics and health report cadence.
 	NodeAgent *NodeAgent `mapstructure:"node-agent"`
+
+	// Snapshots configures how the daemon manages Firecracker snapshot files.
+	Snapshots *Snapshots
 }
 
 // APIServer points the daemon at its control plane.

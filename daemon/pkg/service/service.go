@@ -8,6 +8,7 @@ import (
 	"go.uber.org/zap"
 	controlplanev1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
 	dataplanepb "golang.nuinfra.net/apis/gen/nuinfra/data_plane/v1alpha1"
+	"golang.nuinfra.net/commons/pkg/aws/s3"
 	commonsconfig "golang.nuinfra.net/commons/pkg/config"
 	"golang.nuinfra.net/commons/pkg/server"
 	"golang.nuinfra.net/daemon/pkg/config"
@@ -17,6 +18,7 @@ import (
 	"golang.nuinfra.net/daemon/pkg/node"
 	"golang.nuinfra.net/daemon/pkg/node/metrics"
 	"golang.nuinfra.net/daemon/pkg/reconciler"
+	"golang.nuinfra.net/daemon/pkg/snapshot"
 	"google.golang.org/grpc"
 )
 
@@ -66,11 +68,24 @@ func (d *daemon) RegisterRESTGateway(context.Context, *runtime.ServeMux, *grpc.C
 
 // Setup implements [server.Service].
 func (d *daemon) Setup(ctx context.Context) error {
-	// TODO: wire snapshot.Store once Bundle.Snapshots is plumbed and an
-	// S3 DurableStore is constructed at startup. Until then the
-	// reconciler accepts a nil store; the snapshot path is exercised
-	// only by tests today.
-	reconciler := reconciler.New(d.config, d.firecracker, d.networkDriver, nil)
+	// Snapshot durable storage is optional: deployments that don't need
+	// off-host snapshots (local development, tests) leave Snapshots unset
+	// and the reconciler is wired with a nil store. The snapshot
+	// reconcile path is only entered when Intent.CreateSnapshot is true,
+	// so nil is safe for configurations that never request one.
+	var snapshotStore *snapshot.Store
+	if d.config.Snapshots != nil && d.config.Snapshots.S3 != nil {
+		s3Config := s3.Config{
+			Endpoint:     d.config.Snapshots.S3.Endpoint,
+			UsePathStyle: d.config.Snapshots.S3.UsePathStyle,
+		}
+		uploader := s3.NewUploader(ctx, s3Config)
+		downloader := s3.NewDownloader(ctx, s3Config)
+		durableStore := snapshot.NewS3DurableStore(uploader, downloader, d.config.Snapshots.S3.BucketName)
+		snapshotStore = snapshot.NewStore(durableStore)
+	}
+
+	reconciler := reconciler.New(d.config, d.firecracker, d.networkDriver, snapshotStore)
 
 	// The controller and node Agent share a circular dependency: the
 	// Agent needs the controller as its node.Reporter, while the
