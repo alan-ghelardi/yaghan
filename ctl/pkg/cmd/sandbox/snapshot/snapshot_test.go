@@ -1,4 +1,4 @@
-package test
+package snapshot_test
 
 import (
 	"context"
@@ -11,6 +11,7 @@ import (
 	controlplanev1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
 	cpmocks "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1/mocks"
 	clitesting "golang.nuinfra.net/ctl/pkg/cli/testing"
+	"golang.nuinfra.net/ctl/pkg/cmd/sandbox/snapshot"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -34,7 +35,7 @@ func TestSnapshot(t *testing.T) {
 		expectGet getCaptureFn
 
 		// expectCreateSnapshot is invoked as the response to
-		// CreateSnapshot. nil means CreateSnapshot must NOT be called.
+		// Snapshot. nil means CreateSnapshot must NOT be called.
 		expectCreateSnapshot createSnapshotCaptureFn
 
 		wantErr       string
@@ -153,7 +154,7 @@ func TestSnapshot(t *testing.T) {
 					})
 			}
 
-			cmd := createsnapshot.New(cmdCtx)
+			cmd := snapshot.New(cmdCtx)
 			cmd.SilenceErrors = true
 			cmd.SilenceUsage = true
 			cmd.SetOut(cmdCtx.IOStreams.Stdout)

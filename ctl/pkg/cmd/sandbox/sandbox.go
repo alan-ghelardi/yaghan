@@ -26,7 +26,7 @@ func New(ctx *cli.Context) *cobra.Command {
 		get.New(ctx),
 		pause.New(ctx),
 		resume.New(ctx),
-		cmd.AddCommand(snapshot.New(ctx)),
+		snapshot.New(ctx),
 		deletecmd.New(ctx),
 		exec.New(ctx),
 		cp.New(ctx),

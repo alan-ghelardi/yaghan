@@ -18,9 +18,9 @@ const flagDescription = "description"
 
 func New(ctx *cli.Context) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:             "snapshot <id>",
-		Aliases{"snap"}: []string,
-		Short:           "Trigger a snapshot for a running sandbox",
+		Use:     "snapshot <id>",
+		Aliases: []string{"snap"},
+		Short:   "Trigger a snapshot for a running sandbox",
 		Long: `Trigger a sandbox snapshot.
 
 The api-server records the intent; the data-plane daemon performs the
