@@ -198,35 +198,35 @@ public final class SandboxServiceGrpc {
     return getDeleteSandboxMethod;
   }
 
-  private static volatile io.grpc.MethodDescriptor<com.nuinfra.control_plane.v1alpha1.CreateSnapshotRequest,
-      com.nuinfra.control_plane.v1alpha1.CreateSnapshotResponse> getCreateSnapshotMethod;
+  private static volatile io.grpc.MethodDescriptor<com.nuinfra.control_plane.v1alpha1.StartSnapshotRequest,
+      com.nuinfra.control_plane.v1alpha1.StartSnapshotResponse> getStartSnapshotMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
-      fullMethodName = SERVICE_NAME + '/' + "CreateSnapshot",
-      requestType = com.nuinfra.control_plane.v1alpha1.CreateSnapshotRequest.class,
-      responseType = com.nuinfra.control_plane.v1alpha1.CreateSnapshotResponse.class,
+      fullMethodName = SERVICE_NAME + '/' + "StartSnapshot",
+      requestType = com.nuinfra.control_plane.v1alpha1.StartSnapshotRequest.class,
+      responseType = com.nuinfra.control_plane.v1alpha1.StartSnapshotResponse.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
-  public static io.grpc.MethodDescriptor<com.nuinfra.control_plane.v1alpha1.CreateSnapshotRequest,
-      com.nuinfra.control_plane.v1alpha1.CreateSnapshotResponse> getCreateSnapshotMethod() {
-    io.grpc.MethodDescriptor<com.nuinfra.control_plane.v1alpha1.CreateSnapshotRequest, com.nuinfra.control_plane.v1alpha1.CreateSnapshotResponse> getCreateSnapshotMethod;
-    if ((getCreateSnapshotMethod = SandboxServiceGrpc.getCreateSnapshotMethod) == null) {
+  public static io.grpc.MethodDescriptor<com.nuinfra.control_plane.v1alpha1.StartSnapshotRequest,
+      com.nuinfra.control_plane.v1alpha1.StartSnapshotResponse> getStartSnapshotMethod() {
+    io.grpc.MethodDescriptor<com.nuinfra.control_plane.v1alpha1.StartSnapshotRequest, com.nuinfra.control_plane.v1alpha1.StartSnapshotResponse> getStartSnapshotMethod;
+    if ((getStartSnapshotMethod = SandboxServiceGrpc.getStartSnapshotMethod) == null) {
       synchronized (SandboxServiceGrpc.class) {
-        if ((getCreateSnapshotMethod = SandboxServiceGrpc.getCreateSnapshotMethod) == null) {
-          SandboxServiceGrpc.getCreateSnapshotMethod = getCreateSnapshotMethod =
-              io.grpc.MethodDescriptor.<com.nuinfra.control_plane.v1alpha1.CreateSnapshotRequest, com.nuinfra.control_plane.v1alpha1.CreateSnapshotResponse>newBuilder()
+        if ((getStartSnapshotMethod = SandboxServiceGrpc.getStartSnapshotMethod) == null) {
+          SandboxServiceGrpc.getStartSnapshotMethod = getStartSnapshotMethod =
+              io.grpc.MethodDescriptor.<com.nuinfra.control_plane.v1alpha1.StartSnapshotRequest, com.nuinfra.control_plane.v1alpha1.StartSnapshotResponse>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
-              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "CreateSnapshot"))
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "StartSnapshot"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  com.nuinfra.control_plane.v1alpha1.CreateSnapshotRequest.getDefaultInstance()))
+                  com.nuinfra.control_plane.v1alpha1.StartSnapshotRequest.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  com.nuinfra.control_plane.v1alpha1.CreateSnapshotResponse.getDefaultInstance()))
-              .setSchemaDescriptor(new SandboxServiceMethodDescriptorSupplier("CreateSnapshot"))
+                  com.nuinfra.control_plane.v1alpha1.StartSnapshotResponse.getDefaultInstance()))
+              .setSchemaDescriptor(new SandboxServiceMethodDescriptorSupplier("StartSnapshot"))
               .build();
         }
       }
     }
-    return getCreateSnapshotMethod;
+    return getStartSnapshotMethod;
   }
 
   /**
@@ -336,9 +336,9 @@ public final class SandboxServiceGrpc {
 
     /**
      */
-    default void createSnapshot(com.nuinfra.control_plane.v1alpha1.CreateSnapshotRequest request,
-        io.grpc.stub.StreamObserver<com.nuinfra.control_plane.v1alpha1.CreateSnapshotResponse> responseObserver) {
-      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getCreateSnapshotMethod(), responseObserver);
+    default void startSnapshot(com.nuinfra.control_plane.v1alpha1.StartSnapshotRequest request,
+        io.grpc.stub.StreamObserver<com.nuinfra.control_plane.v1alpha1.StartSnapshotResponse> responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getStartSnapshotMethod(), responseObserver);
     }
   }
 
@@ -419,10 +419,10 @@ public final class SandboxServiceGrpc {
 
     /**
      */
-    public void createSnapshot(com.nuinfra.control_plane.v1alpha1.CreateSnapshotRequest request,
-        io.grpc.stub.StreamObserver<com.nuinfra.control_plane.v1alpha1.CreateSnapshotResponse> responseObserver) {
+    public void startSnapshot(com.nuinfra.control_plane.v1alpha1.StartSnapshotRequest request,
+        io.grpc.stub.StreamObserver<com.nuinfra.control_plane.v1alpha1.StartSnapshotResponse> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
-          getChannel().newCall(getCreateSnapshotMethod(), getCallOptions()), request, responseObserver);
+          getChannel().newCall(getStartSnapshotMethod(), getCallOptions()), request, responseObserver);
     }
   }
 
@@ -486,9 +486,9 @@ public final class SandboxServiceGrpc {
 
     /**
      */
-    public com.nuinfra.control_plane.v1alpha1.CreateSnapshotResponse createSnapshot(com.nuinfra.control_plane.v1alpha1.CreateSnapshotRequest request) throws io.grpc.StatusException {
+    public com.nuinfra.control_plane.v1alpha1.StartSnapshotResponse startSnapshot(com.nuinfra.control_plane.v1alpha1.StartSnapshotRequest request) throws io.grpc.StatusException {
       return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
-          getChannel(), getCreateSnapshotMethod(), getCallOptions(), request);
+          getChannel(), getStartSnapshotMethod(), getCallOptions(), request);
     }
   }
 
@@ -552,9 +552,9 @@ public final class SandboxServiceGrpc {
 
     /**
      */
-    public com.nuinfra.control_plane.v1alpha1.CreateSnapshotResponse createSnapshot(com.nuinfra.control_plane.v1alpha1.CreateSnapshotRequest request) {
+    public com.nuinfra.control_plane.v1alpha1.StartSnapshotResponse startSnapshot(com.nuinfra.control_plane.v1alpha1.StartSnapshotRequest request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
-          getChannel(), getCreateSnapshotMethod(), getCallOptions(), request);
+          getChannel(), getStartSnapshotMethod(), getCallOptions(), request);
     }
   }
 
@@ -624,10 +624,10 @@ public final class SandboxServiceGrpc {
 
     /**
      */
-    public com.google.common.util.concurrent.ListenableFuture<com.nuinfra.control_plane.v1alpha1.CreateSnapshotResponse> createSnapshot(
-        com.nuinfra.control_plane.v1alpha1.CreateSnapshotRequest request) {
+    public com.google.common.util.concurrent.ListenableFuture<com.nuinfra.control_plane.v1alpha1.StartSnapshotResponse> startSnapshot(
+        com.nuinfra.control_plane.v1alpha1.StartSnapshotRequest request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
-          getChannel().newCall(getCreateSnapshotMethod(), getCallOptions()), request);
+          getChannel().newCall(getStartSnapshotMethod(), getCallOptions()), request);
     }
   }
 
@@ -637,7 +637,7 @@ public final class SandboxServiceGrpc {
   private static final int METHODID_PAUSE_SANDBOX = 3;
   private static final int METHODID_RESUME_SANDBOX = 4;
   private static final int METHODID_DELETE_SANDBOX = 5;
-  private static final int METHODID_CREATE_SNAPSHOT = 6;
+  private static final int METHODID_START_SNAPSHOT = 6;
 
   private static final class MethodHandlers<Req, Resp> implements
       io.grpc.stub.ServerCalls.UnaryMethod<Req, Resp>,
@@ -680,9 +680,9 @@ public final class SandboxServiceGrpc {
           serviceImpl.deleteSandbox((com.nuinfra.control_plane.v1alpha1.DeleteSandboxRequest) request,
               (io.grpc.stub.StreamObserver<com.nuinfra.control_plane.v1alpha1.DeleteSandboxResponse>) responseObserver);
           break;
-        case METHODID_CREATE_SNAPSHOT:
-          serviceImpl.createSnapshot((com.nuinfra.control_plane.v1alpha1.CreateSnapshotRequest) request,
-              (io.grpc.stub.StreamObserver<com.nuinfra.control_plane.v1alpha1.CreateSnapshotResponse>) responseObserver);
+        case METHODID_START_SNAPSHOT:
+          serviceImpl.startSnapshot((com.nuinfra.control_plane.v1alpha1.StartSnapshotRequest) request,
+              (io.grpc.stub.StreamObserver<com.nuinfra.control_plane.v1alpha1.StartSnapshotResponse>) responseObserver);
           break;
         default:
           throw new AssertionError();
@@ -745,12 +745,12 @@ public final class SandboxServiceGrpc {
               com.nuinfra.control_plane.v1alpha1.DeleteSandboxResponse>(
                 service, METHODID_DELETE_SANDBOX)))
         .addMethod(
-          getCreateSnapshotMethod(),
+          getStartSnapshotMethod(),
           io.grpc.stub.ServerCalls.asyncUnaryCall(
             new MethodHandlers<
-              com.nuinfra.control_plane.v1alpha1.CreateSnapshotRequest,
-              com.nuinfra.control_plane.v1alpha1.CreateSnapshotResponse>(
-                service, METHODID_CREATE_SNAPSHOT)))
+              com.nuinfra.control_plane.v1alpha1.StartSnapshotRequest,
+              com.nuinfra.control_plane.v1alpha1.StartSnapshotResponse>(
+                service, METHODID_START_SNAPSHOT)))
         .build();
   }
 
@@ -805,7 +805,7 @@ public final class SandboxServiceGrpc {
               .addMethod(getPauseSandboxMethod())
               .addMethod(getResumeSandboxMethod())
               .addMethod(getDeleteSandboxMethod())
-              .addMethod(getCreateSnapshotMethod())
+              .addMethod(getStartSnapshotMethod())
               .build();
         }
       }

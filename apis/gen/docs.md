@@ -12,10 +12,6 @@
 - [nuinfra/control_plane/v1alpha1/sandbox.proto](#nuinfra_control_plane_v1alpha1_sandbox-proto)
     - [CreateSandboxRequest](#nuinfra-control_plane-v1alpha1-CreateSandboxRequest)
     - [CreateSandboxResponse](#nuinfra-control_plane-v1alpha1-CreateSandboxResponse)
-    - [CreateSnapshotInput](#nuinfra-control_plane-v1alpha1-CreateSnapshotInput)
-    - [CreateSnapshotOutput](#nuinfra-control_plane-v1alpha1-CreateSnapshotOutput)
-    - [CreateSnapshotRequest](#nuinfra-control_plane-v1alpha1-CreateSnapshotRequest)
-    - [CreateSnapshotResponse](#nuinfra-control_plane-v1alpha1-CreateSnapshotResponse)
     - [DeleteSandboxRequest](#nuinfra-control_plane-v1alpha1-DeleteSandboxRequest)
     - [DeleteSandboxResponse](#nuinfra-control_plane-v1alpha1-DeleteSandboxResponse)
     - [GetSandboxRequest](#nuinfra-control_plane-v1alpha1-GetSandboxRequest)
@@ -33,6 +29,10 @@
     - [SandboxMeta](#nuinfra-control_plane-v1alpha1-SandboxMeta)
     - [SandboxMeta.LabelsEntry](#nuinfra-control_plane-v1alpha1-SandboxMeta-LabelsEntry)
     - [SandboxStatus](#nuinfra-control_plane-v1alpha1-SandboxStatus)
+    - [SnapshotOutput](#nuinfra-control_plane-v1alpha1-SnapshotOutput)
+    - [StartSnapshotInput](#nuinfra-control_plane-v1alpha1-StartSnapshotInput)
+    - [StartSnapshotRequest](#nuinfra-control_plane-v1alpha1-StartSnapshotRequest)
+    - [StartSnapshotResponse](#nuinfra-control_plane-v1alpha1-StartSnapshotResponse)
   
     - [ListSandboxesRequest.Order](#nuinfra-control_plane-v1alpha1-ListSandboxesRequest-Order)
     - [SandboxStatus.Phase](#nuinfra-control_plane-v1alpha1-SandboxStatus-Phase)
@@ -62,6 +62,23 @@
     - [NodeStatus.Phase](#nuinfra-control_plane-v1alpha1-NodeStatus-Phase)
   
     - [ClusterService](#nuinfra-control_plane-v1alpha1-ClusterService)
+  
+- [nuinfra/control_plane/v1alpha1/snapshot.proto](#nuinfra_control_plane_v1alpha1_snapshot-proto)
+    - [CreateSnapshotRequest](#nuinfra-control_plane-v1alpha1-CreateSnapshotRequest)
+    - [CreateSnapshotResponse](#nuinfra-control_plane-v1alpha1-CreateSnapshotResponse)
+    - [DeleteSnapshotRequest](#nuinfra-control_plane-v1alpha1-DeleteSnapshotRequest)
+    - [DeleteSnapshotResponse](#nuinfra-control_plane-v1alpha1-DeleteSnapshotResponse)
+    - [GetSnapshotRequest](#nuinfra-control_plane-v1alpha1-GetSnapshotRequest)
+    - [GetSnapshotResponse](#nuinfra-control_plane-v1alpha1-GetSnapshotResponse)
+    - [ListSnapshotsRequest](#nuinfra-control_plane-v1alpha1-ListSnapshotsRequest)
+    - [ListSnapshotsResponse](#nuinfra-control_plane-v1alpha1-ListSnapshotsResponse)
+    - [SandboxRef](#nuinfra-control_plane-v1alpha1-SandboxRef)
+    - [Snapshot](#nuinfra-control_plane-v1alpha1-Snapshot)
+    - [SnapshotMeta](#nuinfra-control_plane-v1alpha1-SnapshotMeta)
+  
+    - [ListSnapshotsRequest.Order](#nuinfra-control_plane-v1alpha1-ListSnapshotsRequest-Order)
+  
+    - [SnapshotService](#nuinfra-control_plane-v1alpha1-SnapshotService)
   
 - [nuinfra/data_plane/v1alpha1/daemon.proto](#nuinfra_data_plane_v1alpha1_daemon-proto)
     - [CancelRequest](#nuinfra-data_plane-v1alpha1-CancelRequest)
@@ -194,70 +211,6 @@ InsufficientScopes provides further details on unauthorized errors.
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-CreateSnapshotInput"></a>
-
-### CreateSnapshotInput
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| description | [string](#string) |  |  |
-
-
-
-
-
-
-<a name="nuinfra-control_plane-v1alpha1-CreateSnapshotOutput"></a>
-
-### CreateSnapshotOutput
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| snapshot_id | [string](#string) |  |  |
-| created_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  |  |
-| error | [google.rpc.Status](#google-rpc-Status) |  |  |
-
-
-
-
-
-
-<a name="nuinfra-control_plane-v1alpha1-CreateSnapshotRequest"></a>
-
-### CreateSnapshotRequest
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| sandbox_id | [string](#string) |  |  |
-| version | [int64](#int64) |  |  |
-| description | [string](#string) |  |  |
-
-
-
-
-
-
-<a name="nuinfra-control_plane-v1alpha1-CreateSnapshotResponse"></a>
-
-### CreateSnapshotResponse
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| sandbox | [Sandbox](#nuinfra-control_plane-v1alpha1-Sandbox) |  |  |
-
-
-
-
-
-
 <a name="nuinfra-control_plane-v1alpha1-DeleteSandboxRequest"></a>
 
 ### DeleteSandboxRequest
@@ -329,7 +282,7 @@ InsufficientScopes provides further details on unauthorized errors.
 | ----- | ---- | ----- | ----------- |
 | phase | [SandboxStatus.Phase](#nuinfra-control_plane-v1alpha1-SandboxStatus-Phase) |  |  |
 | resources | [Resources](#nuinfra-control_plane-v1alpha1-Resources) |  |  |
-| create_snapshot | [CreateSnapshotInput](#nuinfra-control_plane-v1alpha1-CreateSnapshotInput) |  |  |
+| start_snapshot | [StartSnapshotInput](#nuinfra-control_plane-v1alpha1-StartSnapshotInput) |  |  |
 
 
 
@@ -477,7 +430,7 @@ Response message containing a page of sandboxes.
 | resources | [Resources](#nuinfra-control_plane-v1alpha1-Resources) |  |  |
 | node | [NodeRef](#nuinfra-control_plane-v1alpha1-NodeRef) |  |  |
 | intent | [Intent](#nuinfra-control_plane-v1alpha1-Intent) |  |  |
-| last_snapshot | [CreateSnapshotOutput](#nuinfra-control_plane-v1alpha1-CreateSnapshotOutput) |  |  |
+| last_snapshot | [SnapshotOutput](#nuinfra-control_plane-v1alpha1-SnapshotOutput) |  |  |
 | status | [SandboxStatus](#nuinfra-control_plane-v1alpha1-SandboxStatus) |  |  |
 
 
@@ -536,6 +489,70 @@ Response message containing a page of sandboxes.
 
 
 
+
+<a name="nuinfra-control_plane-v1alpha1-SnapshotOutput"></a>
+
+### SnapshotOutput
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| snapshot_id | [string](#string) |  |  |
+| created_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  |  |
+| error | [google.rpc.Status](#google-rpc-Status) |  |  |
+
+
+
+
+
+
+<a name="nuinfra-control_plane-v1alpha1-StartSnapshotInput"></a>
+
+### StartSnapshotInput
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| description | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="nuinfra-control_plane-v1alpha1-StartSnapshotRequest"></a>
+
+### StartSnapshotRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| sandbox_id | [string](#string) |  |  |
+| version | [int64](#int64) |  |  |
+| description | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="nuinfra-control_plane-v1alpha1-StartSnapshotResponse"></a>
+
+### StartSnapshotResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| sandbox | [Sandbox](#nuinfra-control_plane-v1alpha1-Sandbox) |  |  |
+
+
+
+
+
  
 
 
@@ -589,7 +606,7 @@ Controls how results are ordered by last modification time.
 | PauseSandbox | [PauseSandboxRequest](#nuinfra-control_plane-v1alpha1-PauseSandboxRequest) | [PauseSandboxResponse](#nuinfra-control_plane-v1alpha1-PauseSandboxResponse) |  |
 | ResumeSandbox | [ResumeSandboxRequest](#nuinfra-control_plane-v1alpha1-ResumeSandboxRequest) | [ResumeSandboxResponse](#nuinfra-control_plane-v1alpha1-ResumeSandboxResponse) |  |
 | DeleteSandbox | [DeleteSandboxRequest](#nuinfra-control_plane-v1alpha1-DeleteSandboxRequest) | [DeleteSandboxResponse](#nuinfra-control_plane-v1alpha1-DeleteSandboxResponse) |  |
-| CreateSnapshot | [CreateSnapshotRequest](#nuinfra-control_plane-v1alpha1-CreateSnapshotRequest) | [CreateSnapshotResponse](#nuinfra-control_plane-v1alpha1-CreateSnapshotResponse) |  |
+| StartSnapshot | [StartSnapshotRequest](#nuinfra-control_plane-v1alpha1-StartSnapshotRequest) | [StartSnapshotResponse](#nuinfra-control_plane-v1alpha1-StartSnapshotResponse) |  |
 
  
 
@@ -937,6 +954,216 @@ Controls how results are ordered by last modification time.
 | EstablishSession | [EstablishSessionRequest](#nuinfra-control_plane-v1alpha1-EstablishSessionRequest) stream | [EstablishSessionResponse](#nuinfra-control_plane-v1alpha1-EstablishSessionResponse) stream |  |
 | GetNode | [GetNodeRequest](#nuinfra-control_plane-v1alpha1-GetNodeRequest) | [GetNodeResponse](#nuinfra-control_plane-v1alpha1-GetNodeResponse) |  |
 | ListNodes | [ListNodesRequest](#nuinfra-control_plane-v1alpha1-ListNodesRequest) | [ListNodesResponse](#nuinfra-control_plane-v1alpha1-ListNodesResponse) |  |
+
+ 
+
+
+
+<a name="nuinfra_control_plane_v1alpha1_snapshot-proto"></a>
+<p align="right"><a href="#top">Top</a></p>
+
+## nuinfra/control_plane/v1alpha1/snapshot.proto
+
+
+
+<a name="nuinfra-control_plane-v1alpha1-CreateSnapshotRequest"></a>
+
+### CreateSnapshotRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| snapshot | [Snapshot](#nuinfra-control_plane-v1alpha1-Snapshot) |  |  |
+
+
+
+
+
+
+<a name="nuinfra-control_plane-v1alpha1-CreateSnapshotResponse"></a>
+
+### CreateSnapshotResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| snapshot | [Snapshot](#nuinfra-control_plane-v1alpha1-Snapshot) |  |  |
+
+
+
+
+
+
+<a name="nuinfra-control_plane-v1alpha1-DeleteSnapshotRequest"></a>
+
+### DeleteSnapshotRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| snapshot_id | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="nuinfra-control_plane-v1alpha1-DeleteSnapshotResponse"></a>
+
+### DeleteSnapshotResponse
+
+
+
+
+
+
+
+<a name="nuinfra-control_plane-v1alpha1-GetSnapshotRequest"></a>
+
+### GetSnapshotRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| snapshot_id | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="nuinfra-control_plane-v1alpha1-GetSnapshotResponse"></a>
+
+### GetSnapshotResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| snapshot | [Snapshot](#nuinfra-control_plane-v1alpha1-Snapshot) |  |  |
+
+
+
+
+
+
+<a name="nuinfra-control_plane-v1alpha1-ListSnapshotsRequest"></a>
+
+### ListSnapshotsRequest
+Request message for listing snapshots with optional filtering and pagination.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| namespace | [string](#string) |  | Filters snapshots by namespace. When provided, must match the format: - starts with a lowercase letter - contains only lowercase alphanumeric characters or hyphens - ends with an alphanumeric character Example: &#34;default&#34;, &#34;team-a&#34; May be empty when sandbox_id is supplied. |
+| sandbox_id | [string](#string) |  | Filters snapshots by the ID of the sandbox from which they were taken. |
+| continuation_token | [string](#string) |  | Token used for pagination. Pass the value returned in a previous response to retrieve the next page of results. Leave empty to start listing from the beginning. |
+| page_size | [int32](#int32) |  | Maximum number of snapshots to return in this request. Defaults to 30 if not specified. The maximum allowed value is 1000. |
+| sort_order | [ListSnapshotsRequest.Order](#nuinfra-control_plane-v1alpha1-ListSnapshotsRequest-Order) |  | Sort order applied to the results based on created_at. |
+
+
+
+
+
+
+<a name="nuinfra-control_plane-v1alpha1-ListSnapshotsResponse"></a>
+
+### ListSnapshotsResponse
+Response message containing a page of snapshots.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| snapshots | [Snapshot](#nuinfra-control_plane-v1alpha1-Snapshot) | repeated | The list of snapshots matching the request filters. |
+| continuation_token | [string](#string) |  | Token to retrieve the next page of results. Empty if there are no more results. |
+
+
+
+
+
+
+<a name="nuinfra-control_plane-v1alpha1-SandboxRef"></a>
+
+### SandboxRef
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| id | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="nuinfra-control_plane-v1alpha1-Snapshot"></a>
+
+### Snapshot
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| metadata | [SnapshotMeta](#nuinfra-control_plane-v1alpha1-SnapshotMeta) |  |  |
+| sandbox | [SandboxRef](#nuinfra-control_plane-v1alpha1-SandboxRef) |  |  |
+
+
+
+
+
+
+<a name="nuinfra-control_plane-v1alpha1-SnapshotMeta"></a>
+
+### SnapshotMeta
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| id | [string](#string) |  |  |
+| namespace | [string](#string) |  |  |
+| description | [string](#string) |  |  |
+| created_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  |  |
+
+
+
+
+
+ 
+
+
+<a name="nuinfra-control_plane-v1alpha1-ListSnapshotsRequest-Order"></a>
+
+### ListSnapshotsRequest.Order
+Controls how results are ordered by creation time.
+
+| Name | Number | Description |
+| ---- | ------ | ----------- |
+| ORDER_UNSPECIFIED | 0 |  |
+| ORDER_NEWEST_FIRST | 1 | Most recently created snapshots first. |
+| ORDER_OLDEST_FIRST | 2 | Least recently created snapshots first. |
+
+
+ 
+
+ 
+
+
+<a name="nuinfra-control_plane-v1alpha1-SnapshotService"></a>
+
+### SnapshotService
+
+
+| Method Name | Request Type | Response Type | Description |
+| ----------- | ------------ | ------------- | ------------|
+| CreateSnapshot | [CreateSnapshotRequest](#nuinfra-control_plane-v1alpha1-CreateSnapshotRequest) | [CreateSnapshotResponse](#nuinfra-control_plane-v1alpha1-CreateSnapshotResponse) |  |
+| GetSnapshot | [GetSnapshotRequest](#nuinfra-control_plane-v1alpha1-GetSnapshotRequest) | [GetSnapshotResponse](#nuinfra-control_plane-v1alpha1-GetSnapshotResponse) |  |
+| ListSnapshots | [ListSnapshotsRequest](#nuinfra-control_plane-v1alpha1-ListSnapshotsRequest) | [ListSnapshotsResponse](#nuinfra-control_plane-v1alpha1-ListSnapshotsResponse) |  |
 
  
 

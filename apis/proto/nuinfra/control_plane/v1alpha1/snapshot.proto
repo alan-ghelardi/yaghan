@@ -1,0 +1,140 @@
+syntax = "proto3";
+
+package nuinfra.control_plane.v1alpha1;
+
+import "buf/validate/validate.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+message Snapshot {
+  SnapshotMeta metadata = 1 [(buf.validate.field).required = true];
+
+  SandboxRef sandbox = 2 [(buf.validate.field).required = true];
+}
+
+message SnapshotMeta {
+  string id = 1 [(buf.validate.field).required = true];
+
+  string namespace = 2 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.pattern = "^[a-z][a-z0-9-]{0,61}[a-z0-9]$"
+  ];
+
+  string description = 3 [(buf.validate.field).string.max_len = 256];
+
+  google.protobuf.Timestamp created_at = 4;
+}
+
+message SandboxRef {
+  string id = 1 [(buf.validate.field).required = true];
+}
+
+message CreateSnapshotRequest {
+  Snapshot snapshot = 1 [(buf.validate.field).required = true];
+}
+
+message CreateSnapshotResponse {
+  Snapshot snapshot = 1;
+}
+
+message GetSnapshotRequest {
+  string snapshot_id = 1 [(buf.validate.field).required = true];
+}
+
+message GetSnapshotResponse {
+  Snapshot snapshot = 1;
+}
+
+// Request message for listing snapshots with optional filtering and pagination.
+message ListSnapshotsRequest {
+  // Filters snapshots by namespace.
+  // When provided, must match the format:
+  // - starts with a lowercase letter
+  // - contains only lowercase alphanumeric characters or hyphens
+  // - ends with an alphanumeric character
+  // Example: "default", "team-a"
+  // May be empty when sandbox_id is supplied.
+  string namespace = 1;
+
+  // Filters snapshots by the ID of the sandbox from which they were taken.
+  string sandbox_id = 2;
+
+  // Token used for pagination.
+  // Pass the value returned in a previous response to retrieve the next page of results.
+  // Leave empty to start listing from the beginning.
+  string continuation_token = 3;
+
+  // Maximum number of snapshots to return in this request.
+  // Defaults to 30 if not specified.
+  // The maximum allowed value is 1000.
+  int32 page_size = 4 [
+    (buf.validate.field).int32.gte = 0,
+    (buf.validate.field).int32.lte = 1000
+  ];
+
+  // Controls how results are ordered by creation time.
+  enum Order {
+    ORDER_UNSPECIFIED = 0;
+
+    // Most recently created snapshots first.
+    ORDER_NEWEST_FIRST = 1;
+
+    // Least recently created snapshots first.
+    ORDER_OLDEST_FIRST = 2;
+  }
+
+  // Sort order applied to the results based on created_at.
+  Order sort_order = 5;
+
+  // Validation rule: at least one of `namespace` or `sandbox_id` must be provided.
+  // This prevents unbounded global queries.
+  option (buf.validate.message).cel = {
+    id: "ListSnapshotsRequest.required_fields"
+    expression: "has(this.namespace) || has(this.sandbox_id)"
+    message: "At least one of `namespace` or `sandbox_id` must be provided to list snapshots."
+  };
+
+  // Validation rule: when namespace is provided, it must match the
+  // canonical pattern. Encoded at the message level (not as a
+  // field-level string.pattern) so an empty namespace — valid when
+  // sandbox_id alone narrows the query — doesn't trip the regex on the
+  // zero value.
+  option (buf.validate.message).cel = {
+    id: "ListSnapshotsRequest.namespace_pattern"
+    expression: "this.namespace == '' || this.namespace.matches('^[a-z][a-z0-9-]{0,61}[a-z0-9]$')"
+    message: "namespace must match ^[a-z][a-z0-9-]{0,61}[a-z0-9]$ when provided."
+  };
+}
+
+// Response message containing a page of snapshots.
+message ListSnapshotsResponse {
+  // The list of snapshots matching the request filters.
+  repeated Snapshot snapshots = 1;
+
+  // Token to retrieve the next page of results.
+  // Empty if there are no more results.
+  string continuation_token = 2;
+}
+
+message DeleteSnapshotRequest {
+  string snapshot_id = 1 [(buf.validate.field).required = true];
+}
+
+message DeleteSnapshotResponse {}
+
+service SnapshotService {
+  rpc CreateSnapshot(CreateSnapshotRequest) returns (CreateSnapshotResponse) {
+    option (google.api.http) = {
+      post: "/v1alpha1/snapshots"
+      body: "*"
+    };
+  }
+
+  rpc GetSnapshot(GetSnapshotRequest) returns (GetSnapshotResponse) {
+    option (google.api.http) = {get: "/v1alpha1/snapshots/{snapshot_id}"};
+  }
+
+  rpc ListSnapshots(ListSnapshotsRequest) returns (ListSnapshotsResponse) {
+    option (google.api.http) = {get: "/v1alpha1/snapshots"};
+  }
+}

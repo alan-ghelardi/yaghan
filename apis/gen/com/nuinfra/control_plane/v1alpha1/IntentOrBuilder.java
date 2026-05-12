@@ -37,17 +37,17 @@ public interface IntentOrBuilder extends
   com.nuinfra.control_plane.v1alpha1.ResourcesOrBuilder getResourcesOrBuilder();
 
   /**
-   * <code>.nuinfra.control_plane.v1alpha1.CreateSnapshotInput create_snapshot = 3 [json_name = "createSnapshot"];</code>
-   * @return Whether the createSnapshot field is set.
+   * <code>.nuinfra.control_plane.v1alpha1.StartSnapshotInput start_snapshot = 3 [json_name = "startSnapshot"];</code>
+   * @return Whether the startSnapshot field is set.
    */
-  boolean hasCreateSnapshot();
+  boolean hasStartSnapshot();
   /**
-   * <code>.nuinfra.control_plane.v1alpha1.CreateSnapshotInput create_snapshot = 3 [json_name = "createSnapshot"];</code>
-   * @return The createSnapshot.
+   * <code>.nuinfra.control_plane.v1alpha1.StartSnapshotInput start_snapshot = 3 [json_name = "startSnapshot"];</code>
+   * @return The startSnapshot.
    */
-  com.nuinfra.control_plane.v1alpha1.CreateSnapshotInput getCreateSnapshot();
+  com.nuinfra.control_plane.v1alpha1.StartSnapshotInput getStartSnapshot();
   /**
-   * <code>.nuinfra.control_plane.v1alpha1.CreateSnapshotInput create_snapshot = 3 [json_name = "createSnapshot"];</code>
+   * <code>.nuinfra.control_plane.v1alpha1.StartSnapshotInput start_snapshot = 3 [json_name = "startSnapshot"];</code>
    */
-  com.nuinfra.control_plane.v1alpha1.CreateSnapshotInputOrBuilder getCreateSnapshotOrBuilder();
+  com.nuinfra.control_plane.v1alpha1.StartSnapshotInputOrBuilder getStartSnapshotOrBuilder();
 }

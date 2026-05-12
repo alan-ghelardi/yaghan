@@ -153,7 +153,7 @@ type Sandbox struct {
 	Resources     *Resources             `protobuf:"bytes,2,opt,name=resources,proto3" json:"resources,omitempty"`
 	Node          *NodeRef               `protobuf:"bytes,3,opt,name=node,proto3" json:"node,omitempty"`
 	Intent        *Intent                `protobuf:"bytes,4,opt,name=intent,proto3" json:"intent,omitempty"`
-	LastSnapshot  *CreateSnapshotOutput  `protobuf:"bytes,5,opt,name=last_snapshot,json=lastSnapshot,proto3" json:"last_snapshot,omitempty"`
+	LastSnapshot  *SnapshotOutput        `protobuf:"bytes,5,opt,name=last_snapshot,json=lastSnapshot,proto3" json:"last_snapshot,omitempty"`
 	Status        *SandboxStatus         `protobuf:"bytes,6,opt,name=status,proto3" json:"status,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -217,7 +217,7 @@ func (x *Sandbox) GetIntent() *Intent {
 	return nil
 }
 
-func (x *Sandbox) GetLastSnapshot() *CreateSnapshotOutput {
+func (x *Sandbox) GetLastSnapshot() *SnapshotOutput {
 	if x != nil {
 		return x.LastSnapshot
 	}
@@ -419,12 +419,12 @@ func (x *NodeRef) GetId() string {
 }
 
 type Intent struct {
-	state          protoimpl.MessageState `protogen:"open.v1"`
-	Phase          SandboxStatus_Phase    `protobuf:"varint,1,opt,name=phase,proto3,enum=nuinfra.control_plane.v1alpha1.SandboxStatus_Phase" json:"phase,omitempty"`
-	Resources      *Resources             `protobuf:"bytes,2,opt,name=resources,proto3" json:"resources,omitempty"`
-	CreateSnapshot *CreateSnapshotInput   `protobuf:"bytes,3,opt,name=create_snapshot,json=createSnapshot,proto3" json:"create_snapshot,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Phase         SandboxStatus_Phase    `protobuf:"varint,1,opt,name=phase,proto3,enum=nuinfra.control_plane.v1alpha1.SandboxStatus_Phase" json:"phase,omitempty"`
+	Resources     *Resources             `protobuf:"bytes,2,opt,name=resources,proto3" json:"resources,omitempty"`
+	StartSnapshot *StartSnapshotInput    `protobuf:"bytes,3,opt,name=start_snapshot,json=startSnapshot,proto3" json:"start_snapshot,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Intent) Reset() {
@@ -471,34 +471,34 @@ func (x *Intent) GetResources() *Resources {
 	return nil
 }
 
-func (x *Intent) GetCreateSnapshot() *CreateSnapshotInput {
+func (x *Intent) GetStartSnapshot() *StartSnapshotInput {
 	if x != nil {
-		return x.CreateSnapshot
+		return x.StartSnapshot
 	}
 	return nil
 }
 
-type CreateSnapshotInput struct {
+type StartSnapshotInput struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Description   string                 `protobuf:"bytes,1,opt,name=description,proto3" json:"description,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *CreateSnapshotInput) Reset() {
-	*x = CreateSnapshotInput{}
+func (x *StartSnapshotInput) Reset() {
+	*x = StartSnapshotInput{}
 	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *CreateSnapshotInput) String() string {
+func (x *StartSnapshotInput) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*CreateSnapshotInput) ProtoMessage() {}
+func (*StartSnapshotInput) ProtoMessage() {}
 
-func (x *CreateSnapshotInput) ProtoReflect() protoreflect.Message {
+func (x *StartSnapshotInput) ProtoReflect() protoreflect.Message {
 	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -510,19 +510,19 @@ func (x *CreateSnapshotInput) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use CreateSnapshotInput.ProtoReflect.Descriptor instead.
-func (*CreateSnapshotInput) Descriptor() ([]byte, []int) {
+// Deprecated: Use StartSnapshotInput.ProtoReflect.Descriptor instead.
+func (*StartSnapshotInput) Descriptor() ([]byte, []int) {
 	return file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *CreateSnapshotInput) GetDescription() string {
+func (x *StartSnapshotInput) GetDescription() string {
 	if x != nil {
 		return x.Description
 	}
 	return ""
 }
 
-type CreateSnapshotOutput struct {
+type SnapshotOutput struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	SnapshotId    string                 `protobuf:"bytes,1,opt,name=snapshot_id,json=snapshotId,proto3" json:"snapshot_id,omitempty"`
 	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
@@ -531,20 +531,20 @@ type CreateSnapshotOutput struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *CreateSnapshotOutput) Reset() {
-	*x = CreateSnapshotOutput{}
+func (x *SnapshotOutput) Reset() {
+	*x = SnapshotOutput{}
 	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *CreateSnapshotOutput) String() string {
+func (x *SnapshotOutput) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*CreateSnapshotOutput) ProtoMessage() {}
+func (*SnapshotOutput) ProtoMessage() {}
 
-func (x *CreateSnapshotOutput) ProtoReflect() protoreflect.Message {
+func (x *SnapshotOutput) ProtoReflect() protoreflect.Message {
 	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -556,26 +556,26 @@ func (x *CreateSnapshotOutput) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use CreateSnapshotOutput.ProtoReflect.Descriptor instead.
-func (*CreateSnapshotOutput) Descriptor() ([]byte, []int) {
+// Deprecated: Use SnapshotOutput.ProtoReflect.Descriptor instead.
+func (*SnapshotOutput) Descriptor() ([]byte, []int) {
 	return file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{6}
 }
 
-func (x *CreateSnapshotOutput) GetSnapshotId() string {
+func (x *SnapshotOutput) GetSnapshotId() string {
 	if x != nil {
 		return x.SnapshotId
 	}
 	return ""
 }
 
-func (x *CreateSnapshotOutput) GetCreatedAt() *timestamppb.Timestamp {
+func (x *SnapshotOutput) GetCreatedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.CreatedAt
 	}
 	return nil
 }
 
-func (x *CreateSnapshotOutput) GetError() *status.Status {
+func (x *SnapshotOutput) GetError() *status.Status {
 	if x != nil {
 		return x.Error
 	}
@@ -1257,7 +1257,7 @@ func (x *DeleteSandboxResponse) GetSandbox() *Sandbox {
 	return nil
 }
 
-type CreateSnapshotRequest struct {
+type StartSnapshotRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	SandboxId     string                 `protobuf:"bytes,1,opt,name=sandbox_id,json=sandboxId,proto3" json:"sandbox_id,omitempty"`
 	Version       int64                  `protobuf:"varint,2,opt,name=version,proto3" json:"version,omitempty"`
@@ -1266,20 +1266,20 @@ type CreateSnapshotRequest struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *CreateSnapshotRequest) Reset() {
-	*x = CreateSnapshotRequest{}
+func (x *StartSnapshotRequest) Reset() {
+	*x = StartSnapshotRequest{}
 	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *CreateSnapshotRequest) String() string {
+func (x *StartSnapshotRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*CreateSnapshotRequest) ProtoMessage() {}
+func (*StartSnapshotRequest) ProtoMessage() {}
 
-func (x *CreateSnapshotRequest) ProtoReflect() protoreflect.Message {
+func (x *StartSnapshotRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -1291,53 +1291,53 @@ func (x *CreateSnapshotRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use CreateSnapshotRequest.ProtoReflect.Descriptor instead.
-func (*CreateSnapshotRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use StartSnapshotRequest.ProtoReflect.Descriptor instead.
+func (*StartSnapshotRequest) Descriptor() ([]byte, []int) {
 	return file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{20}
 }
 
-func (x *CreateSnapshotRequest) GetSandboxId() string {
+func (x *StartSnapshotRequest) GetSandboxId() string {
 	if x != nil {
 		return x.SandboxId
 	}
 	return ""
 }
 
-func (x *CreateSnapshotRequest) GetVersion() int64 {
+func (x *StartSnapshotRequest) GetVersion() int64 {
 	if x != nil {
 		return x.Version
 	}
 	return 0
 }
 
-func (x *CreateSnapshotRequest) GetDescription() string {
+func (x *StartSnapshotRequest) GetDescription() string {
 	if x != nil {
 		return x.Description
 	}
 	return ""
 }
 
-type CreateSnapshotResponse struct {
+type StartSnapshotResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Sandbox       *Sandbox               `protobuf:"bytes,1,opt,name=sandbox,proto3" json:"sandbox,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *CreateSnapshotResponse) Reset() {
-	*x = CreateSnapshotResponse{}
+func (x *StartSnapshotResponse) Reset() {
+	*x = StartSnapshotResponse{}
 	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *CreateSnapshotResponse) String() string {
+func (x *StartSnapshotResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*CreateSnapshotResponse) ProtoMessage() {}
+func (*StartSnapshotResponse) ProtoMessage() {}
 
-func (x *CreateSnapshotResponse) ProtoReflect() protoreflect.Message {
+func (x *StartSnapshotResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_nuinfra_control_plane_v1alpha1_sandbox_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -1349,12 +1349,12 @@ func (x *CreateSnapshotResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use CreateSnapshotResponse.ProtoReflect.Descriptor instead.
-func (*CreateSnapshotResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use StartSnapshotResponse.ProtoReflect.Descriptor instead.
+func (*StartSnapshotResponse) Descriptor() ([]byte, []int) {
 	return file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{21}
 }
 
-func (x *CreateSnapshotResponse) GetSandbox() *Sandbox {
+func (x *StartSnapshotResponse) GetSandbox() *Sandbox {
 	if x != nil {
 		return x.Sandbox
 	}
@@ -1365,13 +1365,13 @@ var File_nuinfra_control_plane_v1alpha1_sandbox_proto protoreflect.FileDescripto
 
 const file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDesc = "" +
 	"\n" +
-	",nuinfra/control_plane/v1alpha1/sandbox.proto\x12\x1enuinfra.control_plane.v1alpha1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x17google/rpc/status.proto\"\xca\x03\n" +
+	",nuinfra/control_plane/v1alpha1/sandbox.proto\x12\x1enuinfra.control_plane.v1alpha1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x17google/rpc/status.proto\"\xc4\x03\n" +
 	"\aSandbox\x12O\n" +
 	"\bmetadata\x18\x01 \x01(\v2+.nuinfra.control_plane.v1alpha1.SandboxMetaB\x06\xbaH\x03\xc8\x01\x01R\bmetadata\x12O\n" +
 	"\tresources\x18\x02 \x01(\v2).nuinfra.control_plane.v1alpha1.ResourcesB\x06\xbaH\x03\xc8\x01\x01R\tresources\x12;\n" +
 	"\x04node\x18\x03 \x01(\v2'.nuinfra.control_plane.v1alpha1.NodeRefR\x04node\x12>\n" +
-	"\x06intent\x18\x04 \x01(\v2&.nuinfra.control_plane.v1alpha1.IntentR\x06intent\x12Y\n" +
-	"\rlast_snapshot\x18\x05 \x01(\v24.nuinfra.control_plane.v1alpha1.CreateSnapshotOutputR\flastSnapshot\x12E\n" +
+	"\x06intent\x18\x04 \x01(\v2&.nuinfra.control_plane.v1alpha1.IntentR\x06intent\x12S\n" +
+	"\rlast_snapshot\x18\x05 \x01(\v2..nuinfra.control_plane.v1alpha1.SnapshotOutputR\flastSnapshot\x12E\n" +
 	"\x06status\x18\x06 \x01(\v2-.nuinfra.control_plane.v1alpha1.SandboxStatusR\x06status\"\x81\x04\n" +
 	"\vSandboxMeta\x12\x16\n" +
 	"\x02id\x18\x01 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x02id\x12F\n" +
@@ -1388,16 +1388,16 @@ const file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDesc = "" +
 	"\n" +
 	"vcpu_count\x18\x01 \x01(\rB\t\xbaH\x06*\x04\x18 (\x01R\tvcpuCount\x12+\n" +
 	"\n" +
-	"memory_mib\x18\x02 \x01(\x04B\f\xbaH\t2\a\x18\x80\x80\b(\x80\x01R\tmemoryMib\"\x19\n" +
-	"\aNodeRef\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"\xfa\x01\n" +
+	"memory_mib\x18\x02 \x01(\x04B\f\xbaH\t2\a\x18\x80\x80\b(\x80\x01R\tmemoryMib\"!\n" +
+	"\aNodeRef\x12\x16\n" +
+	"\x02id\x18\x01 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x02id\"\xf7\x01\n" +
 	"\x06Intent\x12I\n" +
 	"\x05phase\x18\x01 \x01(\x0e23.nuinfra.control_plane.v1alpha1.SandboxStatus.PhaseR\x05phase\x12G\n" +
-	"\tresources\x18\x02 \x01(\v2).nuinfra.control_plane.v1alpha1.ResourcesR\tresources\x12\\\n" +
-	"\x0fcreate_snapshot\x18\x03 \x01(\v23.nuinfra.control_plane.v1alpha1.CreateSnapshotInputR\x0ecreateSnapshot\"A\n" +
-	"\x13CreateSnapshotInput\x12*\n" +
-	"\vdescription\x18\x01 \x01(\tB\b\xbaH\x05r\x03\x18\x80\x02R\vdescription\"\x9c\x01\n" +
-	"\x14CreateSnapshotOutput\x12\x1f\n" +
+	"\tresources\x18\x02 \x01(\v2).nuinfra.control_plane.v1alpha1.ResourcesR\tresources\x12Y\n" +
+	"\x0estart_snapshot\x18\x03 \x01(\v22.nuinfra.control_plane.v1alpha1.StartSnapshotInputR\rstartSnapshot\"@\n" +
+	"\x12StartSnapshotInput\x12*\n" +
+	"\vdescription\x18\x01 \x01(\tB\b\xbaH\x05r\x03\x18\x80\x02R\vdescription\"\x96\x01\n" +
+	"\x0eSnapshotOutput\x12\x1f\n" +
 	"\vsnapshot_id\x18\x01 \x01(\tR\n" +
 	"snapshotId\x129\n" +
 	"\n" +
@@ -1461,14 +1461,14 @@ const file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDesc = "" +
 	"sandbox_id\x18\x01 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\tsandboxId\x12 \n" +
 	"\aversion\x18\x02 \x01(\x03B\x06\xbaH\x03\xc8\x01\x01R\aversion\"Z\n" +
 	"\x15DeleteSandboxResponse\x12A\n" +
-	"\asandbox\x18\x01 \x01(\v2'.nuinfra.control_plane.v1alpha1.SandboxR\asandbox\"\x8c\x01\n" +
-	"\x15CreateSnapshotRequest\x12%\n" +
+	"\asandbox\x18\x01 \x01(\v2'.nuinfra.control_plane.v1alpha1.SandboxR\asandbox\"\x8b\x01\n" +
+	"\x14StartSnapshotRequest\x12%\n" +
 	"\n" +
 	"sandbox_id\x18\x01 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\tsandboxId\x12 \n" +
 	"\aversion\x18\x02 \x01(\x03B\x06\xbaH\x03\xc8\x01\x01R\aversion\x12*\n" +
-	"\vdescription\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\x80\x02R\vdescription\"[\n" +
-	"\x16CreateSnapshotResponse\x12A\n" +
-	"\asandbox\x18\x01 \x01(\v2'.nuinfra.control_plane.v1alpha1.SandboxR\asandbox2\xa9\t\n" +
+	"\vdescription\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\x80\x02R\vdescription\"Z\n" +
+	"\x15StartSnapshotResponse\x12A\n" +
+	"\asandbox\x18\x01 \x01(\v2'.nuinfra.control_plane.v1alpha1.SandboxR\asandbox2\xa6\t\n" +
 	"\x0eSandboxService\x12\x9c\x01\n" +
 	"\rCreateSandbox\x124.nuinfra.control_plane.v1alpha1.CreateSandboxRequest\x1a5.nuinfra.control_plane.v1alpha1.CreateSandboxResponse\"\x1e\x82\xd3\xe4\x93\x02\x18:\x01*\"\x13/v1alpha1/sandboxes\x12\x9d\x01\n" +
 	"\n" +
@@ -1476,8 +1476,8 @@ const file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDesc = "" +
 	"\rListSandboxes\x124.nuinfra.control_plane.v1alpha1.ListSandboxesRequest\x1a5.nuinfra.control_plane.v1alpha1.ListSandboxesResponse\"\x1b\x82\xd3\xe4\x93\x02\x15\x12\x13/v1alpha1/sandboxes\x12\xa9\x01\n" +
 	"\fPauseSandbox\x123.nuinfra.control_plane.v1alpha1.PauseSandboxRequest\x1a4.nuinfra.control_plane.v1alpha1.PauseSandboxResponse\".\x82\xd3\xe4\x93\x02(\x1a&/v1alpha1/sandboxes/{sandbox_id}/pause\x12\xad\x01\n" +
 	"\rResumeSandbox\x124.nuinfra.control_plane.v1alpha1.ResumeSandboxRequest\x1a5.nuinfra.control_plane.v1alpha1.ResumeSandboxResponse\"/\x82\xd3\xe4\x93\x02)\x1a'/v1alpha1/sandboxes/{sandbox_id}/resume\x12\xa6\x01\n" +
-	"\rDeleteSandbox\x124.nuinfra.control_plane.v1alpha1.DeleteSandboxRequest\x1a5.nuinfra.control_plane.v1alpha1.DeleteSandboxResponse\"(\x82\xd3\xe4\x93\x02\"* /v1alpha1/sandboxes/{sandbox_id}\x12\xb6\x01\n" +
-	"\x0eCreateSnapshot\x125.nuinfra.control_plane.v1alpha1.CreateSnapshotRequest\x1a6.nuinfra.control_plane.v1alpha1.CreateSnapshotResponse\"5\x82\xd3\xe4\x93\x02/:\x01*\"*/v1alpha1/sandboxes/{sandbox_id}/snapshotsB\x9a\x02\n" +
+	"\rDeleteSandbox\x124.nuinfra.control_plane.v1alpha1.DeleteSandboxRequest\x1a5.nuinfra.control_plane.v1alpha1.DeleteSandboxResponse\"(\x82\xd3\xe4\x93\x02\"* /v1alpha1/sandboxes/{sandbox_id}\x12\xb3\x01\n" +
+	"\rStartSnapshot\x124.nuinfra.control_plane.v1alpha1.StartSnapshotRequest\x1a5.nuinfra.control_plane.v1alpha1.StartSnapshotResponse\"5\x82\xd3\xe4\x93\x02/:\x01*\"*/v1alpha1/sandboxes/{sandbox_id}/snapshotsB\x9a\x02\n" +
 	"\"com.nuinfra.control_plane.v1alpha1B\fSandboxProtoP\x01ZPgolang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1;control_planev1alpha1\xa2\x02\x03NCX\xaa\x02\x1dNuinfra.ControlPlane.V1alpha1\xca\x02\x1dNuinfra\\ControlPlane\\V1alpha1\xe2\x02)Nuinfra\\ControlPlane\\V1alpha1\\GPBMetadata\xea\x02\x1fNuinfra::ControlPlane::V1alpha1b\x06proto3"
 
 var (
@@ -1502,8 +1502,8 @@ var file_nuinfra_control_plane_v1alpha1_sandbox_proto_goTypes = []any{
 	(*Resources)(nil),               // 4: nuinfra.control_plane.v1alpha1.Resources
 	(*NodeRef)(nil),                 // 5: nuinfra.control_plane.v1alpha1.NodeRef
 	(*Intent)(nil),                  // 6: nuinfra.control_plane.v1alpha1.Intent
-	(*CreateSnapshotInput)(nil),     // 7: nuinfra.control_plane.v1alpha1.CreateSnapshotInput
-	(*CreateSnapshotOutput)(nil),    // 8: nuinfra.control_plane.v1alpha1.CreateSnapshotOutput
+	(*StartSnapshotInput)(nil),      // 7: nuinfra.control_plane.v1alpha1.StartSnapshotInput
+	(*SnapshotOutput)(nil),          // 8: nuinfra.control_plane.v1alpha1.SnapshotOutput
 	(*SandboxStatus)(nil),           // 9: nuinfra.control_plane.v1alpha1.SandboxStatus
 	(*CreateSandboxRequest)(nil),    // 10: nuinfra.control_plane.v1alpha1.CreateSandboxRequest
 	(*CreateSandboxResponse)(nil),   // 11: nuinfra.control_plane.v1alpha1.CreateSandboxResponse
@@ -1517,8 +1517,8 @@ var file_nuinfra_control_plane_v1alpha1_sandbox_proto_goTypes = []any{
 	(*ResumeSandboxResponse)(nil),   // 19: nuinfra.control_plane.v1alpha1.ResumeSandboxResponse
 	(*DeleteSandboxRequest)(nil),    // 20: nuinfra.control_plane.v1alpha1.DeleteSandboxRequest
 	(*DeleteSandboxResponse)(nil),   // 21: nuinfra.control_plane.v1alpha1.DeleteSandboxResponse
-	(*CreateSnapshotRequest)(nil),   // 22: nuinfra.control_plane.v1alpha1.CreateSnapshotRequest
-	(*CreateSnapshotResponse)(nil),  // 23: nuinfra.control_plane.v1alpha1.CreateSnapshotResponse
+	(*StartSnapshotRequest)(nil),    // 22: nuinfra.control_plane.v1alpha1.StartSnapshotRequest
+	(*StartSnapshotResponse)(nil),   // 23: nuinfra.control_plane.v1alpha1.StartSnapshotResponse
 	nil,                             // 24: nuinfra.control_plane.v1alpha1.SandboxMeta.LabelsEntry
 	(*timestamppb.Timestamp)(nil),   // 25: google.protobuf.Timestamp
 	(*status.Status)(nil),           // 26: google.rpc.Status
@@ -1528,16 +1528,16 @@ var file_nuinfra_control_plane_v1alpha1_sandbox_proto_depIdxs = []int32{
 	4,  // 1: nuinfra.control_plane.v1alpha1.Sandbox.resources:type_name -> nuinfra.control_plane.v1alpha1.Resources
 	5,  // 2: nuinfra.control_plane.v1alpha1.Sandbox.node:type_name -> nuinfra.control_plane.v1alpha1.NodeRef
 	6,  // 3: nuinfra.control_plane.v1alpha1.Sandbox.intent:type_name -> nuinfra.control_plane.v1alpha1.Intent
-	8,  // 4: nuinfra.control_plane.v1alpha1.Sandbox.last_snapshot:type_name -> nuinfra.control_plane.v1alpha1.CreateSnapshotOutput
+	8,  // 4: nuinfra.control_plane.v1alpha1.Sandbox.last_snapshot:type_name -> nuinfra.control_plane.v1alpha1.SnapshotOutput
 	9,  // 5: nuinfra.control_plane.v1alpha1.Sandbox.status:type_name -> nuinfra.control_plane.v1alpha1.SandboxStatus
 	25, // 6: nuinfra.control_plane.v1alpha1.SandboxMeta.created_at:type_name -> google.protobuf.Timestamp
 	25, // 7: nuinfra.control_plane.v1alpha1.SandboxMeta.last_modified_at:type_name -> google.protobuf.Timestamp
 	24, // 8: nuinfra.control_plane.v1alpha1.SandboxMeta.labels:type_name -> nuinfra.control_plane.v1alpha1.SandboxMeta.LabelsEntry
 	0,  // 9: nuinfra.control_plane.v1alpha1.Intent.phase:type_name -> nuinfra.control_plane.v1alpha1.SandboxStatus.Phase
 	4,  // 10: nuinfra.control_plane.v1alpha1.Intent.resources:type_name -> nuinfra.control_plane.v1alpha1.Resources
-	7,  // 11: nuinfra.control_plane.v1alpha1.Intent.create_snapshot:type_name -> nuinfra.control_plane.v1alpha1.CreateSnapshotInput
-	25, // 12: nuinfra.control_plane.v1alpha1.CreateSnapshotOutput.created_at:type_name -> google.protobuf.Timestamp
-	26, // 13: nuinfra.control_plane.v1alpha1.CreateSnapshotOutput.error:type_name -> google.rpc.Status
+	7,  // 11: nuinfra.control_plane.v1alpha1.Intent.start_snapshot:type_name -> nuinfra.control_plane.v1alpha1.StartSnapshotInput
+	25, // 12: nuinfra.control_plane.v1alpha1.SnapshotOutput.created_at:type_name -> google.protobuf.Timestamp
+	26, // 13: nuinfra.control_plane.v1alpha1.SnapshotOutput.error:type_name -> google.rpc.Status
 	0,  // 14: nuinfra.control_plane.v1alpha1.SandboxStatus.phase:type_name -> nuinfra.control_plane.v1alpha1.SandboxStatus.Phase
 	2,  // 15: nuinfra.control_plane.v1alpha1.CreateSandboxRequest.sandbox:type_name -> nuinfra.control_plane.v1alpha1.Sandbox
 	2,  // 16: nuinfra.control_plane.v1alpha1.CreateSandboxResponse.sandbox:type_name -> nuinfra.control_plane.v1alpha1.Sandbox
@@ -1548,21 +1548,21 @@ var file_nuinfra_control_plane_v1alpha1_sandbox_proto_depIdxs = []int32{
 	2,  // 21: nuinfra.control_plane.v1alpha1.PauseSandboxResponse.sandbox:type_name -> nuinfra.control_plane.v1alpha1.Sandbox
 	2,  // 22: nuinfra.control_plane.v1alpha1.ResumeSandboxResponse.sandbox:type_name -> nuinfra.control_plane.v1alpha1.Sandbox
 	2,  // 23: nuinfra.control_plane.v1alpha1.DeleteSandboxResponse.sandbox:type_name -> nuinfra.control_plane.v1alpha1.Sandbox
-	2,  // 24: nuinfra.control_plane.v1alpha1.CreateSnapshotResponse.sandbox:type_name -> nuinfra.control_plane.v1alpha1.Sandbox
+	2,  // 24: nuinfra.control_plane.v1alpha1.StartSnapshotResponse.sandbox:type_name -> nuinfra.control_plane.v1alpha1.Sandbox
 	10, // 25: nuinfra.control_plane.v1alpha1.SandboxService.CreateSandbox:input_type -> nuinfra.control_plane.v1alpha1.CreateSandboxRequest
 	12, // 26: nuinfra.control_plane.v1alpha1.SandboxService.GetSandbox:input_type -> nuinfra.control_plane.v1alpha1.GetSandboxRequest
 	14, // 27: nuinfra.control_plane.v1alpha1.SandboxService.ListSandboxes:input_type -> nuinfra.control_plane.v1alpha1.ListSandboxesRequest
 	16, // 28: nuinfra.control_plane.v1alpha1.SandboxService.PauseSandbox:input_type -> nuinfra.control_plane.v1alpha1.PauseSandboxRequest
 	18, // 29: nuinfra.control_plane.v1alpha1.SandboxService.ResumeSandbox:input_type -> nuinfra.control_plane.v1alpha1.ResumeSandboxRequest
 	20, // 30: nuinfra.control_plane.v1alpha1.SandboxService.DeleteSandbox:input_type -> nuinfra.control_plane.v1alpha1.DeleteSandboxRequest
-	22, // 31: nuinfra.control_plane.v1alpha1.SandboxService.CreateSnapshot:input_type -> nuinfra.control_plane.v1alpha1.CreateSnapshotRequest
+	22, // 31: nuinfra.control_plane.v1alpha1.SandboxService.StartSnapshot:input_type -> nuinfra.control_plane.v1alpha1.StartSnapshotRequest
 	11, // 32: nuinfra.control_plane.v1alpha1.SandboxService.CreateSandbox:output_type -> nuinfra.control_plane.v1alpha1.CreateSandboxResponse
 	13, // 33: nuinfra.control_plane.v1alpha1.SandboxService.GetSandbox:output_type -> nuinfra.control_plane.v1alpha1.GetSandboxResponse
 	15, // 34: nuinfra.control_plane.v1alpha1.SandboxService.ListSandboxes:output_type -> nuinfra.control_plane.v1alpha1.ListSandboxesResponse
 	17, // 35: nuinfra.control_plane.v1alpha1.SandboxService.PauseSandbox:output_type -> nuinfra.control_plane.v1alpha1.PauseSandboxResponse
 	19, // 36: nuinfra.control_plane.v1alpha1.SandboxService.ResumeSandbox:output_type -> nuinfra.control_plane.v1alpha1.ResumeSandboxResponse
 	21, // 37: nuinfra.control_plane.v1alpha1.SandboxService.DeleteSandbox:output_type -> nuinfra.control_plane.v1alpha1.DeleteSandboxResponse
-	23, // 38: nuinfra.control_plane.v1alpha1.SandboxService.CreateSnapshot:output_type -> nuinfra.control_plane.v1alpha1.CreateSnapshotResponse
+	23, // 38: nuinfra.control_plane.v1alpha1.SandboxService.StartSnapshot:output_type -> nuinfra.control_plane.v1alpha1.StartSnapshotResponse
 	32, // [32:39] is the sub-list for method output_type
 	25, // [25:32] is the sub-list for method input_type
 	25, // [25:25] is the sub-list for extension type_name

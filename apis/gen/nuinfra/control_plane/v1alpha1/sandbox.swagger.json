@@ -273,12 +273,12 @@
     },
     "/v1alpha1/sandboxes/{sandboxId}/snapshots": {
       "post": {
-        "operationId": "SandboxService_CreateSnapshot",
+        "operationId": "SandboxService_StartSnapshot",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1alpha1CreateSnapshotResponse"
+              "$ref": "#/definitions/v1alpha1StartSnapshotResponse"
             }
           },
           "default": {
@@ -300,7 +300,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/SandboxServiceCreateSnapshotBody"
+              "$ref": "#/definitions/SandboxServiceStartSnapshotBody"
             }
           }
         ],
@@ -311,7 +311,7 @@
     }
   },
   "definitions": {
-    "SandboxServiceCreateSnapshotBody": {
+    "SandboxServiceStartSnapshotBody": {
       "type": "object",
       "properties": {
         "version": {
@@ -373,37 +373,6 @@
         }
       }
     },
-    "v1alpha1CreateSnapshotInput": {
-      "type": "object",
-      "properties": {
-        "description": {
-          "type": "string"
-        }
-      }
-    },
-    "v1alpha1CreateSnapshotOutput": {
-      "type": "object",
-      "properties": {
-        "snapshotId": {
-          "type": "string"
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "error": {
-          "$ref": "#/definitions/rpcStatus"
-        }
-      }
-    },
-    "v1alpha1CreateSnapshotResponse": {
-      "type": "object",
-      "properties": {
-        "sandbox": {
-          "$ref": "#/definitions/v1alpha1Sandbox"
-        }
-      }
-    },
     "v1alpha1DeleteSandboxResponse": {
       "type": "object",
       "properties": {
@@ -429,8 +398,8 @@
         "resources": {
           "$ref": "#/definitions/v1alpha1Resources"
         },
-        "createSnapshot": {
-          "$ref": "#/definitions/v1alpha1CreateSnapshotInput"
+        "startSnapshot": {
+          "$ref": "#/definitions/v1alpha1StartSnapshotInput"
         }
       }
     },
@@ -516,7 +485,7 @@
           "$ref": "#/definitions/v1alpha1Intent"
         },
         "lastSnapshot": {
-          "$ref": "#/definitions/v1alpha1CreateSnapshotOutput"
+          "$ref": "#/definitions/v1alpha1SnapshotOutput"
         },
         "status": {
           "$ref": "#/definitions/v1alpha1SandboxStatus"
@@ -579,6 +548,37 @@
         "PHASE_FAILED"
       ],
       "default": "PHASE_UNSPECIFIED"
+    },
+    "v1alpha1SnapshotOutput": {
+      "type": "object",
+      "properties": {
+        "snapshotId": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "error": {
+          "$ref": "#/definitions/rpcStatus"
+        }
+      }
+    },
+    "v1alpha1StartSnapshotInput": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string"
+        }
+      }
+    },
+    "v1alpha1StartSnapshotResponse": {
+      "type": "object",
+      "properties": {
+        "sandbox": {
+          "$ref": "#/definitions/v1alpha1Sandbox"
+        }
+      }
     }
   }
 }

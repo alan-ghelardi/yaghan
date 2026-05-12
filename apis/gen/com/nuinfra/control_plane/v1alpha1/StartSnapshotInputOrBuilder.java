@@ -6,8 +6,8 @@
 package com.nuinfra.control_plane.v1alpha1;
 
 @com.google.protobuf.Generated
-public interface CreateSnapshotInputOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:nuinfra.control_plane.v1alpha1.CreateSnapshotInput)
+public interface StartSnapshotInputOrBuilder extends
+    // @@protoc_insertion_point(interface_extends:nuinfra.control_plane.v1alpha1.StartSnapshotInput)
     com.google.protobuf.MessageOrBuilder {
 
   /**

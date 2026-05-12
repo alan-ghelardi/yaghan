@@ -71,19 +71,19 @@ public interface SandboxOrBuilder extends
   com.nuinfra.control_plane.v1alpha1.IntentOrBuilder getIntentOrBuilder();
 
   /**
-   * <code>.nuinfra.control_plane.v1alpha1.CreateSnapshotOutput last_snapshot = 5 [json_name = "lastSnapshot"];</code>
+   * <code>.nuinfra.control_plane.v1alpha1.SnapshotOutput last_snapshot = 5 [json_name = "lastSnapshot"];</code>
    * @return Whether the lastSnapshot field is set.
    */
   boolean hasLastSnapshot();
   /**
-   * <code>.nuinfra.control_plane.v1alpha1.CreateSnapshotOutput last_snapshot = 5 [json_name = "lastSnapshot"];</code>
+   * <code>.nuinfra.control_plane.v1alpha1.SnapshotOutput last_snapshot = 5 [json_name = "lastSnapshot"];</code>
    * @return The lastSnapshot.
    */
-  com.nuinfra.control_plane.v1alpha1.CreateSnapshotOutput getLastSnapshot();
+  com.nuinfra.control_plane.v1alpha1.SnapshotOutput getLastSnapshot();
   /**
-   * <code>.nuinfra.control_plane.v1alpha1.CreateSnapshotOutput last_snapshot = 5 [json_name = "lastSnapshot"];</code>
+   * <code>.nuinfra.control_plane.v1alpha1.SnapshotOutput last_snapshot = 5 [json_name = "lastSnapshot"];</code>
    */
-  com.nuinfra.control_plane.v1alpha1.CreateSnapshotOutputOrBuilder getLastSnapshotOrBuilder();
+  com.nuinfra.control_plane.v1alpha1.SnapshotOutputOrBuilder getLastSnapshotOrBuilder();
 
   /**
    * <code>.nuinfra.control_plane.v1alpha1.SandboxStatus status = 6 [json_name = "status"];</code>

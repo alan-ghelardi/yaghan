@@ -19,13 +19,13 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	SandboxService_CreateSandbox_FullMethodName  = "/nuinfra.control_plane.v1alpha1.SandboxService/CreateSandbox"
-	SandboxService_GetSandbox_FullMethodName     = "/nuinfra.control_plane.v1alpha1.SandboxService/GetSandbox"
-	SandboxService_ListSandboxes_FullMethodName  = "/nuinfra.control_plane.v1alpha1.SandboxService/ListSandboxes"
-	SandboxService_PauseSandbox_FullMethodName   = "/nuinfra.control_plane.v1alpha1.SandboxService/PauseSandbox"
-	SandboxService_ResumeSandbox_FullMethodName  = "/nuinfra.control_plane.v1alpha1.SandboxService/ResumeSandbox"
-	SandboxService_DeleteSandbox_FullMethodName  = "/nuinfra.control_plane.v1alpha1.SandboxService/DeleteSandbox"
-	SandboxService_CreateSnapshot_FullMethodName = "/nuinfra.control_plane.v1alpha1.SandboxService/CreateSnapshot"
+	SandboxService_CreateSandbox_FullMethodName = "/nuinfra.control_plane.v1alpha1.SandboxService/CreateSandbox"
+	SandboxService_GetSandbox_FullMethodName    = "/nuinfra.control_plane.v1alpha1.SandboxService/GetSandbox"
+	SandboxService_ListSandboxes_FullMethodName = "/nuinfra.control_plane.v1alpha1.SandboxService/ListSandboxes"
+	SandboxService_PauseSandbox_FullMethodName  = "/nuinfra.control_plane.v1alpha1.SandboxService/PauseSandbox"
+	SandboxService_ResumeSandbox_FullMethodName = "/nuinfra.control_plane.v1alpha1.SandboxService/ResumeSandbox"
+	SandboxService_DeleteSandbox_FullMethodName = "/nuinfra.control_plane.v1alpha1.SandboxService/DeleteSandbox"
+	SandboxService_StartSnapshot_FullMethodName = "/nuinfra.control_plane.v1alpha1.SandboxService/StartSnapshot"
 )
 
 // SandboxServiceClient is the client API for SandboxService service.
@@ -38,7 +38,7 @@ type SandboxServiceClient interface {
 	PauseSandbox(ctx context.Context, in *PauseSandboxRequest, opts ...grpc.CallOption) (*PauseSandboxResponse, error)
 	ResumeSandbox(ctx context.Context, in *ResumeSandboxRequest, opts ...grpc.CallOption) (*ResumeSandboxResponse, error)
 	DeleteSandbox(ctx context.Context, in *DeleteSandboxRequest, opts ...grpc.CallOption) (*DeleteSandboxResponse, error)
-	CreateSnapshot(ctx context.Context, in *CreateSnapshotRequest, opts ...grpc.CallOption) (*CreateSnapshotResponse, error)
+	StartSnapshot(ctx context.Context, in *StartSnapshotRequest, opts ...grpc.CallOption) (*StartSnapshotResponse, error)
 }
 
 type sandboxServiceClient struct {
@@ -109,10 +109,10 @@ func (c *sandboxServiceClient) DeleteSandbox(ctx context.Context, in *DeleteSand
 	return out, nil
 }
 
-func (c *sandboxServiceClient) CreateSnapshot(ctx context.Context, in *CreateSnapshotRequest, opts ...grpc.CallOption) (*CreateSnapshotResponse, error) {
+func (c *sandboxServiceClient) StartSnapshot(ctx context.Context, in *StartSnapshotRequest, opts ...grpc.CallOption) (*StartSnapshotResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(CreateSnapshotResponse)
-	err := c.cc.Invoke(ctx, SandboxService_CreateSnapshot_FullMethodName, in, out, cOpts...)
+	out := new(StartSnapshotResponse)
+	err := c.cc.Invoke(ctx, SandboxService_StartSnapshot_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -129,7 +129,7 @@ type SandboxServiceServer interface {
 	PauseSandbox(context.Context, *PauseSandboxRequest) (*PauseSandboxResponse, error)
 	ResumeSandbox(context.Context, *ResumeSandboxRequest) (*ResumeSandboxResponse, error)
 	DeleteSandbox(context.Context, *DeleteSandboxRequest) (*DeleteSandboxResponse, error)
-	CreateSnapshot(context.Context, *CreateSnapshotRequest) (*CreateSnapshotResponse, error)
+	StartSnapshot(context.Context, *StartSnapshotRequest) (*StartSnapshotResponse, error)
 	mustEmbedUnimplementedSandboxServiceServer()
 }
 
@@ -158,8 +158,8 @@ func (UnimplementedSandboxServiceServer) ResumeSandbox(context.Context, *ResumeS
 func (UnimplementedSandboxServiceServer) DeleteSandbox(context.Context, *DeleteSandboxRequest) (*DeleteSandboxResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteSandbox not implemented")
 }
-func (UnimplementedSandboxServiceServer) CreateSnapshot(context.Context, *CreateSnapshotRequest) (*CreateSnapshotResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateSnapshot not implemented")
+func (UnimplementedSandboxServiceServer) StartSnapshot(context.Context, *StartSnapshotRequest) (*StartSnapshotResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StartSnapshot not implemented")
 }
 func (UnimplementedSandboxServiceServer) mustEmbedUnimplementedSandboxServiceServer() {}
 func (UnimplementedSandboxServiceServer) testEmbeddedByValue()                        {}
@@ -290,20 +290,20 @@ func _SandboxService_DeleteSandbox_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
-func _SandboxService_CreateSnapshot_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateSnapshotRequest)
+func _SandboxService_StartSnapshot_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StartSnapshotRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(SandboxServiceServer).CreateSnapshot(ctx, in)
+		return srv.(SandboxServiceServer).StartSnapshot(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: SandboxService_CreateSnapshot_FullMethodName,
+		FullMethod: SandboxService_StartSnapshot_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SandboxServiceServer).CreateSnapshot(ctx, req.(*CreateSnapshotRequest))
+		return srv.(SandboxServiceServer).StartSnapshot(ctx, req.(*StartSnapshotRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -340,8 +340,8 @@ var SandboxService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _SandboxService_DeleteSandbox_Handler,
 		},
 		{
-			MethodName: "CreateSnapshot",
-			Handler:    _SandboxService_CreateSnapshot_Handler,
+			MethodName: "StartSnapshot",
+			Handler:    _SandboxService_StartSnapshot_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -6,22 +6,22 @@
 package com.nuinfra.control_plane.v1alpha1;
 
 @com.google.protobuf.Generated
-public interface CreateSnapshotRequestOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:nuinfra.control_plane.v1alpha1.CreateSnapshotRequest)
+public interface GetSnapshotResponseOrBuilder extends
+    // @@protoc_insertion_point(interface_extends:nuinfra.control_plane.v1alpha1.GetSnapshotResponse)
     com.google.protobuf.MessageOrBuilder {
 
   /**
-   * <code>.nuinfra.control_plane.v1alpha1.Snapshot snapshot = 1 [json_name = "snapshot", (.buf.validate.field) = { ... }</code>
+   * <code>.nuinfra.control_plane.v1alpha1.Snapshot snapshot = 1 [json_name = "snapshot"];</code>
    * @return Whether the snapshot field is set.
    */
   boolean hasSnapshot();
   /**
-   * <code>.nuinfra.control_plane.v1alpha1.Snapshot snapshot = 1 [json_name = "snapshot", (.buf.validate.field) = { ... }</code>
+   * <code>.nuinfra.control_plane.v1alpha1.Snapshot snapshot = 1 [json_name = "snapshot"];</code>
    * @return The snapshot.
    */
   com.nuinfra.control_plane.v1alpha1.Snapshot getSnapshot();
   /**
-   * <code>.nuinfra.control_plane.v1alpha1.Snapshot snapshot = 1 [json_name = "snapshot", (.buf.validate.field) = { ... }</code>
+   * <code>.nuinfra.control_plane.v1alpha1.Snapshot snapshot = 1 [json_name = "snapshot"];</code>
    */
   com.nuinfra.control_plane.v1alpha1.SnapshotOrBuilder getSnapshotOrBuilder();
 }

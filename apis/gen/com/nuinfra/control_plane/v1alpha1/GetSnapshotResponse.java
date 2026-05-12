@@ -6,13 +6,13 @@
 package com.nuinfra.control_plane.v1alpha1;
 
 /**
- * Protobuf type {@code nuinfra.control_plane.v1alpha1.CreateSnapshotResponse}
+ * Protobuf type {@code nuinfra.control_plane.v1alpha1.GetSnapshotResponse}
  */
 @com.google.protobuf.Generated
-public final class CreateSnapshotResponse extends
+public final class GetSnapshotResponse extends
     com.google.protobuf.GeneratedMessage implements
-    // @@protoc_insertion_point(message_implements:nuinfra.control_plane.v1alpha1.CreateSnapshotResponse)
-    CreateSnapshotResponseOrBuilder {
+    // @@protoc_insertion_point(message_implements:nuinfra.control_plane.v1alpha1.GetSnapshotResponse)
+    GetSnapshotResponseOrBuilder {
 private static final long serialVersionUID = 0L;
   static {
     com.google.protobuf.RuntimeVersion.validateProtobufGencodeVersion(
@@ -21,26 +21,26 @@ private static final long serialVersionUID = 0L;
       /* minor= */ 33,
       /* patch= */ 2,
       /* suffix= */ "",
-      "CreateSnapshotResponse");
+      "GetSnapshotResponse");
   }
-  // Use CreateSnapshotResponse.newBuilder() to construct.
-  private CreateSnapshotResponse(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+  // Use GetSnapshotResponse.newBuilder() to construct.
+  private GetSnapshotResponse(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
     super(builder);
   }
-  private CreateSnapshotResponse() {
+  private GetSnapshotResponse() {
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return com.nuinfra.control_plane.v1alpha1.SnapshotProto.internal_static_nuinfra_control_plane_v1alpha1_CreateSnapshotResponse_descriptor;
+    return com.nuinfra.control_plane.v1alpha1.SnapshotProto.internal_static_nuinfra_control_plane_v1alpha1_GetSnapshotResponse_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return com.nuinfra.control_plane.v1alpha1.SnapshotProto.internal_static_nuinfra_control_plane_v1alpha1_CreateSnapshotResponse_fieldAccessorTable
+    return com.nuinfra.control_plane.v1alpha1.SnapshotProto.internal_static_nuinfra_control_plane_v1alpha1_GetSnapshotResponse_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
-            com.nuinfra.control_plane.v1alpha1.CreateSnapshotResponse.class, com.nuinfra.control_plane.v1alpha1.CreateSnapshotResponse.Builder.class);
+            com.nuinfra.control_plane.v1alpha1.GetSnapshotResponse.class, com.nuinfra.control_plane.v1alpha1.GetSnapshotResponse.Builder.class);
   }
 
   private int bitField0_;
@@ -110,10 +110,10 @@ private static final long serialVersionUID = 0L;
     if (obj == this) {
      return true;
     }
-    if (!(obj instanceof com.nuinfra.control_plane.v1alpha1.CreateSnapshotResponse)) {
+    if (!(obj instanceof com.nuinfra.control_plane.v1alpha1.GetSnapshotResponse)) {
       return super.equals(obj);
     }
-    com.nuinfra.control_plane.v1alpha1.CreateSnapshotResponse other = (com.nuinfra.control_plane.v1alpha1.CreateSnapshotResponse) obj;
+    com.nuinfra.control_plane.v1alpha1.GetSnapshotResponse other = (com.nuinfra.control_plane.v1alpha1.GetSnapshotResponse) obj;
 
     if (hasSnapshot() != other.hasSnapshot()) return false;
     if (hasSnapshot()) {
@@ -140,44 +140,44 @@ private static final long serialVersionUID = 0L;
     return hash;
   }
 
-  public static com.nuinfra.control_plane.v1alpha1.CreateSnapshotResponse parseFrom(
+  public static com.nuinfra.control_plane.v1alpha1.GetSnapshotResponse parseFrom(
       java.nio.ByteBuffer data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static com.nuinfra.control_plane.v1alpha1.CreateSnapshotResponse parseFrom(
+  public static com.nuinfra.control_plane.v1alpha1.GetSnapshotResponse parseFrom(
       java.nio.ByteBuffer data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static com.nuinfra.control_plane.v1alpha1.CreateSnapshotResponse parseFrom(
+  public static com.nuinfra.control_plane.v1alpha1.GetSnapshotResponse parseFrom(
       com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static com.nuinfra.control_plane.v1alpha1.CreateSnapshotResponse parseFrom(
+  public static com.nuinfra.control_plane.v1alpha1.GetSnapshotResponse parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static com.nuinfra.control_plane.v1alpha1.CreateSnapshotResponse parseFrom(byte[] data)
+  public static com.nuinfra.control_plane.v1alpha1.GetSnapshotResponse parseFrom(byte[] data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static com.nuinfra.control_plane.v1alpha1.CreateSnapshotResponse parseFrom(
+  public static com.nuinfra.control_plane.v1alpha1.GetSnapshotResponse parseFrom(
       byte[] data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static com.nuinfra.control_plane.v1alpha1.CreateSnapshotResponse parseFrom(java.io.InputStream input)
+  public static com.nuinfra.control_plane.v1alpha1.GetSnapshotResponse parseFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessage
         .parseWithIOException(PARSER, input);
   }
-  public static com.nuinfra.control_plane.v1alpha1.CreateSnapshotResponse parseFrom(
+  public static com.nuinfra.control_plane.v1alpha1.GetSnapshotResponse parseFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -185,26 +185,26 @@ private static final long serialVersionUID = 0L;
         .parseWithIOException(PARSER, input, extensionRegistry);
   }
 
-  public static com.nuinfra.control_plane.v1alpha1.CreateSnapshotResponse parseDelimitedFrom(java.io.InputStream input)
+  public static com.nuinfra.control_plane.v1alpha1.GetSnapshotResponse parseDelimitedFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessage
         .parseDelimitedWithIOException(PARSER, input);
   }
 
-  public static com.nuinfra.control_plane.v1alpha1.CreateSnapshotResponse parseDelimitedFrom(
+  public static com.nuinfra.control_plane.v1alpha1.GetSnapshotResponse parseDelimitedFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessage
         .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
   }
-  public static com.nuinfra.control_plane.v1alpha1.CreateSnapshotResponse parseFrom(
+  public static com.nuinfra.control_plane.v1alpha1.GetSnapshotResponse parseFrom(
       com.google.protobuf.CodedInputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessage
         .parseWithIOException(PARSER, input);
   }
-  public static com.nuinfra.control_plane.v1alpha1.CreateSnapshotResponse parseFrom(
+  public static com.nuinfra.control_plane.v1alpha1.GetSnapshotResponse parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -217,7 +217,7 @@ private static final long serialVersionUID = 0L;
   public static Builder newBuilder() {
     return DEFAULT_INSTANCE.toBuilder();
   }
-  public static Builder newBuilder(com.nuinfra.control_plane.v1alpha1.CreateSnapshotResponse prototype) {
+  public static Builder newBuilder(com.nuinfra.control_plane.v1alpha1.GetSnapshotResponse prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
   @java.lang.Override
@@ -233,26 +233,26 @@ private static final long serialVersionUID = 0L;
     return builder;
   }
   /**
-   * Protobuf type {@code nuinfra.control_plane.v1alpha1.CreateSnapshotResponse}
+   * Protobuf type {@code nuinfra.control_plane.v1alpha1.GetSnapshotResponse}
    */
   public static final class Builder extends
       com.google.protobuf.GeneratedMessage.Builder<Builder> implements
-      // @@protoc_insertion_point(builder_implements:nuinfra.control_plane.v1alpha1.CreateSnapshotResponse)
-      com.nuinfra.control_plane.v1alpha1.CreateSnapshotResponseOrBuilder {
+      // @@protoc_insertion_point(builder_implements:nuinfra.control_plane.v1alpha1.GetSnapshotResponse)
+      com.nuinfra.control_plane.v1alpha1.GetSnapshotResponseOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return com.nuinfra.control_plane.v1alpha1.SnapshotProto.internal_static_nuinfra_control_plane_v1alpha1_CreateSnapshotResponse_descriptor;
+      return com.nuinfra.control_plane.v1alpha1.SnapshotProto.internal_static_nuinfra_control_plane_v1alpha1_GetSnapshotResponse_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return com.nuinfra.control_plane.v1alpha1.SnapshotProto.internal_static_nuinfra_control_plane_v1alpha1_CreateSnapshotResponse_fieldAccessorTable
+      return com.nuinfra.control_plane.v1alpha1.SnapshotProto.internal_static_nuinfra_control_plane_v1alpha1_GetSnapshotResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.nuinfra.control_plane.v1alpha1.CreateSnapshotResponse.class, com.nuinfra.control_plane.v1alpha1.CreateSnapshotResponse.Builder.class);
+              com.nuinfra.control_plane.v1alpha1.GetSnapshotResponse.class, com.nuinfra.control_plane.v1alpha1.GetSnapshotResponse.Builder.class);
     }
 
-    // Construct using com.nuinfra.control_plane.v1alpha1.CreateSnapshotResponse.newBuilder()
+    // Construct using com.nuinfra.control_plane.v1alpha1.GetSnapshotResponse.newBuilder()
     private Builder() {
       maybeForceBuilderInitialization();
     }
@@ -283,17 +283,17 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return com.nuinfra.control_plane.v1alpha1.SnapshotProto.internal_static_nuinfra_control_plane_v1alpha1_CreateSnapshotResponse_descriptor;
+      return com.nuinfra.control_plane.v1alpha1.SnapshotProto.internal_static_nuinfra_control_plane_v1alpha1_GetSnapshotResponse_descriptor;
     }
 
     @java.lang.Override
-    public com.nuinfra.control_plane.v1alpha1.CreateSnapshotResponse getDefaultInstanceForType() {
-      return com.nuinfra.control_plane.v1alpha1.CreateSnapshotResponse.getDefaultInstance();
+    public com.nuinfra.control_plane.v1alpha1.GetSnapshotResponse getDefaultInstanceForType() {
+      return com.nuinfra.control_plane.v1alpha1.GetSnapshotResponse.getDefaultInstance();
     }
 
     @java.lang.Override
-    public com.nuinfra.control_plane.v1alpha1.CreateSnapshotResponse build() {
-      com.nuinfra.control_plane.v1alpha1.CreateSnapshotResponse result = buildPartial();
+    public com.nuinfra.control_plane.v1alpha1.GetSnapshotResponse build() {
+      com.nuinfra.control_plane.v1alpha1.GetSnapshotResponse result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
       }
@@ -301,14 +301,14 @@ private static final long serialVersionUID = 0L;
     }
 
     @java.lang.Override
-    public com.nuinfra.control_plane.v1alpha1.CreateSnapshotResponse buildPartial() {
-      com.nuinfra.control_plane.v1alpha1.CreateSnapshotResponse result = new com.nuinfra.control_plane.v1alpha1.CreateSnapshotResponse(this);
+    public com.nuinfra.control_plane.v1alpha1.GetSnapshotResponse buildPartial() {
+      com.nuinfra.control_plane.v1alpha1.GetSnapshotResponse result = new com.nuinfra.control_plane.v1alpha1.GetSnapshotResponse(this);
       if (bitField0_ != 0) { buildPartial0(result); }
       onBuilt();
       return result;
     }
 
-    private void buildPartial0(com.nuinfra.control_plane.v1alpha1.CreateSnapshotResponse result) {
+    private void buildPartial0(com.nuinfra.control_plane.v1alpha1.GetSnapshotResponse result) {
       int from_bitField0_ = bitField0_;
       int to_bitField0_ = 0;
       if (((from_bitField0_ & 0x00000001) != 0)) {
@@ -322,16 +322,16 @@ private static final long serialVersionUID = 0L;
 
     @java.lang.Override
     public Builder mergeFrom(com.google.protobuf.Message other) {
-      if (other instanceof com.nuinfra.control_plane.v1alpha1.CreateSnapshotResponse) {
-        return mergeFrom((com.nuinfra.control_plane.v1alpha1.CreateSnapshotResponse)other);
+      if (other instanceof com.nuinfra.control_plane.v1alpha1.GetSnapshotResponse) {
+        return mergeFrom((com.nuinfra.control_plane.v1alpha1.GetSnapshotResponse)other);
       } else {
         super.mergeFrom(other);
         return this;
       }
     }
 
-    public Builder mergeFrom(com.nuinfra.control_plane.v1alpha1.CreateSnapshotResponse other) {
-      if (other == com.nuinfra.control_plane.v1alpha1.CreateSnapshotResponse.getDefaultInstance()) return this;
+    public Builder mergeFrom(com.nuinfra.control_plane.v1alpha1.GetSnapshotResponse other) {
+      if (other == com.nuinfra.control_plane.v1alpha1.GetSnapshotResponse.getDefaultInstance()) return this;
       if (other.hasSnapshot()) {
         mergeSnapshot(other.getSnapshot());
       }
@@ -506,23 +506,23 @@ private static final long serialVersionUID = 0L;
       return snapshotBuilder_;
     }
 
-    // @@protoc_insertion_point(builder_scope:nuinfra.control_plane.v1alpha1.CreateSnapshotResponse)
+    // @@protoc_insertion_point(builder_scope:nuinfra.control_plane.v1alpha1.GetSnapshotResponse)
   }
 
-  // @@protoc_insertion_point(class_scope:nuinfra.control_plane.v1alpha1.CreateSnapshotResponse)
-  private static final com.nuinfra.control_plane.v1alpha1.CreateSnapshotResponse DEFAULT_INSTANCE;
+  // @@protoc_insertion_point(class_scope:nuinfra.control_plane.v1alpha1.GetSnapshotResponse)
+  private static final com.nuinfra.control_plane.v1alpha1.GetSnapshotResponse DEFAULT_INSTANCE;
   static {
-    DEFAULT_INSTANCE = new com.nuinfra.control_plane.v1alpha1.CreateSnapshotResponse();
+    DEFAULT_INSTANCE = new com.nuinfra.control_plane.v1alpha1.GetSnapshotResponse();
   }
 
-  public static com.nuinfra.control_plane.v1alpha1.CreateSnapshotResponse getDefaultInstance() {
+  public static com.nuinfra.control_plane.v1alpha1.GetSnapshotResponse getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
 
-  private static final com.google.protobuf.Parser<CreateSnapshotResponse>
-      PARSER = new com.google.protobuf.AbstractParser<CreateSnapshotResponse>() {
+  private static final com.google.protobuf.Parser<GetSnapshotResponse>
+      PARSER = new com.google.protobuf.AbstractParser<GetSnapshotResponse>() {
     @java.lang.Override
-    public CreateSnapshotResponse parsePartialFrom(
+    public GetSnapshotResponse parsePartialFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -541,17 +541,17 @@ private static final long serialVersionUID = 0L;
     }
   };
 
-  public static com.google.protobuf.Parser<CreateSnapshotResponse> parser() {
+  public static com.google.protobuf.Parser<GetSnapshotResponse> parser() {
     return PARSER;
   }
 
   @java.lang.Override
-  public com.google.protobuf.Parser<CreateSnapshotResponse> getParserForType() {
+  public com.google.protobuf.Parser<GetSnapshotResponse> getParserForType() {
     return PARSER;
   }
 
   @java.lang.Override
-  public com.nuinfra.control_plane.v1alpha1.CreateSnapshotResponse getDefaultInstanceForType() {
+  public com.nuinfra.control_plane.v1alpha1.GetSnapshotResponse getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 

@@ -16,7 +16,7 @@ message Sandbox {
 
   Intent intent = 4;
 
-  CreateSnapshotOutput last_snapshot = 5;
+  SnapshotOutput last_snapshot = 5;
 
   SandboxStatus status = 6;
 }
@@ -65,20 +65,20 @@ message Resources {
 }
 
 message NodeRef {
-  string id = 1;
+  string id = 1 [(buf.validate.field).required = true];
 }
 
 message Intent {
   SandboxStatus.Phase phase = 1;
   Resources resources = 2;
-  CreateSnapshotInput create_snapshot = 3;
+  StartSnapshotInput start_snapshot = 3;
 }
 
-message CreateSnapshotInput {
+message StartSnapshotInput {
   string description = 1 [(buf.validate.field).string.max_len = 256];
 }
 
-message CreateSnapshotOutput {
+message SnapshotOutput {
   string snapshot_id = 1;
   google.protobuf.Timestamp created_at = 2;
   google.rpc.Status error = 3;
@@ -222,7 +222,7 @@ message DeleteSandboxResponse {
   Sandbox sandbox = 1;
 }
 
-message CreateSnapshotRequest {
+message StartSnapshotRequest {
   string sandbox_id = 1 [(buf.validate.field).required = true];
 
   int64 version = 2 [(buf.validate.field).required = true];
@@ -230,7 +230,7 @@ message CreateSnapshotRequest {
   string description = 3 [(buf.validate.field).string.max_len = 256];
 }
 
-message CreateSnapshotResponse {
+message StartSnapshotResponse {
   Sandbox sandbox = 1;
 }
 
@@ -262,7 +262,7 @@ service SandboxService {
     option (google.api.http) = {delete: "/v1alpha1/sandboxes/{sandbox_id}"};
   }
 
-  rpc CreateSnapshot(CreateSnapshotRequest) returns (CreateSnapshotResponse) {
+  rpc StartSnapshot(StartSnapshotRequest) returns (StartSnapshotResponse) {
     option (google.api.http) = {
       post: "/v1alpha1/sandboxes/{sandbox_id}/snapshots"
       body: "*"

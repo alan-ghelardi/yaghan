@@ -429,60 +429,6 @@ You can find out more about this error model and how to work with it in the
 |---|---|---|---|---|
 |sessionId|string(int64)|false|none|none|
 
-<h2 id="tocS_v1alpha1CreateSnapshotInput">v1alpha1CreateSnapshotInput</h2>
-<!-- backwards compatibility -->
-<a id="schemav1alpha1createsnapshotinput"></a>
-<a id="schema_v1alpha1CreateSnapshotInput"></a>
-<a id="tocSv1alpha1createsnapshotinput"></a>
-<a id="tocsv1alpha1createsnapshotinput"></a>
-
-```json
-{
-  "description": "string"
-}
-
-```
-
-### Properties
-
-|Name|Type|Required|Restrictions|Description|
-|---|---|---|---|---|
-|description|string|false|none|none|
-
-<h2 id="tocS_v1alpha1CreateSnapshotOutput">v1alpha1CreateSnapshotOutput</h2>
-<!-- backwards compatibility -->
-<a id="schemav1alpha1createsnapshotoutput"></a>
-<a id="schema_v1alpha1CreateSnapshotOutput"></a>
-<a id="tocSv1alpha1createsnapshotoutput"></a>
-<a id="tocsv1alpha1createsnapshotoutput"></a>
-
-```json
-{
-  "snapshotId": "string",
-  "createdAt": "2019-08-24T14:15:22Z",
-  "error": {
-    "code": 0,
-    "message": "string",
-    "details": [
-      {
-        "@type": "string",
-        "property1": null,
-        "property2": null
-      }
-    ]
-  }
-}
-
-```
-
-### Properties
-
-|Name|Type|Required|Restrictions|Description|
-|---|---|---|---|---|
-|snapshotId|string|false|none|none|
-|createdAt|string(date-time)|false|none|none|
-|error|[rpcStatus](#schemarpcstatus)|false|none|The `Status` type defines a logical error model that is suitable for<br>different programming environments, including REST APIs and RPC APIs. It is<br>used by [gRPC](https://github.com/grpc). Each `Status` message contains<br>three pieces of data: error code, error message, and error details.<br><br>You can find out more about this error model and how to work with it in the<br>[API Design Guide](https://cloud.google.com/apis/design/errors).|
-
 <h2 id="tocS_v1alpha1EC2InstanceMeta">v1alpha1EC2InstanceMeta</h2>
 <!-- backwards compatibility -->
 <a id="schemav1alpha1ec2instancemeta"></a>
@@ -559,7 +505,7 @@ You can find out more about this error model and how to work with it in the
           "vcpuCount": 0,
           "memoryMib": "string"
         },
-        "createSnapshot": {
+        "startSnapshot": {
           "description": "string"
         }
       },
@@ -643,7 +589,7 @@ You can find out more about this error model and how to work with it in the
         "vcpuCount": 0,
         "memoryMib": "string"
       },
-      "createSnapshot": {
+      "startSnapshot": {
         "description": "string"
       }
     },
@@ -750,7 +696,7 @@ It provides enough context for consumers to react, audit, or replicate the chang
     "vcpuCount": 0,
     "memoryMib": "string"
   },
-  "createSnapshot": {
+  "startSnapshot": {
     "description": "string"
   }
 }
@@ -763,7 +709,7 @@ It provides enough context for consumers to react, audit, or replicate the chang
 |---|---|---|---|---|
 |phase|[v1alpha1SandboxStatusPhase](#schemav1alpha1sandboxstatusphase)|false|none|none|
 |resources|[v1alpha1Resources](#schemav1alpha1resources)|false|none|none|
-|createSnapshot|[v1alpha1CreateSnapshotInput](#schemav1alpha1createsnapshotinput)|false|none|none|
+|startSnapshot|[v1alpha1StartSnapshotInput](#schemav1alpha1startsnapshotinput)|false|none|none|
 
 <h2 id="tocS_v1alpha1ListNodesRequestOrder">v1alpha1ListNodesRequestOrder</h2>
 <!-- backwards compatibility -->
@@ -1153,7 +1099,7 @@ Response message containing a page of nodes.
       "vcpuCount": 0,
       "memoryMib": "string"
     },
-    "createSnapshot": {
+    "startSnapshot": {
       "description": "string"
     }
   },
@@ -1188,7 +1134,7 @@ Response message containing a page of nodes.
 |resources|[v1alpha1Resources](#schemav1alpha1resources)|false|none|none|
 |node|[v1alpha1NodeRef](#schemav1alpha1noderef)|false|none|none|
 |intent|[v1alpha1Intent](#schemav1alpha1intent)|false|none|none|
-|lastSnapshot|[v1alpha1CreateSnapshotOutput](#schemav1alpha1createsnapshotoutput)|false|none|none|
+|lastSnapshot|[v1alpha1SnapshotOutput](#schemav1alpha1snapshotoutput)|false|none|none|
 |status|[v1alpha1SandboxStatus](#schemav1alpha1sandboxstatus)|false|none|none|
 
 <h2 id="tocS_v1alpha1SandboxMeta">v1alpha1SandboxMeta</h2>
@@ -1280,6 +1226,60 @@ Response message containing a page of nodes.
 |*anonymous*|PHASE_DELETED|
 |*anonymous*|PHASE_FAILED|
 
+<h2 id="tocS_v1alpha1SnapshotOutput">v1alpha1SnapshotOutput</h2>
+<!-- backwards compatibility -->
+<a id="schemav1alpha1snapshotoutput"></a>
+<a id="schema_v1alpha1SnapshotOutput"></a>
+<a id="tocSv1alpha1snapshotoutput"></a>
+<a id="tocsv1alpha1snapshotoutput"></a>
+
+```json
+{
+  "snapshotId": "string",
+  "createdAt": "2019-08-24T14:15:22Z",
+  "error": {
+    "code": 0,
+    "message": "string",
+    "details": [
+      {
+        "@type": "string",
+        "property1": null,
+        "property2": null
+      }
+    ]
+  }
+}
+
+```
+
+### Properties
+
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|snapshotId|string|false|none|none|
+|createdAt|string(date-time)|false|none|none|
+|error|[rpcStatus](#schemarpcstatus)|false|none|The `Status` type defines a logical error model that is suitable for<br>different programming environments, including REST APIs and RPC APIs. It is<br>used by [gRPC](https://github.com/grpc). Each `Status` message contains<br>three pieces of data: error code, error message, and error details.<br><br>You can find out more about this error model and how to work with it in the<br>[API Design Guide](https://cloud.google.com/apis/design/errors).|
+
+<h2 id="tocS_v1alpha1StartSnapshotInput">v1alpha1StartSnapshotInput</h2>
+<!-- backwards compatibility -->
+<a id="schemav1alpha1startsnapshotinput"></a>
+<a id="schema_v1alpha1StartSnapshotInput"></a>
+<a id="tocSv1alpha1startsnapshotinput"></a>
+<a id="tocsv1alpha1startsnapshotinput"></a>
+
+```json
+{
+  "description": "string"
+}
+
+```
+
+### Properties
+
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|description|string|false|none|none|
+
 <h2 id="tocS_v1alpha1UpdateSandboxRequest">v1alpha1UpdateSandboxRequest</h2>
 <!-- backwards compatibility -->
 <a id="schemav1alpha1updatesandboxrequest"></a>
@@ -1314,7 +1314,7 @@ Response message containing a page of nodes.
         "vcpuCount": 0,
         "memoryMib": "string"
       },
-      "createSnapshot": {
+      "startSnapshot": {
         "description": "string"
       }
     },

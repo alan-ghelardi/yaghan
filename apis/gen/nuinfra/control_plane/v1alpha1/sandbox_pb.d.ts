@@ -37,9 +37,9 @@ export declare type Sandbox = Message<"nuinfra.control_plane.v1alpha1.Sandbox"> 
   intent?: Intent;
 
   /**
-   * @generated from field: nuinfra.control_plane.v1alpha1.CreateSnapshotOutput last_snapshot = 5;
+   * @generated from field: nuinfra.control_plane.v1alpha1.SnapshotOutput last_snapshot = 5;
    */
-  lastSnapshot?: CreateSnapshotOutput;
+  lastSnapshot?: SnapshotOutput;
 
   /**
    * @generated from field: nuinfra.control_plane.v1alpha1.SandboxStatus status = 6;
@@ -155,9 +155,9 @@ export declare type Intent = Message<"nuinfra.control_plane.v1alpha1.Intent"> & 
   resources?: Resources;
 
   /**
-   * @generated from field: nuinfra.control_plane.v1alpha1.CreateSnapshotInput create_snapshot = 3;
+   * @generated from field: nuinfra.control_plane.v1alpha1.StartSnapshotInput start_snapshot = 3;
    */
-  createSnapshot?: CreateSnapshotInput;
+  startSnapshot?: StartSnapshotInput;
 };
 
 /**
@@ -167,9 +167,9 @@ export declare type Intent = Message<"nuinfra.control_plane.v1alpha1.Intent"> & 
 export declare const IntentSchema: GenMessage<Intent>;
 
 /**
- * @generated from message nuinfra.control_plane.v1alpha1.CreateSnapshotInput
+ * @generated from message nuinfra.control_plane.v1alpha1.StartSnapshotInput
  */
-export declare type CreateSnapshotInput = Message<"nuinfra.control_plane.v1alpha1.CreateSnapshotInput"> & {
+export declare type StartSnapshotInput = Message<"nuinfra.control_plane.v1alpha1.StartSnapshotInput"> & {
   /**
    * @generated from field: string description = 1;
    */
@@ -177,15 +177,15 @@ export declare type CreateSnapshotInput = Message<"nuinfra.control_plane.v1alpha
 };
 
 /**
- * Describes the message nuinfra.control_plane.v1alpha1.CreateSnapshotInput.
- * Use `create(CreateSnapshotInputSchema)` to create a new message.
+ * Describes the message nuinfra.control_plane.v1alpha1.StartSnapshotInput.
+ * Use `create(StartSnapshotInputSchema)` to create a new message.
  */
-export declare const CreateSnapshotInputSchema: GenMessage<CreateSnapshotInput>;
+export declare const StartSnapshotInputSchema: GenMessage<StartSnapshotInput>;
 
 /**
- * @generated from message nuinfra.control_plane.v1alpha1.CreateSnapshotOutput
+ * @generated from message nuinfra.control_plane.v1alpha1.SnapshotOutput
  */
-export declare type CreateSnapshotOutput = Message<"nuinfra.control_plane.v1alpha1.CreateSnapshotOutput"> & {
+export declare type SnapshotOutput = Message<"nuinfra.control_plane.v1alpha1.SnapshotOutput"> & {
   /**
    * @generated from field: string snapshot_id = 1;
    */
@@ -203,10 +203,10 @@ export declare type CreateSnapshotOutput = Message<"nuinfra.control_plane.v1alph
 };
 
 /**
- * Describes the message nuinfra.control_plane.v1alpha1.CreateSnapshotOutput.
- * Use `create(CreateSnapshotOutputSchema)` to create a new message.
+ * Describes the message nuinfra.control_plane.v1alpha1.SnapshotOutput.
+ * Use `create(SnapshotOutputSchema)` to create a new message.
  */
-export declare const CreateSnapshotOutputSchema: GenMessage<CreateSnapshotOutput>;
+export declare const SnapshotOutputSchema: GenMessage<SnapshotOutput>;
 
 /**
  * @generated from message nuinfra.control_plane.v1alpha1.SandboxStatus
@@ -591,9 +591,9 @@ export declare type DeleteSandboxResponse = Message<"nuinfra.control_plane.v1alp
 export declare const DeleteSandboxResponseSchema: GenMessage<DeleteSandboxResponse>;
 
 /**
- * @generated from message nuinfra.control_plane.v1alpha1.CreateSnapshotRequest
+ * @generated from message nuinfra.control_plane.v1alpha1.StartSnapshotRequest
  */
-export declare type CreateSnapshotRequest = Message<"nuinfra.control_plane.v1alpha1.CreateSnapshotRequest"> & {
+export declare type StartSnapshotRequest = Message<"nuinfra.control_plane.v1alpha1.StartSnapshotRequest"> & {
   /**
    * @generated from field: string sandbox_id = 1;
    */
@@ -611,15 +611,15 @@ export declare type CreateSnapshotRequest = Message<"nuinfra.control_plane.v1alp
 };
 
 /**
- * Describes the message nuinfra.control_plane.v1alpha1.CreateSnapshotRequest.
- * Use `create(CreateSnapshotRequestSchema)` to create a new message.
+ * Describes the message nuinfra.control_plane.v1alpha1.StartSnapshotRequest.
+ * Use `create(StartSnapshotRequestSchema)` to create a new message.
  */
-export declare const CreateSnapshotRequestSchema: GenMessage<CreateSnapshotRequest>;
+export declare const StartSnapshotRequestSchema: GenMessage<StartSnapshotRequest>;
 
 /**
- * @generated from message nuinfra.control_plane.v1alpha1.CreateSnapshotResponse
+ * @generated from message nuinfra.control_plane.v1alpha1.StartSnapshotResponse
  */
-export declare type CreateSnapshotResponse = Message<"nuinfra.control_plane.v1alpha1.CreateSnapshotResponse"> & {
+export declare type StartSnapshotResponse = Message<"nuinfra.control_plane.v1alpha1.StartSnapshotResponse"> & {
   /**
    * @generated from field: nuinfra.control_plane.v1alpha1.Sandbox sandbox = 1;
    */
@@ -627,10 +627,10 @@ export declare type CreateSnapshotResponse = Message<"nuinfra.control_plane.v1al
 };
 
 /**
- * Describes the message nuinfra.control_plane.v1alpha1.CreateSnapshotResponse.
- * Use `create(CreateSnapshotResponseSchema)` to create a new message.
+ * Describes the message nuinfra.control_plane.v1alpha1.StartSnapshotResponse.
+ * Use `create(StartSnapshotResponseSchema)` to create a new message.
  */
-export declare const CreateSnapshotResponseSchema: GenMessage<CreateSnapshotResponse>;
+export declare const StartSnapshotResponseSchema: GenMessage<StartSnapshotResponse>;
 
 /**
  * @generated from service nuinfra.control_plane.v1alpha1.SandboxService
@@ -685,12 +685,12 @@ export declare const SandboxService: GenService<{
     output: typeof DeleteSandboxResponseSchema;
   },
   /**
-   * @generated from rpc nuinfra.control_plane.v1alpha1.SandboxService.CreateSnapshot
+   * @generated from rpc nuinfra.control_plane.v1alpha1.SandboxService.StartSnapshot
    */
-  createSnapshot: {
+  startSnapshot: {
     methodKind: "unary";
-    input: typeof CreateSnapshotRequestSchema;
-    output: typeof CreateSnapshotResponseSchema;
+    input: typeof StartSnapshotRequestSchema;
+    output: typeof StartSnapshotResponseSchema;
   },
 }>;
 
