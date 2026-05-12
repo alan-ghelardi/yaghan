@@ -30,6 +30,30 @@ func NodesTable(getNodes GetItemsFunc[*cpv1alpha1.Node]) *Table[*cpv1alpha1.Node
 	}
 }
 
+// SnapshotsTable returns a Table to display snapshots.
+func SnapshotsTable(getSnapshots GetItemsFunc[*cpv1alpha1.Snapshot]) *Table[*cpv1alpha1.Snapshot] {
+	return &Table[*cpv1alpha1.Snapshot]{
+		GetItems: getSnapshots,
+		Columns: []Column[*cpv1alpha1.Snapshot]{
+			NewColumn("Snapshot ID", func(s *cpv1alpha1.Snapshot) any {
+				return s.GetMetadata().GetId()
+			}),
+			NewColumn("Namespace", func(s *cpv1alpha1.Snapshot) any {
+				return s.GetMetadata().GetNamespace()
+			}),
+			NewColumn("Sandbox ID", func(s *cpv1alpha1.Snapshot) any {
+				return s.GetSandbox().GetId()
+			}),
+			NewColumn("Created at", func(s *cpv1alpha1.Snapshot) any {
+				return s.GetMetadata().GetCreatedAt()
+			}, DurationFormatter),
+			NewColumn("Description", func(s *cpv1alpha1.Snapshot) any {
+				return s.GetMetadata().GetDescription()
+			}),
+		},
+	}
+}
+
 func humanFriendlyString(s string) string {
 	s = strings.ReplaceAll(s, "_", " ")
 	s = strings.ToLower(s)

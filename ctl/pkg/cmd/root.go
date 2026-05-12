@@ -25,6 +25,7 @@ import (
 	"golang.nuinfra.net/ctl/pkg/cli/prompt"
 	"golang.nuinfra.net/ctl/pkg/cmd/node"
 	"golang.nuinfra.net/ctl/pkg/cmd/sandbox"
+	"golang.nuinfra.net/ctl/pkg/cmd/snapshot"
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -51,6 +52,7 @@ func Execute() {
 	rootCmd.AddCommand(
 		sandbox.New(cmdCtx),
 		node.New(cmdCtx),
+		snapshot.New(cmdCtx),
 	)
 
 	if err := rootCmd.Execute(); err != nil {

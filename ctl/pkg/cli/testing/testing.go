@@ -28,9 +28,10 @@ func NewContext(t *testing.T) *cli.Context {
 
 	return &cli.Context{
 		ClientSet: &cli.ClientSet{
-			ClusterService: cpmocks.NewMockClusterServiceClient(mockCtrl),
-			SandboxService: cpmocks.NewMockSandboxServiceClient(mockCtrl),
-			DaemonService:  dpmocks.NewMockDaemonServiceClient(mockCtrl),
+			ClusterService:  cpmocks.NewMockClusterServiceClient(mockCtrl),
+			SandboxService:  cpmocks.NewMockSandboxServiceClient(mockCtrl),
+			SnapshotService: cpmocks.NewMockSnapshotServiceClient(mockCtrl),
+			DaemonService:   dpmocks.NewMockDaemonServiceClient(mockCtrl),
 		},
 		Prompter: climocks.NewMockPrompter(mockCtrl),
 		IOStreams: &cli.IOStreams{

@@ -32,9 +32,10 @@ type Context struct {
 }
 
 type ClientSet struct {
-	ClusterService controlplanev1alpha1.ClusterServiceClient
-	SandboxService controlplanev1alpha1.SandboxServiceClient
-	DaemonService  dataplanev1alpha1.DaemonServiceClient
+	ClusterService  controlplanev1alpha1.ClusterServiceClient
+	SandboxService  controlplanev1alpha1.SandboxServiceClient
+	SnapshotService controlplanev1alpha1.SnapshotServiceClient
+	DaemonService   dataplanev1alpha1.DaemonServiceClient
 }
 
 // IOStreams contains input and output streams.
@@ -75,9 +76,10 @@ func newClientSet() *ClientSet {
 		defaultErrorHandler(fmt.Errorf("client set: %w", err))
 	}
 	return &ClientSet{
-		ClusterService: controlplanev1alpha1.NewClusterServiceClient(apiServerConn),
-		SandboxService: controlplanev1alpha1.NewSandboxServiceClient(apiServerConn),
-		DaemonService:  dataplanev1alpha1.NewDaemonServiceClient(daemonConn),
+		ClusterService:  controlplanev1alpha1.NewClusterServiceClient(apiServerConn),
+		SandboxService:  controlplanev1alpha1.NewSandboxServiceClient(apiServerConn),
+		SnapshotService: controlplanev1alpha1.NewSnapshotServiceClient(apiServerConn),
+		DaemonService:   dataplanev1alpha1.NewDaemonServiceClient(daemonConn),
 	}
 }
 
