@@ -910,7 +910,7 @@ func TestDeleteSandbox_ValidatesMissingVersion(t *testing.T) {
 	assertCode(t, err, codes.InvalidArgument)
 }
 
-func TestCreateSnapshot_HappyPathFromRunning(t *testing.T) {
+func TestStartSnapshot_HappyPathFromRunning(t *testing.T) {
 	h := startService(t)
 	ctx := t.Context()
 
@@ -920,19 +920,19 @@ func TestCreateSnapshot_HappyPathFromRunning(t *testing.T) {
 	require.NoError(t, err)
 	originalLastModified := created.GetSandbox().GetMetadata().GetLastModifiedAt().AsTime()
 
-	resp, err := h.client.CreateSnapshot(ctx, &cpv1.CreateSnapshotRequest{
+	resp, err := h.client.StartSnapshot(ctx, &cpv1.StartSnapshotRequest{
 		SandboxId:   "sb-snap-ok",
 		Version:     version,
 		Description: "before-deploy",
 	})
 	require.NoError(t, err)
 	require.NotNil(t, resp.GetSandbox(),
-		"CreateSnapshotResponse must carry the updated Sandbox")
+		"StartSnapshotResponse must carry the updated Sandbox")
 
 	respSb := resp.GetSandbox()
-	require.NotNil(t, respSb.GetIntent().GetCreateSnapshot(),
-		"Intent.CreateSnapshot must be set so the reconciler picks it up")
-	assert.Equal(t, "before-deploy", respSb.GetIntent().GetCreateSnapshot().GetDescription())
+	require.NotNil(t, respSb.GetIntent().GetStartSnapshot(),
+		"Intent.StartSnapshot must be set so the reconciler picks it up")
+	assert.Equal(t, "before-deploy", respSb.GetIntent().GetStartSnapshot().GetDescription())
 	assert.Equal(t, cpv1.SandboxStatus_PHASE_SNAPSHOTTING, respSb.GetStatus().GetPhase(),
 		"Status.Phase must flip to PHASE_SNAPSHOTTING (in-progress marker)")
 	assert.Equal(t, cpv1.SandboxStatus_PHASE_RUNNING, respSb.GetIntent().GetPhase(),
@@ -941,7 +941,7 @@ func TestCreateSnapshot_HappyPathFromRunning(t *testing.T) {
 		"successful Update must increment the stored version")
 	assert.True(t,
 		respSb.GetMetadata().GetLastModifiedAt().AsTime().After(originalLastModified),
-		"CreateSnapshot must advance Metadata.LastModifiedAt")
+		"StartSnapshot must advance Metadata.LastModifiedAt")
 
 	got, err := h.client.GetSandbox(ctx, &cpv1.GetSandboxRequest{SandboxId: "sb-snap-ok"})
 	require.NoError(t, err)
@@ -949,43 +949,43 @@ func TestCreateSnapshot_HappyPathFromRunning(t *testing.T) {
 		"response Sandbox must round-trip through GetSandbox")
 }
 
-func TestCreateSnapshot_HappyPathFromPaused(t *testing.T) {
+func TestStartSnapshot_HappyPathFromPaused(t *testing.T) {
 	h := startService(t)
 	ctx := t.Context()
 
 	version := createForTransition(ctx, t, h, "sb-snap-paused", cpv1.SandboxStatus_PHASE_PAUSED)
 
-	resp, err := h.client.CreateSnapshot(ctx, &cpv1.CreateSnapshotRequest{
+	resp, err := h.client.StartSnapshot(ctx, &cpv1.StartSnapshotRequest{
 		SandboxId: "sb-snap-paused",
 		Version:   version,
 	})
 	require.NoError(t, err)
 	respSb := resp.GetSandbox()
 
-	require.NotNil(t, respSb.GetIntent().GetCreateSnapshot())
+	require.NotNil(t, respSb.GetIntent().GetStartSnapshot())
 	assert.Equal(t, cpv1.SandboxStatus_PHASE_SNAPSHOTTING, respSb.GetStatus().GetPhase())
 	assert.Equal(t, cpv1.SandboxStatus_PHASE_PAUSED, respSb.GetIntent().GetPhase(),
 		"snapshot of a paused sandbox must record PAUSED as the restore target")
 }
 
-func TestCreateSnapshot_RejectsFromPending(t *testing.T) {
+func TestStartSnapshot_RejectsFromPending(t *testing.T) {
 	h := startService(t)
 	ctx := t.Context()
 
 	version := createForTransition(ctx, t, h, "sb-snap-pending", cpv1.SandboxStatus_PHASE_PENDING)
 
-	_, err := h.client.CreateSnapshot(ctx, &cpv1.CreateSnapshotRequest{
+	_, err := h.client.StartSnapshot(ctx, &cpv1.StartSnapshotRequest{
 		SandboxId: "sb-snap-pending",
 		Version:   version,
 	})
 	assertCode(t, err, codes.FailedPrecondition)
 }
 
-// TestCreateSnapshot_RejectsFromPausing covers the case a snapshot
+// TestStartSnapshot_RejectsFromPausing covers the case a snapshot
 // request arrives while a Pause is mid-flight (saved phase is the
 // transient PAUSING). The DB state-machine guard accepts only
 // RUNNING/PAUSED as priors for SNAPSHOTTING.
-func TestCreateSnapshot_RejectsFromPausing(t *testing.T) {
+func TestStartSnapshot_RejectsFromPausing(t *testing.T) {
 	h := startService(t)
 	ctx := t.Context()
 
@@ -997,58 +997,58 @@ func TestCreateSnapshot_RejectsFromPausing(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	_, err = h.client.CreateSnapshot(ctx, &cpv1.CreateSnapshotRequest{
+	_, err = h.client.StartSnapshot(ctx, &cpv1.StartSnapshotRequest{
 		SandboxId: "sb-snap-inflight",
 		Version:   pauseResp.GetSandbox().GetMetadata().GetVersion(),
 	})
 	assertCode(t, err, codes.FailedPrecondition)
 }
 
-func TestCreateSnapshot_NotFound(t *testing.T) {
+func TestStartSnapshot_NotFound(t *testing.T) {
 	h := startService(t)
 	ctx := t.Context()
 
-	_, err := h.client.CreateSnapshot(ctx, &cpv1.CreateSnapshotRequest{
+	_, err := h.client.StartSnapshot(ctx, &cpv1.StartSnapshotRequest{
 		SandboxId: "no-such-sandbox",
 		Version:   1,
 	})
 	assertCode(t, err, codes.NotFound)
 }
 
-func TestCreateSnapshot_VersionConflict(t *testing.T) {
+func TestStartSnapshot_VersionConflict(t *testing.T) {
 	h := startService(t)
 	ctx := t.Context()
 
 	createForTransition(ctx, t, h, "sb-snap-stale", cpv1.SandboxStatus_PHASE_RUNNING)
 
-	_, err := h.client.CreateSnapshot(ctx, &cpv1.CreateSnapshotRequest{
+	_, err := h.client.StartSnapshot(ctx, &cpv1.StartSnapshotRequest{
 		SandboxId: "sb-snap-stale",
 		Version:   99,
 	})
 	assertCode(t, err, codes.Aborted)
 }
 
-func TestCreateSnapshot_ValidatesMissingId(t *testing.T) {
+func TestStartSnapshot_ValidatesMissingId(t *testing.T) {
 	h := startService(t)
 	ctx := t.Context()
 
-	_, err := h.client.CreateSnapshot(ctx, &cpv1.CreateSnapshotRequest{Version: 1})
+	_, err := h.client.StartSnapshot(ctx, &cpv1.StartSnapshotRequest{Version: 1})
 	assertCode(t, err, codes.InvalidArgument)
 }
 
-func TestCreateSnapshot_ValidatesMissingVersion(t *testing.T) {
+func TestStartSnapshot_ValidatesMissingVersion(t *testing.T) {
 	h := startService(t)
 	ctx := t.Context()
 
-	_, err := h.client.CreateSnapshot(ctx, &cpv1.CreateSnapshotRequest{SandboxId: "sb-x"})
+	_, err := h.client.StartSnapshot(ctx, &cpv1.StartSnapshotRequest{SandboxId: "sb-x"})
 	assertCode(t, err, codes.InvalidArgument)
 }
 
-func TestCreateSnapshot_ValidatesDescriptionTooLong(t *testing.T) {
+func TestStartSnapshot_ValidatesDescriptionTooLong(t *testing.T) {
 	h := startService(t)
 	ctx := t.Context()
 
-	_, err := h.client.CreateSnapshot(ctx, &cpv1.CreateSnapshotRequest{
+	_, err := h.client.StartSnapshot(ctx, &cpv1.StartSnapshotRequest{
 		SandboxId:   "sb-x",
 		Version:     1,
 		Description: strings.Repeat("a", 257), // exceeds buf.validate max_len = 256
