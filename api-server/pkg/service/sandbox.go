@@ -173,26 +173,20 @@ func (a *apiServer) DeleteSandbox(ctx context.Context, req *cpv1.DeleteSandboxRe
 }
 
 // CreateSnapshot implements [cpv1.SandboxServiceServer]. The control plane
-// only records the user's intent to snapshot; the data-plane reconciler
-// triggers the firecracker CreateSnapshot, persists the artifacts to
-// durable storage, clears the intent, and stamps Sandbox.LastSnapshot.
+// records the user's intent to snapshot; the data-plane reconciler
+// triggers firecracker, persists the artifacts to durable storage,
+// clears the intent, and stamps Sandbox.LastSnapshot.
 //
-// Unlike Pause/Resume/Delete, CreateSnapshot does not transition the
-// sandbox's phase — it only sets Intent.CreateSnapshot, preserving any
-// existing Intent.Phase / Intent.Resources so a snapshot request
-// piggybacked onto a pending phase or resize transition doesn't clobber
-// the work the reconciler is supposed to do.
+// Status.Phase is flipped to PHASE_SNAPSHOTTING (the in-progress
+// marker) and Intent.Phase is stamped with the saved phase the
+// daemon should restore the sandbox to after the snapshot completes
+// (either RUNNING or PAUSED — these are the two phases the DB
+// state-machine guard accepts as prior). Intent.Resources is left
+// alone if previously set.
 //
-// Known limitation: the DB Update layer enforces a state-machine guard
-// on target Status.Phase ∈ {PAUSING, RESUMING} that requires saved phase
-// to be {RUNNING, PAUSED} respectively. Because this handler passes the
-// stored Status.Phase back through unchanged, calling CreateSnapshot
-// while a Pause/Resume is mid-flight currently surfaces as
-// FailedPrecondition. Relaxing the guard to permit no-op Status writes
-// is a separate change.
-//
-// Preflight: existence is enforced by db.Get returning db.ErrNotFound
-// (→ codes.NotFound); version conflicts surface as codes.Aborted.
+// Preflight: existence via db.Get → ErrNotFound → codes.NotFound;
+// version conflicts → codes.Aborted; state-machine violations
+// (saved phase not RUNNING/PAUSED) → codes.FailedPrecondition.
 // Description max-len 256 is enforced by the protovalidate interceptor.
 func (a *apiServer) CreateSnapshot(ctx context.Context, req *cpv1.CreateSnapshotRequest) (*cpv1.CreateSnapshotResponse, error) {
 	id := req.GetSandboxId()
@@ -201,11 +195,14 @@ func (a *apiServer) CreateSnapshot(ctx context.Context, req *cpv1.CreateSnapshot
 		return nil, dbErrToStatus(ctx, "sandbox", "create snapshot", id, err)
 	}
 
+	savedPhase := sb.GetStatus().GetPhase()
 	sb.Metadata.Version = req.GetVersion()
 	if sb.Intent == nil {
 		sb.Intent = &cpv1.Intent{}
 	}
+	sb.Intent.Phase = savedPhase // restore target — set even if PHASE_UNSPECIFIED, the DB guard handles it
 	sb.Intent.CreateSnapshot = &cpv1.CreateSnapshotInput{Description: req.GetDescription()}
+	sb.Status = &cpv1.SandboxStatus{Phase: cpv1.SandboxStatus_PHASE_SNAPSHOTTING}
 
 	if err := a.db.Update(ctx, sb); err != nil {
 		return nil, dbErrToStatus(ctx, "sandbox", "create snapshot", id, err)

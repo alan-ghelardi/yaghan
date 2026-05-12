@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -223,9 +224,14 @@ func (d *dynamoDB) Update(ctx context.Context, sb *control_planev1alpha1.Sandbox
 	values := map[string]types.AttributeValue{
 		":ev": &types.AttributeValueMemberN{Value: strconv.FormatInt(expectedVersion, 10)},
 	}
-	if requiredPhase, ok := requiredPriorPhase(targetStatus); ok {
-		cond += " AND " + attrSandboxStatusPhase + " = :rp"
-		values[":rp"] = &types.AttributeValueMemberS{Value: requiredPhase.String()}
+	if allowed := requiredPriorPhases(targetStatus); len(allowed) > 0 {
+		placeholders := make([]string, len(allowed))
+		for i, p := range allowed {
+			ph := ":rp" + strconv.Itoa(i)
+			placeholders[i] = ph
+			values[ph] = &types.AttributeValueMemberS{Value: p.String()}
+		}
+		cond += " AND " + attrSandboxStatusPhase + " IN (" + strings.Join(placeholders, ", ") + ")"
 	}
 
 	_, err = d.client.PutItem(ctx, &dynamodbservice.PutItemInput{
@@ -266,13 +272,25 @@ func (d *dynamoDB) Update(ctx context.Context, sb *control_planev1alpha1.Sandbox
 // that is not yet running) whereas version conflicts are an expected concurrent
 // modification.
 func diagnoseUpdateConflict(id string, expectedVersion int64, targetStatus control_planev1alpha1.SandboxStatus_Phase, stored map[string]types.AttributeValue) error {
-	requiredPhase, hasRequiredPhase := requiredPriorPhase(targetStatus)
-	if hasRequiredPhase {
-		if savedPhase, ok := stringFromAttrs(stored, attrSandboxStatusPhase); ok && savedPhase != requiredPhase.String() {
-			return fmt.Errorf(
-				"sandbox %q: cannot transition to status %s from saved phase %s (requires %s): %w",
-				id, targetStatus.String(), savedPhase, requiredPhase.String(), sandboxdb.ErrInvalidPhaseTransition,
-			)
+	if allowed := requiredPriorPhases(targetStatus); len(allowed) > 0 {
+		if savedPhase, ok := stringFromAttrs(stored, attrSandboxStatusPhase); ok {
+			matched := false
+			for _, p := range allowed {
+				if savedPhase == p.String() {
+					matched = true
+					break
+				}
+			}
+			if !matched {
+				names := make([]string, len(allowed))
+				for i, p := range allowed {
+					names[i] = p.String()
+				}
+				return fmt.Errorf(
+					"sandbox %q: cannot transition to status %s from saved phase %s (requires one of [%s]): %w",
+					id, targetStatus.String(), savedPhase, strings.Join(names, ", "), sandboxdb.ErrInvalidPhaseTransition,
+				)
+			}
 		}
 	}
 
@@ -286,18 +304,32 @@ func diagnoseUpdateConflict(id string, expectedVersion int64, targetStatus contr
 	return fmt.Errorf("sandbox %q: %w", id, db.ErrVersionConflict)
 }
 
-// requiredPriorPhase maps a target Status.Phase (the in-progress marker the
-// api-server is about to write) to the saved phase the stored row must be in
-// for the transition to be legal. The boolean is false for target statuses
-// that do not impose a precondition on the saved phase at this layer.
-func requiredPriorPhase(targetStatus control_planev1alpha1.SandboxStatus_Phase) (control_planev1alpha1.SandboxStatus_Phase, bool) {
+// requiredPriorPhases maps a target Status.Phase (the in-progress marker
+// the api-server is about to write) to the set of saved phases the stored
+// row must be in for the transition to be legal. A nil/empty return means
+// the target imposes no precondition on the saved phase at this layer.
+//
+// Most transitions have exactly one acceptable prior phase (PAUSING ←
+// RUNNING, RESUMING ← PAUSED). Snapshot is the exception: it can be
+// triggered on either a running or paused sandbox, and the daemon
+// transparently pauses if needed before invoking firecracker.
+func requiredPriorPhases(targetStatus control_planev1alpha1.SandboxStatus_Phase) []control_planev1alpha1.SandboxStatus_Phase {
 	switch targetStatus {
 	case control_planev1alpha1.SandboxStatus_PHASE_PAUSING:
-		return control_planev1alpha1.SandboxStatus_PHASE_RUNNING, true
+		return []control_planev1alpha1.SandboxStatus_Phase{
+			control_planev1alpha1.SandboxStatus_PHASE_RUNNING,
+		}
 	case control_planev1alpha1.SandboxStatus_PHASE_RESUMING:
-		return control_planev1alpha1.SandboxStatus_PHASE_PAUSED, true
+		return []control_planev1alpha1.SandboxStatus_Phase{
+			control_planev1alpha1.SandboxStatus_PHASE_PAUSED,
+		}
+	case control_planev1alpha1.SandboxStatus_PHASE_SNAPSHOTTING:
+		return []control_planev1alpha1.SandboxStatus_Phase{
+			control_planev1alpha1.SandboxStatus_PHASE_RUNNING,
+			control_planev1alpha1.SandboxStatus_PHASE_PAUSED,
+		}
 	default:
-		return control_planev1alpha1.SandboxStatus_PHASE_UNSPECIFIED, false
+		return nil
 	}
 }
 

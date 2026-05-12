@@ -910,14 +910,11 @@ func TestDeleteSandbox_ValidatesMissingVersion(t *testing.T) {
 	assertCode(t, err, codes.InvalidArgument)
 }
 
-func TestCreateSnapshot_HappyPath(t *testing.T) {
+func TestCreateSnapshot_HappyPathFromRunning(t *testing.T) {
 	h := startService(t)
 	ctx := t.Context()
 
-	// Phase doesn't matter for the control-plane CreateSnapshot — the
-	// reconciler decides when to actually act on the intent. Seed
-	// PENDING; the request just records the intent.
-	version := createForTransition(ctx, t, h, "sb-snap-ok", cpv1.SandboxStatus_PHASE_PENDING)
+	version := createForTransition(ctx, t, h, "sb-snap-ok", cpv1.SandboxStatus_PHASE_RUNNING)
 
 	created, err := h.client.GetSandbox(ctx, &cpv1.GetSandboxRequest{SandboxId: "sb-snap-ok"})
 	require.NoError(t, err)
@@ -936,6 +933,10 @@ func TestCreateSnapshot_HappyPath(t *testing.T) {
 	require.NotNil(t, respSb.GetIntent().GetCreateSnapshot(),
 		"Intent.CreateSnapshot must be set so the reconciler picks it up")
 	assert.Equal(t, "before-deploy", respSb.GetIntent().GetCreateSnapshot().GetDescription())
+	assert.Equal(t, cpv1.SandboxStatus_PHASE_SNAPSHOTTING, respSb.GetStatus().GetPhase(),
+		"Status.Phase must flip to PHASE_SNAPSHOTTING (in-progress marker)")
+	assert.Equal(t, cpv1.SandboxStatus_PHASE_RUNNING, respSb.GetIntent().GetPhase(),
+		"Intent.Phase must record the saved phase the reconciler should restore")
 	assert.Equal(t, int64(2), respSb.GetMetadata().GetVersion(),
 		"successful Update must increment the stored version")
 	assert.True(t,
@@ -948,41 +949,43 @@ func TestCreateSnapshot_HappyPath(t *testing.T) {
 		"response Sandbox must round-trip through GetSandbox")
 }
 
-func TestCreateSnapshot_PreservesExistingIntent(t *testing.T) {
+func TestCreateSnapshot_HappyPathFromPaused(t *testing.T) {
 	h := startService(t)
 	ctx := t.Context()
 
-	// CreateSandbox unconditionally sets Intent.Phase = PHASE_RUNNING
-	// (see CreateSandbox handler). Use that as the pre-existing Intent
-	// the snapshot request must not clobber. A more thorough test that
-	// seeds Intent.Phase via Pause is currently blocked by the DB
-	// state-machine guard — see TestCreateSnapshot_BrokenDuringPause.
-	version := createForTransition(ctx, t, h, "sb-snap-preserve", cpv1.SandboxStatus_PHASE_PENDING)
+	version := createForTransition(ctx, t, h, "sb-snap-paused", cpv1.SandboxStatus_PHASE_PAUSED)
 
 	resp, err := h.client.CreateSnapshot(ctx, &cpv1.CreateSnapshotRequest{
-		SandboxId:   "sb-snap-preserve",
-		Version:     version,
-		Description: "with-running-intent",
+		SandboxId: "sb-snap-paused",
+		Version:   version,
 	})
 	require.NoError(t, err)
 	respSb := resp.GetSandbox()
 
 	require.NotNil(t, respSb.GetIntent().GetCreateSnapshot())
-	assert.Equal(t, "with-running-intent",
-		respSb.GetIntent().GetCreateSnapshot().GetDescription())
-	assert.Equal(t, cpv1.SandboxStatus_PHASE_RUNNING, respSb.GetIntent().GetPhase(),
-		"pre-existing Intent.Phase set by CreateSandbox must survive the snapshot request")
+	assert.Equal(t, cpv1.SandboxStatus_PHASE_SNAPSHOTTING, respSb.GetStatus().GetPhase())
+	assert.Equal(t, cpv1.SandboxStatus_PHASE_PAUSED, respSb.GetIntent().GetPhase(),
+		"snapshot of a paused sandbox must record PAUSED as the restore target")
 }
 
-// TestCreateSnapshot_BrokenDuringPause pins a known limitation: the DB
-// Update layer requires saved Status.Phase == RUNNING when target ==
-// PAUSING, so a snapshot request that lands while a Pause is mid-flight
-// (Status.Phase already PAUSING) is rejected as FailedPrecondition. The
-// handler doesn't intend to set PAUSING — it passes the stored value
-// back unchanged — but the DB can't tell the difference. Fixing this
-// means relaxing requiredPriorPhase() to allow no-op writes; tracked as
-// a follow-up. Delete this test when the DB guard is fixed.
-func TestCreateSnapshot_BrokenDuringPause(t *testing.T) {
+func TestCreateSnapshot_RejectsFromPending(t *testing.T) {
+	h := startService(t)
+	ctx := t.Context()
+
+	version := createForTransition(ctx, t, h, "sb-snap-pending", cpv1.SandboxStatus_PHASE_PENDING)
+
+	_, err := h.client.CreateSnapshot(ctx, &cpv1.CreateSnapshotRequest{
+		SandboxId: "sb-snap-pending",
+		Version:   version,
+	})
+	assertCode(t, err, codes.FailedPrecondition)
+}
+
+// TestCreateSnapshot_RejectsFromPausing covers the case a snapshot
+// request arrives while a Pause is mid-flight (saved phase is the
+// transient PAUSING). The DB state-machine guard accepts only
+// RUNNING/PAUSED as priors for SNAPSHOTTING.
+func TestCreateSnapshot_RejectsFromPausing(t *testing.T) {
 	h := startService(t)
 	ctx := t.Context()
 
