@@ -565,9 +565,10 @@ Controls how results are ordered by last modification time.
 | PHASE_PAUSING | 3 |  |
 | PHASE_PAUSED | 4 |  |
 | PHASE_RESUMING | 5 |  |
-| PHASE_DELETING | 6 |  |
-| PHASE_DELETED | 7 |  |
-| PHASE_FAILED | 8 |  |
+| PHASE_SNAPSHOTTING | 6 |  |
+| PHASE_DELETING | 7 |  |
+| PHASE_DELETED | 8 |  |
+| PHASE_FAILED | 9 |  |
 
 
  

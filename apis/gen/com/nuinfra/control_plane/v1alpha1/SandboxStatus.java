@@ -75,17 +75,21 @@ private static final long serialVersionUID = 0L;
      */
     PHASE_RESUMING(5),
     /**
-     * <code>PHASE_DELETING = 6;</code>
+     * <code>PHASE_SNAPSHOTTING = 6;</code>
      */
-    PHASE_DELETING(6),
+    PHASE_SNAPSHOTTING(6),
     /**
-     * <code>PHASE_DELETED = 7;</code>
+     * <code>PHASE_DELETING = 7;</code>
      */
-    PHASE_DELETED(7),
+    PHASE_DELETING(7),
     /**
-     * <code>PHASE_FAILED = 8;</code>
+     * <code>PHASE_DELETED = 8;</code>
      */
-    PHASE_FAILED(8),
+    PHASE_DELETED(8),
+    /**
+     * <code>PHASE_FAILED = 9;</code>
+     */
+    PHASE_FAILED(9),
     UNRECOGNIZED(-1),
     ;
 
@@ -123,17 +127,21 @@ private static final long serialVersionUID = 0L;
      */
     public static final int PHASE_RESUMING_VALUE = 5;
     /**
-     * <code>PHASE_DELETING = 6;</code>
+     * <code>PHASE_SNAPSHOTTING = 6;</code>
      */
-    public static final int PHASE_DELETING_VALUE = 6;
+    public static final int PHASE_SNAPSHOTTING_VALUE = 6;
     /**
-     * <code>PHASE_DELETED = 7;</code>
+     * <code>PHASE_DELETING = 7;</code>
      */
-    public static final int PHASE_DELETED_VALUE = 7;
+    public static final int PHASE_DELETING_VALUE = 7;
     /**
-     * <code>PHASE_FAILED = 8;</code>
+     * <code>PHASE_DELETED = 8;</code>
      */
-    public static final int PHASE_FAILED_VALUE = 8;
+    public static final int PHASE_DELETED_VALUE = 8;
+    /**
+     * <code>PHASE_FAILED = 9;</code>
+     */
+    public static final int PHASE_FAILED_VALUE = 9;
 
 
     public final int getNumber() {
@@ -166,9 +174,10 @@ private static final long serialVersionUID = 0L;
         case 3: return PHASE_PAUSING;
         case 4: return PHASE_PAUSED;
         case 5: return PHASE_RESUMING;
-        case 6: return PHASE_DELETING;
-        case 7: return PHASE_DELETED;
-        case 8: return PHASE_FAILED;
+        case 6: return PHASE_SNAPSHOTTING;
+        case 7: return PHASE_DELETING;
+        case 8: return PHASE_DELETED;
+        case 9: return PHASE_FAILED;
         default: return null;
       }
     }

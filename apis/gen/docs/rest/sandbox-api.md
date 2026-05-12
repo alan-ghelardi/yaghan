@@ -80,6 +80,7 @@ The maximum allowed value is 1000.
 |statusPhase|PHASE_PAUSING|
 |statusPhase|PHASE_PAUSED|
 |statusPhase|PHASE_RESUMING|
+|statusPhase|PHASE_SNAPSHOTTING|
 |statusPhase|PHASE_DELETING|
 |statusPhase|PHASE_DELETED|
 |statusPhase|PHASE_FAILED|
@@ -1746,6 +1747,7 @@ Response message containing a page of sandboxes.
 |*anonymous*|PHASE_PAUSING|
 |*anonymous*|PHASE_PAUSED|
 |*anonymous*|PHASE_RESUMING|
+|*anonymous*|PHASE_SNAPSHOTTING|
 |*anonymous*|PHASE_DELETING|
 |*anonymous*|PHASE_DELETED|
 |*anonymous*|PHASE_FAILED|

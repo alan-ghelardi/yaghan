@@ -194,104 +194,104 @@ public final class SandboxProto extends com.google.protobuf.GeneratedFile {
       "tput\022\037\n\013snapshot_id\030\001 \001(\tR\nsnapshotId\0229\n" +
       "\ncreated_at\030\002 \001(\0132\032.google.protobuf.Time" +
       "stampR\tcreatedAt\022(\n\005error\030\003 \001(\0132\022.google" +
-      ".rpc.StatusR\005error\"\255\002\n\rSandboxStatus\022I\n\005" +
+      ".rpc.StatusR\005error\"\305\002\n\rSandboxStatus\022I\n\005" +
       "phase\030\001 \001(\01623.nuinfra.control_plane.v1al" +
       "pha1.SandboxStatus.PhaseR\005phase\022\030\n\007messa" +
-      "ge\030\002 \001(\tR\007message\"\266\001\n\005Phase\022\025\n\021PHASE_UNS" +
+      "ge\030\002 \001(\tR\007message\"\316\001\n\005Phase\022\025\n\021PHASE_UNS" +
       "PECIFIED\020\000\022\021\n\rPHASE_PENDING\020\001\022\021\n\rPHASE_R" +
       "UNNING\020\002\022\021\n\rPHASE_PAUSING\020\003\022\020\n\014PHASE_PAU" +
-      "SED\020\004\022\022\n\016PHASE_RESUMING\020\005\022\022\n\016PHASE_DELET" +
-      "ING\020\006\022\021\n\rPHASE_DELETED\020\007\022\020\n\014PHASE_FAILED" +
-      "\020\010\"a\n\024CreateSandboxRequest\022I\n\007sandbox\030\001 " +
+      "SED\020\004\022\022\n\016PHASE_RESUMING\020\005\022\026\n\022PHASE_SNAPS" +
+      "HOTTING\020\006\022\022\n\016PHASE_DELETING\020\007\022\021\n\rPHASE_D" +
+      "ELETED\020\010\022\020\n\014PHASE_FAILED\020\t\"a\n\024CreateSand" +
+      "boxRequest\022I\n\007sandbox\030\001 \001(\0132\'.nuinfra.co" +
+      "ntrol_plane.v1alpha1.SandboxB\006\272H\003\310\001\001R\007sa" +
+      "ndbox\"b\n\025CreateSandboxResponse\022I\n\007sandbo" +
+      "x\030\001 \001(\0132\'.nuinfra.control_plane.v1alpha1" +
+      ".SandboxB\006\272H\003\310\001\001R\007sandbox\":\n\021GetSandboxR" +
+      "equest\022%\n\nsandbox_id\030\001 \001(\tB\006\272H\003\310\001\001R\tsand" +
+      "boxId\"W\n\022GetSandboxResponse\022A\n\007sandbox\030\001" +
+      " \001(\0132\'.nuinfra.control_plane.v1alpha1.Sa" +
+      "ndboxR\007sandbox\"\221\006\n\024ListSandboxesRequest\022" +
+      "\034\n\tnamespace\030\001 \001(\tR\tnamespace\022\027\n\007node_id" +
+      "\030\002 \001(\tR\006nodeId\022V\n\014status_phase\030\003 \001(\01623.n" +
+      "uinfra.control_plane.v1alpha1.SandboxSta" +
+      "tus.PhaseR\013statusPhase\022-\n\022continuation_t" +
+      "oken\030\004 \001(\tR\021continuationToken\022\'\n\tpage_si" +
+      "ze\030\005 \001(\005B\n\272H\007\032\005\030\350\007(\000R\010pageSize\022Y\n\nsort_o" +
+      "rder\030\006 \001(\0162:.nuinfra.control_plane.v1alp" +
+      "ha1.ListSandboxesRequest.OrderR\tsortOrde" +
+      "r\"N\n\005Order\022\025\n\021ORDER_UNSPECIFIED\020\000\022\026\n\022ORD" +
+      "ER_NEWEST_FIRST\020\001\022\026\n\022ORDER_OLDEST_FIRST\020" +
+      "\002:\346\002\272H\342\002\032\236\001\n$ListSandboxesRequest.requir" +
+      "ed_fields\022LAt least one of `namespace` o" +
+      "r `node_id` must be provided to list san" +
+      "dboxes.\032(has(this.namespace) || has(this" +
+      ".node_id)\032\276\001\n&ListSandboxesRequest.names" +
+      "pace_pattern\022Bnamespace must match ^[a-z" +
+      "][a-z0-9-]{0,61}[a-z0-9]$ when provided." +
+      "\032Pthis.namespace == \'\' || this.namespace" +
+      ".matches(\'^[a-z][a-z0-9-]{0,61}[a-z0-9]$" +
+      "\')\"\215\001\n\025ListSandboxesResponse\022E\n\tsandboxe" +
+      "s\030\001 \003(\0132\'.nuinfra.control_plane.v1alpha1" +
+      ".SandboxR\tsandboxes\022-\n\022continuation_toke" +
+      "n\030\002 \001(\tR\021continuationToken\"^\n\023PauseSandb" +
+      "oxRequest\022%\n\nsandbox_id\030\001 \001(\tB\006\272H\003\310\001\001R\ts" +
+      "andboxId\022 \n\007version\030\002 \001(\003B\006\272H\003\310\001\001R\007versi" +
+      "on\"Y\n\024PauseSandboxResponse\022A\n\007sandbox\030\001 " +
       "\001(\0132\'.nuinfra.control_plane.v1alpha1.San" +
-      "dboxB\006\272H\003\310\001\001R\007sandbox\"b\n\025CreateSandboxRe" +
-      "sponse\022I\n\007sandbox\030\001 \001(\0132\'.nuinfra.contro" +
-      "l_plane.v1alpha1.SandboxB\006\272H\003\310\001\001R\007sandbo" +
-      "x\":\n\021GetSandboxRequest\022%\n\nsandbox_id\030\001 \001" +
-      "(\tB\006\272H\003\310\001\001R\tsandboxId\"W\n\022GetSandboxRespo" +
-      "nse\022A\n\007sandbox\030\001 \001(\0132\'.nuinfra.control_p" +
-      "lane.v1alpha1.SandboxR\007sandbox\"\221\006\n\024ListS" +
-      "andboxesRequest\022\034\n\tnamespace\030\001 \001(\tR\tname" +
-      "space\022\027\n\007node_id\030\002 \001(\tR\006nodeId\022V\n\014status" +
-      "_phase\030\003 \001(\01623.nuinfra.control_plane.v1a" +
-      "lpha1.SandboxStatus.PhaseR\013statusPhase\022-" +
-      "\n\022continuation_token\030\004 \001(\tR\021continuation" +
-      "Token\022\'\n\tpage_size\030\005 \001(\005B\n\272H\007\032\005\030\350\007(\000R\010pa" +
-      "geSize\022Y\n\nsort_order\030\006 \001(\0162:.nuinfra.con" +
-      "trol_plane.v1alpha1.ListSandboxesRequest" +
-      ".OrderR\tsortOrder\"N\n\005Order\022\025\n\021ORDER_UNSP" +
-      "ECIFIED\020\000\022\026\n\022ORDER_NEWEST_FIRST\020\001\022\026\n\022ORD" +
-      "ER_OLDEST_FIRST\020\002:\346\002\272H\342\002\032\236\001\n$ListSandbox" +
-      "esRequest.required_fields\022LAt least one " +
-      "of `namespace` or `node_id` must be prov" +
-      "ided to list sandboxes.\032(has(this.namesp" +
-      "ace) || has(this.node_id)\032\276\001\n&ListSandbo" +
-      "xesRequest.namespace_pattern\022Bnamespace " +
-      "must match ^[a-z][a-z0-9-]{0,61}[a-z0-9]" +
-      "$ when provided.\032Pthis.namespace == \'\' |" +
-      "| this.namespace.matches(\'^[a-z][a-z0-9-" +
-      "]{0,61}[a-z0-9]$\')\"\215\001\n\025ListSandboxesResp" +
-      "onse\022E\n\tsandboxes\030\001 \003(\0132\'.nuinfra.contro" +
-      "l_plane.v1alpha1.SandboxR\tsandboxes\022-\n\022c" +
-      "ontinuation_token\030\002 \001(\tR\021continuationTok" +
-      "en\"^\n\023PauseSandboxRequest\022%\n\nsandbox_id\030" +
-      "\001 \001(\tB\006\272H\003\310\001\001R\tsandboxId\022 \n\007version\030\002 \001(" +
-      "\003B\006\272H\003\310\001\001R\007version\"Y\n\024PauseSandboxRespon" +
-      "se\022A\n\007sandbox\030\001 \001(\0132\'.nuinfra.control_pl" +
-      "ane.v1alpha1.SandboxR\007sandbox\"_\n\024ResumeS" +
-      "andboxRequest\022%\n\nsandbox_id\030\001 \001(\tB\006\272H\003\310\001" +
-      "\001R\tsandboxId\022 \n\007version\030\002 \001(\003B\006\272H\003\310\001\001R\007v" +
-      "ersion\"Z\n\025ResumeSandboxResponse\022A\n\007sandb" +
-      "ox\030\001 \001(\0132\'.nuinfra.control_plane.v1alpha" +
-      "1.SandboxR\007sandbox\"_\n\024DeleteSandboxReque" +
-      "st\022%\n\nsandbox_id\030\001 \001(\tB\006\272H\003\310\001\001R\tsandboxI" +
-      "d\022 \n\007version\030\002 \001(\003B\006\272H\003\310\001\001R\007version\"Z\n\025D" +
-      "eleteSandboxResponse\022A\n\007sandbox\030\001 \001(\0132\'." +
-      "nuinfra.control_plane.v1alpha1.SandboxR\007" +
-      "sandbox\"\214\001\n\025CreateSnapshotRequest\022%\n\nsan" +
-      "dbox_id\030\001 \001(\tB\006\272H\003\310\001\001R\tsandboxId\022 \n\007vers" +
-      "ion\030\002 \001(\003B\006\272H\003\310\001\001R\007version\022*\n\013descriptio" +
-      "n\030\003 \001(\tB\010\272H\005r\003\030\200\002R\013description\"[\n\026Create" +
-      "SnapshotResponse\022A\n\007sandbox\030\001 \001(\0132\'.nuin" +
-      "fra.control_plane.v1alpha1.SandboxR\007sand" +
-      "box2\251\t\n\016SandboxService\022\234\001\n\rCreateSandbox" +
-      "\0224.nuinfra.control_plane.v1alpha1.Create" +
-      "SandboxRequest\0325.nuinfra.control_plane.v" +
-      "1alpha1.CreateSandboxResponse\"\036\202\323\344\223\002\030\"\023/" +
-      "v1alpha1/sandboxes:\001*\022\235\001\n\nGetSandbox\0221.n" +
-      "uinfra.control_plane.v1alpha1.GetSandbox" +
-      "Request\0322.nuinfra.control_plane.v1alpha1" +
-      ".GetSandboxResponse\"(\202\323\344\223\002\"\022 /v1alpha1/s" +
-      "andboxes/{sandbox_id}\022\231\001\n\rListSandboxes\022" +
-      "4.nuinfra.control_plane.v1alpha1.ListSan" +
-      "dboxesRequest\0325.nuinfra.control_plane.v1" +
-      "alpha1.ListSandboxesResponse\"\033\202\323\344\223\002\025\022\023/v" +
-      "1alpha1/sandboxes\022\251\001\n\014PauseSandbox\0223.nui" +
-      "nfra.control_plane.v1alpha1.PauseSandbox" +
-      "Request\0324.nuinfra.control_plane.v1alpha1" +
-      ".PauseSandboxResponse\".\202\323\344\223\002(\032&/v1alpha1" +
-      "/sandboxes/{sandbox_id}/pause\022\255\001\n\rResume" +
+      "dboxR\007sandbox\"_\n\024ResumeSandboxRequest\022%\n" +
+      "\nsandbox_id\030\001 \001(\tB\006\272H\003\310\001\001R\tsandboxId\022 \n\007" +
+      "version\030\002 \001(\003B\006\272H\003\310\001\001R\007version\"Z\n\025Resume" +
+      "SandboxResponse\022A\n\007sandbox\030\001 \001(\0132\'.nuinf" +
+      "ra.control_plane.v1alpha1.SandboxR\007sandb" +
+      "ox\"_\n\024DeleteSandboxRequest\022%\n\nsandbox_id" +
+      "\030\001 \001(\tB\006\272H\003\310\001\001R\tsandboxId\022 \n\007version\030\002 \001" +
+      "(\003B\006\272H\003\310\001\001R\007version\"Z\n\025DeleteSandboxResp" +
+      "onse\022A\n\007sandbox\030\001 \001(\0132\'.nuinfra.control_" +
+      "plane.v1alpha1.SandboxR\007sandbox\"\214\001\n\025Crea" +
+      "teSnapshotRequest\022%\n\nsandbox_id\030\001 \001(\tB\006\272" +
+      "H\003\310\001\001R\tsandboxId\022 \n\007version\030\002 \001(\003B\006\272H\003\310\001" +
+      "\001R\007version\022*\n\013description\030\003 \001(\tB\010\272H\005r\003\030\200" +
+      "\002R\013description\"[\n\026CreateSnapshotResponse" +
+      "\022A\n\007sandbox\030\001 \001(\0132\'.nuinfra.control_plan" +
+      "e.v1alpha1.SandboxR\007sandbox2\251\t\n\016SandboxS" +
+      "ervice\022\234\001\n\rCreateSandbox\0224.nuinfra.contr" +
+      "ol_plane.v1alpha1.CreateSandboxRequest\0325" +
+      ".nuinfra.control_plane.v1alpha1.CreateSa" +
+      "ndboxResponse\"\036\202\323\344\223\002\030\"\023/v1alpha1/sandbox" +
+      "es:\001*\022\235\001\n\nGetSandbox\0221.nuinfra.control_p" +
+      "lane.v1alpha1.GetSandboxRequest\0322.nuinfr" +
+      "a.control_plane.v1alpha1.GetSandboxRespo" +
+      "nse\"(\202\323\344\223\002\"\022 /v1alpha1/sandboxes/{sandbo" +
+      "x_id}\022\231\001\n\rListSandboxes\0224.nuinfra.contro" +
+      "l_plane.v1alpha1.ListSandboxesRequest\0325." +
+      "nuinfra.control_plane.v1alpha1.ListSandb" +
+      "oxesResponse\"\033\202\323\344\223\002\025\022\023/v1alpha1/sandboxe" +
+      "s\022\251\001\n\014PauseSandbox\0223.nuinfra.control_pla" +
+      "ne.v1alpha1.PauseSandboxRequest\0324.nuinfr" +
+      "a.control_plane.v1alpha1.PauseSandboxRes" +
+      "ponse\".\202\323\344\223\002(\032&/v1alpha1/sandboxes/{sand" +
+      "box_id}/pause\022\255\001\n\rResumeSandbox\0224.nuinfr" +
+      "a.control_plane.v1alpha1.ResumeSandboxRe" +
+      "quest\0325.nuinfra.control_plane.v1alpha1.R" +
+      "esumeSandboxResponse\"/\202\323\344\223\002)\032\'/v1alpha1/" +
+      "sandboxes/{sandbox_id}/resume\022\246\001\n\rDelete" +
       "Sandbox\0224.nuinfra.control_plane.v1alpha1" +
-      ".ResumeSandboxRequest\0325.nuinfra.control_" +
-      "plane.v1alpha1.ResumeSandboxResponse\"/\202\323" +
-      "\344\223\002)\032\'/v1alpha1/sandboxes/{sandbox_id}/r" +
-      "esume\022\246\001\n\rDeleteSandbox\0224.nuinfra.contro" +
-      "l_plane.v1alpha1.DeleteSandboxRequest\0325." +
-      "nuinfra.control_plane.v1alpha1.DeleteSan" +
-      "dboxResponse\"(\202\323\344\223\002\"* /v1alpha1/sandboxe" +
-      "s/{sandbox_id}\022\266\001\n\016CreateSnapshot\0225.nuin" +
-      "fra.control_plane.v1alpha1.CreateSnapsho" +
-      "tRequest\0326.nuinfra.control_plane.v1alpha" +
-      "1.CreateSnapshotResponse\"5\202\323\344\223\002/\"*/v1alp" +
-      "ha1/sandboxes/{sandbox_id}/snapshots:\001*B" +
-      "\232\002\n\"com.nuinfra.control_plane.v1alpha1B\014" +
-      "SandboxProtoP\001ZPgolang.nuinfra.net/apis/" +
-      "gen/nuinfra/control_plane/v1alpha1;contr" +
-      "ol_planev1alpha1\242\002\003NCX\252\002\035Nuinfra.Control" +
-      "Plane.V1alpha1\312\002\035Nuinfra\\ControlPlane\\V1" +
-      "alpha1\342\002)Nuinfra\\ControlPlane\\V1alpha1\\G" +
-      "PBMetadata\352\002\037Nuinfra::ControlPlane::V1al" +
-      "pha1b\006proto3"
+      ".DeleteSandboxRequest\0325.nuinfra.control_" +
+      "plane.v1alpha1.DeleteSandboxResponse\"(\202\323" +
+      "\344\223\002\"* /v1alpha1/sandboxes/{sandbox_id}\022\266" +
+      "\001\n\016CreateSnapshot\0225.nuinfra.control_plan" +
+      "e.v1alpha1.CreateSnapshotRequest\0326.nuinf" +
+      "ra.control_plane.v1alpha1.CreateSnapshot" +
+      "Response\"5\202\323\344\223\002/\"*/v1alpha1/sandboxes/{s" +
+      "andbox_id}/snapshots:\001*B\232\002\n\"com.nuinfra." +
+      "control_plane.v1alpha1B\014SandboxProtoP\001ZP" +
+      "golang.nuinfra.net/apis/gen/nuinfra/cont" +
+      "rol_plane/v1alpha1;control_planev1alpha1" +
+      "\242\002\003NCX\252\002\035Nuinfra.ControlPlane.V1alpha1\312\002" +
+      "\035Nuinfra\\ControlPlane\\V1alpha1\342\002)Nuinfra" +
+      "\\ControlPlane\\V1alpha1\\GPBMetadata\352\002\037Nui" +
+      "nfra::ControlPlane::V1alpha1b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,

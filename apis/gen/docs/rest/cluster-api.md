@@ -1275,6 +1275,7 @@ Response message containing a page of nodes.
 |*anonymous*|PHASE_PAUSING|
 |*anonymous*|PHASE_PAUSED|
 |*anonymous*|PHASE_RESUMING|
+|*anonymous*|PHASE_SNAPSHOTTING|
 |*anonymous*|PHASE_DELETING|
 |*anonymous*|PHASE_DELETED|
 |*anonymous*|PHASE_FAILED|

@@ -264,19 +264,24 @@ export enum SandboxStatus_Phase {
   RESUMING = 5,
 
   /**
-   * @generated from enum value: PHASE_DELETING = 6;
+   * @generated from enum value: PHASE_SNAPSHOTTING = 6;
    */
-  DELETING = 6,
+  SNAPSHOTTING = 6,
 
   /**
-   * @generated from enum value: PHASE_DELETED = 7;
+   * @generated from enum value: PHASE_DELETING = 7;
    */
-  DELETED = 7,
+  DELETING = 7,
 
   /**
-   * @generated from enum value: PHASE_FAILED = 8;
+   * @generated from enum value: PHASE_DELETED = 8;
    */
-  FAILED = 8,
+  DELETED = 8,
+
+  /**
+   * @generated from enum value: PHASE_FAILED = 9;
+   */
+  FAILED = 9,
 }
 
 /**

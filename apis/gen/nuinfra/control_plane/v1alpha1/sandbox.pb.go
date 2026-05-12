@@ -28,15 +28,16 @@ const (
 type SandboxStatus_Phase int32
 
 const (
-	SandboxStatus_PHASE_UNSPECIFIED SandboxStatus_Phase = 0
-	SandboxStatus_PHASE_PENDING     SandboxStatus_Phase = 1
-	SandboxStatus_PHASE_RUNNING     SandboxStatus_Phase = 2
-	SandboxStatus_PHASE_PAUSING     SandboxStatus_Phase = 3
-	SandboxStatus_PHASE_PAUSED      SandboxStatus_Phase = 4
-	SandboxStatus_PHASE_RESUMING    SandboxStatus_Phase = 5
-	SandboxStatus_PHASE_DELETING    SandboxStatus_Phase = 6
-	SandboxStatus_PHASE_DELETED     SandboxStatus_Phase = 7
-	SandboxStatus_PHASE_FAILED      SandboxStatus_Phase = 8
+	SandboxStatus_PHASE_UNSPECIFIED  SandboxStatus_Phase = 0
+	SandboxStatus_PHASE_PENDING      SandboxStatus_Phase = 1
+	SandboxStatus_PHASE_RUNNING      SandboxStatus_Phase = 2
+	SandboxStatus_PHASE_PAUSING      SandboxStatus_Phase = 3
+	SandboxStatus_PHASE_PAUSED       SandboxStatus_Phase = 4
+	SandboxStatus_PHASE_RESUMING     SandboxStatus_Phase = 5
+	SandboxStatus_PHASE_SNAPSHOTTING SandboxStatus_Phase = 6
+	SandboxStatus_PHASE_DELETING     SandboxStatus_Phase = 7
+	SandboxStatus_PHASE_DELETED      SandboxStatus_Phase = 8
+	SandboxStatus_PHASE_FAILED       SandboxStatus_Phase = 9
 )
 
 // Enum value maps for SandboxStatus_Phase.
@@ -48,20 +49,22 @@ var (
 		3: "PHASE_PAUSING",
 		4: "PHASE_PAUSED",
 		5: "PHASE_RESUMING",
-		6: "PHASE_DELETING",
-		7: "PHASE_DELETED",
-		8: "PHASE_FAILED",
+		6: "PHASE_SNAPSHOTTING",
+		7: "PHASE_DELETING",
+		8: "PHASE_DELETED",
+		9: "PHASE_FAILED",
 	}
 	SandboxStatus_Phase_value = map[string]int32{
-		"PHASE_UNSPECIFIED": 0,
-		"PHASE_PENDING":     1,
-		"PHASE_RUNNING":     2,
-		"PHASE_PAUSING":     3,
-		"PHASE_PAUSED":      4,
-		"PHASE_RESUMING":    5,
-		"PHASE_DELETING":    6,
-		"PHASE_DELETED":     7,
-		"PHASE_FAILED":      8,
+		"PHASE_UNSPECIFIED":  0,
+		"PHASE_PENDING":      1,
+		"PHASE_RUNNING":      2,
+		"PHASE_PAUSING":      3,
+		"PHASE_PAUSED":       4,
+		"PHASE_RESUMING":     5,
+		"PHASE_SNAPSHOTTING": 6,
+		"PHASE_DELETING":     7,
+		"PHASE_DELETED":      8,
+		"PHASE_FAILED":       9,
 	}
 )
 
@@ -1399,20 +1402,21 @@ const file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDesc = "" +
 	"snapshotId\x129\n" +
 	"\n" +
 	"created_at\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12(\n" +
-	"\x05error\x18\x03 \x01(\v2\x12.google.rpc.StatusR\x05error\"\xad\x02\n" +
+	"\x05error\x18\x03 \x01(\v2\x12.google.rpc.StatusR\x05error\"\xc5\x02\n" +
 	"\rSandboxStatus\x12I\n" +
 	"\x05phase\x18\x01 \x01(\x0e23.nuinfra.control_plane.v1alpha1.SandboxStatus.PhaseR\x05phase\x12\x18\n" +
-	"\amessage\x18\x02 \x01(\tR\amessage\"\xb6\x01\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\"\xce\x01\n" +
 	"\x05Phase\x12\x15\n" +
 	"\x11PHASE_UNSPECIFIED\x10\x00\x12\x11\n" +
 	"\rPHASE_PENDING\x10\x01\x12\x11\n" +
 	"\rPHASE_RUNNING\x10\x02\x12\x11\n" +
 	"\rPHASE_PAUSING\x10\x03\x12\x10\n" +
 	"\fPHASE_PAUSED\x10\x04\x12\x12\n" +
-	"\x0ePHASE_RESUMING\x10\x05\x12\x12\n" +
-	"\x0ePHASE_DELETING\x10\x06\x12\x11\n" +
-	"\rPHASE_DELETED\x10\a\x12\x10\n" +
-	"\fPHASE_FAILED\x10\b\"a\n" +
+	"\x0ePHASE_RESUMING\x10\x05\x12\x16\n" +
+	"\x12PHASE_SNAPSHOTTING\x10\x06\x12\x12\n" +
+	"\x0ePHASE_DELETING\x10\a\x12\x11\n" +
+	"\rPHASE_DELETED\x10\b\x12\x10\n" +
+	"\fPHASE_FAILED\x10\t\"a\n" +
 	"\x14CreateSandboxRequest\x12I\n" +
 	"\asandbox\x18\x01 \x01(\v2'.nuinfra.control_plane.v1alpha1.SandboxB\x06\xbaH\x03\xc8\x01\x01R\asandbox\"b\n" +
 	"\x15CreateSandboxResponse\x12I\n" +

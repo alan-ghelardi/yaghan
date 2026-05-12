@@ -533,6 +533,7 @@
         "PHASE_PAUSING",
         "PHASE_PAUSED",
         "PHASE_RESUMING",
+        "PHASE_SNAPSHOTTING",
         "PHASE_DELETING",
         "PHASE_DELETED",
         "PHASE_FAILED"
