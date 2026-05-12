@@ -26,22 +26,33 @@ import (
 // daemon restart does not lose track of which namespace belongs to
 // which VM.
 type Reconciler struct {
-	config        *config.Bundle
-	provider      firecracker.Provider
-	driver        network.Driver
-	snapshotStore *snapshot.Store
+	config         *config.Bundle
+	provider       firecracker.Provider
+	driver         network.Driver
+	snapshotStore  *snapshot.Store
+	snapshotClient controlplanev1alpha1.SnapshotServiceClient
 }
 
 // New constructs a Reconciler bound to the given provider, driver and
 // daemon configuration. The Bundle's MicroVM section supplies the
 // per-VM template constants (kernel paths, agent vsock port, guest MAC,
-// …) used when composing a CreateMicroVMInput.
-func New(config *config.Bundle, provider firecracker.Provider, driver network.Driver, snapshotStore *snapshot.Store) *Reconciler {
+// …) used when composing a CreateMicroVMInput. The snapshotClient is
+// used to register a Snapshot row in the api-server as the final stage
+// of the snapshot reconcile path; a nil value disables that registration
+// (acceptable when the daemon is configured without snapshot support).
+func New(
+	config *config.Bundle,
+	provider firecracker.Provider,
+	driver network.Driver,
+	snapshotStore *snapshot.Store,
+	snapshotClient controlplanev1alpha1.SnapshotServiceClient,
+) *Reconciler {
 	return &Reconciler{
-		config:        config,
-		provider:      provider,
-		driver:        driver,
-		snapshotStore: snapshotStore,
+		config:         config,
+		provider:       provider,
+		driver:         driver,
+		snapshotStore:  snapshotStore,
+		snapshotClient: snapshotClient,
 	}
 }
 
@@ -256,15 +267,22 @@ func (r *Reconciler) reconcileResources(ctx context.Context, sandbox *controlpla
 	return nil
 }
 
-// snapshot triggers a CreateSnapshot on the microVM and persists the
-// resulting artifacts to durable storage. Dispatched from reconcilePhase
-// when Status.Phase == PHASE_SNAPSHOTTING; the api-server stamps
-// Intent.Phase with the saved phase to return to, and the shared
-// post-action code in reconcilePhase restores it after we return.
+// snapshot triggers a CreateSnapshot on the microVM, persists the
+// resulting artifacts to durable storage, and registers a Snapshot row
+// in the api-server. Dispatched from reconcilePhase when
+// Status.Phase == PHASE_SNAPSHOTTING; the api-server stamps Intent.Phase
+// with the saved phase to return to, and the shared post-action code in
+// reconcilePhase restores it after we return.
 //
-// The caller's Description on Intent.StartSnapshot is currently dropped
-// on the floor — the daemon only needs the trigger signal today.
-// Forwarding it into a snapshot manifest is a separate concern.
+// The description carried on Intent.StartSnapshot is forwarded to the
+// api-server's Snapshot.Metadata.Description so it surfaces in
+// ListSnapshots / GetSnapshot results.
+//
+// Idempotency: each step is replay-safe. vm.CreateSnapshot and
+// snapshotStore.Put are individually idempotent on the snapshot id, and
+// the api-server's CreateSnapshot is digest-idempotent on the canonical
+// Snapshot body. A retry after a partial failure (e.g. local Put
+// succeeded, RPC failed) re-issues the same body and converges.
 func (r *Reconciler) snapshot(ctx context.Context, sandbox *controlplanev1alpha1.Sandbox) error {
 	vm, err := r.lookup(sandbox.GetMetadata().GetId(), "create snapshot")
 	if err != nil {
@@ -277,6 +295,21 @@ func (r *Reconciler) snapshot(ctx context.Context, sandbox *controlplanev1alpha1
 	}
 	if err := r.snapshotStore.Put(ctx, localRef); err != nil {
 		return fmt.Errorf("persist snapshot: %w", err)
+	}
+
+	if r.snapshotClient != nil {
+		snap := &controlplanev1alpha1.Snapshot{
+			Metadata: &controlplanev1alpha1.SnapshotMeta{
+				Id:          localRef.SnapshotID,
+				Namespace:   sandbox.GetMetadata().GetNamespace(),
+				Description: sandbox.GetIntent().GetStartSnapshot().GetDescription(),
+			},
+			Sandbox: &controlplanev1alpha1.SandboxRef{Id: sandbox.GetMetadata().GetId()},
+		}
+		if _, err := r.snapshotClient.CreateSnapshot(ctx,
+			&controlplanev1alpha1.CreateSnapshotRequest{Snapshot: snap}); err != nil {
+			return fmt.Errorf("register snapshot in api-server: %w", err)
+		}
 	}
 
 	sandbox.GetIntent().StartSnapshot = nil

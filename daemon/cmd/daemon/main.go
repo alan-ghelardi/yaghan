@@ -100,6 +100,7 @@ func main() {
 	defer conn.Close()
 	clusterClient := controlplanev1alpha1.NewClusterServiceClient(conn)
 	sandboxClient := controlplanev1alpha1.NewSandboxServiceClient(conn)
+	snapshotClient := controlplanev1alpha1.NewSnapshotServiceClient(conn)
 
-	server.Start(ctx, service.New(provider, netDrv, clusterClient, sandboxClient, bundle))
+	server.Start(ctx, service.New(provider, netDrv, clusterClient, sandboxClient, snapshotClient, bundle))
 }

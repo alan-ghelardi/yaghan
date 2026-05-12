@@ -30,8 +30,9 @@ type daemon struct {
 
 	networkDriver network.Driver
 
-	clusterServiceClient controlplanev1alpha1.ClusterServiceClient
-	sandboxServiceClient controlplanev1alpha1.SandboxServiceClient
+	clusterServiceClient  controlplanev1alpha1.ClusterServiceClient
+	sandboxServiceClient  controlplanev1alpha1.SandboxServiceClient
+	snapshotServiceClient controlplanev1alpha1.SnapshotServiceClient
 
 	// config is a bundle containing the server configurations.
 	config *config.Bundle
@@ -40,13 +41,21 @@ type daemon struct {
 var _ server.Service = (*daemon)(nil)
 
 // New returns a new [server.Service] instance.
-func New(firecracker firecracker.Provider, networkDriver network.Driver, clusterServiceClient controlplanev1alpha1.ClusterServiceClient, sandboxServiceClient controlplanev1alpha1.SandboxServiceClient, config *config.Bundle) server.Service {
+func New(
+	firecracker firecracker.Provider,
+	networkDriver network.Driver,
+	clusterServiceClient controlplanev1alpha1.ClusterServiceClient,
+	sandboxServiceClient controlplanev1alpha1.SandboxServiceClient,
+	snapshotServiceClient controlplanev1alpha1.SnapshotServiceClient,
+	config *config.Bundle,
+) server.Service {
 	return &daemon{
-		firecracker:          firecracker,
-		networkDriver:        networkDriver,
-		clusterServiceClient: clusterServiceClient,
-		sandboxServiceClient: sandboxServiceClient,
-		config:               config,
+		firecracker:           firecracker,
+		networkDriver:         networkDriver,
+		clusterServiceClient:  clusterServiceClient,
+		sandboxServiceClient:  sandboxServiceClient,
+		snapshotServiceClient: snapshotServiceClient,
+		config:                config,
 	}
 }
 
@@ -85,7 +94,7 @@ func (d *daemon) Setup(ctx context.Context) error {
 		snapshotStore = snapshot.NewStore(durableStore)
 	}
 
-	reconciler := reconciler.New(d.config, d.firecracker, d.networkDriver, snapshotStore)
+	reconciler := reconciler.New(d.config, d.firecracker, d.networkDriver, snapshotStore, d.snapshotServiceClient)
 
 	// The controller and node Agent share a circular dependency: the
 	// Agent needs the controller as its node.Reporter, while the

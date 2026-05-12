@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 	cpv1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
+	cpmocks "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1/mocks"
 	"golang.nuinfra.net/daemon/pkg/config"
 	"golang.nuinfra.net/daemon/pkg/firecracker"
 	fcmocks "golang.nuinfra.net/daemon/pkg/firecracker/mocks"
@@ -20,6 +21,7 @@ import (
 	netmocks "golang.nuinfra.net/daemon/pkg/network/mocks"
 	"golang.nuinfra.net/daemon/pkg/snapshot"
 	snapmocks "golang.nuinfra.net/daemon/pkg/snapshot/mocks"
+	"google.golang.org/grpc"
 )
 
 // testBundle returns a config.Bundle with the daemon defaults
@@ -95,19 +97,20 @@ func stubLocalRefWithFiles(t *testing.T, snapshotID string) *snapshot.LocalRefer
 	}
 }
 
-func newReconcilerFixture(t *testing.T) (*Reconciler, *fcmocks.MockProvider, *netmocks.MockDriver, *fcmocks.MockMicroVM, *snapmocks.MockDurableStore) {
+func newReconcilerFixture(t *testing.T) (*Reconciler, *fcmocks.MockProvider, *netmocks.MockDriver, *fcmocks.MockMicroVM, *snapmocks.MockDurableStore, *cpmocks.MockSnapshotServiceClient) {
 	t.Helper()
 	ctrl := gomock.NewController(t)
 	provider := fcmocks.NewMockProvider(ctrl)
 	driver := netmocks.NewMockDriver(ctrl)
 	vm := fcmocks.NewMockMicroVM(ctrl)
 	durableStore := snapmocks.NewMockDurableStore(ctrl)
-	r := New(testBundle(), provider, driver, snapshot.NewStore(durableStore))
-	return r, provider, driver, vm, durableStore
+	snapshotClient := cpmocks.NewMockSnapshotServiceClient(ctrl)
+	r := New(testBundle(), provider, driver, snapshot.NewStore(durableStore), snapshotClient)
+	return r, provider, driver, vm, durableStore, snapshotClient
 }
 
 func TestReconcile_NilIntentIsNoOp(t *testing.T) {
-	r, _, _, _, _ := newReconcilerFixture(t)
+	r, _, _, _, _, _ := newReconcilerFixture(t)
 
 	sandbox := fixtureSandbox("sb-1")
 	sandbox.Intent = nil
@@ -121,7 +124,7 @@ func TestReconcile_NilIntentIsNoOp(t *testing.T) {
 func TestReconcile_EmptyIntentClearsItButLeavesStatusAlone(t *testing.T) {
 	// Intent != nil but every field is the zero value: no work, but the
 	// reconciler still flips Intent back to nil (the "converged" signal).
-	r, _, _, _, _ := newReconcilerFixture(t)
+	r, _, _, _, _, _ := newReconcilerFixture(t)
 
 	sandbox := fixtureSandbox("sb-empty")
 	sandbox.Intent = &cpv1.Intent{}
@@ -131,7 +134,7 @@ func TestReconcile_EmptyIntentClearsItButLeavesStatusAlone(t *testing.T) {
 }
 
 func TestReconcile_BootCreatesMicroVMAndUpdatesStatus(t *testing.T) {
-	r, provider, driver, _, _ := newReconcilerFixture(t)
+	r, provider, driver, _, _, _ := newReconcilerFixture(t)
 	ctx := context.Background()
 
 	sandbox := fixtureSandbox("sb-boot")
@@ -169,7 +172,7 @@ func TestReconcile_BootCreatesMicroVMAndUpdatesStatus(t *testing.T) {
 }
 
 func TestReconcile_BootIsIdempotentWhenVMAlreadyIndexed(t *testing.T) {
-	r, provider, driver, vm, _ := newReconcilerFixture(t)
+	r, provider, driver, vm, _, _ := newReconcilerFixture(t)
 	ctx := context.Background()
 
 	sandbox := fixtureSandbox("sb-already")
@@ -186,7 +189,7 @@ func TestReconcile_BootIsIdempotentWhenVMAlreadyIndexed(t *testing.T) {
 }
 
 func TestReconcile_BootRollsBackNetworkOnCreateFailure(t *testing.T) {
-	r, provider, driver, _, _ := newReconcilerFixture(t)
+	r, provider, driver, _, _, _ := newReconcilerFixture(t)
 	ctx := context.Background()
 
 	sandbox := fixtureSandbox("sb-rollback")
@@ -213,7 +216,7 @@ func TestReconcile_BootRollsBackNetworkOnCreateFailure(t *testing.T) {
 }
 
 func TestReconcile_BootSurfacesNetworkProvisionFailure(t *testing.T) {
-	r, provider, driver, _, _ := newReconcilerFixture(t)
+	r, provider, driver, _, _, _ := newReconcilerFixture(t)
 	ctx := context.Background()
 
 	sandbox := fixtureSandbox("sb-netfail")
@@ -233,7 +236,7 @@ func TestReconcile_BootSurfacesNetworkProvisionFailure(t *testing.T) {
 }
 
 func TestReconcile_PauseCallsMicroVMPause(t *testing.T) {
-	r, provider, _, vm, _ := newReconcilerFixture(t)
+	r, provider, _, vm, _, _ := newReconcilerFixture(t)
 	ctx := context.Background()
 
 	// Under the new state machine the api-server has already moved
@@ -255,7 +258,7 @@ func TestReconcile_PauseCallsMicroVMPause(t *testing.T) {
 }
 
 func TestReconcile_PauseFailsWhenVMNotIndexed(t *testing.T) {
-	r, provider, _, _, _ := newReconcilerFixture(t)
+	r, provider, _, _, _, _ := newReconcilerFixture(t)
 	ctx := context.Background()
 
 	sandbox := fixtureSandbox("sb-ghost")
@@ -270,7 +273,7 @@ func TestReconcile_PauseFailsWhenVMNotIndexed(t *testing.T) {
 }
 
 func TestReconcile_ResumeCallsMicroVMResume(t *testing.T) {
-	r, provider, _, vm, _ := newReconcilerFixture(t)
+	r, provider, _, vm, _, _ := newReconcilerFixture(t)
 	ctx := context.Background()
 
 	// Resume: status=RESUMING, intent=RUNNING. There is no PHASE_RESUMED;
@@ -294,7 +297,7 @@ func TestReconcile_DeleteReadsNetworkIndexFromVMAndDeprovisions(t *testing.T) {
 	// Models the cross-restart case: the Reconciler instance issuing
 	// delete is brand new; the network index for the VM lives in the
 	// firecracker provider's recovered MicroVM, not on the Reconciler.
-	r, provider, driver, vm, _ := newReconcilerFixture(t)
+	r, provider, driver, vm, _, _ := newReconcilerFixture(t)
 	ctx := context.Background()
 
 	sandbox := fixtureSandbox("sb-life")
@@ -315,7 +318,7 @@ func TestReconcile_DeleteReadsNetworkIndexFromVMAndDeprovisions(t *testing.T) {
 }
 
 func TestReconcile_DeleteIsIdempotentForUnknownVMs(t *testing.T) {
-	r, provider, driver, _, _ := newReconcilerFixture(t)
+	r, provider, driver, _, _, _ := newReconcilerFixture(t)
 	ctx := context.Background()
 
 	sandbox := fixtureSandbox("sb-already-gone")
@@ -334,7 +337,7 @@ func TestReconcile_DeleteIsIdempotentForUnknownVMs(t *testing.T) {
 }
 
 func TestReconcile_UpdateResourcesAppliesAndMirrors(t *testing.T) {
-	r, provider, _, vm, _ := newReconcilerFixture(t)
+	r, provider, _, vm, _, _ := newReconcilerFixture(t)
 	ctx := context.Background()
 
 	sandbox := fixtureSandbox("sb-resize")
@@ -362,7 +365,7 @@ func TestReconcile_UpdateResourcesNoOpWhenIntentMatchesSandbox(t *testing.T) {
 	// Event redelivered after a previous successful update: Intent.Resources
 	// matches sandbox.Resources, so the reconciler must clear the intent
 	// without touching firecracker.
-	r, provider, _, _, _ := newReconcilerFixture(t)
+	r, provider, _, _, _, _ := newReconcilerFixture(t)
 	ctx := context.Background()
 
 	sandbox := fixtureSandbox("sb-resize-noop")
@@ -382,7 +385,7 @@ func TestReconcile_UpdateResourcesNoOpWhenIntentMatchesSandbox(t *testing.T) {
 }
 
 func TestReconcile_UpdateResourcesFailureKeepsIntent(t *testing.T) {
-	r, provider, _, vm, _ := newReconcilerFixture(t)
+	r, provider, _, vm, _, _ := newReconcilerFixture(t)
 	ctx := context.Background()
 
 	sandbox := fixtureSandbox("sb-update-fail")
@@ -413,7 +416,7 @@ func TestReconcile_UpdateResourcesFailureKeepsIntent(t *testing.T) {
 // reconciler runs the snapshot action and converges Status.Phase
 // back to RUNNING.
 func TestReconcile_SnapshotRestoresRunningPhase(t *testing.T) {
-	r, provider, _, vm, durableStore := newReconcilerFixture(t)
+	r, provider, _, vm, durableStore, snapshotClient := newReconcilerFixture(t)
 	ctx := context.Background()
 
 	sandbox := fixtureSandbox("sb-snap")
@@ -431,6 +434,16 @@ func TestReconcile_SnapshotRestoresRunningPhase(t *testing.T) {
 		durableStore.EXPECT().
 			Put(ctx, "snap-1", gomock.Any()).
 			Return(nil),
+		snapshotClient.EXPECT().
+			CreateSnapshot(ctx, gomock.Any()).
+			DoAndReturn(func(_ context.Context, req *cpv1.CreateSnapshotRequest, _ ...grpc.CallOption) (*cpv1.CreateSnapshotResponse, error) {
+				assert.Equal(t, "snap-1", req.GetSnapshot().GetMetadata().GetId())
+				assert.Equal(t, "test", req.GetSnapshot().GetMetadata().GetNamespace())
+				assert.Equal(t, "before-deploy", req.GetSnapshot().GetMetadata().GetDescription(),
+					"description from Intent.StartSnapshot must be forwarded to the api-server")
+				assert.Equal(t, "sb-snap", req.GetSnapshot().GetSandbox().GetId())
+				return &cpv1.CreateSnapshotResponse{Snapshot: req.GetSnapshot()}, nil
+			}),
 	)
 
 	before := time.Now()
@@ -452,7 +465,7 @@ func TestReconcile_SnapshotRestoresRunningPhase(t *testing.T) {
 // PAUSED rather than implicitly resuming. The api-server sets
 // Intent.Phase = PAUSED in that case.
 func TestReconcile_SnapshotRestoresPausedPhase(t *testing.T) {
-	r, provider, _, vm, durableStore := newReconcilerFixture(t)
+	r, provider, _, vm, durableStore, snapshotClient := newReconcilerFixture(t)
 	ctx := context.Background()
 
 	sandbox := fixtureSandbox("sb-snap-paused")
@@ -467,6 +480,9 @@ func TestReconcile_SnapshotRestoresPausedPhase(t *testing.T) {
 		provider.EXPECT().GetMicroVM("sb-snap-paused").Return(vm),
 		vm.EXPECT().CreateSnapshot(ctx).Return(localRef, nil),
 		durableStore.EXPECT().Put(ctx, "snap-paused", gomock.Any()).Return(nil),
+		snapshotClient.EXPECT().
+			CreateSnapshot(ctx, gomock.Any()).
+			Return(&cpv1.CreateSnapshotResponse{}, nil),
 	)
 
 	require.NoError(t, r.Reconcile(ctx, sandbox))
@@ -475,36 +491,45 @@ func TestReconcile_SnapshotRestoresPausedPhase(t *testing.T) {
 	assert.Nil(t, sandbox.Intent)
 }
 
-// TestReconcile_SnapshotDropsDescription pins the current behavior:
-// the daemon does not forward the user-supplied Description into
-// LastSnapshot or anywhere else. The day we want to forward it (into
-// the snapshot manifest, an S3 object tag, etc.) this test must be
-// updated explicitly so the change is intentional.
-func TestReconcile_SnapshotDropsDescription(t *testing.T) {
-	r, provider, _, vm, durableStore := newReconcilerFixture(t)
+// TestReconcile_SnapshotFailsWhenApiServerRegistrationFails verifies
+// that a failure of the api-server's CreateSnapshot RPC propagates as a
+// reconcile error: the local artifact is left in place, Intent is not
+// cleared, and LastSnapshot is not stamped. A retry on the next
+// reconcile must therefore re-issue the (idempotent) Create with the
+// same body and converge.
+func TestReconcile_SnapshotFailsWhenApiServerRegistrationFails(t *testing.T) {
+	r, provider, _, vm, durableStore, snapshotClient := newReconcilerFixture(t)
 	ctx := context.Background()
 
-	sandbox := fixtureSandbox("sb-snap-desc")
+	sandbox := fixtureSandbox("sb-snap-fail")
 	sandbox.Status.Phase = cpv1.SandboxStatus_PHASE_SNAPSHOTTING
 	sandbox.Intent = &cpv1.Intent{
 		Phase:         cpv1.SandboxStatus_PHASE_RUNNING,
-		StartSnapshot: &cpv1.StartSnapshotInput{Description: "pre-deploy snapshot"},
+		StartSnapshot: &cpv1.StartSnapshotInput{Description: "will-fail"},
 	}
 
-	localRef := stubLocalRefWithFiles(t, "snap-desc")
+	localRef := stubLocalRefWithFiles(t, "snap-fail")
+	registrationErr := errors.New("api-server unreachable")
 	gomock.InOrder(
-		provider.EXPECT().GetMicroVM("sb-snap-desc").Return(vm),
+		provider.EXPECT().GetMicroVM("sb-snap-fail").Return(vm),
 		vm.EXPECT().CreateSnapshot(ctx).Return(localRef, nil),
-		durableStore.EXPECT().Put(ctx, "snap-desc", gomock.Any()).Return(nil),
+		durableStore.EXPECT().Put(ctx, "snap-fail", gomock.Any()).Return(nil),
+		snapshotClient.EXPECT().
+			CreateSnapshot(ctx, gomock.Any()).
+			Return(nil, registrationErr),
 	)
 
-	require.NoError(t, r.Reconcile(ctx, sandbox))
+	err := r.Reconcile(ctx, sandbox)
+	require.Error(t, err)
+	assert.ErrorIs(t, err, registrationErr,
+		"reconcile must propagate the api-server registration error")
 
-	// Description currently goes nowhere — neither LastSnapshot nor any
-	// proto field carries it. When we wire it through, expand the
-	// LastSnapshot proto and update this assertion.
-	require.NotNil(t, sandbox.GetLastSnapshot())
-	assert.Equal(t, "snap-desc", sandbox.GetLastSnapshot().GetSnapshotId())
+	// Intent retains StartSnapshot so the next reconcile cycle re-issues
+	// the same logical CreateSnapshot — idempotent at the api-server.
+	require.NotNil(t, sandbox.GetIntent())
+	require.NotNil(t, sandbox.GetIntent().GetStartSnapshot())
+	assert.Nil(t, sandbox.GetLastSnapshot(),
+		"LastSnapshot must NOT be stamped when api-server registration fails")
 }
 
 // TestReconcile_CombinedIntentsAreAppliedInOrderAndCleared covers a
@@ -514,7 +539,7 @@ func TestReconcile_SnapshotDropsDescription(t *testing.T) {
 // the snapshot itself flows through PHASE_SNAPSHOTTING as its own
 // transitional state.
 func TestReconcile_CombinedIntentsAreAppliedInOrderAndCleared(t *testing.T) {
-	r, provider, driver, vm, _ := newReconcilerFixture(t)
+	r, provider, driver, vm, _, _ := newReconcilerFixture(t)
 	ctx := context.Background()
 
 	sandbox := fixtureSandbox("sb-combined")
@@ -544,7 +569,7 @@ func TestReconcile_CombinedIntentsAreAppliedInOrderAndCleared(t *testing.T) {
 }
 
 func TestReconcile_PhaseFailureSkipsResources(t *testing.T) {
-	r, provider, driver, _, _ := newReconcilerFixture(t)
+	r, provider, driver, _, _, _ := newReconcilerFixture(t)
 	ctx := context.Background()
 
 	sandbox := fixtureSandbox("sb-phase-bad")
@@ -570,7 +595,7 @@ func TestReconcile_PhaseFailureSkipsResources(t *testing.T) {
 }
 
 func TestReconcile_UnsupportedPhaseReturnsError(t *testing.T) {
-	r, _, _, _, _ := newReconcilerFixture(t)
+	r, _, _, _, _, _ := newReconcilerFixture(t)
 
 	sandbox := fixtureSandbox("sb-unsupported")
 	// PHASE_PAUSING is a transitional state the api-server never sets
