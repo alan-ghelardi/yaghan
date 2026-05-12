@@ -1,6 +1,6 @@
-// Package snapshot implements `sindri sandbox create-snapshot`.
+// Package snapshot implements `sindri sandbox snapshot`.
 // It records the user's intent to snapshot a sandbox via
-// SandboxService.CreateSnapshot; the data-plane daemon performs the
+// SandboxService.StartSnapshot; the data-plane daemon performs the
 // firecracker snapshot, persists the artifacts to durable storage,
 // and stamps Sandbox.LastSnapshot once the reconciler converges.
 package snapshot
@@ -63,13 +63,13 @@ func run(ctx *cli.Context, cmd *cobra.Command, args []string) error {
 	fmt.Fprintf(ctx.IOStreams.Stdout,
 		"Requesting snapshot for sandbox %q (version=%d)...\n", id, version)
 
-	if _, err := ctx.ClientSet.SandboxService.CreateSnapshot(cmd.Context(),
-		&controlplanev1alpha1.CreateSnapshotRequest{
+	if _, err := ctx.ClientSet.SandboxService.StartSnapshot(cmd.Context(),
+		&controlplanev1alpha1.StartSnapshotRequest{
 			SandboxId:   id,
 			Version:     version,
 			Description: description,
 		}); err != nil {
-		return fmt.Errorf("create snapshot: %w", err)
+		return fmt.Errorf("start snapshot: %w", err)
 	}
 
 	fmt.Fprintf(ctx.IOStreams.Stdout,

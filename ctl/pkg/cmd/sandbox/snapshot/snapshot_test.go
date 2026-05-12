@@ -17,9 +17,9 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// createSnapshotCaptureFn lets a test case assert against the forwarded
-// CreateSnapshotRequest and decide what the mocked service replies.
-type createSnapshotCaptureFn func(t *testing.T, req *controlplanev1alpha1.CreateSnapshotRequest) (*controlplanev1alpha1.CreateSnapshotResponse, error)
+// startSnapshotCaptureFn lets a test case assert against the forwarded
+// StartSnapshotRequest and decide what the mocked service replies.
+type startSnapshotCaptureFn func(t *testing.T, req *controlplanev1alpha1.StartSnapshotRequest) (*controlplanev1alpha1.StartSnapshotResponse, error)
 
 // getCaptureFn handles the optional GetSandbox pre-fetch when --version
 // is omitted.
@@ -34,9 +34,9 @@ func TestSnapshot(t *testing.T) {
 		// nil means GetSandbox must NOT be called.
 		expectGet getCaptureFn
 
-		// expectCreateSnapshot is invoked as the response to
-		// Snapshot. nil means CreateSnapshot must NOT be called.
-		expectCreateSnapshot createSnapshotCaptureFn
+		// expectStartSnapshot is invoked as the response to
+		// StartSnapshot. nil means StartSnapshot must NOT be called.
+		expectStartSnapshot startSnapshotCaptureFn
 
 		wantErr       string
 		wantStdoutHas []string
@@ -45,12 +45,12 @@ func TestSnapshot(t *testing.T) {
 			name: "happy path with explicit --version skips the lookup, empty description",
 			args: "my-sandbox --version 7",
 			// expectGet is nil — gomock fails on any unexpected GetSandbox.
-			expectCreateSnapshot: func(t *testing.T, req *controlplanev1alpha1.CreateSnapshotRequest) (*controlplanev1alpha1.CreateSnapshotResponse, error) {
+			expectStartSnapshot: func(t *testing.T, req *controlplanev1alpha1.StartSnapshotRequest) (*controlplanev1alpha1.StartSnapshotResponse, error) {
 				assert.Equal(t, "my-sandbox", req.GetSandboxId())
 				assert.Equal(t, int64(7), req.GetVersion())
 				assert.Equal(t, "", req.GetDescription(),
 					"description must default to empty when --description is omitted")
-				return &controlplanev1alpha1.CreateSnapshotResponse{}, nil
+				return &controlplanev1alpha1.StartSnapshotResponse{}, nil
 			},
 			wantStdoutHas: []string{
 				`Requesting snapshot for sandbox "my-sandbox" (version=7)`,
@@ -71,10 +71,10 @@ func TestSnapshot(t *testing.T) {
 					},
 				}, nil
 			},
-			expectCreateSnapshot: func(t *testing.T, req *controlplanev1alpha1.CreateSnapshotRequest) (*controlplanev1alpha1.CreateSnapshotResponse, error) {
+			expectStartSnapshot: func(t *testing.T, req *controlplanev1alpha1.StartSnapshotRequest) (*controlplanev1alpha1.StartSnapshotResponse, error) {
 				assert.Equal(t, int64(9), req.GetVersion(),
-					"CreateSnapshot must use the version returned by GetSandbox")
-				return &controlplanev1alpha1.CreateSnapshotResponse{}, nil
+					"StartSnapshot must use the version returned by GetSandbox")
+				return &controlplanev1alpha1.StartSnapshotResponse{}, nil
 			},
 			wantStdoutHas: []string{
 				"Reading current version of sandbox",
@@ -84,9 +84,9 @@ func TestSnapshot(t *testing.T) {
 		{
 			name: "description flag is forwarded to the server",
 			args: `my-sandbox --version 1 --description pre-deploy`,
-			expectCreateSnapshot: func(t *testing.T, req *controlplanev1alpha1.CreateSnapshotRequest) (*controlplanev1alpha1.CreateSnapshotResponse, error) {
+			expectStartSnapshot: func(t *testing.T, req *controlplanev1alpha1.StartSnapshotRequest) (*controlplanev1alpha1.StartSnapshotResponse, error) {
 				assert.Equal(t, "pre-deploy", req.GetDescription())
-				return &controlplanev1alpha1.CreateSnapshotResponse{}, nil
+				return &controlplanev1alpha1.StartSnapshotResponse{}, nil
 			},
 			wantStdoutHas: []string{"Snapshot requested"},
 		},
@@ -99,17 +99,17 @@ func TestSnapshot(t *testing.T) {
 			wantErr: "NotFound",
 		},
 		{
-			name: "CreateSnapshot Aborted (stale version) surfaces as an error",
+			name: "StartSnapshot Aborted (stale version) surfaces as an error",
 			args: "my-sandbox --version 1",
-			expectCreateSnapshot: func(_ *testing.T, _ *controlplanev1alpha1.CreateSnapshotRequest) (*controlplanev1alpha1.CreateSnapshotResponse, error) {
+			expectStartSnapshot: func(_ *testing.T, _ *controlplanev1alpha1.StartSnapshotRequest) (*controlplanev1alpha1.StartSnapshotResponse, error) {
 				return nil, status.Error(codes.Aborted, "version mismatch")
 			},
 			wantErr: "Aborted",
 		},
 		{
-			name: "CreateSnapshot FailedPrecondition (e.g. during in-flight pause) surfaces as an error",
+			name: "StartSnapshot FailedPrecondition (e.g. during in-flight pause) surfaces as an error",
 			args: "my-sandbox --version 1",
-			expectCreateSnapshot: func(_ *testing.T, _ *controlplanev1alpha1.CreateSnapshotRequest) (*controlplanev1alpha1.CreateSnapshotResponse, error) {
+			expectStartSnapshot: func(_ *testing.T, _ *controlplanev1alpha1.StartSnapshotRequest) (*controlplanev1alpha1.StartSnapshotResponse, error) {
 				return nil, status.Error(codes.FailedPrecondition, "cannot snapshot during pause")
 			},
 			wantErr: "FailedPrecondition",
@@ -117,7 +117,7 @@ func TestSnapshot(t *testing.T) {
 		{
 			name: "server InvalidArgument (e.g. description too long) surfaces as an error",
 			args: "my-sandbox --version 1 --description " + strings.Repeat("a", 257),
-			expectCreateSnapshot: func(_ *testing.T, _ *controlplanev1alpha1.CreateSnapshotRequest) (*controlplanev1alpha1.CreateSnapshotResponse, error) {
+			expectStartSnapshot: func(_ *testing.T, _ *controlplanev1alpha1.StartSnapshotRequest) (*controlplanev1alpha1.StartSnapshotResponse, error) {
 				return nil, status.Error(codes.InvalidArgument, "description too long")
 			},
 			wantErr: "InvalidArgument",
@@ -146,11 +146,11 @@ func TestSnapshot(t *testing.T) {
 						return tc.expectGet(t, req)
 					})
 			}
-			if tc.expectCreateSnapshot != nil {
+			if tc.expectStartSnapshot != nil {
 				sandboxMock.EXPECT().
-					CreateSnapshot(gomock.Any(), gomock.Any()).
-					DoAndReturn(func(_ context.Context, req *controlplanev1alpha1.CreateSnapshotRequest, _ ...grpc.CallOption) (*controlplanev1alpha1.CreateSnapshotResponse, error) {
-						return tc.expectCreateSnapshot(t, req)
+					StartSnapshot(gomock.Any(), gomock.Any()).
+					DoAndReturn(func(_ context.Context, req *controlplanev1alpha1.StartSnapshotRequest, _ ...grpc.CallOption) (*controlplanev1alpha1.StartSnapshotResponse, error) {
+						return tc.expectStartSnapshot(t, req)
 					})
 			}
 
