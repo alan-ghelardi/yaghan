@@ -262,7 +262,7 @@ func (r *Reconciler) reconcileResources(ctx context.Context, sandbox *controlpla
 // Intent.Phase with the saved phase to return to, and the shared
 // post-action code in reconcilePhase restores it after we return.
 //
-// The caller's Description on Intent.CreateSnapshot is currently dropped
+// The caller's Description on Intent.StartSnapshot is currently dropped
 // on the floor — the daemon only needs the trigger signal today.
 // Forwarding it into a snapshot manifest is a separate concern.
 func (r *Reconciler) snapshot(ctx context.Context, sandbox *controlplanev1alpha1.Sandbox) error {
@@ -279,8 +279,8 @@ func (r *Reconciler) snapshot(ctx context.Context, sandbox *controlplanev1alpha1
 		return fmt.Errorf("persist snapshot: %w", err)
 	}
 
-	sandbox.GetIntent().CreateSnapshot = nil
-	sandbox.LastSnapshot = &controlplanev1alpha1.CreateSnapshotOutput{
+	sandbox.GetIntent().StartSnapshot = nil
+	sandbox.LastSnapshot = &controlplanev1alpha1.SnapshotOutput{
 		SnapshotId: localRef.SnapshotID,
 		CreatedAt:  timestamppb.Now(),
 	}

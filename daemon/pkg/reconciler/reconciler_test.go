@@ -406,21 +406,21 @@ func TestReconcile_UpdateResourcesFailureKeepsIntent(t *testing.T) {
 		"Intent.Resources must be preserved for retry")
 }
 
-// TestReconcile_CreateSnapshotRestoresRunningPhase exercises the
+// TestReconcile_SnapshotRestoresRunningPhase exercises the
 // happy path from a sandbox that was running when the snapshot
 // request arrived. The api-server stamps Status.Phase = SNAPSHOTTING
 // and Intent.Phase = RUNNING (the saved phase to restore); the
 // reconciler runs the snapshot action and converges Status.Phase
 // back to RUNNING.
-func TestReconcile_CreateSnapshotRestoresRunningPhase(t *testing.T) {
+func TestReconcile_SnapshotRestoresRunningPhase(t *testing.T) {
 	r, provider, _, vm, durableStore := newReconcilerFixture(t)
 	ctx := context.Background()
 
 	sandbox := fixtureSandbox("sb-snap")
 	sandbox.Status.Phase = cpv1.SandboxStatus_PHASE_SNAPSHOTTING
 	sandbox.Intent = &cpv1.Intent{
-		Phase:          cpv1.SandboxStatus_PHASE_RUNNING,
-		CreateSnapshot: &cpv1.CreateSnapshotInput{Description: "before-deploy"},
+		Phase:         cpv1.SandboxStatus_PHASE_RUNNING,
+		StartSnapshot: &cpv1.StartSnapshotInput{Description: "before-deploy"},
 	}
 
 	localRef := stubLocalRefWithFiles(t, "snap-1")
@@ -447,19 +447,19 @@ func TestReconcile_CreateSnapshotRestoresRunningPhase(t *testing.T) {
 		"LastSnapshot.CreatedAt must be stamped during the reconcile")
 }
 
-// TestReconcile_CreateSnapshotRestoresPausedPhase verifies the
+// TestReconcile_SnapshotRestoresPausedPhase verifies the
 // reconciler routes a snapshot triggered on a paused sandbox back to
 // PAUSED rather than implicitly resuming. The api-server sets
 // Intent.Phase = PAUSED in that case.
-func TestReconcile_CreateSnapshotRestoresPausedPhase(t *testing.T) {
+func TestReconcile_SnapshotRestoresPausedPhase(t *testing.T) {
 	r, provider, _, vm, durableStore := newReconcilerFixture(t)
 	ctx := context.Background()
 
 	sandbox := fixtureSandbox("sb-snap-paused")
 	sandbox.Status.Phase = cpv1.SandboxStatus_PHASE_SNAPSHOTTING
 	sandbox.Intent = &cpv1.Intent{
-		Phase:          cpv1.SandboxStatus_PHASE_PAUSED,
-		CreateSnapshot: &cpv1.CreateSnapshotInput{},
+		Phase:         cpv1.SandboxStatus_PHASE_PAUSED,
+		StartSnapshot: &cpv1.StartSnapshotInput{},
 	}
 
 	localRef := stubLocalRefWithFiles(t, "snap-paused")
@@ -475,20 +475,20 @@ func TestReconcile_CreateSnapshotRestoresPausedPhase(t *testing.T) {
 	assert.Nil(t, sandbox.Intent)
 }
 
-// TestReconcile_CreateSnapshotDropsDescription pins the current behavior:
+// TestReconcile_SnapshotDropsDescription pins the current behavior:
 // the daemon does not forward the user-supplied Description into
 // LastSnapshot or anywhere else. The day we want to forward it (into
 // the snapshot manifest, an S3 object tag, etc.) this test must be
 // updated explicitly so the change is intentional.
-func TestReconcile_CreateSnapshotDropsDescription(t *testing.T) {
+func TestReconcile_SnapshotDropsDescription(t *testing.T) {
 	r, provider, _, vm, durableStore := newReconcilerFixture(t)
 	ctx := context.Background()
 
 	sandbox := fixtureSandbox("sb-snap-desc")
 	sandbox.Status.Phase = cpv1.SandboxStatus_PHASE_SNAPSHOTTING
 	sandbox.Intent = &cpv1.Intent{
-		Phase:          cpv1.SandboxStatus_PHASE_RUNNING,
-		CreateSnapshot: &cpv1.CreateSnapshotInput{Description: "pre-deploy snapshot"},
+		Phase:         cpv1.SandboxStatus_PHASE_RUNNING,
+		StartSnapshot: &cpv1.StartSnapshotInput{Description: "pre-deploy snapshot"},
 	}
 
 	localRef := stubLocalRefWithFiles(t, "snap-desc")
@@ -508,9 +508,9 @@ func TestReconcile_CreateSnapshotDropsDescription(t *testing.T) {
 }
 
 // TestReconcile_CombinedIntentsAreAppliedInOrderAndCleared covers a
-// boot + resize fanout in a single reconcile. CreateSnapshot is no
+// boot + resize fanout in a single reconcile. StartSnapshot is no
 // longer combinable with a phase transition — the api-server rejects
-// CreateSnapshot unless saved Status.Phase ∈ {RUNNING, PAUSED}, and
+// StartSnapshot unless saved Status.Phase ∈ {RUNNING, PAUSED}, and
 // the snapshot itself flows through PHASE_SNAPSHOTTING as its own
 // transitional state.
 func TestReconcile_CombinedIntentsAreAppliedInOrderAndCleared(t *testing.T) {
