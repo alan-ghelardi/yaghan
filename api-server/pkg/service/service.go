@@ -10,6 +10,8 @@ import (
 	nodedynamodb "golang.nuinfra.api-server/pkg/db/node/dynamodb"
 	sandboxdb "golang.nuinfra.api-server/pkg/db/sandbox"
 	"golang.nuinfra.api-server/pkg/db/sandbox/dynamodb"
+	snapshotdb "golang.nuinfra.api-server/pkg/db/snapshot"
+	snapshotdynamodb "golang.nuinfra.api-server/pkg/db/snapshot/dynamodb"
 	"golang.nuinfra.api-server/pkg/scheduler"
 	"golang.nuinfra.api-server/pkg/scheduler/random"
 	"golang.nuinfra.api-server/pkg/watch"
@@ -24,6 +26,7 @@ type apiServer struct {
 	server.BaseService
 	cpv1.UnimplementedClusterServiceServer
 	cpv1.UnimplementedSandboxServiceServer
+	cpv1.UnimplementedSnapshotServiceServer
 
 	// config is a bundle containing the server configurations.
 	config *config.Bundle
@@ -36,6 +39,12 @@ type apiServer struct {
 	// EstablishSession handler creates / refreshes nodes here on every
 	// connect, and applies PatchNodeRequest patches in place.
 	nodeDB nodedb.DB
+
+	// snapshotDB is the database instance to persist and retrieve
+	// snapshots. Snapshots are immutable, so the raw DB is used directly
+	// (no WatchableDB wrapper): there is no value in emitting events for
+	// an entity that never transitions state.
+	snapshotDB snapshotdb.DB
 
 	// scheduler picks a node for each newly-created sandbox before the
 	// row is persisted. Production placement will swap this for a
@@ -65,6 +74,7 @@ func (a *apiServer) GetConfig() commonsconfig.Base {
 func (a *apiServer) RegisterGRPC(_ context.Context, grpcServer *grpc.Server) error {
 	cpv1.RegisterSandboxServiceServer(grpcServer, a)
 	cpv1.RegisterClusterServiceServer(grpcServer, a)
+	cpv1.RegisterSnapshotServiceServer(grpcServer, a)
 	return nil
 }
 
@@ -73,7 +83,10 @@ func (a *apiServer) RegisterRESTGateway(ctx context.Context, mux *runtime.ServeM
 	if err := cpv1.RegisterSandboxServiceHandler(ctx, mux, conn); err != nil {
 		return err
 	}
-	return cpv1.RegisterClusterServiceHandler(ctx, mux, conn)
+	if err := cpv1.RegisterClusterServiceHandler(ctx, mux, conn); err != nil {
+		return err
+	}
+	return cpv1.RegisterSnapshotServiceHandler(ctx, mux, conn)
 }
 
 // Setup implements [server.Service].
@@ -88,6 +101,7 @@ func (a *apiServer) Setup(ctx context.Context) error {
 	a.eventStream = stream
 	a.db = NewWatchableDB(rawDB, stream)
 	a.nodeDB = nodedynamodb.New(ctx, a.config)
+	a.snapshotDB = snapshotdynamodb.New(ctx, a.config)
 	a.scheduler = random.New(a.nodeDB)
 	return nil
 }

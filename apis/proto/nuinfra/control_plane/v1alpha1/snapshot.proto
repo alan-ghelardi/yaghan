@@ -95,9 +95,13 @@ message ListSnapshotsRequest {
   };
 
   // Validation rule: the fields `namespace` and `sandbox_id` are mutually exclusive.
+  // buf.validate CEL semantics: the expression must evaluate to true for the
+  // message to be valid; the rule fires (and `message` is returned) when it
+  // evaluates to false. So this expression reads "it is NOT the case that both
+  // fields are set" — i.e. mutually exclusive.
   option (buf.validate.message).cel = {
     id: "ListSnapshotsRequest.mutually_exclusive_fields"
-    expression: "has(this.namespace) && has(this.sandbox_id)"
+    expression: "!(has(this.namespace) && has(this.sandbox_id))"
     message: "Only one of the fields `namespace` or `sandbox_id` may be specified"
   };
 
@@ -143,5 +147,9 @@ service SnapshotService {
 
   rpc ListSnapshots(ListSnapshotsRequest) returns (ListSnapshotsResponse) {
     option (google.api.http) = {get: "/v1alpha1/snapshots"};
+  }
+
+  rpc DeleteSnapshot(DeleteSnapshotRequest) returns (DeleteSnapshotResponse) {
+    option (google.api.http) = {delete: "/v1alpha1/snapshots/{snapshot_id}"};
   }
 }

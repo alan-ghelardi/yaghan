@@ -15,5 +15,6 @@ source $cur_dir/../../hack/helpers.sh
 # Call the function gen_mocks for each file containing interfaces to be mocked.
 gen_mocks gen/nuinfra/control_plane/v1alpha1/cluster_grpc.pb.go
 gen_mocks gen/nuinfra/control_plane/v1alpha1/sandbox_grpc.pb.go
+gen_mocks gen/nuinfra/control_plane/v1alpha1/snapshot_grpc.pb.go
 gen_mocks gen/nuinfra/data_plane/v1alpha1/daemon_grpc.pb.go
 

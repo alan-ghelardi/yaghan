@@ -316,5 +316,13 @@ export declare const SnapshotService: GenService<{
     input: typeof ListSnapshotsRequestSchema;
     output: typeof ListSnapshotsResponseSchema;
   },
+  /**
+   * @generated from rpc nuinfra.control_plane.v1alpha1.SnapshotService.DeleteSnapshot
+   */
+  deleteSnapshot: {
+    methodKind: "unary";
+    input: typeof DeleteSnapshotRequestSchema;
+    output: typeof DeleteSnapshotResponseSchema;
+  },
 }>;
 

@@ -105,6 +105,37 @@ public final class SnapshotServiceGrpc {
     return getListSnapshotsMethod;
   }
 
+  private static volatile io.grpc.MethodDescriptor<com.nuinfra.control_plane.v1alpha1.DeleteSnapshotRequest,
+      com.nuinfra.control_plane.v1alpha1.DeleteSnapshotResponse> getDeleteSnapshotMethod;
+
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "DeleteSnapshot",
+      requestType = com.nuinfra.control_plane.v1alpha1.DeleteSnapshotRequest.class,
+      responseType = com.nuinfra.control_plane.v1alpha1.DeleteSnapshotResponse.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
+  public static io.grpc.MethodDescriptor<com.nuinfra.control_plane.v1alpha1.DeleteSnapshotRequest,
+      com.nuinfra.control_plane.v1alpha1.DeleteSnapshotResponse> getDeleteSnapshotMethod() {
+    io.grpc.MethodDescriptor<com.nuinfra.control_plane.v1alpha1.DeleteSnapshotRequest, com.nuinfra.control_plane.v1alpha1.DeleteSnapshotResponse> getDeleteSnapshotMethod;
+    if ((getDeleteSnapshotMethod = SnapshotServiceGrpc.getDeleteSnapshotMethod) == null) {
+      synchronized (SnapshotServiceGrpc.class) {
+        if ((getDeleteSnapshotMethod = SnapshotServiceGrpc.getDeleteSnapshotMethod) == null) {
+          SnapshotServiceGrpc.getDeleteSnapshotMethod = getDeleteSnapshotMethod =
+              io.grpc.MethodDescriptor.<com.nuinfra.control_plane.v1alpha1.DeleteSnapshotRequest, com.nuinfra.control_plane.v1alpha1.DeleteSnapshotResponse>newBuilder()
+              .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "DeleteSnapshot"))
+              .setSampledToLocalTracing(true)
+              .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  com.nuinfra.control_plane.v1alpha1.DeleteSnapshotRequest.getDefaultInstance()))
+              .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  com.nuinfra.control_plane.v1alpha1.DeleteSnapshotResponse.getDefaultInstance()))
+              .setSchemaDescriptor(new SnapshotServiceMethodDescriptorSupplier("DeleteSnapshot"))
+              .build();
+        }
+      }
+    }
+    return getDeleteSnapshotMethod;
+  }
+
   /**
    * Creates a new async stub that supports all call types for the service
    */
@@ -188,6 +219,13 @@ public final class SnapshotServiceGrpc {
         io.grpc.stub.StreamObserver<com.nuinfra.control_plane.v1alpha1.ListSnapshotsResponse> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getListSnapshotsMethod(), responseObserver);
     }
+
+    /**
+     */
+    default void deleteSnapshot(com.nuinfra.control_plane.v1alpha1.DeleteSnapshotRequest request,
+        io.grpc.stub.StreamObserver<com.nuinfra.control_plane.v1alpha1.DeleteSnapshotResponse> responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getDeleteSnapshotMethod(), responseObserver);
+    }
   }
 
   /**
@@ -240,6 +278,14 @@ public final class SnapshotServiceGrpc {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getListSnapshotsMethod(), getCallOptions()), request, responseObserver);
     }
+
+    /**
+     */
+    public void deleteSnapshot(com.nuinfra.control_plane.v1alpha1.DeleteSnapshotRequest request,
+        io.grpc.stub.StreamObserver<com.nuinfra.control_plane.v1alpha1.DeleteSnapshotResponse> responseObserver) {
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
+          getChannel().newCall(getDeleteSnapshotMethod(), getCallOptions()), request, responseObserver);
+    }
   }
 
   /**
@@ -278,6 +324,13 @@ public final class SnapshotServiceGrpc {
       return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getListSnapshotsMethod(), getCallOptions(), request);
     }
+
+    /**
+     */
+    public com.nuinfra.control_plane.v1alpha1.DeleteSnapshotResponse deleteSnapshot(com.nuinfra.control_plane.v1alpha1.DeleteSnapshotRequest request) throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
+          getChannel(), getDeleteSnapshotMethod(), getCallOptions(), request);
+    }
   }
 
   /**
@@ -315,6 +368,13 @@ public final class SnapshotServiceGrpc {
     public com.nuinfra.control_plane.v1alpha1.ListSnapshotsResponse listSnapshots(com.nuinfra.control_plane.v1alpha1.ListSnapshotsRequest request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getListSnapshotsMethod(), getCallOptions(), request);
+    }
+
+    /**
+     */
+    public com.nuinfra.control_plane.v1alpha1.DeleteSnapshotResponse deleteSnapshot(com.nuinfra.control_plane.v1alpha1.DeleteSnapshotRequest request) {
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getDeleteSnapshotMethod(), getCallOptions(), request);
     }
   }
 
@@ -357,11 +417,20 @@ public final class SnapshotServiceGrpc {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getListSnapshotsMethod(), getCallOptions()), request);
     }
+
+    /**
+     */
+    public com.google.common.util.concurrent.ListenableFuture<com.nuinfra.control_plane.v1alpha1.DeleteSnapshotResponse> deleteSnapshot(
+        com.nuinfra.control_plane.v1alpha1.DeleteSnapshotRequest request) {
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
+          getChannel().newCall(getDeleteSnapshotMethod(), getCallOptions()), request);
+    }
   }
 
   private static final int METHODID_CREATE_SNAPSHOT = 0;
   private static final int METHODID_GET_SNAPSHOT = 1;
   private static final int METHODID_LIST_SNAPSHOTS = 2;
+  private static final int METHODID_DELETE_SNAPSHOT = 3;
 
   private static final class MethodHandlers<Req, Resp> implements
       io.grpc.stub.ServerCalls.UnaryMethod<Req, Resp>,
@@ -391,6 +460,10 @@ public final class SnapshotServiceGrpc {
         case METHODID_LIST_SNAPSHOTS:
           serviceImpl.listSnapshots((com.nuinfra.control_plane.v1alpha1.ListSnapshotsRequest) request,
               (io.grpc.stub.StreamObserver<com.nuinfra.control_plane.v1alpha1.ListSnapshotsResponse>) responseObserver);
+          break;
+        case METHODID_DELETE_SNAPSHOT:
+          serviceImpl.deleteSnapshot((com.nuinfra.control_plane.v1alpha1.DeleteSnapshotRequest) request,
+              (io.grpc.stub.StreamObserver<com.nuinfra.control_plane.v1alpha1.DeleteSnapshotResponse>) responseObserver);
           break;
         default:
           throw new AssertionError();
@@ -431,6 +504,13 @@ public final class SnapshotServiceGrpc {
               com.nuinfra.control_plane.v1alpha1.ListSnapshotsRequest,
               com.nuinfra.control_plane.v1alpha1.ListSnapshotsResponse>(
                 service, METHODID_LIST_SNAPSHOTS)))
+        .addMethod(
+          getDeleteSnapshotMethod(),
+          io.grpc.stub.ServerCalls.asyncUnaryCall(
+            new MethodHandlers<
+              com.nuinfra.control_plane.v1alpha1.DeleteSnapshotRequest,
+              com.nuinfra.control_plane.v1alpha1.DeleteSnapshotResponse>(
+                service, METHODID_DELETE_SNAPSHOT)))
         .build();
   }
 
@@ -482,6 +562,7 @@ public final class SnapshotServiceGrpc {
               .addMethod(getCreateSnapshotMethod())
               .addMethod(getGetSnapshotMethod())
               .addMethod(getListSnapshotsMethod())
+              .addMethod(getDeleteSnapshotMethod())
               .build();
         }
       }

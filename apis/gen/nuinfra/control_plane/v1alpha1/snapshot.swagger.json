@@ -140,6 +140,34 @@
         "tags": [
           "SnapshotService"
         ]
+      },
+      "delete": {
+        "operationId": "SnapshotService_DeleteSnapshot",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1alpha1DeleteSnapshotResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "snapshotId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "SnapshotService"
+        ]
       }
     }
   },
@@ -193,6 +221,9 @@
           "$ref": "#/definitions/v1alpha1Snapshot"
         }
       }
+    },
+    "v1alpha1DeleteSnapshotResponse": {
+      "type": "object"
     },
     "v1alpha1GetSnapshotResponse": {
       "type": "object",

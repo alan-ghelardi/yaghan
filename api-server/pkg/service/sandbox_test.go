@@ -40,6 +40,7 @@ import (
 
 const sandboxesSchemaPath = "../../../dynamodb-tables/sandboxes.json"
 const nodesSchemaPath = "../../../dynamodb-tables/nodes.json"
+const snapshotsSchemaPath = "../../../dynamodb-tables/snapshots.json"
 
 // sharedDynamoDBEndpoint is the http endpoint of the package-shared
 // DynamoDB Local container started by TestMain. The redis container
@@ -70,6 +71,7 @@ const validNamespace = "team-alpha"
 type harness struct {
 	client    cpv1.SandboxServiceClient
 	cluster   cpv1.ClusterServiceClient
+	snapshot  cpv1.SnapshotServiceClient
 	ddb       awsdynamodb.Client
 	tableName string
 
@@ -182,6 +184,7 @@ func startService(t *testing.T, opts ...harnessOption) *harness {
 	endpoint := sharedDynamoDBEndpoint
 	tableName := awstesting.CreateTable(t, endpoint, sandboxesSchemaPath)
 	nodesTableName := awstesting.CreateTable(t, endpoint, nodesSchemaPath)
+	snapshotsTableName := awstesting.CreateTable(t, endpoint, snapshotsSchemaPath)
 
 	// Pre-bind the gRPC listener and pass it to server.Start via context.
 	// This eliminates the close→relisten race that exists when picking a
@@ -204,6 +207,7 @@ func startService(t *testing.T, opts ...harnessOption) *harness {
 			AWS: &config.AWS{
 				SandboxesTableName: tableName,
 				NodesTableName:     nodesTableName,
+				SnapshotsTableName: snapshotsTableName,
 				EndpointURL:        endpoint,
 			},
 		},
@@ -245,6 +249,7 @@ func startService(t *testing.T, opts ...harnessOption) *harness {
 	h := &harness{
 		client:    cpv1.NewSandboxServiceClient(conn),
 		cluster:   cpv1.NewClusterServiceClient(conn),
+		snapshot:  cpv1.NewSnapshotServiceClient(conn),
 		ddb:       ddbClient,
 		tableName: tableName,
 		nodeDB:    nodedynamodb.New(ctx, bundle),

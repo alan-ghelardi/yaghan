@@ -669,7 +669,7 @@ const file_nuinfra_control_plane_v1alpha1_snapshot_proto_rawDesc = "" +
 	"\vsnapshot_id\x18\x01 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\n" +
 	"snapshotId\"[\n" +
 	"\x13GetSnapshotResponse\x12D\n" +
-	"\bsnapshot\x18\x01 \x01(\v2(.nuinfra.control_plane.v1alpha1.SnapshotR\bsnapshot\"\xea\x06\n" +
+	"\bsnapshot\x18\x01 \x01(\v2(.nuinfra.control_plane.v1alpha1.SnapshotR\bsnapshot\"\xed\x06\n" +
 	"\x14ListSnapshotsRequest\x12\x1c\n" +
 	"\tnamespace\x18\x01 \x01(\tR\tnamespace\x12\x1d\n" +
 	"\n" +
@@ -682,9 +682,9 @@ const file_nuinfra_control_plane_v1alpha1_snapshot_proto_rawDesc = "" +
 	"\x05Order\x12\x15\n" +
 	"\x11ORDER_UNSPECIFIED\x10\x00\x12\x16\n" +
 	"\x12ORDER_NEWEST_FIRST\x10\x01\x12\x16\n" +
-	"\x12ORDER_OLDEST_FIRST\x10\x02:\x91\x04\xbaH\x8d\x04\x1a\xa4\x01\n" +
-	"$ListSnapshotsRequest.required_fields\x12OAt least one of `namespace` or `sandbox_id` must be provided to list snapshots.\x1a+has(this.namespace) || has(this.sandbox_id)\x1a\xa2\x01\n" +
-	".ListSnapshotsRequest.mutually_exclusive_fields\x12COnly one of the fields `namespace` or `sandbox_id` may be specified\x1a+has(this.namespace) && has(this.sandbox_id)\x1a\xbe\x01\n" +
+	"\x12ORDER_OLDEST_FIRST\x10\x02:\x94\x04\xbaH\x90\x04\x1a\xa4\x01\n" +
+	"$ListSnapshotsRequest.required_fields\x12OAt least one of `namespace` or `sandbox_id` must be provided to list snapshots.\x1a+has(this.namespace) || has(this.sandbox_id)\x1a\xa5\x01\n" +
+	".ListSnapshotsRequest.mutually_exclusive_fields\x12COnly one of the fields `namespace` or `sandbox_id` may be specified\x1a.!(has(this.namespace) && has(this.sandbox_id))\x1a\xbe\x01\n" +
 	"&ListSnapshotsRequest.namespace_pattern\x12Bnamespace must match ^[a-z][a-z0-9-]{0,61}[a-z0-9]$ when provided.\x1aPthis.namespace == '' || this.namespace.matches('^[a-z][a-z0-9-]{0,61}[a-z0-9]$')\"\x8e\x01\n" +
 	"\x15ListSnapshotsResponse\x12F\n" +
 	"\tsnapshots\x18\x01 \x03(\v2(.nuinfra.control_plane.v1alpha1.SnapshotR\tsnapshots\x12-\n" +
@@ -692,11 +692,12 @@ const file_nuinfra_control_plane_v1alpha1_snapshot_proto_rawDesc = "" +
 	"\x15DeleteSnapshotRequest\x12'\n" +
 	"\vsnapshot_id\x18\x01 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\n" +
 	"snapshotId\"\x18\n" +
-	"\x16DeleteSnapshotResponse2\xf3\x03\n" +
+	"\x16DeleteSnapshotResponse2\xa0\x05\n" +
 	"\x0fSnapshotService\x12\x9f\x01\n" +
 	"\x0eCreateSnapshot\x125.nuinfra.control_plane.v1alpha1.CreateSnapshotRequest\x1a6.nuinfra.control_plane.v1alpha1.CreateSnapshotResponse\"\x1e\x82\xd3\xe4\x93\x02\x18:\x01*\"\x13/v1alpha1/snapshots\x12\xa1\x01\n" +
 	"\vGetSnapshot\x122.nuinfra.control_plane.v1alpha1.GetSnapshotRequest\x1a3.nuinfra.control_plane.v1alpha1.GetSnapshotResponse\")\x82\xd3\xe4\x93\x02#\x12!/v1alpha1/snapshots/{snapshot_id}\x12\x99\x01\n" +
-	"\rListSnapshots\x124.nuinfra.control_plane.v1alpha1.ListSnapshotsRequest\x1a5.nuinfra.control_plane.v1alpha1.ListSnapshotsResponse\"\x1b\x82\xd3\xe4\x93\x02\x15\x12\x13/v1alpha1/snapshotsB\x9b\x02\n" +
+	"\rListSnapshots\x124.nuinfra.control_plane.v1alpha1.ListSnapshotsRequest\x1a5.nuinfra.control_plane.v1alpha1.ListSnapshotsResponse\"\x1b\x82\xd3\xe4\x93\x02\x15\x12\x13/v1alpha1/snapshots\x12\xaa\x01\n" +
+	"\x0eDeleteSnapshot\x125.nuinfra.control_plane.v1alpha1.DeleteSnapshotRequest\x1a6.nuinfra.control_plane.v1alpha1.DeleteSnapshotResponse\")\x82\xd3\xe4\x93\x02#*!/v1alpha1/snapshots/{snapshot_id}B\x9b\x02\n" +
 	"\"com.nuinfra.control_plane.v1alpha1B\rSnapshotProtoP\x01ZPgolang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1;control_planev1alpha1\xa2\x02\x03NCX\xaa\x02\x1dNuinfra.ControlPlane.V1alpha1\xca\x02\x1dNuinfra\\ControlPlane\\V1alpha1\xe2\x02)Nuinfra\\ControlPlane\\V1alpha1\\GPBMetadata\xea\x02\x1fNuinfra::ControlPlane::V1alpha1b\x06proto3"
 
 var (
@@ -740,11 +741,13 @@ var file_nuinfra_control_plane_v1alpha1_snapshot_proto_depIdxs = []int32{
 	4,  // 8: nuinfra.control_plane.v1alpha1.SnapshotService.CreateSnapshot:input_type -> nuinfra.control_plane.v1alpha1.CreateSnapshotRequest
 	6,  // 9: nuinfra.control_plane.v1alpha1.SnapshotService.GetSnapshot:input_type -> nuinfra.control_plane.v1alpha1.GetSnapshotRequest
 	8,  // 10: nuinfra.control_plane.v1alpha1.SnapshotService.ListSnapshots:input_type -> nuinfra.control_plane.v1alpha1.ListSnapshotsRequest
-	5,  // 11: nuinfra.control_plane.v1alpha1.SnapshotService.CreateSnapshot:output_type -> nuinfra.control_plane.v1alpha1.CreateSnapshotResponse
-	7,  // 12: nuinfra.control_plane.v1alpha1.SnapshotService.GetSnapshot:output_type -> nuinfra.control_plane.v1alpha1.GetSnapshotResponse
-	9,  // 13: nuinfra.control_plane.v1alpha1.SnapshotService.ListSnapshots:output_type -> nuinfra.control_plane.v1alpha1.ListSnapshotsResponse
-	11, // [11:14] is the sub-list for method output_type
-	8,  // [8:11] is the sub-list for method input_type
+	10, // 11: nuinfra.control_plane.v1alpha1.SnapshotService.DeleteSnapshot:input_type -> nuinfra.control_plane.v1alpha1.DeleteSnapshotRequest
+	5,  // 12: nuinfra.control_plane.v1alpha1.SnapshotService.CreateSnapshot:output_type -> nuinfra.control_plane.v1alpha1.CreateSnapshotResponse
+	7,  // 13: nuinfra.control_plane.v1alpha1.SnapshotService.GetSnapshot:output_type -> nuinfra.control_plane.v1alpha1.GetSnapshotResponse
+	9,  // 14: nuinfra.control_plane.v1alpha1.SnapshotService.ListSnapshots:output_type -> nuinfra.control_plane.v1alpha1.ListSnapshotsResponse
+	11, // 15: nuinfra.control_plane.v1alpha1.SnapshotService.DeleteSnapshot:output_type -> nuinfra.control_plane.v1alpha1.DeleteSnapshotResponse
+	12, // [12:16] is the sub-list for method output_type
+	8,  // [8:12] is the sub-list for method input_type
 	8,  // [8:8] is the sub-list for extension type_name
 	8,  // [8:8] is the sub-list for extension extendee
 	0,  // [0:8] is the sub-list for field type_name

@@ -145,6 +145,58 @@ func local_request_SnapshotService_ListSnapshots_0(ctx context.Context, marshale
 
 }
 
+func request_SnapshotService_DeleteSnapshot_0(ctx context.Context, marshaler runtime.Marshaler, client SnapshotServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq DeleteSnapshotRequest
+	var metadata runtime.ServerMetadata
+
+	var (
+		val string
+		ok  bool
+		err error
+		_   = err
+	)
+
+	val, ok = pathParams["snapshot_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "snapshot_id")
+	}
+
+	protoReq.SnapshotId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "snapshot_id", err)
+	}
+
+	msg, err := client.DeleteSnapshot(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_SnapshotService_DeleteSnapshot_0(ctx context.Context, marshaler runtime.Marshaler, server SnapshotServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq DeleteSnapshotRequest
+	var metadata runtime.ServerMetadata
+
+	var (
+		val string
+		ok  bool
+		err error
+		_   = err
+	)
+
+	val, ok = pathParams["snapshot_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "snapshot_id")
+	}
+
+	protoReq.SnapshotId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "snapshot_id", err)
+	}
+
+	msg, err := server.DeleteSnapshot(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
 // RegisterSnapshotServiceHandlerServer registers the http handlers for service SnapshotService to "mux".
 // UnaryRPC     :call SnapshotServiceServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
@@ -224,6 +276,31 @@ func RegisterSnapshotServiceHandlerServer(ctx context.Context, mux *runtime.Serv
 		}
 
 		forward_SnapshotService_ListSnapshots_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("DELETE", pattern_SnapshotService_DeleteSnapshot_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		var err error
+		var annotatedContext context.Context
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/nuinfra.control_plane.v1alpha1.SnapshotService/DeleteSnapshot", runtime.WithHTTPPathPattern("/v1alpha1/snapshots/{snapshot_id}"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_SnapshotService_DeleteSnapshot_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_SnapshotService_DeleteSnapshot_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -334,6 +411,28 @@ func RegisterSnapshotServiceHandlerClient(ctx context.Context, mux *runtime.Serv
 
 	})
 
+	mux.Handle("DELETE", pattern_SnapshotService_DeleteSnapshot_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		var err error
+		var annotatedContext context.Context
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/nuinfra.control_plane.v1alpha1.SnapshotService/DeleteSnapshot", runtime.WithHTTPPathPattern("/v1alpha1/snapshots/{snapshot_id}"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_SnapshotService_DeleteSnapshot_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_SnapshotService_DeleteSnapshot_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
 	return nil
 }
 
@@ -343,6 +442,8 @@ var (
 	pattern_SnapshotService_GetSnapshot_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"v1alpha1", "snapshots", "snapshot_id"}, ""))
 
 	pattern_SnapshotService_ListSnapshots_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1alpha1", "snapshots"}, ""))
+
+	pattern_SnapshotService_DeleteSnapshot_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"v1alpha1", "snapshots", "snapshot_id"}, ""))
 )
 
 var (
@@ -351,4 +452,6 @@ var (
 	forward_SnapshotService_GetSnapshot_0 = runtime.ForwardResponseMessage
 
 	forward_SnapshotService_ListSnapshots_0 = runtime.ForwardResponseMessage
+
+	forward_SnapshotService_DeleteSnapshot_0 = runtime.ForwardResponseMessage
 )

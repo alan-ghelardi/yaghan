@@ -1164,6 +1164,7 @@ Controls how results are ordered by creation time.
 | CreateSnapshot | [CreateSnapshotRequest](#nuinfra-control_plane-v1alpha1-CreateSnapshotRequest) | [CreateSnapshotResponse](#nuinfra-control_plane-v1alpha1-CreateSnapshotResponse) |  |
 | GetSnapshot | [GetSnapshotRequest](#nuinfra-control_plane-v1alpha1-GetSnapshotRequest) | [GetSnapshotResponse](#nuinfra-control_plane-v1alpha1-GetSnapshotResponse) |  |
 | ListSnapshots | [ListSnapshotsRequest](#nuinfra-control_plane-v1alpha1-ListSnapshotsRequest) | [ListSnapshotsResponse](#nuinfra-control_plane-v1alpha1-ListSnapshotsResponse) |  |
+| DeleteSnapshot | [DeleteSnapshotRequest](#nuinfra-control_plane-v1alpha1-DeleteSnapshotRequest) | [DeleteSnapshotResponse](#nuinfra-control_plane-v1alpha1-DeleteSnapshotResponse) |  |
 
  
 

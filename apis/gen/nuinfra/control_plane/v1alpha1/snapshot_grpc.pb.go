@@ -22,6 +22,7 @@ const (
 	SnapshotService_CreateSnapshot_FullMethodName = "/nuinfra.control_plane.v1alpha1.SnapshotService/CreateSnapshot"
 	SnapshotService_GetSnapshot_FullMethodName    = "/nuinfra.control_plane.v1alpha1.SnapshotService/GetSnapshot"
 	SnapshotService_ListSnapshots_FullMethodName  = "/nuinfra.control_plane.v1alpha1.SnapshotService/ListSnapshots"
+	SnapshotService_DeleteSnapshot_FullMethodName = "/nuinfra.control_plane.v1alpha1.SnapshotService/DeleteSnapshot"
 )
 
 // SnapshotServiceClient is the client API for SnapshotService service.
@@ -31,6 +32,7 @@ type SnapshotServiceClient interface {
 	CreateSnapshot(ctx context.Context, in *CreateSnapshotRequest, opts ...grpc.CallOption) (*CreateSnapshotResponse, error)
 	GetSnapshot(ctx context.Context, in *GetSnapshotRequest, opts ...grpc.CallOption) (*GetSnapshotResponse, error)
 	ListSnapshots(ctx context.Context, in *ListSnapshotsRequest, opts ...grpc.CallOption) (*ListSnapshotsResponse, error)
+	DeleteSnapshot(ctx context.Context, in *DeleteSnapshotRequest, opts ...grpc.CallOption) (*DeleteSnapshotResponse, error)
 }
 
 type snapshotServiceClient struct {
@@ -71,6 +73,16 @@ func (c *snapshotServiceClient) ListSnapshots(ctx context.Context, in *ListSnaps
 	return out, nil
 }
 
+func (c *snapshotServiceClient) DeleteSnapshot(ctx context.Context, in *DeleteSnapshotRequest, opts ...grpc.CallOption) (*DeleteSnapshotResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteSnapshotResponse)
+	err := c.cc.Invoke(ctx, SnapshotService_DeleteSnapshot_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // SnapshotServiceServer is the server API for SnapshotService service.
 // All implementations must embed UnimplementedSnapshotServiceServer
 // for forward compatibility.
@@ -78,6 +90,7 @@ type SnapshotServiceServer interface {
 	CreateSnapshot(context.Context, *CreateSnapshotRequest) (*CreateSnapshotResponse, error)
 	GetSnapshot(context.Context, *GetSnapshotRequest) (*GetSnapshotResponse, error)
 	ListSnapshots(context.Context, *ListSnapshotsRequest) (*ListSnapshotsResponse, error)
+	DeleteSnapshot(context.Context, *DeleteSnapshotRequest) (*DeleteSnapshotResponse, error)
 	mustEmbedUnimplementedSnapshotServiceServer()
 }
 
@@ -96,6 +109,9 @@ func (UnimplementedSnapshotServiceServer) GetSnapshot(context.Context, *GetSnaps
 }
 func (UnimplementedSnapshotServiceServer) ListSnapshots(context.Context, *ListSnapshotsRequest) (*ListSnapshotsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListSnapshots not implemented")
+}
+func (UnimplementedSnapshotServiceServer) DeleteSnapshot(context.Context, *DeleteSnapshotRequest) (*DeleteSnapshotResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteSnapshot not implemented")
 }
 func (UnimplementedSnapshotServiceServer) mustEmbedUnimplementedSnapshotServiceServer() {}
 func (UnimplementedSnapshotServiceServer) testEmbeddedByValue()                         {}
@@ -172,6 +188,24 @@ func _SnapshotService_ListSnapshots_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _SnapshotService_DeleteSnapshot_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteSnapshotRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SnapshotServiceServer).DeleteSnapshot(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SnapshotService_DeleteSnapshot_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SnapshotServiceServer).DeleteSnapshot(ctx, req.(*DeleteSnapshotRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // SnapshotService_ServiceDesc is the grpc.ServiceDesc for SnapshotService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -190,6 +224,10 @@ var SnapshotService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListSnapshots",
 			Handler:    _SnapshotService_ListSnapshots_Handler,
+		},
+		{
+			MethodName: "DeleteSnapshot",
+			Handler:    _SnapshotService_DeleteSnapshot_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
