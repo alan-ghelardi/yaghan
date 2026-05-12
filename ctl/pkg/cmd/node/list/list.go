@@ -30,8 +30,9 @@ var (
 
 func New(ctx *cli.Context) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "list",
-		Short: "List nodes",
+		Use:     "list",
+		Aliases: []string{"ls"},
+		Short:   "List nodes",
 		Long: `List cluster nodes in the requested format.
 
 The default view is a formatted table with interactive pagination.

@@ -12,13 +12,16 @@ import (
 
 func New(ctx *cli.Context) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "node",
-		Short: "Manage nodes",
-		Long:  `Inspect cluster nodes.`,
+		Use:     "node",
+		Aliases: []string{"nodes"},
+		Short:   "Manage nodes",
+		Long:    `Inspect cluster nodes.`,
 	}
 
-	cmd.AddCommand(get.New(ctx))
-	cmd.AddCommand(list.New(ctx))
+	cmd.AddCommand(
+		get.New(ctx),
+		list.New(ctx),
+	)
 
 	return cmd
 }

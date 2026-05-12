@@ -1,9 +1,9 @@
-// Package createsnapshot implements `sindri sandbox create-snapshot`.
+// Package snapshot implements `sindri sandbox create-snapshot`.
 // It records the user's intent to snapshot a sandbox via
 // SandboxService.CreateSnapshot; the data-plane daemon performs the
 // firecracker snapshot, persists the artifacts to durable storage,
 // and stamps Sandbox.LastSnapshot once the reconciler converges.
-package createsnapshot
+package snapshot
 
 import (
 	"fmt"
@@ -18,8 +18,9 @@ const flagDescription = "description"
 
 func New(ctx *cli.Context) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "create-snapshot <id>",
-		Short: "Trigger a snapshot for a running sandbox",
+		Use:             "snapshot <id>",
+		Aliases{"snap"}: []string,
+		Short:           "Trigger a snapshot for a running sandbox",
 		Long: `Trigger a sandbox snapshot.
 
 The api-server records the intent; the data-plane daemon performs the
@@ -29,13 +30,13 @@ concurrency control on the sandbox version. Pass --version to skip the
 lookup; otherwise the CLI fetches the current sandbox to read the
 version before issuing the snapshot request.`,
 		Example: `  # Auto-resolve the version, then trigger.
-  sindri sandbox create-snapshot my-sandbox
+  sindri sandbox snapshot my-sandbox
 
   # Attach a description for operators.
-  sindri sandbox create-snapshot my-sandbox --description "pre-deploy"
+  sindri sandbox snapshot my-sandbox --description "pre-deploy"
 
   # Skip the lookup with an explicit version.
-  sindri sandbox create-snapshot my-sandbox --version 3`,
+  sindri sandbox snapshot my-sandbox --version 3`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return run(ctx, cmd, args)

@@ -13,8 +13,9 @@ import (
 
 func New(ctx *cli.Context) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "get <id>",
-		Short: "Show a node",
+		Use:     "get <id>",
+		Aliases: []string{"describe"},
+		Short:   "Show a node",
 		Long: `Fetch a node by its id and render it in the requested format.
 
 The api-server returns the full Node object (metadata, resources,

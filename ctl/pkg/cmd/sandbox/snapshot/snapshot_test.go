@@ -1,4 +1,4 @@
-package createsnapshot_test
+package test
 
 import (
 	"context"
@@ -11,7 +11,6 @@ import (
 	controlplanev1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
 	cpmocks "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1/mocks"
 	clitesting "golang.nuinfra.net/ctl/pkg/cli/testing"
-	"golang.nuinfra.net/ctl/pkg/cmd/sandbox/createsnapshot"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -25,7 +24,7 @@ type createSnapshotCaptureFn func(t *testing.T, req *controlplanev1alpha1.Create
 // is omitted.
 type getCaptureFn func(t *testing.T, req *controlplanev1alpha1.GetSandboxRequest) (*controlplanev1alpha1.GetSandboxResponse, error)
 
-func TestCreateSnapshot(t *testing.T) {
+func TestSnapshot(t *testing.T) {
 	tests := []struct {
 		name string
 		args string
