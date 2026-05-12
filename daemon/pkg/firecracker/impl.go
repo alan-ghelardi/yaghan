@@ -280,6 +280,8 @@ func (f *firecracker) CreateMicroVM(ctx context.Context, input *CreateMicroVMInp
 		networkIndex: input.Network.Index,
 		vsockUDS:     udsHostPath,
 		vsockPort:    agentPort,
+		jailUID:      f.options.JailUID,
+		jailGID:      f.options.JailGID,
 	}
 	f.indexInsert(vm)
 	return vm, nil
@@ -403,6 +405,8 @@ func (f *firecracker) attach(ctx context.Context, id string) (*firecrackerVM, er
 		networkIndex: meta.NetworkIndex,
 		vsockUDS:     udsHostPath,
 		vsockPort:    meta.AgentVsockPort,
+		jailUID:      f.options.JailUID,
+		jailGID:      f.options.JailGID,
 	}, nil
 }
 
@@ -529,6 +533,15 @@ type firecrackerVM struct {
 	pid          int
 	networkIndex int // network.Driver index allocated to this VM
 
+	// jailUID / jailGID are the unprivileged uid/gid the jailer drops
+	// privileges to before exec'ing firecracker. We copy them off the
+	// parent Provider's Options so chroot-side artifacts the daemon
+	// creates at runtime (e.g. the snapshot dir) can be chowned to
+	// match — otherwise firecracker, running as jailUID, can't write
+	// into a root-owned dir the daemon mkdir'd.
+	jailUID uint32
+	jailGID uint32
+
 	// vsockUDS and vsockPort are the host-visible UDS path and the
 	// guest agent's listen port; zero-valued when the VM was created
 	// without a vsock device, in which case VSock returns an error.
@@ -627,12 +640,48 @@ func (f *firecrackerVM) instanceState(ctx context.Context) (string, error) {
 // CreateSnapshot implements [MicroVM]. Snapshot files live inside the jail
 // (firecracker can only write to paths within its chroot); we return
 // host-absolute paths for the caller's convenience.
+//
+// Firecracker requires the VM to be paused before save/restore. Rather
+// than push that quirk onto the api-server contract, we encapsulate it
+// here: if the VM is running we Pause it, take the snapshot, and
+// Resume — but only if we were the ones that paused it. If a client
+// paused the VM explicitly, we leave it paused on the way out.
 func (f *firecrackerVM) CreateSnapshot(ctx context.Context) (*snapshot.LocalReference, error) {
 	localRef := snapshot.MakeLocalReference(f.jailRoot)
 	snapshotDir := filepath.Dir(localRef.MemFilePath)
 	if err := os.MkdirAll(snapshotDir, snapshot.DirMode); err != nil {
 		return nil, fmt.Errorf("create snapshot dir: %w", err)
 	}
+	// The daemon runs as root, so MkdirAll leaves the dir 0o755
+	// root-owned. Firecracker (jailUID) needs to create mem/state files
+	// inside it — chown so it can.
+	if err := os.Chown(snapshotDir, int(f.jailUID), int(f.jailGID)); err != nil {
+		_ = os.RemoveAll(snapshotDir)
+		return nil, fmt.Errorf("chown snapshot dir: %w", err)
+	}
+
+	state, err := f.instanceState(ctx)
+	if err != nil {
+		_ = os.RemoveAll(snapshotDir)
+		return nil, fmt.Errorf("inspect instance state: %w", err)
+	}
+	pausedByUs := false
+	if state == models.InstanceInfoStateRunning {
+		if err := f.Pause(ctx); err != nil {
+			_ = os.RemoveAll(snapshotDir)
+			return nil, fmt.Errorf("pause for snapshot: %w", err)
+		}
+		pausedByUs = true
+	}
+	defer func() {
+		if pausedByUs {
+			// Best-effort: if resume fails, the next reconcile tick
+			// will retry. Suppressing the error here keeps the
+			// caller-facing failure (if any) about the snapshot
+			// rather than the resume.
+			_ = f.Resume(ctx)
+		}
+	}()
 
 	memFilePath := snapshot.MemFilePath(localRef.SnapshotID)
 	stateFilePath := snapshot.StateFilePath(localRef.SnapshotID)
@@ -643,7 +692,7 @@ func (f *firecrackerVM) CreateSnapshot(ctx context.Context) (*snapshot.LocalRefe
 		})
 	if _, err := f.client.Operations.CreateSnapshot(params); err != nil {
 		_ = os.RemoveAll(snapshotDir)
-		return nil, fmt.Errorf("create snapshot: %w", err)
+		return nil, fmt.Errorf("firecracker snapshot RPC: %w", err)
 	}
 
 	return localRef, nil

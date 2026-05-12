@@ -406,13 +406,20 @@ func TestReconcile_UpdateResourcesFailureKeepsIntent(t *testing.T) {
 		"Intent.Resources must be preserved for retry")
 }
 
-func TestReconcile_CreateSnapshotClearsFlag(t *testing.T) {
+// TestReconcile_CreateSnapshotRestoresRunningPhase exercises the
+// happy path from a sandbox that was running when the snapshot
+// request arrived. The api-server stamps Status.Phase = SNAPSHOTTING
+// and Intent.Phase = RUNNING (the saved phase to restore); the
+// reconciler runs the snapshot action and converges Status.Phase
+// back to RUNNING.
+func TestReconcile_CreateSnapshotRestoresRunningPhase(t *testing.T) {
 	r, provider, _, vm, durableStore := newReconcilerFixture(t)
 	ctx := context.Background()
 
 	sandbox := fixtureSandbox("sb-snap")
-	sandbox.Status.Phase = cpv1.SandboxStatus_PHASE_RUNNING
+	sandbox.Status.Phase = cpv1.SandboxStatus_PHASE_SNAPSHOTTING
 	sandbox.Intent = &cpv1.Intent{
+		Phase:          cpv1.SandboxStatus_PHASE_RUNNING,
 		CreateSnapshot: &cpv1.CreateSnapshotInput{Description: "before-deploy"},
 	}
 
@@ -429,12 +436,43 @@ func TestReconcile_CreateSnapshotClearsFlag(t *testing.T) {
 	before := time.Now()
 	require.NoError(t, r.Reconcile(ctx, sandbox))
 	assert.Nil(t, sandbox.Intent)
+	assert.Equal(t, cpv1.SandboxStatus_PHASE_RUNNING, sandbox.GetStatus().GetPhase(),
+		"after snapshot Status.Phase must be restored to the saved phase")
+	assert.Equal(t, "Snapshot created", sandbox.GetStatus().GetMessage())
 
 	require.NotNil(t, sandbox.GetLastSnapshot())
 	assert.Equal(t, "snap-1", sandbox.GetLastSnapshot().GetSnapshotId())
 	assert.WithinRange(t, sandbox.GetLastSnapshot().GetCreatedAt().AsTime(),
 		before, time.Now(),
 		"LastSnapshot.CreatedAt must be stamped during the reconcile")
+}
+
+// TestReconcile_CreateSnapshotRestoresPausedPhase verifies the
+// reconciler routes a snapshot triggered on a paused sandbox back to
+// PAUSED rather than implicitly resuming. The api-server sets
+// Intent.Phase = PAUSED in that case.
+func TestReconcile_CreateSnapshotRestoresPausedPhase(t *testing.T) {
+	r, provider, _, vm, durableStore := newReconcilerFixture(t)
+	ctx := context.Background()
+
+	sandbox := fixtureSandbox("sb-snap-paused")
+	sandbox.Status.Phase = cpv1.SandboxStatus_PHASE_SNAPSHOTTING
+	sandbox.Intent = &cpv1.Intent{
+		Phase:          cpv1.SandboxStatus_PHASE_PAUSED,
+		CreateSnapshot: &cpv1.CreateSnapshotInput{},
+	}
+
+	localRef := stubLocalRefWithFiles(t, "snap-paused")
+	gomock.InOrder(
+		provider.EXPECT().GetMicroVM("sb-snap-paused").Return(vm),
+		vm.EXPECT().CreateSnapshot(ctx).Return(localRef, nil),
+		durableStore.EXPECT().Put(ctx, "snap-paused", gomock.Any()).Return(nil),
+	)
+
+	require.NoError(t, r.Reconcile(ctx, sandbox))
+	assert.Equal(t, cpv1.SandboxStatus_PHASE_PAUSED, sandbox.GetStatus().GetPhase(),
+		"snapshot of a paused sandbox must converge back to PAUSED, not RUNNING")
+	assert.Nil(t, sandbox.Intent)
 }
 
 // TestReconcile_CreateSnapshotDropsDescription pins the current behavior:
@@ -447,8 +485,9 @@ func TestReconcile_CreateSnapshotDropsDescription(t *testing.T) {
 	ctx := context.Background()
 
 	sandbox := fixtureSandbox("sb-snap-desc")
-	sandbox.Status.Phase = cpv1.SandboxStatus_PHASE_RUNNING
+	sandbox.Status.Phase = cpv1.SandboxStatus_PHASE_SNAPSHOTTING
 	sandbox.Intent = &cpv1.Intent{
+		Phase:          cpv1.SandboxStatus_PHASE_RUNNING,
 		CreateSnapshot: &cpv1.CreateSnapshotInput{Description: "pre-deploy snapshot"},
 	}
 
@@ -468,19 +507,23 @@ func TestReconcile_CreateSnapshotDropsDescription(t *testing.T) {
 	assert.Equal(t, "snap-desc", sandbox.GetLastSnapshot().GetSnapshotId())
 }
 
+// TestReconcile_CombinedIntentsAreAppliedInOrderAndCleared covers a
+// boot + resize fanout in a single reconcile. CreateSnapshot is no
+// longer combinable with a phase transition — the api-server rejects
+// CreateSnapshot unless saved Status.Phase ∈ {RUNNING, PAUSED}, and
+// the snapshot itself flows through PHASE_SNAPSHOTTING as its own
+// transitional state.
 func TestReconcile_CombinedIntentsAreAppliedInOrderAndCleared(t *testing.T) {
-	r, provider, driver, vm, durableStore := newReconcilerFixture(t)
+	r, provider, driver, vm, _ := newReconcilerFixture(t)
 	ctx := context.Background()
 
 	sandbox := fixtureSandbox("sb-combined")
 	sandbox.Intent = &cpv1.Intent{
-		Phase:          cpv1.SandboxStatus_PHASE_RUNNING,
-		Resources:      &cpv1.Resources{VcpuCount: 4, MemoryMib: 4096},
-		CreateSnapshot: &cpv1.CreateSnapshotInput{},
+		Phase:     cpv1.SandboxStatus_PHASE_RUNNING,
+		Resources: &cpv1.Resources{VcpuCount: 4, MemoryMib: 4096},
 	}
 
 	nsh := fixtureNamespaceHandle(0)
-	localRef := stubLocalRefWithFiles(t, "snap-2")
 	gomock.InOrder(
 		// Boot.
 		provider.EXPECT().GetMicroVM("sb-combined").Return(nil),
@@ -492,28 +535,22 @@ func TestReconcile_CombinedIntentsAreAppliedInOrderAndCleared(t *testing.T) {
 		vm.EXPECT().UpdateResources(ctx, firecracker.UpdateResourcesInput{
 			VCPUCount: 4, MemoryMiB: 4096,
 		}).Return(nil),
-		// Snapshot.
-		provider.EXPECT().GetMicroVM("sb-combined").Return(vm),
-		vm.EXPECT().CreateSnapshot(ctx).Return(localRef, nil),
-		durableStore.EXPECT().Put(ctx, "snap-2", gomock.Any()).Return(nil),
 	)
 
 	require.NoError(t, r.Reconcile(ctx, sandbox))
 	assert.Equal(t, cpv1.SandboxStatus_PHASE_RUNNING, sandbox.GetStatus().GetPhase())
 	assert.Equal(t, uint32(4), sandbox.GetResources().GetVcpuCount())
 	assert.Nil(t, sandbox.Intent)
-	assert.Equal(t, "snap-2", sandbox.GetLastSnapshot().GetSnapshotId())
 }
 
-func TestReconcile_PhaseFailureSkipsResourcesAndSnapshot(t *testing.T) {
+func TestReconcile_PhaseFailureSkipsResources(t *testing.T) {
 	r, provider, driver, _, _ := newReconcilerFixture(t)
 	ctx := context.Background()
 
 	sandbox := fixtureSandbox("sb-phase-bad")
 	sandbox.Intent = &cpv1.Intent{
-		Phase:          cpv1.SandboxStatus_PHASE_RUNNING,
-		Resources:      &cpv1.Resources{VcpuCount: 4, MemoryMib: 4096},
-		CreateSnapshot: &cpv1.CreateSnapshotInput{},
+		Phase:     cpv1.SandboxStatus_PHASE_RUNNING,
+		Resources: &cpv1.Resources{VcpuCount: 4, MemoryMib: 4096},
 	}
 
 	bootErr := errors.New("kernel panic during boot")
@@ -530,7 +567,6 @@ func TestReconcile_PhaseFailureSkipsResourcesAndSnapshot(t *testing.T) {
 	require.NotNil(t, sandbox.Intent, "Intent stays set so the retry resumes")
 	assert.Equal(t, cpv1.SandboxStatus_PHASE_RUNNING, sandbox.GetIntent().GetPhase())
 	require.NotNil(t, sandbox.GetIntent().GetResources())
-	assert.NotNil(t, sandbox.GetIntent().GetCreateSnapshot())
 }
 
 func TestReconcile_UnsupportedPhaseReturnsError(t *testing.T) {

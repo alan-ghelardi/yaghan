@@ -68,9 +68,6 @@ func (r *Reconciler) Reconcile(ctx context.Context, sandbox *controlplanev1alpha
 	if err := r.reconcileResources(ctx, sandbox); err != nil {
 		return err
 	}
-	if err := r.reconcileSnapshot(ctx, sandbox); err != nil {
-		return err
-	}
 
 	sandbox.Intent = nil
 	return nil
@@ -117,6 +114,11 @@ func (r *Reconciler) reconcilePhase(ctx context.Context, sandbox *controlplanev1
 		action, message = r.resume, "Sandbox is running"
 	case controlplanev1alpha1.SandboxStatus_PHASE_DELETING:
 		action, message = r.delete, "Sandbox has been deleted"
+	case controlplanev1alpha1.SandboxStatus_PHASE_SNAPSHOTTING:
+		// The api-server stamped Intent.Phase with the saved phase
+		// (RUNNING or PAUSED), so the shared post-action code below
+		// restores it for us once snapshot() returns.
+		action, message = r.snapshot, "Snapshot created"
 	default:
 		return fmt.Errorf(
 			"reconciler: unsupported status phase %v with intent %v",
@@ -254,17 +256,16 @@ func (r *Reconciler) reconcileResources(ctx context.Context, sandbox *controlpla
 	return nil
 }
 
-// reconcileSnapshot triggers a snapshot when the corresponding intent
-// is set. The caller's Description is currently dropped on the floor —
-// the daemon only needs the trigger signal today. Forwarding it into
-// the snapshot manifest is a separate concern (where the description
-// is persisted hasn't been decided yet).
-func (r *Reconciler) reconcileSnapshot(ctx context.Context, sandbox *controlplanev1alpha1.Sandbox) error {
-	intent := sandbox.GetIntent()
-	if intent.GetCreateSnapshot() == nil {
-		return nil
-	}
-
+// snapshot triggers a CreateSnapshot on the microVM and persists the
+// resulting artifacts to durable storage. Dispatched from reconcilePhase
+// when Status.Phase == PHASE_SNAPSHOTTING; the api-server stamps
+// Intent.Phase with the saved phase to return to, and the shared
+// post-action code in reconcilePhase restores it after we return.
+//
+// The caller's Description on Intent.CreateSnapshot is currently dropped
+// on the floor — the daemon only needs the trigger signal today.
+// Forwarding it into a snapshot manifest is a separate concern.
+func (r *Reconciler) snapshot(ctx context.Context, sandbox *controlplanev1alpha1.Sandbox) error {
 	vm, err := r.lookup(sandbox.GetMetadata().GetId(), "create snapshot")
 	if err != nil {
 		return err
@@ -278,12 +279,11 @@ func (r *Reconciler) reconcileSnapshot(ctx context.Context, sandbox *controlplan
 		return fmt.Errorf("persist snapshot: %w", err)
 	}
 
-	intent.CreateSnapshot = nil
+	sandbox.GetIntent().CreateSnapshot = nil
 	sandbox.LastSnapshot = &controlplanev1alpha1.CreateSnapshotOutput{
 		SnapshotId: localRef.SnapshotID,
 		CreatedAt:  timestamppb.Now(),
 	}
-
 	return nil
 }
 
