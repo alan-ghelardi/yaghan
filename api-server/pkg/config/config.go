@@ -100,6 +100,9 @@ type AWS struct {
 	// NodesTableName is the DynamoDB table in which nodes data is stored.
 	NodesTableName string `mapstructure:"nodes-table-name" validate:"required"`
 
+	// SnapshotsTableName is the DynamoDB table in which snapshots data is stored.
+	SnapshotsTableName string `mapstructure:"snapshots-table-name" validate:"required"`
+
 	// Endpoint is the local endpoint URL for AWS services, used for testing
 	// purposes.
 	EndpointURL string `mapstructure:"endpoint-url"`

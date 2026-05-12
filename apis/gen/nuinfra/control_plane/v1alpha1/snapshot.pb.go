@@ -669,7 +669,7 @@ const file_nuinfra_control_plane_v1alpha1_snapshot_proto_rawDesc = "" +
 	"\vsnapshot_id\x18\x01 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\n" +
 	"snapshotId\"[\n" +
 	"\x13GetSnapshotResponse\x12D\n" +
-	"\bsnapshot\x18\x01 \x01(\v2(.nuinfra.control_plane.v1alpha1.SnapshotR\bsnapshot\"\xc5\x05\n" +
+	"\bsnapshot\x18\x01 \x01(\v2(.nuinfra.control_plane.v1alpha1.SnapshotR\bsnapshot\"\xea\x06\n" +
 	"\x14ListSnapshotsRequest\x12\x1c\n" +
 	"\tnamespace\x18\x01 \x01(\tR\tnamespace\x12\x1d\n" +
 	"\n" +
@@ -682,8 +682,9 @@ const file_nuinfra_control_plane_v1alpha1_snapshot_proto_rawDesc = "" +
 	"\x05Order\x12\x15\n" +
 	"\x11ORDER_UNSPECIFIED\x10\x00\x12\x16\n" +
 	"\x12ORDER_NEWEST_FIRST\x10\x01\x12\x16\n" +
-	"\x12ORDER_OLDEST_FIRST\x10\x02:\xec\x02\xbaH\xe8\x02\x1a\xa4\x01\n" +
-	"$ListSnapshotsRequest.required_fields\x12OAt least one of `namespace` or `sandbox_id` must be provided to list snapshots.\x1a+has(this.namespace) || has(this.sandbox_id)\x1a\xbe\x01\n" +
+	"\x12ORDER_OLDEST_FIRST\x10\x02:\x91\x04\xbaH\x8d\x04\x1a\xa4\x01\n" +
+	"$ListSnapshotsRequest.required_fields\x12OAt least one of `namespace` or `sandbox_id` must be provided to list snapshots.\x1a+has(this.namespace) || has(this.sandbox_id)\x1a\xa2\x01\n" +
+	".ListSnapshotsRequest.mutually_exclusive_fields\x12COnly one of the fields `namespace` or `sandbox_id` may be specified\x1a+has(this.namespace) && has(this.sandbox_id)\x1a\xbe\x01\n" +
 	"&ListSnapshotsRequest.namespace_pattern\x12Bnamespace must match ^[a-z][a-z0-9-]{0,61}[a-z0-9]$ when provided.\x1aPthis.namespace == '' || this.namespace.matches('^[a-z][a-z0-9-]{0,61}[a-z0-9]$')\"\x8e\x01\n" +
 	"\x15ListSnapshotsResponse\x12F\n" +
 	"\tsnapshots\x18\x01 \x03(\v2(.nuinfra.control_plane.v1alpha1.SnapshotR\tsnapshots\x12-\n" +

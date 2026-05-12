@@ -61,6 +61,26 @@ func (mr *MockClientMockRecorder) CreateTable(ctx, params any, optFns ...any) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTable", reflect.TypeOf((*MockClient)(nil).CreateTable), varargs...)
 }
 
+// DeleteItem mocks base method.
+func (m *MockClient) DeleteItem(ctx context.Context, params *dynamodb.DeleteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.DeleteItemOutput, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, params}
+	for _, a := range optFns {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeleteItem", varargs...)
+	ret0, _ := ret[0].(*dynamodb.DeleteItemOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteItem indicates an expected call of DeleteItem.
+func (mr *MockClientMockRecorder) DeleteItem(ctx, params any, optFns ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, params}, optFns...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteItem", reflect.TypeOf((*MockClient)(nil).DeleteItem), varargs...)
+}
+
 // DeleteTable mocks base method.
 func (m *MockClient) DeleteTable(ctx context.Context, params *dynamodb.DeleteTableInput, optFns ...func(*dynamodb.Options)) (*dynamodb.DeleteTableOutput, error) {
 	m.ctrl.T.Helper()

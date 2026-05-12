@@ -1,0 +1,68 @@
+{
+  "TableName": "snapshots",
+  "BillingMode": "PAY_PER_REQUEST",
+  "AttributeDefinitions": [
+    {
+      "AttributeName": "snapshot_id",
+      "AttributeType": "S"
+    },
+    {
+      "AttributeName": "snapshot_namespace",
+      "AttributeType": "S"
+    },
+    {
+      "AttributeName": "sandbox_ref_id",
+      "AttributeType": "S"
+    },
+    {
+      "AttributeName": "gsi_ct_sk",
+      "AttributeType": "S"
+    }
+  ],
+  "KeySchema": [
+    {
+      "AttributeName": "snapshot_id",
+      "KeyType": "HASH"
+    }
+  ],
+  "GlobalSecondaryIndexes": [
+    {
+      "IndexName": "by_namespace_index",
+      "KeySchema": [
+        {
+          "AttributeName": "snapshot_namespace",
+          "KeyType": "HASH"
+        },
+        {
+          "AttributeName": "gsi_ct_sk",
+          "KeyType": "RANGE"
+        }
+      ],
+      "Projection": {
+        "ProjectionType": "INCLUDE",
+        "NonKeyAttributes": [
+          "snapshot_pb"
+        ]
+      }
+    },
+    {
+      "IndexName": "by_sandbox_index",
+      "KeySchema": [
+        {
+          "AttributeName": "sandbox_ref_id",
+          "KeyType": "HASH"
+        },
+        {
+          "AttributeName": "gsi_ct_sk",
+          "KeyType": "RANGE"
+        }
+      ],
+      "Projection": {
+        "ProjectionType": "INCLUDE",
+        "NonKeyAttributes": [
+          "snapshot_pb"
+        ]
+      }
+    }
+  ]
+}

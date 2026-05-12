@@ -94,6 +94,13 @@ message ListSnapshotsRequest {
     message: "At least one of `namespace` or `sandbox_id` must be provided to list snapshots."
   };
 
+  // Validation rule: the fields `namespace` and `sandbox_id` are mutually exclusive.
+  option (buf.validate.message).cel = {
+    id: "ListSnapshotsRequest.mutually_exclusive_fields"
+    expression: "has(this.namespace) && has(this.sandbox_id)"
+    message: "Only one of the fields `namespace` or `sandbox_id` may be specified"
+  };
+
   // Validation rule: when namespace is provided, it must match the
   // canonical pattern. Encoded at the message level (not as a
   // field-level string.pattern) so an empty namespace — valid when
