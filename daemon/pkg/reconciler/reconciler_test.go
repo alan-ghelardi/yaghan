@@ -848,3 +848,65 @@ func TestReconcile_UnsupportedPhaseReturnsError(t *testing.T) {
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "unsupported intent phase")
 }
+
+// TestReconcile_FailedSandboxIsTerminalAndClearsIntent pins the
+// no-op-with-Intent-clear behaviour for sandboxes the controller
+// previously marked PHASE_FAILED. Before this branch existed, the
+// reconcilePhase default case returned "unsupported status phase
+// PHASE_FAILED with intent PHASE_RUNNING" — masking the original
+// failure in Status.Message and looping forever because the
+// controller never saw a "done" signal.
+func TestReconcile_FailedSandboxIsTerminalAndClearsIntent(t *testing.T) {
+	r, provider, driver, vm, _, _ := newReconcilerFixture(t)
+
+	sandbox := fixtureSandbox("sb-failed")
+	sandbox.Status = &cpv1.SandboxStatus{
+		Phase:   cpv1.SandboxStatus_PHASE_FAILED,
+		Message: "boom: original reconcile error",
+	}
+	sandbox.Intent = &cpv1.Intent{Phase: cpv1.SandboxStatus_PHASE_RUNNING}
+
+	// No action methods should fire on a terminal sandbox.
+	provider.EXPECT().CreateMicroVM(gomock.Any(), gomock.Any()).Times(0)
+	provider.EXPECT().LoadSnapshot(gomock.Any(), gomock.Any()).Times(0)
+	provider.EXPECT().DeleteMicroVM(gomock.Any(), gomock.Any()).Times(0)
+	driver.EXPECT().Provision(gomock.Any()).Times(0)
+	driver.EXPECT().Deprovision(gomock.Any()).Times(0)
+	vm.EXPECT().Pause(gomock.Any()).Times(0)
+	vm.EXPECT().Resume(gomock.Any()).Times(0)
+
+	require.NoError(t, r.Reconcile(context.Background(), sandbox))
+
+	assert.Nil(t, sandbox.Intent,
+		"outer Reconcile must clear Intent so the controller stops re-enqueuing")
+	assert.Equal(t, cpv1.SandboxStatus_PHASE_FAILED, sandbox.GetStatus().GetPhase(),
+		"terminal Status.Phase must be preserved")
+	assert.Equal(t, "boom: original reconcile error", sandbox.GetStatus().GetMessage(),
+		"the original failure message must NOT be overwritten")
+}
+
+// TestReconcile_DeletedSandboxWithStaleIntentClearsIntent covers the
+// defence-in-depth case: a PHASE_DELETED sandbox should never arrive
+// with non-nil Intent because the delete action clears it, but if it
+// ever does (api-server bug, replay of an out-of-order event) the
+// reconciler must not error.
+func TestReconcile_DeletedSandboxWithStaleIntentClearsIntent(t *testing.T) {
+	r, provider, driver, vm, _, _ := newReconcilerFixture(t)
+
+	sandbox := fixtureSandbox("sb-deleted")
+	sandbox.Status = &cpv1.SandboxStatus{Phase: cpv1.SandboxStatus_PHASE_DELETED}
+	sandbox.Intent = &cpv1.Intent{Phase: cpv1.SandboxStatus_PHASE_RUNNING}
+
+	provider.EXPECT().CreateMicroVM(gomock.Any(), gomock.Any()).Times(0)
+	provider.EXPECT().LoadSnapshot(gomock.Any(), gomock.Any()).Times(0)
+	provider.EXPECT().DeleteMicroVM(gomock.Any(), gomock.Any()).Times(0)
+	driver.EXPECT().Provision(gomock.Any()).Times(0)
+	driver.EXPECT().Deprovision(gomock.Any()).Times(0)
+	vm.EXPECT().Pause(gomock.Any()).Times(0)
+	vm.EXPECT().Resume(gomock.Any()).Times(0)
+
+	require.NoError(t, r.Reconcile(context.Background(), sandbox))
+
+	assert.Nil(t, sandbox.Intent)
+	assert.Equal(t, cpv1.SandboxStatus_PHASE_DELETED, sandbox.GetStatus().GetPhase())
+}

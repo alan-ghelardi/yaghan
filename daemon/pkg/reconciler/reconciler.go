@@ -10,6 +10,8 @@ import (
 	"path/filepath"
 
 	"github.com/go-openapi/swag/conv"
+	"github.com/grpc-ecosystem/go-grpc-middleware/logging/zap/ctxzap"
+	"go.uber.org/zap"
 	controlplanev1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
 	"golang.nuinfra.net/daemon/pkg/config"
 	"golang.nuinfra.net/daemon/pkg/firecracker"
@@ -130,6 +132,32 @@ func (r *Reconciler) reconcilePhase(ctx context.Context, sandbox *controlplanev1
 		// (RUNNING or PAUSED), so the shared post-action code below
 		// restores it for us once snapshot() returns.
 		action, message = r.snapshot, "Snapshot created"
+	case controlplanev1alpha1.SandboxStatus_PHASE_FAILED,
+		controlplanev1alpha1.SandboxStatus_PHASE_DELETED:
+		// Terminal state. The daemon cannot drive this sandbox
+		// forward — PHASE_FAILED carries the original reconcile
+		// error in Status.Message (markFailed in controller.go);
+		// PHASE_DELETED means the teardown completed in a prior
+		// pass. Without this branch the default below treats either
+		// case as "unsupported", masks the original error in daemon
+		// logs, and loops forever because the controller's queue
+		// never drains.
+		//
+		// Surface the primary error one last time at WARN, then
+		// clear Intent.Phase so the outer Reconcile zeroes Intent
+		// entirely. The controller's processItem will diff and send
+		// an UpdateSandbox with the cleared Intent; subsequent
+		// api-server events for this sandbox land here with
+		// Intent.Phase=UNSPECIFIED and short-circuit at the top of
+		// reconcilePhase.
+		if msg := sandbox.GetStatus().GetMessage(); msg != "" {
+			ctxzap.Extract(ctx).Warn("reconciler: sandbox in terminal state, abandoning",
+				zap.String("sandbox.id", sandbox.GetMetadata().GetId()),
+				zap.String("status.phase", sandbox.GetStatus().GetPhase().String()),
+				zap.String("status.message", msg))
+		}
+		intent.Phase = controlplanev1alpha1.SandboxStatus_PHASE_UNSPECIFIED
+		return nil
 	default:
 		return fmt.Errorf(
 			"reconciler: unsupported status phase %v with intent %v",
