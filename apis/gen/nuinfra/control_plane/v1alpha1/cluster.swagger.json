@@ -469,6 +469,9 @@
         "namespace": {
           "type": "string"
         },
+        "source": {
+          "$ref": "#/definitions/v1alpha1SandboxSource"
+        },
         "version": {
           "type": "string",
           "format": "int64"
@@ -487,6 +490,17 @@
             "type": "string"
           },
           "description": "Arbitrary key/value labels for client-side grouping and\nfiltering (e.g. \"project=foo\", \"ci-run=123\"). Keys are required\nto be 1-63 chars, lowercase alphanumeric with dots/dashes/\nunderscores, starting and ending with an alphanumeric. Values\nmay be empty or follow the same rules (uppercase permitted)."
+        }
+      }
+    },
+    "v1alpha1SandboxSource": {
+      "type": "object",
+      "properties": {
+        "snapshotId": {
+          "type": "string"
+        },
+        "imageId": {
+          "type": "string"
         }
       }
     },

@@ -28,6 +28,7 @@
     - [Sandbox](#nuinfra-control_plane-v1alpha1-Sandbox)
     - [SandboxMeta](#nuinfra-control_plane-v1alpha1-SandboxMeta)
     - [SandboxMeta.LabelsEntry](#nuinfra-control_plane-v1alpha1-SandboxMeta-LabelsEntry)
+    - [SandboxSource](#nuinfra-control_plane-v1alpha1-SandboxSource)
     - [SandboxStatus](#nuinfra-control_plane-v1alpha1-SandboxStatus)
     - [SnapshotOutput](#nuinfra-control_plane-v1alpha1-SnapshotOutput)
     - [StartSnapshotInput](#nuinfra-control_plane-v1alpha1-StartSnapshotInput)
@@ -448,6 +449,7 @@ Response message containing a page of sandboxes.
 | ----- | ---- | ----- | ----------- |
 | id | [string](#string) |  |  |
 | namespace | [string](#string) |  |  |
+| source | [SandboxSource](#nuinfra-control_plane-v1alpha1-SandboxSource) |  |  |
 | version | [int64](#int64) |  |  |
 | created_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  |  |
 | last_modified_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  |  |
@@ -468,6 +470,22 @@ Response message containing a page of sandboxes.
 | ----- | ---- | ----- | ----------- |
 | key | [string](#string) |  |  |
 | value | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="nuinfra-control_plane-v1alpha1-SandboxSource"></a>
+
+### SandboxSource
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| snapshot_id | [string](#string) |  |  |
+| image_id | [string](#string) |  |  |
 
 
 

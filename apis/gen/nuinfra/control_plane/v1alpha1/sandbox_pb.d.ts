@@ -68,17 +68,22 @@ export declare type SandboxMeta = Message<"nuinfra.control_plane.v1alpha1.Sandbo
   namespace: string;
 
   /**
-   * @generated from field: int64 version = 3;
+   * @generated from field: nuinfra.control_plane.v1alpha1.SandboxSource source = 3;
+   */
+  source?: SandboxSource;
+
+  /**
+   * @generated from field: int64 version = 4;
    */
   version: bigint;
 
   /**
-   * @generated from field: google.protobuf.Timestamp created_at = 4;
+   * @generated from field: google.protobuf.Timestamp created_at = 5;
    */
   createdAt?: Timestamp;
 
   /**
-   * @generated from field: google.protobuf.Timestamp last_modified_at = 5;
+   * @generated from field: google.protobuf.Timestamp last_modified_at = 6;
    */
   lastModifiedAt?: Timestamp;
 
@@ -89,7 +94,7 @@ export declare type SandboxMeta = Message<"nuinfra.control_plane.v1alpha1.Sandbo
    * underscores, starting and ending with an alphanumeric. Values
    * may be empty or follow the same rules (uppercase permitted).
    *
-   * @generated from field: map<string, string> labels = 6;
+   * @generated from field: map<string, string> labels = 7;
    */
   labels: { [key: string]: string };
 };
@@ -99,6 +104,34 @@ export declare type SandboxMeta = Message<"nuinfra.control_plane.v1alpha1.Sandbo
  * Use `create(SandboxMetaSchema)` to create a new message.
  */
 export declare const SandboxMetaSchema: GenMessage<SandboxMeta>;
+
+/**
+ * @generated from message nuinfra.control_plane.v1alpha1.SandboxSource
+ */
+export declare type SandboxSource = Message<"nuinfra.control_plane.v1alpha1.SandboxSource"> & {
+  /**
+   * @generated from oneof nuinfra.control_plane.v1alpha1.SandboxSource.reference
+   */
+  reference: {
+    /**
+     * @generated from field: string snapshot_id = 1;
+     */
+    value: string;
+    case: "snapshotId";
+  } | {
+    /**
+     * @generated from field: string image_id = 2;
+     */
+    value: string;
+    case: "imageId";
+  } | { case: undefined; value?: undefined };
+};
+
+/**
+ * Describes the message nuinfra.control_plane.v1alpha1.SandboxSource.
+ * Use `create(SandboxSourceSchema)` to create a new message.
+ */
+export declare const SandboxSourceSchema: GenMessage<SandboxSource>;
 
 /**
  * @generated from message nuinfra.control_plane.v1alpha1.Resources

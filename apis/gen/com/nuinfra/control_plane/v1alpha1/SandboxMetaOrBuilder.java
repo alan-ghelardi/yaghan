@@ -35,38 +35,53 @@ public interface SandboxMetaOrBuilder extends
       getNamespaceBytes();
 
   /**
-   * <code>int64 version = 3 [json_name = "version"];</code>
+   * <code>.nuinfra.control_plane.v1alpha1.SandboxSource source = 3 [json_name = "source"];</code>
+   * @return Whether the source field is set.
+   */
+  boolean hasSource();
+  /**
+   * <code>.nuinfra.control_plane.v1alpha1.SandboxSource source = 3 [json_name = "source"];</code>
+   * @return The source.
+   */
+  com.nuinfra.control_plane.v1alpha1.SandboxSource getSource();
+  /**
+   * <code>.nuinfra.control_plane.v1alpha1.SandboxSource source = 3 [json_name = "source"];</code>
+   */
+  com.nuinfra.control_plane.v1alpha1.SandboxSourceOrBuilder getSourceOrBuilder();
+
+  /**
+   * <code>int64 version = 4 [json_name = "version"];</code>
    * @return The version.
    */
   long getVersion();
 
   /**
-   * <code>.google.protobuf.Timestamp created_at = 4 [json_name = "createdAt"];</code>
+   * <code>.google.protobuf.Timestamp created_at = 5 [json_name = "createdAt"];</code>
    * @return Whether the createdAt field is set.
    */
   boolean hasCreatedAt();
   /**
-   * <code>.google.protobuf.Timestamp created_at = 4 [json_name = "createdAt"];</code>
+   * <code>.google.protobuf.Timestamp created_at = 5 [json_name = "createdAt"];</code>
    * @return The createdAt.
    */
   com.google.protobuf.Timestamp getCreatedAt();
   /**
-   * <code>.google.protobuf.Timestamp created_at = 4 [json_name = "createdAt"];</code>
+   * <code>.google.protobuf.Timestamp created_at = 5 [json_name = "createdAt"];</code>
    */
   com.google.protobuf.TimestampOrBuilder getCreatedAtOrBuilder();
 
   /**
-   * <code>.google.protobuf.Timestamp last_modified_at = 5 [json_name = "lastModifiedAt"];</code>
+   * <code>.google.protobuf.Timestamp last_modified_at = 6 [json_name = "lastModifiedAt"];</code>
    * @return Whether the lastModifiedAt field is set.
    */
   boolean hasLastModifiedAt();
   /**
-   * <code>.google.protobuf.Timestamp last_modified_at = 5 [json_name = "lastModifiedAt"];</code>
+   * <code>.google.protobuf.Timestamp last_modified_at = 6 [json_name = "lastModifiedAt"];</code>
    * @return The lastModifiedAt.
    */
   com.google.protobuf.Timestamp getLastModifiedAt();
   /**
-   * <code>.google.protobuf.Timestamp last_modified_at = 5 [json_name = "lastModifiedAt"];</code>
+   * <code>.google.protobuf.Timestamp last_modified_at = 6 [json_name = "lastModifiedAt"];</code>
    */
   com.google.protobuf.TimestampOrBuilder getLastModifiedAtOrBuilder();
 
@@ -79,7 +94,7 @@ public interface SandboxMetaOrBuilder extends
    * may be empty or follow the same rules (uppercase permitted).
    * </pre>
    *
-   * <code>map&lt;string, string&gt; labels = 6 [json_name = "labels", (.buf.validate.field) = { ... }</code>
+   * <code>map&lt;string, string&gt; labels = 7 [json_name = "labels", (.buf.validate.field) = { ... }</code>
    */
   int getLabelsCount();
   /**
@@ -91,7 +106,7 @@ public interface SandboxMetaOrBuilder extends
    * may be empty or follow the same rules (uppercase permitted).
    * </pre>
    *
-   * <code>map&lt;string, string&gt; labels = 6 [json_name = "labels", (.buf.validate.field) = { ... }</code>
+   * <code>map&lt;string, string&gt; labels = 7 [json_name = "labels", (.buf.validate.field) = { ... }</code>
    */
   boolean containsLabels(
       java.lang.String key);
@@ -110,7 +125,7 @@ public interface SandboxMetaOrBuilder extends
    * may be empty or follow the same rules (uppercase permitted).
    * </pre>
    *
-   * <code>map&lt;string, string&gt; labels = 6 [json_name = "labels", (.buf.validate.field) = { ... }</code>
+   * <code>map&lt;string, string&gt; labels = 7 [json_name = "labels", (.buf.validate.field) = { ... }</code>
    */
   java.util.Map<java.lang.String, java.lang.String>
   getLabelsMap();
@@ -123,7 +138,7 @@ public interface SandboxMetaOrBuilder extends
    * may be empty or follow the same rules (uppercase permitted).
    * </pre>
    *
-   * <code>map&lt;string, string&gt; labels = 6 [json_name = "labels", (.buf.validate.field) = { ... }</code>
+   * <code>map&lt;string, string&gt; labels = 7 [json_name = "labels", (.buf.validate.field) = { ... }</code>
    */
   /* nullable */
 java.lang.String getLabelsOrDefault(
@@ -139,7 +154,7 @@ java.lang.String defaultValue);
    * may be empty or follow the same rules (uppercase permitted).
    * </pre>
    *
-   * <code>map&lt;string, string&gt; labels = 6 [json_name = "labels", (.buf.validate.field) = { ... }</code>
+   * <code>map&lt;string, string&gt; labels = 7 [json_name = "labels", (.buf.validate.field) = { ... }</code>
    */
   java.lang.String getLabelsOrThrow(
       java.lang.String key);

@@ -42,6 +42,11 @@ public final class SandboxProto extends com.google.protobuf.GeneratedFile {
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_nuinfra_control_plane_v1alpha1_SandboxMeta_LabelsEntry_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_nuinfra_control_plane_v1alpha1_SandboxSource_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_nuinfra_control_plane_v1alpha1_SandboxSource_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
     internal_static_nuinfra_control_plane_v1alpha1_Resources_descriptor;
   static final 
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
@@ -166,132 +171,136 @@ public final class SandboxProto extends com.google.protobuf.GeneratedFile {
       "nuinfra.control_plane.v1alpha1.SnapshotO" +
       "utputR\014lastSnapshot\022E\n\006status\030\006 \001(\0132-.nu" +
       "infra.control_plane.v1alpha1.SandboxStat" +
-      "usR\006status\"\201\004\n\013SandboxMeta\022\026\n\002id\030\001 \001(\tB\006" +
+      "usR\006status\"\310\004\n\013SandboxMeta\022\026\n\002id\030\001 \001(\tB\006" +
       "\272H\003\310\001\001R\002id\022F\n\tnamespace\030\002 \001(\tB(\272H%r 2\036^[" +
       "a-z][a-z0-9-]{0,61}[a-z0-9]$\310\001\001R\tnamespa" +
-      "ce\022\030\n\007version\030\003 \001(\003R\007version\0229\n\ncreated_" +
-      "at\030\004 \001(\0132\032.google.protobuf.TimestampR\tcr" +
-      "eatedAt\022D\n\020last_modified_at\030\005 \001(\0132\032.goog" +
-      "le.protobuf.TimestampR\016lastModifiedAt\022\273\001" +
-      "\n\006labels\030\006 \003(\01327.nuinfra.control_plane.v" +
-      "1alpha1.SandboxMeta.LabelsEntryBj\272Hg\232\001d\"" +
-      "*r(2&^[a-z0-9]([-a-z0-9._]{0,61}[a-z0-9]" +
-      ")?$*6r422^([a-zA-Z0-9]([-a-zA-Z0-9._]{0," +
-      "61}[a-zA-Z0-9])?)?$R\006labels\0329\n\013LabelsEnt" +
-      "ry\022\020\n\003key\030\001 \001(\tR\003key\022\024\n\005value\030\002 \001(\tR\005val" +
-      "ue:\0028\001\"b\n\tResources\022(\n\nvcpu_count\030\001 \001(\rB" +
-      "\t\272H\006*\004\030 (\001R\tvcpuCount\022+\n\nmemory_mib\030\002 \001(" +
-      "\004B\014\272H\t2\007\030\200\200\010(\200\001R\tmemoryMib\"!\n\007NodeRef\022\026\n" +
-      "\002id\030\001 \001(\tB\006\272H\003\310\001\001R\002id\"\367\001\n\006Intent\022I\n\005phas" +
-      "e\030\001 \001(\01623.nuinfra.control_plane.v1alpha1" +
-      ".SandboxStatus.PhaseR\005phase\022G\n\tresources" +
-      "\030\002 \001(\0132).nuinfra.control_plane.v1alpha1." +
-      "ResourcesR\tresources\022Y\n\016start_snapshot\030\003" +
-      " \001(\01322.nuinfra.control_plane.v1alpha1.St" +
-      "artSnapshotInputR\rstartSnapshot\"@\n\022Start" +
-      "SnapshotInput\022*\n\013description\030\001 \001(\tB\010\272H\005r" +
-      "\003\030\200\002R\013description\"\226\001\n\016SnapshotOutput\022\037\n\013" +
-      "snapshot_id\030\001 \001(\tR\nsnapshotId\0229\n\ncreated" +
-      "_at\030\002 \001(\0132\032.google.protobuf.TimestampR\tc" +
-      "reatedAt\022(\n\005error\030\003 \001(\0132\022.google.rpc.Sta" +
-      "tusR\005error\"\305\002\n\rSandboxStatus\022I\n\005phase\030\001 " +
-      "\001(\01623.nuinfra.control_plane.v1alpha1.San" +
-      "dboxStatus.PhaseR\005phase\022\030\n\007message\030\002 \001(\t" +
-      "R\007message\"\316\001\n\005Phase\022\025\n\021PHASE_UNSPECIFIED" +
-      "\020\000\022\021\n\rPHASE_PENDING\020\001\022\021\n\rPHASE_RUNNING\020\002" +
-      "\022\021\n\rPHASE_PAUSING\020\003\022\020\n\014PHASE_PAUSED\020\004\022\022\n" +
-      "\016PHASE_RESUMING\020\005\022\026\n\022PHASE_SNAPSHOTTING\020" +
-      "\006\022\022\n\016PHASE_DELETING\020\007\022\021\n\rPHASE_DELETED\020\010" +
-      "\022\020\n\014PHASE_FAILED\020\t\"a\n\024CreateSandboxReque" +
-      "st\022I\n\007sandbox\030\001 \001(\0132\'.nuinfra.control_pl" +
-      "ane.v1alpha1.SandboxB\006\272H\003\310\001\001R\007sandbox\"b\n" +
-      "\025CreateSandboxResponse\022I\n\007sandbox\030\001 \001(\0132" +
-      "\'.nuinfra.control_plane.v1alpha1.Sandbox" +
-      "B\006\272H\003\310\001\001R\007sandbox\":\n\021GetSandboxRequest\022%" +
-      "\n\nsandbox_id\030\001 \001(\tB\006\272H\003\310\001\001R\tsandboxId\"W\n" +
-      "\022GetSandboxResponse\022A\n\007sandbox\030\001 \001(\0132\'.n" +
-      "uinfra.control_plane.v1alpha1.SandboxR\007s" +
-      "andbox\"\221\006\n\024ListSandboxesRequest\022\034\n\tnames" +
-      "pace\030\001 \001(\tR\tnamespace\022\027\n\007node_id\030\002 \001(\tR\006" +
-      "nodeId\022V\n\014status_phase\030\003 \001(\01623.nuinfra.c" +
-      "ontrol_plane.v1alpha1.SandboxStatus.Phas" +
-      "eR\013statusPhase\022-\n\022continuation_token\030\004 \001" +
-      "(\tR\021continuationToken\022\'\n\tpage_size\030\005 \001(\005" +
-      "B\n\272H\007\032\005\030\350\007(\000R\010pageSize\022Y\n\nsort_order\030\006 \001" +
-      "(\0162:.nuinfra.control_plane.v1alpha1.List" +
-      "SandboxesRequest.OrderR\tsortOrder\"N\n\005Ord" +
-      "er\022\025\n\021ORDER_UNSPECIFIED\020\000\022\026\n\022ORDER_NEWES" +
-      "T_FIRST\020\001\022\026\n\022ORDER_OLDEST_FIRST\020\002:\346\002\272H\342\002" +
-      "\032\236\001\n$ListSandboxesRequest.required_field" +
-      "s\022LAt least one of `namespace` or `node_" +
-      "id` must be provided to list sandboxes.\032" +
-      "(has(this.namespace) || has(this.node_id" +
-      ")\032\276\001\n&ListSandboxesRequest.namespace_pat" +
-      "tern\022Bnamespace must match ^[a-z][a-z0-9" +
-      "-]{0,61}[a-z0-9]$ when provided.\032Pthis.n" +
-      "amespace == \'\' || this.namespace.matches" +
-      "(\'^[a-z][a-z0-9-]{0,61}[a-z0-9]$\')\"\215\001\n\025L" +
-      "istSandboxesResponse\022E\n\tsandboxes\030\001 \003(\0132" +
-      "\'.nuinfra.control_plane.v1alpha1.Sandbox" +
-      "R\tsandboxes\022-\n\022continuation_token\030\002 \001(\tR" +
-      "\021continuationToken\"^\n\023PauseSandboxReques" +
-      "t\022%\n\nsandbox_id\030\001 \001(\tB\006\272H\003\310\001\001R\tsandboxId" +
-      "\022 \n\007version\030\002 \001(\003B\006\272H\003\310\001\001R\007version\"Y\n\024Pa" +
-      "useSandboxResponse\022A\n\007sandbox\030\001 \001(\0132\'.nu" +
-      "infra.control_plane.v1alpha1.SandboxR\007sa" +
-      "ndbox\"_\n\024ResumeSandboxRequest\022%\n\nsandbox" +
-      "_id\030\001 \001(\tB\006\272H\003\310\001\001R\tsandboxId\022 \n\007version\030" +
-      "\002 \001(\003B\006\272H\003\310\001\001R\007version\"Z\n\025ResumeSandboxR" +
-      "esponse\022A\n\007sandbox\030\001 \001(\0132\'.nuinfra.contr" +
-      "ol_plane.v1alpha1.SandboxR\007sandbox\"_\n\024De" +
-      "leteSandboxRequest\022%\n\nsandbox_id\030\001 \001(\tB\006" +
-      "\272H\003\310\001\001R\tsandboxId\022 \n\007version\030\002 \001(\003B\006\272H\003\310" +
-      "\001\001R\007version\"Z\n\025DeleteSandboxResponse\022A\n\007" +
-      "sandbox\030\001 \001(\0132\'.nuinfra.control_plane.v1" +
-      "alpha1.SandboxR\007sandbox\"\213\001\n\024StartSnapsho" +
-      "tRequest\022%\n\nsandbox_id\030\001 \001(\tB\006\272H\003\310\001\001R\tsa" +
-      "ndboxId\022 \n\007version\030\002 \001(\003B\006\272H\003\310\001\001R\007versio" +
-      "n\022*\n\013description\030\003 \001(\tB\010\272H\005r\003\030\200\002R\013descri" +
-      "ption\"Z\n\025StartSnapshotResponse\022A\n\007sandbo" +
-      "x\030\001 \001(\0132\'.nuinfra.control_plane.v1alpha1" +
-      ".SandboxR\007sandbox2\246\t\n\016SandboxService\022\234\001\n" +
-      "\rCreateSandbox\0224.nuinfra.control_plane.v" +
-      "1alpha1.CreateSandboxRequest\0325.nuinfra.c" +
-      "ontrol_plane.v1alpha1.CreateSandboxRespo" +
-      "nse\"\036\202\323\344\223\002\030\"\023/v1alpha1/sandboxes:\001*\022\235\001\n\n" +
-      "GetSandbox\0221.nuinfra.control_plane.v1alp" +
-      "ha1.GetSandboxRequest\0322.nuinfra.control_" +
-      "plane.v1alpha1.GetSandboxResponse\"(\202\323\344\223\002" +
-      "\"\022 /v1alpha1/sandboxes/{sandbox_id}\022\231\001\n\r" +
-      "ListSandboxes\0224.nuinfra.control_plane.v1" +
-      "alpha1.ListSandboxesRequest\0325.nuinfra.co" +
-      "ntrol_plane.v1alpha1.ListSandboxesRespon" +
-      "se\"\033\202\323\344\223\002\025\022\023/v1alpha1/sandboxes\022\251\001\n\014Paus" +
-      "eSandbox\0223.nuinfra.control_plane.v1alpha" +
-      "1.PauseSandboxRequest\0324.nuinfra.control_" +
-      "plane.v1alpha1.PauseSandboxResponse\".\202\323\344" +
-      "\223\002(\032&/v1alpha1/sandboxes/{sandbox_id}/pa" +
-      "use\022\255\001\n\rResumeSandbox\0224.nuinfra.control_" +
-      "plane.v1alpha1.ResumeSandboxRequest\0325.nu" +
-      "infra.control_plane.v1alpha1.ResumeSandb" +
-      "oxResponse\"/\202\323\344\223\002)\032\'/v1alpha1/sandboxes/" +
-      "{sandbox_id}/resume\022\246\001\n\rDeleteSandbox\0224." +
-      "nuinfra.control_plane.v1alpha1.DeleteSan" +
-      "dboxRequest\0325.nuinfra.control_plane.v1al" +
-      "pha1.DeleteSandboxResponse\"(\202\323\344\223\002\"* /v1a" +
-      "lpha1/sandboxes/{sandbox_id}\022\263\001\n\rStartSn" +
-      "apshot\0224.nuinfra.control_plane.v1alpha1." +
-      "StartSnapshotRequest\0325.nuinfra.control_p" +
-      "lane.v1alpha1.StartSnapshotResponse\"5\202\323\344" +
-      "\223\002/\"*/v1alpha1/sandboxes/{sandbox_id}/sn" +
-      "apshots:\001*B\232\002\n\"com.nuinfra.control_plane" +
-      ".v1alpha1B\014SandboxProtoP\001ZPgolang.nuinfr" +
-      "a.net/apis/gen/nuinfra/control_plane/v1a" +
-      "lpha1;control_planev1alpha1\242\002\003NCX\252\002\035Nuin" +
-      "fra.ControlPlane.V1alpha1\312\002\035Nuinfra\\Cont" +
-      "rolPlane\\V1alpha1\342\002)Nuinfra\\ControlPlane" +
-      "\\V1alpha1\\GPBMetadata\352\002\037Nuinfra::Control" +
-      "Plane::V1alpha1b\006proto3"
+      "ce\022E\n\006source\030\003 \001(\0132-.nuinfra.control_pla" +
+      "ne.v1alpha1.SandboxSourceR\006source\022\030\n\007ver" +
+      "sion\030\004 \001(\003R\007version\0229\n\ncreated_at\030\005 \001(\0132" +
+      "\032.google.protobuf.TimestampR\tcreatedAt\022D" +
+      "\n\020last_modified_at\030\006 \001(\0132\032.google.protob" +
+      "uf.TimestampR\016lastModifiedAt\022\273\001\n\006labels\030" +
+      "\007 \003(\01327.nuinfra.control_plane.v1alpha1.S" +
+      "andboxMeta.LabelsEntryBj\272Hg\232\001d\"*r(2&^[a-" +
+      "z0-9]([-a-z0-9._]{0,61}[a-z0-9])?$*6r422" +
+      "^([a-zA-Z0-9]([-a-zA-Z0-9._]{0,61}[a-zA-" +
+      "Z0-9])?)?$R\006labels\0329\n\013LabelsEntry\022\020\n\003key" +
+      "\030\001 \001(\tR\003key\022\024\n\005value\030\002 \001(\tR\005value:\0028\001\"\\\n" +
+      "\rSandboxSource\022!\n\013snapshot_id\030\001 \001(\tH\000R\ns" +
+      "napshotId\022\033\n\010image_id\030\002 \001(\tH\000R\007imageIdB\013" +
+      "\n\treference\"b\n\tResources\022(\n\nvcpu_count\030\001" +
+      " \001(\rB\t\272H\006*\004\030 (\001R\tvcpuCount\022+\n\nmemory_mib" +
+      "\030\002 \001(\004B\014\272H\t2\007\030\200\200\010(\200\001R\tmemoryMib\"!\n\007NodeR" +
+      "ef\022\026\n\002id\030\001 \001(\tB\006\272H\003\310\001\001R\002id\"\367\001\n\006Intent\022I\n" +
+      "\005phase\030\001 \001(\01623.nuinfra.control_plane.v1a" +
+      "lpha1.SandboxStatus.PhaseR\005phase\022G\n\treso" +
+      "urces\030\002 \001(\0132).nuinfra.control_plane.v1al" +
+      "pha1.ResourcesR\tresources\022Y\n\016start_snaps" +
+      "hot\030\003 \001(\01322.nuinfra.control_plane.v1alph" +
+      "a1.StartSnapshotInputR\rstartSnapshot\"@\n\022" +
+      "StartSnapshotInput\022*\n\013description\030\001 \001(\tB" +
+      "\010\272H\005r\003\030\200\002R\013description\"\226\001\n\016SnapshotOutpu" +
+      "t\022\037\n\013snapshot_id\030\001 \001(\tR\nsnapshotId\0229\n\ncr" +
+      "eated_at\030\002 \001(\0132\032.google.protobuf.Timesta" +
+      "mpR\tcreatedAt\022(\n\005error\030\003 \001(\0132\022.google.rp" +
+      "c.StatusR\005error\"\305\002\n\rSandboxStatus\022I\n\005pha" +
+      "se\030\001 \001(\01623.nuinfra.control_plane.v1alpha" +
+      "1.SandboxStatus.PhaseR\005phase\022\030\n\007message\030" +
+      "\002 \001(\tR\007message\"\316\001\n\005Phase\022\025\n\021PHASE_UNSPEC" +
+      "IFIED\020\000\022\021\n\rPHASE_PENDING\020\001\022\021\n\rPHASE_RUNN" +
+      "ING\020\002\022\021\n\rPHASE_PAUSING\020\003\022\020\n\014PHASE_PAUSED" +
+      "\020\004\022\022\n\016PHASE_RESUMING\020\005\022\026\n\022PHASE_SNAPSHOT" +
+      "TING\020\006\022\022\n\016PHASE_DELETING\020\007\022\021\n\rPHASE_DELE" +
+      "TED\020\010\022\020\n\014PHASE_FAILED\020\t\"a\n\024CreateSandbox" +
+      "Request\022I\n\007sandbox\030\001 \001(\0132\'.nuinfra.contr" +
+      "ol_plane.v1alpha1.SandboxB\006\272H\003\310\001\001R\007sandb" +
+      "ox\"b\n\025CreateSandboxResponse\022I\n\007sandbox\030\001" +
+      " \001(\0132\'.nuinfra.control_plane.v1alpha1.Sa" +
+      "ndboxB\006\272H\003\310\001\001R\007sandbox\":\n\021GetSandboxRequ" +
+      "est\022%\n\nsandbox_id\030\001 \001(\tB\006\272H\003\310\001\001R\tsandbox" +
+      "Id\"W\n\022GetSandboxResponse\022A\n\007sandbox\030\001 \001(" +
+      "\0132\'.nuinfra.control_plane.v1alpha1.Sandb" +
+      "oxR\007sandbox\"\221\006\n\024ListSandboxesRequest\022\034\n\t" +
+      "namespace\030\001 \001(\tR\tnamespace\022\027\n\007node_id\030\002 " +
+      "\001(\tR\006nodeId\022V\n\014status_phase\030\003 \001(\01623.nuin" +
+      "fra.control_plane.v1alpha1.SandboxStatus" +
+      ".PhaseR\013statusPhase\022-\n\022continuation_toke" +
+      "n\030\004 \001(\tR\021continuationToken\022\'\n\tpage_size\030" +
+      "\005 \001(\005B\n\272H\007\032\005\030\350\007(\000R\010pageSize\022Y\n\nsort_orde" +
+      "r\030\006 \001(\0162:.nuinfra.control_plane.v1alpha1" +
+      ".ListSandboxesRequest.OrderR\tsortOrder\"N" +
+      "\n\005Order\022\025\n\021ORDER_UNSPECIFIED\020\000\022\026\n\022ORDER_" +
+      "NEWEST_FIRST\020\001\022\026\n\022ORDER_OLDEST_FIRST\020\002:\346" +
+      "\002\272H\342\002\032\236\001\n$ListSandboxesRequest.required_" +
+      "fields\022LAt least one of `namespace` or `" +
+      "node_id` must be provided to list sandbo" +
+      "xes.\032(has(this.namespace) || has(this.no" +
+      "de_id)\032\276\001\n&ListSandboxesRequest.namespac" +
+      "e_pattern\022Bnamespace must match ^[a-z][a" +
+      "-z0-9-]{0,61}[a-z0-9]$ when provided.\032Pt" +
+      "his.namespace == \'\' || this.namespace.ma" +
+      "tches(\'^[a-z][a-z0-9-]{0,61}[a-z0-9]$\')\"" +
+      "\215\001\n\025ListSandboxesResponse\022E\n\tsandboxes\030\001" +
+      " \003(\0132\'.nuinfra.control_plane.v1alpha1.Sa" +
+      "ndboxR\tsandboxes\022-\n\022continuation_token\030\002" +
+      " \001(\tR\021continuationToken\"^\n\023PauseSandboxR" +
+      "equest\022%\n\nsandbox_id\030\001 \001(\tB\006\272H\003\310\001\001R\tsand" +
+      "boxId\022 \n\007version\030\002 \001(\003B\006\272H\003\310\001\001R\007version\"" +
+      "Y\n\024PauseSandboxResponse\022A\n\007sandbox\030\001 \001(\013" +
+      "2\'.nuinfra.control_plane.v1alpha1.Sandbo" +
+      "xR\007sandbox\"_\n\024ResumeSandboxRequest\022%\n\nsa" +
+      "ndbox_id\030\001 \001(\tB\006\272H\003\310\001\001R\tsandboxId\022 \n\007ver" +
+      "sion\030\002 \001(\003B\006\272H\003\310\001\001R\007version\"Z\n\025ResumeSan" +
+      "dboxResponse\022A\n\007sandbox\030\001 \001(\0132\'.nuinfra." +
+      "control_plane.v1alpha1.SandboxR\007sandbox\"" +
+      "_\n\024DeleteSandboxRequest\022%\n\nsandbox_id\030\001 " +
+      "\001(\tB\006\272H\003\310\001\001R\tsandboxId\022 \n\007version\030\002 \001(\003B" +
+      "\006\272H\003\310\001\001R\007version\"Z\n\025DeleteSandboxRespons" +
+      "e\022A\n\007sandbox\030\001 \001(\0132\'.nuinfra.control_pla" +
+      "ne.v1alpha1.SandboxR\007sandbox\"\213\001\n\024StartSn" +
+      "apshotRequest\022%\n\nsandbox_id\030\001 \001(\tB\006\272H\003\310\001" +
+      "\001R\tsandboxId\022 \n\007version\030\002 \001(\003B\006\272H\003\310\001\001R\007v" +
+      "ersion\022*\n\013description\030\003 \001(\tB\010\272H\005r\003\030\200\002R\013d" +
+      "escription\"Z\n\025StartSnapshotResponse\022A\n\007s" +
+      "andbox\030\001 \001(\0132\'.nuinfra.control_plane.v1a" +
+      "lpha1.SandboxR\007sandbox2\246\t\n\016SandboxServic" +
+      "e\022\234\001\n\rCreateSandbox\0224.nuinfra.control_pl" +
+      "ane.v1alpha1.CreateSandboxRequest\0325.nuin" +
+      "fra.control_plane.v1alpha1.CreateSandbox" +
+      "Response\"\036\202\323\344\223\002\030\"\023/v1alpha1/sandboxes:\001*" +
+      "\022\235\001\n\nGetSandbox\0221.nuinfra.control_plane." +
+      "v1alpha1.GetSandboxRequest\0322.nuinfra.con" +
+      "trol_plane.v1alpha1.GetSandboxResponse\"(" +
+      "\202\323\344\223\002\"\022 /v1alpha1/sandboxes/{sandbox_id}" +
+      "\022\231\001\n\rListSandboxes\0224.nuinfra.control_pla" +
+      "ne.v1alpha1.ListSandboxesRequest\0325.nuinf" +
+      "ra.control_plane.v1alpha1.ListSandboxesR" +
+      "esponse\"\033\202\323\344\223\002\025\022\023/v1alpha1/sandboxes\022\251\001\n" +
+      "\014PauseSandbox\0223.nuinfra.control_plane.v1" +
+      "alpha1.PauseSandboxRequest\0324.nuinfra.con" +
+      "trol_plane.v1alpha1.PauseSandboxResponse" +
+      "\".\202\323\344\223\002(\032&/v1alpha1/sandboxes/{sandbox_i" +
+      "d}/pause\022\255\001\n\rResumeSandbox\0224.nuinfra.con" +
+      "trol_plane.v1alpha1.ResumeSandboxRequest" +
+      "\0325.nuinfra.control_plane.v1alpha1.Resume" +
+      "SandboxResponse\"/\202\323\344\223\002)\032\'/v1alpha1/sandb" +
+      "oxes/{sandbox_id}/resume\022\246\001\n\rDeleteSandb" +
+      "ox\0224.nuinfra.control_plane.v1alpha1.Dele" +
+      "teSandboxRequest\0325.nuinfra.control_plane" +
+      ".v1alpha1.DeleteSandboxResponse\"(\202\323\344\223\002\"*" +
+      " /v1alpha1/sandboxes/{sandbox_id}\022\263\001\n\rSt" +
+      "artSnapshot\0224.nuinfra.control_plane.v1al" +
+      "pha1.StartSnapshotRequest\0325.nuinfra.cont" +
+      "rol_plane.v1alpha1.StartSnapshotResponse" +
+      "\"5\202\323\344\223\002/\"*/v1alpha1/sandboxes/{sandbox_i" +
+      "d}/snapshots:\001*B\232\002\n\"com.nuinfra.control_" +
+      "plane.v1alpha1B\014SandboxProtoP\001ZPgolang.n" +
+      "uinfra.net/apis/gen/nuinfra/control_plan" +
+      "e/v1alpha1;control_planev1alpha1\242\002\003NCX\252\002" +
+      "\035Nuinfra.ControlPlane.V1alpha1\312\002\035Nuinfra" +
+      "\\ControlPlane\\V1alpha1\342\002)Nuinfra\\Control" +
+      "Plane\\V1alpha1\\GPBMetadata\352\002\037Nuinfra::Co" +
+      "ntrolPlane::V1alpha1b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -312,129 +321,135 @@ public final class SandboxProto extends com.google.protobuf.GeneratedFile {
     internal_static_nuinfra_control_plane_v1alpha1_SandboxMeta_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_nuinfra_control_plane_v1alpha1_SandboxMeta_descriptor,
-        new java.lang.String[] { "Id", "Namespace", "Version", "CreatedAt", "LastModifiedAt", "Labels", });
+        new java.lang.String[] { "Id", "Namespace", "Source", "Version", "CreatedAt", "LastModifiedAt", "Labels", });
     internal_static_nuinfra_control_plane_v1alpha1_SandboxMeta_LabelsEntry_descriptor =
       internal_static_nuinfra_control_plane_v1alpha1_SandboxMeta_descriptor.getNestedType(0);
     internal_static_nuinfra_control_plane_v1alpha1_SandboxMeta_LabelsEntry_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_nuinfra_control_plane_v1alpha1_SandboxMeta_LabelsEntry_descriptor,
         new java.lang.String[] { "Key", "Value", });
-    internal_static_nuinfra_control_plane_v1alpha1_Resources_descriptor =
+    internal_static_nuinfra_control_plane_v1alpha1_SandboxSource_descriptor =
       getDescriptor().getMessageType(2);
+    internal_static_nuinfra_control_plane_v1alpha1_SandboxSource_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_nuinfra_control_plane_v1alpha1_SandboxSource_descriptor,
+        new java.lang.String[] { "SnapshotId", "ImageId", "Reference", });
+    internal_static_nuinfra_control_plane_v1alpha1_Resources_descriptor =
+      getDescriptor().getMessageType(3);
     internal_static_nuinfra_control_plane_v1alpha1_Resources_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_nuinfra_control_plane_v1alpha1_Resources_descriptor,
         new java.lang.String[] { "VcpuCount", "MemoryMib", });
     internal_static_nuinfra_control_plane_v1alpha1_NodeRef_descriptor =
-      getDescriptor().getMessageType(3);
+      getDescriptor().getMessageType(4);
     internal_static_nuinfra_control_plane_v1alpha1_NodeRef_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_nuinfra_control_plane_v1alpha1_NodeRef_descriptor,
         new java.lang.String[] { "Id", });
     internal_static_nuinfra_control_plane_v1alpha1_Intent_descriptor =
-      getDescriptor().getMessageType(4);
+      getDescriptor().getMessageType(5);
     internal_static_nuinfra_control_plane_v1alpha1_Intent_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_nuinfra_control_plane_v1alpha1_Intent_descriptor,
         new java.lang.String[] { "Phase", "Resources", "StartSnapshot", });
     internal_static_nuinfra_control_plane_v1alpha1_StartSnapshotInput_descriptor =
-      getDescriptor().getMessageType(5);
+      getDescriptor().getMessageType(6);
     internal_static_nuinfra_control_plane_v1alpha1_StartSnapshotInput_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_nuinfra_control_plane_v1alpha1_StartSnapshotInput_descriptor,
         new java.lang.String[] { "Description", });
     internal_static_nuinfra_control_plane_v1alpha1_SnapshotOutput_descriptor =
-      getDescriptor().getMessageType(6);
+      getDescriptor().getMessageType(7);
     internal_static_nuinfra_control_plane_v1alpha1_SnapshotOutput_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_nuinfra_control_plane_v1alpha1_SnapshotOutput_descriptor,
         new java.lang.String[] { "SnapshotId", "CreatedAt", "Error", });
     internal_static_nuinfra_control_plane_v1alpha1_SandboxStatus_descriptor =
-      getDescriptor().getMessageType(7);
+      getDescriptor().getMessageType(8);
     internal_static_nuinfra_control_plane_v1alpha1_SandboxStatus_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_nuinfra_control_plane_v1alpha1_SandboxStatus_descriptor,
         new java.lang.String[] { "Phase", "Message", });
     internal_static_nuinfra_control_plane_v1alpha1_CreateSandboxRequest_descriptor =
-      getDescriptor().getMessageType(8);
+      getDescriptor().getMessageType(9);
     internal_static_nuinfra_control_plane_v1alpha1_CreateSandboxRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_nuinfra_control_plane_v1alpha1_CreateSandboxRequest_descriptor,
         new java.lang.String[] { "Sandbox", });
     internal_static_nuinfra_control_plane_v1alpha1_CreateSandboxResponse_descriptor =
-      getDescriptor().getMessageType(9);
+      getDescriptor().getMessageType(10);
     internal_static_nuinfra_control_plane_v1alpha1_CreateSandboxResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_nuinfra_control_plane_v1alpha1_CreateSandboxResponse_descriptor,
         new java.lang.String[] { "Sandbox", });
     internal_static_nuinfra_control_plane_v1alpha1_GetSandboxRequest_descriptor =
-      getDescriptor().getMessageType(10);
+      getDescriptor().getMessageType(11);
     internal_static_nuinfra_control_plane_v1alpha1_GetSandboxRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_nuinfra_control_plane_v1alpha1_GetSandboxRequest_descriptor,
         new java.lang.String[] { "SandboxId", });
     internal_static_nuinfra_control_plane_v1alpha1_GetSandboxResponse_descriptor =
-      getDescriptor().getMessageType(11);
+      getDescriptor().getMessageType(12);
     internal_static_nuinfra_control_plane_v1alpha1_GetSandboxResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_nuinfra_control_plane_v1alpha1_GetSandboxResponse_descriptor,
         new java.lang.String[] { "Sandbox", });
     internal_static_nuinfra_control_plane_v1alpha1_ListSandboxesRequest_descriptor =
-      getDescriptor().getMessageType(12);
+      getDescriptor().getMessageType(13);
     internal_static_nuinfra_control_plane_v1alpha1_ListSandboxesRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_nuinfra_control_plane_v1alpha1_ListSandboxesRequest_descriptor,
         new java.lang.String[] { "Namespace", "NodeId", "StatusPhase", "ContinuationToken", "PageSize", "SortOrder", });
     internal_static_nuinfra_control_plane_v1alpha1_ListSandboxesResponse_descriptor =
-      getDescriptor().getMessageType(13);
+      getDescriptor().getMessageType(14);
     internal_static_nuinfra_control_plane_v1alpha1_ListSandboxesResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_nuinfra_control_plane_v1alpha1_ListSandboxesResponse_descriptor,
         new java.lang.String[] { "Sandboxes", "ContinuationToken", });
     internal_static_nuinfra_control_plane_v1alpha1_PauseSandboxRequest_descriptor =
-      getDescriptor().getMessageType(14);
+      getDescriptor().getMessageType(15);
     internal_static_nuinfra_control_plane_v1alpha1_PauseSandboxRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_nuinfra_control_plane_v1alpha1_PauseSandboxRequest_descriptor,
         new java.lang.String[] { "SandboxId", "Version", });
     internal_static_nuinfra_control_plane_v1alpha1_PauseSandboxResponse_descriptor =
-      getDescriptor().getMessageType(15);
+      getDescriptor().getMessageType(16);
     internal_static_nuinfra_control_plane_v1alpha1_PauseSandboxResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_nuinfra_control_plane_v1alpha1_PauseSandboxResponse_descriptor,
         new java.lang.String[] { "Sandbox", });
     internal_static_nuinfra_control_plane_v1alpha1_ResumeSandboxRequest_descriptor =
-      getDescriptor().getMessageType(16);
+      getDescriptor().getMessageType(17);
     internal_static_nuinfra_control_plane_v1alpha1_ResumeSandboxRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_nuinfra_control_plane_v1alpha1_ResumeSandboxRequest_descriptor,
         new java.lang.String[] { "SandboxId", "Version", });
     internal_static_nuinfra_control_plane_v1alpha1_ResumeSandboxResponse_descriptor =
-      getDescriptor().getMessageType(17);
+      getDescriptor().getMessageType(18);
     internal_static_nuinfra_control_plane_v1alpha1_ResumeSandboxResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_nuinfra_control_plane_v1alpha1_ResumeSandboxResponse_descriptor,
         new java.lang.String[] { "Sandbox", });
     internal_static_nuinfra_control_plane_v1alpha1_DeleteSandboxRequest_descriptor =
-      getDescriptor().getMessageType(18);
+      getDescriptor().getMessageType(19);
     internal_static_nuinfra_control_plane_v1alpha1_DeleteSandboxRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_nuinfra_control_plane_v1alpha1_DeleteSandboxRequest_descriptor,
         new java.lang.String[] { "SandboxId", "Version", });
     internal_static_nuinfra_control_plane_v1alpha1_DeleteSandboxResponse_descriptor =
-      getDescriptor().getMessageType(19);
+      getDescriptor().getMessageType(20);
     internal_static_nuinfra_control_plane_v1alpha1_DeleteSandboxResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_nuinfra_control_plane_v1alpha1_DeleteSandboxResponse_descriptor,
         new java.lang.String[] { "Sandbox", });
     internal_static_nuinfra_control_plane_v1alpha1_StartSnapshotRequest_descriptor =
-      getDescriptor().getMessageType(20);
+      getDescriptor().getMessageType(21);
     internal_static_nuinfra_control_plane_v1alpha1_StartSnapshotRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_nuinfra_control_plane_v1alpha1_StartSnapshotRequest_descriptor,
         new java.lang.String[] { "SandboxId", "Version", "Description", });
     internal_static_nuinfra_control_plane_v1alpha1_StartSnapshotResponse_descriptor =
-      getDescriptor().getMessageType(21);
+      getDescriptor().getMessageType(22);
     internal_static_nuinfra_control_plane_v1alpha1_StartSnapshotResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_nuinfra_control_plane_v1alpha1_StartSnapshotResponse_descriptor,

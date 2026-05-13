@@ -484,6 +484,10 @@ You can find out more about this error model and how to work with it in the
       "metadata": {
         "id": "string",
         "namespace": "string",
+        "source": {
+          "snapshotId": "string",
+          "imageId": "string"
+        },
         "version": "string",
         "createdAt": "2019-08-24T14:15:22Z",
         "lastModifiedAt": "2019-08-24T14:15:22Z",
@@ -568,6 +572,10 @@ You can find out more about this error model and how to work with it in the
     "metadata": {
       "id": "string",
       "namespace": "string",
+      "source": {
+        "snapshotId": "string",
+        "imageId": "string"
+      },
       "version": "string",
       "createdAt": "2019-08-24T14:15:22Z",
       "lastModifiedAt": "2019-08-24T14:15:22Z",
@@ -1078,6 +1086,10 @@ Response message containing a page of nodes.
   "metadata": {
     "id": "string",
     "namespace": "string",
+    "source": {
+      "snapshotId": "string",
+      "imageId": "string"
+    },
     "version": "string",
     "createdAt": "2019-08-24T14:15:22Z",
     "lastModifiedAt": "2019-08-24T14:15:22Z",
@@ -1148,6 +1160,10 @@ Response message containing a page of nodes.
 {
   "id": "string",
   "namespace": "string",
+  "source": {
+    "snapshotId": "string",
+    "imageId": "string"
+  },
   "version": "string",
   "createdAt": "2019-08-24T14:15:22Z",
   "lastModifiedAt": "2019-08-24T14:15:22Z",
@@ -1165,11 +1181,34 @@ Response message containing a page of nodes.
 |---|---|---|---|---|
 |id|string|false|none|none|
 |namespace|string|false|none|none|
+|source|[v1alpha1SandboxSource](#schemav1alpha1sandboxsource)|false|none|none|
 |version|string(int64)|false|none|none|
 |createdAt|string(date-time)|false|none|none|
 |lastModifiedAt|string(date-time)|false|none|none|
 |labels|object|false|none|Arbitrary key/value labels for client-side grouping and<br>filtering (e.g. "project=foo", "ci-run=123"). Keys are required<br>to be 1-63 chars, lowercase alphanumeric with dots/dashes/<br>underscores, starting and ending with an alphanumeric. Values<br>may be empty or follow the same rules (uppercase permitted).|
 |» **additionalProperties**|string|false|none|none|
+
+<h2 id="tocS_v1alpha1SandboxSource">v1alpha1SandboxSource</h2>
+<!-- backwards compatibility -->
+<a id="schemav1alpha1sandboxsource"></a>
+<a id="schema_v1alpha1SandboxSource"></a>
+<a id="tocSv1alpha1sandboxsource"></a>
+<a id="tocsv1alpha1sandboxsource"></a>
+
+```json
+{
+  "snapshotId": "string",
+  "imageId": "string"
+}
+
+```
+
+### Properties
+
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|snapshotId|string|false|none|none|
+|imageId|string|false|none|none|
 
 <h2 id="tocS_v1alpha1SandboxStatus">v1alpha1SandboxStatus</h2>
 <!-- backwards compatibility -->
@@ -1293,6 +1332,10 @@ Response message containing a page of nodes.
     "metadata": {
       "id": "string",
       "namespace": "string",
+      "source": {
+        "snapshotId": "string",
+        "imageId": "string"
+      },
       "version": "string",
       "createdAt": "2019-08-24T14:15:22Z",
       "lastModifiedAt": "2019-08-24T14:15:22Z",
