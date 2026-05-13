@@ -19,9 +19,11 @@ package network
 import (
 	"errors"
 	"fmt"
+	"log"
 	"net"
 	"net/netip"
 	"os"
+	"path/filepath"
 	"runtime"
 	"sync"
 
@@ -29,6 +31,12 @@ import (
 	"github.com/vishvananda/netns"
 	"golang.org/x/sys/unix"
 )
+
+// netnsMountDir is the kernel-iproute2-compatible mount point where
+// named network namespaces live. /var/run/netns symlinks here on
+// systemd hosts. Used by hasStaleState to detect orphans from a
+// previous daemon process that exited before Deprovision.
+const netnsMountDir = "/run/netns"
 
 // NewLinuxDriver returns a [Driver] backed by netlink and netns. The
 // returned value is safe for concurrent use; mutating operations are
@@ -57,6 +65,23 @@ func (d *linuxDriver) Provision(index int) (NamespaceHandle, error) {
 	defer d.mu.Unlock()
 
 	meta := buildHandle(index)
+
+	// Sweep any state left behind by a previous daemon process that
+	// exited before its Deprovision could run: the named netns file
+	// at /run/netns/<name> and the host-side veth both survive a
+	// daemon crash, and without this sweep createNamespace + the
+	// veth-add step would each fail with EEXIST. Safe to call here —
+	// the reconciler picks `index` via provider.Len(), and the
+	// firecracker provider's index reflects post-Recover live VMs,
+	// so this index is by construction not associated with any
+	// running microVM on this host.
+	if d.hasStaleState(meta) {
+		log.Printf("network: orphan state for %q (probable unclean shutdown of a previous run); cleaning up before re-provisioning",
+			meta.NamespaceName)
+		if err := d.deprovisionLocked(index); err != nil {
+			return NamespaceHandle{}, fmt.Errorf("clean stale network state for index %d: %w", index, err)
+		}
+	}
 
 	nsFd, err := createNamespace(meta.NamespaceName)
 	if err != nil {
@@ -90,6 +115,22 @@ func (d *linuxDriver) Deprovision(index int) error {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 	return d.deprovisionLocked(index)
+}
+
+// hasStaleState reports whether any host-visible artifact for the
+// supplied namespace handle already exists — either the named netns
+// file at /run/netns/<name> or the host-side veth link. Used by
+// Provision to decide whether to log (and clean up) before starting
+// fresh; deprovisionLocked itself is naturally idempotent on absent
+// state, so a wrong-positive here would be quiet but non-fatal.
+func (d *linuxDriver) hasStaleState(meta NamespaceHandle) bool {
+	if _, err := os.Stat(filepath.Join(netnsMountDir, meta.NamespaceName)); err == nil {
+		return true
+	}
+	if _, err := netlink.LinkByName(meta.HostVethName); err == nil {
+		return true
+	}
+	return false
 }
 
 // deprovisionLocked assumes d.mu is held. It is safe to call against a
