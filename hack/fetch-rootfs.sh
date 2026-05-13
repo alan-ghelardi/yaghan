@@ -91,4 +91,4 @@ echo "==> syncing"
 sync
 
 echo "done: ${out_path} ($(du -h "${out_path}" | cut -f1)) from alpine-minirootfs-${version}"
-echo "next: sudo ./agent/hack/build-and-embed.sh --rootfs ${out_path}"
+echo "next: sudo ./hack/build-and-embed-agent.sh --rootfs ${out_path}"

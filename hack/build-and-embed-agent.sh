@@ -4,13 +4,13 @@
 # expects. Loop-mounting requires root.
 #
 # Usage:
-#   sudo ./hack/build-and-embed.sh [--rootfs PATH] [--target PATH]
+#   sudo ./hack/build-and-embed-agent.sh [--rootfs PATH] [--target PATH]
 
 set -euo pipefail
 
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" > /dev/null && pwd)"
-agent_dir="$(cd "${here}/.." > /dev/null && pwd)"
-repo_root="$(cd "${agent_dir}/.." > /dev/null && pwd)"
+repo_root="$(cd "${here}/.." > /dev/null && pwd)"
+agent_dir="${repo_root}/agent"
 
 go="/usr/local/go/bin/go"
 rootfs="${repo_root}/assets/rootfs.ext4"
