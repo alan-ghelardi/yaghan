@@ -122,6 +122,72 @@ func TestCreate(t *testing.T) {
 			},
 			wantErr: "AlreadyExists",
 		},
+		{
+			name: "--source snapshot:<id> populates Metadata.Source.SnapshotId",
+			args: "--source snapshot:snap-1",
+			capture: func(t *testing.T, req *controlplanev1alpha1.CreateSandboxRequest) (*controlplanev1alpha1.CreateSandboxResponse, error) {
+				src := req.GetSandbox().GetMetadata().GetSource()
+				require.NotNil(t, src, "Metadata.Source must be set when --source is supplied")
+				assert.Equal(t, "snap-1", src.GetSnapshotId())
+				assert.Equal(t, "", src.GetImageId(),
+					"snapshot source must not also set image_id")
+				return echo(req), nil
+			},
+			wantStdout: "source=snapshot:snap-1",
+		},
+		{
+			name: "--source image:<id> populates Metadata.Source.ImageId",
+			args: "--source image:img-1",
+			capture: func(t *testing.T, req *controlplanev1alpha1.CreateSandboxRequest) (*controlplanev1alpha1.CreateSandboxResponse, error) {
+				src := req.GetSandbox().GetMetadata().GetSource()
+				require.NotNil(t, src)
+				assert.Equal(t, "img-1", src.GetImageId())
+				assert.Equal(t, "", src.GetSnapshotId())
+				return echo(req), nil
+			},
+			wantStdout: "source=image:img-1",
+		},
+		{
+			name: "honours shorthand -s",
+			args: "-s snapshot:abc",
+			capture: func(t *testing.T, req *controlplanev1alpha1.CreateSandboxRequest) (*controlplanev1alpha1.CreateSandboxResponse, error) {
+				assert.Equal(t, "abc", req.GetSandbox().GetMetadata().GetSource().GetSnapshotId())
+				return echo(req), nil
+			},
+			wantStdout: "source=snapshot:abc",
+		},
+		{
+			name: "omitted --source leaves Metadata.Source nil",
+			args: "",
+			capture: func(t *testing.T, req *controlplanev1alpha1.CreateSandboxRequest) (*controlplanev1alpha1.CreateSandboxResponse, error) {
+				assert.Nil(t, req.GetSandbox().GetMetadata().GetSource(),
+					"Metadata.Source must be nil when --source is not supplied")
+				return echo(req), nil
+			},
+			// stdout's "Creating sandbox..." line has no source suffix when
+			// the flag was omitted; the case above already asserts on
+			// "created." for the success message.
+		},
+		{
+			name:    "rejects --source value with no colon",
+			args:    "--source abc",
+			wantErr: `invalid --source "abc": expected format <type>:<id>`,
+		},
+		{
+			name:    "rejects --source with empty id after the colon",
+			args:    "--source snapshot:",
+			wantErr: "both type and id are required",
+		},
+		{
+			name:    "rejects --source with empty type before the colon",
+			args:    "--source :abc",
+			wantErr: "both type and id are required",
+		},
+		{
+			name:    "rejects --source with unknown type",
+			args:    "--source bogus:abc",
+			wantErr: `unknown type "bogus"`,
+		},
 	}
 
 	for _, tc := range tests {

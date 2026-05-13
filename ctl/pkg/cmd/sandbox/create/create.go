@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/spf13/cobra"
@@ -20,12 +21,16 @@ const (
 	flagNamespace = "namespace"
 	flagVCPU      = "vcpu"
 	flagMemory    = "memory"
+	flagSource    = "source"
 
 	defaultNamespace = "default"
 	defaultVCPU      = int32(1)
 	// 128 MiB matches the proto's lower bound for memory_mib — the
 	// smallest sandbox the api-server will accept.
 	defaultMemory = "128MiB"
+
+	sourceTypeSnapshot = "snapshot"
+	sourceTypeImage    = "image"
 )
 
 // memoryPattern accepts "<integer><unit>" where unit is MiB or GiB. The
@@ -59,7 +64,10 @@ client-side and printed back.`,
   sindri sandbox create my-sandbox --vcpu 2 --memory 1GiB
 
   # Create a sandbox in a non-default namespace.
-  sindri sandbox create --namespace tenant-a --memory 512MiB`,
+  sindri sandbox create --namespace tenant-a --memory 512MiB
+
+  # Restore a sandbox from a snapshot (the snapshot must live in the same namespace).
+  sindri sandbox create --source snapshot:my-snapshot-id`,
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return run(ctx, cmd, args)
@@ -72,6 +80,10 @@ client-side and printed back.`,
 		"Number of virtual CPUs assigned to the sandbox.")
 	cmd.Flags().StringP(flagMemory, "m", defaultMemory,
 		"Memory size as <integer><unit>, where unit is MiB or GiB (e.g. 512MiB, 2GiB).")
+	cmd.Flags().StringP(flagSource, "s", "",
+		"Seed the sandbox from a referenced artifact. Format: <type>:<id> where type is one of (snapshot, image). "+
+			"Example: --source snapshot:abc123. Image sources are forward-compatible — the api-server returns "+
+			"Unimplemented today. Empty (default) creates a fresh sandbox.")
 
 	return cmd
 }
@@ -95,10 +107,18 @@ func run(ctx *cli.Context, cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
+	sourceStr, err := cmd.Flags().GetString(flagSource)
+	if err != nil {
+		return err
+	}
+	source, err := parseSource(sourceStr)
+	if err != nil {
+		return err
+	}
 
 	fmt.Fprintf(ctx.IOStreams.Stdout,
-		"Creating sandbox %q in namespace %q (vcpu=%d, memory=%dMiB)...\n",
-		id, namespace, vcpu, memoryMiB)
+		"Creating sandbox %q in namespace %q (vcpu=%d, memory=%dMiB%s)...\n",
+		id, namespace, vcpu, memoryMiB, sourceStatusSuffix(sourceStr))
 
 	resp, err := ctx.ClientSet.SandboxService.CreateSandbox(cmd.Context(),
 		&controlplanev1alpha1.CreateSandboxRequest{
@@ -106,6 +126,7 @@ func run(ctx *cli.Context, cmd *cobra.Command, args []string) error {
 				Metadata: &controlplanev1alpha1.SandboxMeta{
 					Id:        id,
 					Namespace: namespace,
+					Source:    source,
 				},
 				Resources: &controlplanev1alpha1.Resources{
 					VcpuCount: uint32(vcpu),
@@ -132,6 +153,56 @@ func resolveID(args []string) string {
 		return args[0]
 	}
 	return uuid.NewString()
+}
+
+// parseSource translates the --source flag value into a SandboxSource
+// proto. Empty input returns (nil, nil) — no source means "create
+// fresh", the legacy behaviour. A non-empty value must be
+// "<type>:<id>" where type is one of {snapshot, image}; anything else
+// is rejected client-side with a format-pointing message. The
+// api-server has the final say on whether the referenced artifact
+// resolves (snapshot existence / namespace match, image_id today
+// surfaces as Unimplemented).
+func parseSource(s string) (*controlplanev1alpha1.SandboxSource, error) {
+	if s == "" {
+		return nil, nil
+	}
+	kind, id, ok := strings.Cut(s, ":")
+	if !ok {
+		return nil, fmt.Errorf(
+			"invalid --%s %q: expected format <type>:<id>, e.g. snapshot:abc123",
+			flagSource, s)
+	}
+	if kind == "" || id == "" {
+		return nil, fmt.Errorf(
+			"invalid --%s %q: both type and id are required, e.g. snapshot:abc123",
+			flagSource, s)
+	}
+	switch kind {
+	case sourceTypeSnapshot:
+		return &controlplanev1alpha1.SandboxSource{
+			Reference: &controlplanev1alpha1.SandboxSource_SnapshotId{SnapshotId: id},
+		}, nil
+	case sourceTypeImage:
+		return &controlplanev1alpha1.SandboxSource{
+			Reference: &controlplanev1alpha1.SandboxSource_ImageId{ImageId: id},
+		}, nil
+	default:
+		return nil, fmt.Errorf(
+			"invalid --%s %q: unknown type %q, expected one of (%s, %s)",
+			flagSource, s, kind, sourceTypeSnapshot, sourceTypeImage)
+	}
+}
+
+// sourceStatusSuffix returns the " source=<raw>" fragment for the
+// "Creating sandbox..." status line, or "" when no source was
+// supplied. Surfaces what the user typed (not the parsed proto) so the
+// echo matches their input verbatim.
+func sourceStatusSuffix(raw string) string {
+	if raw == "" {
+		return ""
+	}
+	return ", source=" + raw
 }
 
 // parseMemory converts "<integer><unit>" (unit ∈ {MiB, GiB}) into MiB,
