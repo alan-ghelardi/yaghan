@@ -296,6 +296,13 @@ func (f *firecracker) LoadSnapshot(ctx context.Context, input *LoadSnapshotInput
 		SnapshotPath:  &stateChrootPath,
 		MemFilePath:   memChrootPath,
 		ResumeVM:      true,
+		// Firecracker's swagger spec tags `network_overrides` without
+		// `omitempty`, so a nil slice serialises as `null` and the
+		// daemon rejects the body with "invalid type: null, expected
+		// a sequence". An empty slice marshals as `[]`, which
+		// firecracker accepts and which matches our actual intent
+		// (no per-NIC overrides at restore time).
+		NetworkOverrides: []*models.NetworkOverride{},
 	}
 	if input.VsockUDSPath != "" {
 		// Pin the UDS path so the host-side UDS we wire into
