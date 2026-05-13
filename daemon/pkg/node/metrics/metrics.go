@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io/fs"
 	"time"
 
 	"github.com/shirou/gopsutil/v4/cpu"
@@ -70,11 +71,13 @@ func (d *defaultCollector) Collect(ctx context.Context) (*Sample, error) {
 		diskPath = d.config.Firecracker.ChrootBaseDir
 	}
 	du, err := disk.UsageWithContext(ctx, diskPath)
-	if err != nil {
+	if err != nil && !errors.Is(err, fs.ErrNotExist) {
 		return nil, fmt.Errorf("failed to collect disk usage information: %w", err)
 	}
-	sample.DiskCapacityBytes = du.Total
-	sample.DiskUsedBytes = du.Used
+	if du != nil {
+		sample.DiskCapacityBytes = du.Total
+		sample.DiskUsedBytes = du.Used
+	}
 
 	return sample, nil
 }

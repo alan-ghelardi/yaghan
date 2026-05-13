@@ -292,10 +292,9 @@ func (f *firecracker) LoadSnapshot(ctx context.Context, input *LoadSnapshotInput
 	memChrootPath := snapshot.MemFilePath(input.LocalReference.SnapshotID)
 	stateChrootPath := snapshot.StateFilePath(input.LocalReference.SnapshotID)
 	body := &models.SnapshotLoadParams{
-		ClockRealtime: true,
-		SnapshotPath:  &stateChrootPath,
-		MemFilePath:   memChrootPath,
-		ResumeVM:      true,
+		SnapshotPath: &stateChrootPath,
+		MemFilePath:  memChrootPath,
+		ResumeVM:     true,
 		// Firecracker's swagger spec tags `network_overrides` without
 		// `omitempty`, so a nil slice serialises as `null` and the
 		// daemon rejects the body with "invalid type: null, expected
