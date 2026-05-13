@@ -6,14 +6,16 @@
 #      ${repo_root}/firecracker-version and installs them under
 #      assets/ with their canonical names so the daemon's defaults
 #      pick them up.
-#   3. Runs hack/fetch-rootfs.sh to build the Alpine rootfs.
-#   4. Runs hack/build-and-embed-agent.sh to build the agent and
+#   3. Runs hack/fetch-kernel.sh to download a firecracker-tested
+#      vmlinux into assets/.
+#   4. Runs hack/fetch-rootfs.sh to build the Alpine rootfs.
+#   5. Runs hack/build-and-embed-agent.sh to build the agent and
 #      embed it into the rootfs as /init.
 #
 # Future contributors should run this once before hacking on the
-# microvm stack. Steps 1-3 are idempotent — a cached firecracker
-# tarball under assets/ is reused, and fetch-rootfs.sh likewise
-# reuses its cached Alpine minirootfs tarball.
+# microvm stack. Every step is idempotent — the firecracker tarball,
+# the vmlinux binary, and the Alpine minirootfs tarball are all
+# cached under assets/ and reused on re-run.
 #
 # Loop-mounting (used by both rootfs scripts) requires CAP_SYS_ADMIN,
 # so invoke with sudo:
@@ -80,6 +82,9 @@ fi
 install -m 0755 "${release_dir}/firecracker-${version}-${arch}" "${assets_dir}/firecracker"
 install -m 0755 "${release_dir}/jailer-${version}-${arch}"      "${assets_dir}/jailer"
 
+echo "==> downloading kernel image (delegating to hack/fetch-kernel.sh)"
+"${here}/fetch-kernel.sh"
+
 echo "==> building rootfs (delegating to hack/fetch-rootfs.sh)"
 "${here}/fetch-rootfs.sh"
 
@@ -90,7 +95,5 @@ echo
 echo "done. local development assets ready under ${assets_dir}:"
 echo "  firecracker   $(${assets_dir}/firecracker --version 2>&1 | head -n1)"
 echo "  jailer        $(${assets_dir}/jailer --version 2>&1 | head -n1)"
-echo "  rootfs.ext4   $(du -h "${assets_dir}/rootfs.ext4" | cut -f1)"
-echo
-echo "note: a kernel image (vmlinux) is also required at ${assets_dir}/vmlinux"
-echo "      but is not produced by this script. Provide one separately."
+echo "  vmlinux       $(du -h "${assets_dir}/vmlinux"      | cut -f1)"
+echo "  rootfs.ext4   $(du -h "${assets_dir}/rootfs.ext4"  | cut -f1)"
