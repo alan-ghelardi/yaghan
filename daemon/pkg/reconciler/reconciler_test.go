@@ -105,8 +105,52 @@ func newReconcilerFixture(t *testing.T) (*Reconciler, *fcmocks.MockProvider, *ne
 	vm := fcmocks.NewMockMicroVM(ctrl)
 	durableStore := snapmocks.NewMockDurableStore(ctrl)
 	snapshotClient := cpmocks.NewMockSnapshotServiceClient(ctrl)
-	r := New(testBundle(), provider, driver, snapshot.NewStore(durableStore), snapshotClient)
+	// Anchor ChrootBaseDir under t.TempDir() so bootFromSnapshot's
+	// shared snapshot cache lives somewhere writable without touching
+	// the host's /srv/jailer.
+	bundle := testBundle()
+	bundle.Firecracker.ChrootBaseDir = t.TempDir()
+	r := New(bundle, provider, driver, snapshot.NewStore(durableStore), snapshotClient)
 	return r, provider, driver, vm, durableStore, snapshotClient
+}
+
+// withSnapshotSource attaches a Metadata.Source.snapshot_id reference
+// to a fixture sandbox. Mirrors the api-server side helper of the same
+// name.
+func withSnapshotSource(snapshotID string) func(*cpv1.Sandbox) {
+	return func(sb *cpv1.Sandbox) {
+		sb.Metadata.Source = &cpv1.SandboxSource{
+			Reference: &cpv1.SandboxSource_SnapshotId{SnapshotId: snapshotID},
+		}
+	}
+}
+
+// stagedSnapshotPath returns the host path inside the daemon's shared
+// snapshot cache where Store.Load writes the artifact for snapshotID.
+// Used by tests that need to populate / assert on the cached files
+// without going through the public Store API.
+func stagedSnapshotPath(r *Reconciler, snapshotID string) (memPath, statePath string) {
+	cache := filepath.Join(r.config.Firecracker.ChrootBaseDir, snapshotCacheDirName)
+	memPath = filepath.Join(cache, snapshot.MemFilePath(snapshotID))
+	statePath = filepath.Join(cache, snapshot.StateFilePath(snapshotID))
+	return memPath, statePath
+}
+
+// expectSnapshotDownload primes the MockDurableStore so the next
+// Store.Load(stagingDir, snapshotID) writes the supplied byte payloads
+// into the cache. The handler does the same job as the real S3
+// download — receive ContentsWriter, copy bytes into its WriterAts —
+// just from in-memory data instead of from S3.
+func expectSnapshotDownload(durableStore *snapmocks.MockDurableStore, snapshotID string, mem, state []byte) *gomock.Call {
+	return durableStore.EXPECT().
+		Get(gomock.Any(), snapshotID, gomock.Any()).
+		DoAndReturn(func(_ context.Context, _ string, contents *snapshot.ContentsWriter) error {
+			if _, err := contents.Memory.WriteAt(mem, 0); err != nil {
+				return err
+			}
+			_, err := contents.State.WriteAt(state, 0)
+			return err
+		})
 }
 
 func TestReconcile_NilIntentIsNoOp(t *testing.T) {
@@ -233,6 +277,203 @@ func TestReconcile_BootSurfacesNetworkProvisionFailure(t *testing.T) {
 	err := r.Reconcile(ctx, sandbox)
 	require.Error(t, err)
 	assert.ErrorIs(t, err, provErr)
+}
+
+// TestReconcile_BootFromSnapshot_HappyPath covers the snapshot-restore
+// boot path end-to-end: the durable store is queried, the network is
+// provisioned, LoadSnapshot fires, and post-restore Describe matches
+// the sandbox spec so no UpdateResources call is needed.
+func TestReconcile_BootFromSnapshot_HappyPath(t *testing.T) {
+	r, provider, driver, vm, durableStore, _ := newReconcilerFixture(t)
+	ctx := context.Background()
+
+	sandbox := fixtureSandbox("sb-from-snap")
+	withSnapshotSource("snap-A")(sandbox)
+	sandbox.Intent = &cpv1.Intent{Phase: cpv1.SandboxStatus_PHASE_RUNNING}
+
+	nsh := fixtureNamespaceHandle(0)
+	gomock.InOrder(
+		provider.EXPECT().GetMicroVM("sb-from-snap").Return(nil),
+		expectSnapshotDownload(durableStore, "snap-A", []byte("mem"), []byte("state")),
+		provider.EXPECT().Len().Return(0),
+		driver.EXPECT().Provision(0).Return(nsh, nil),
+		provider.EXPECT().
+			LoadSnapshot(ctx, gomock.Any()).
+			DoAndReturn(func(_ context.Context, input *firecracker.LoadSnapshotInput) (firecracker.MicroVM, error) {
+				assert.Equal(t, "sb-from-snap", input.ID)
+				assert.Equal(t, nsh, input.Network)
+				require.NotNil(t, input.LocalReference)
+				assert.Equal(t, "snap-A", input.LocalReference.SnapshotID)
+				// LoadSnapshot is given the *staged* paths inside the
+				// daemon's shared cache, not the original VM's chroot.
+				memPath, statePath := stagedSnapshotPath(r, "snap-A")
+				assert.Equal(t, memPath, input.LocalReference.MemFilePath)
+				assert.Equal(t, statePath, input.LocalReference.StateFilePath)
+				// VsockUDSPath and AgentVsockPort come from the daemon
+				// template so the in-VM agent stays reachable.
+				assert.Equal(t, "/v.sock", input.VsockUDSPath)
+				assert.Equal(t, uint32(1024), input.AgentVsockPort)
+				return vm, nil
+			}),
+		vm.EXPECT().Describe(ctx).Return(&firecracker.MicroVMInfo{
+			VCPUCount: 2,
+			MemoryMiB: 1024,
+		}, nil),
+	)
+	// Describe matches sandbox.Resources → no UpdateResources call.
+	vm.EXPECT().UpdateResources(gomock.Any(), gomock.Any()).Times(0)
+
+	require.NoError(t, r.Reconcile(ctx, sandbox))
+	assert.Nil(t, sandbox.Intent)
+	assert.Equal(t, cpv1.SandboxStatus_PHASE_RUNNING, sandbox.GetStatus().GetPhase())
+	assert.Equal(t, "Sandbox is running", sandbox.GetStatus().GetMessage())
+}
+
+// TestReconcile_BootFromSnapshot_AlignsResourcesWhenSnapshotDiffers
+// pins the "callers may tune resources for a new run" behaviour: when
+// the snapshot's saved vCPU/memory differs from the sandbox spec, the
+// reconciler calls UpdateResources to make the spec authoritative.
+func TestReconcile_BootFromSnapshot_AlignsResourcesWhenSnapshotDiffers(t *testing.T) {
+	r, provider, driver, vm, durableStore, _ := newReconcilerFixture(t)
+	ctx := context.Background()
+
+	sandbox := fixtureSandbox("sb-resize")
+	withSnapshotSource("snap-B")(sandbox)
+	// Sandbox wants 4 vCPU / 2048 MiB; snapshot saved 2 vCPU / 1024 MiB.
+	sandbox.Resources.VcpuCount = 4
+	sandbox.Resources.MemoryMib = 2048
+	sandbox.Intent = &cpv1.Intent{Phase: cpv1.SandboxStatus_PHASE_RUNNING}
+
+	gomock.InOrder(
+		provider.EXPECT().GetMicroVM("sb-resize").Return(nil),
+		expectSnapshotDownload(durableStore, "snap-B", []byte("mem"), []byte("state")),
+		provider.EXPECT().Len().Return(0),
+		driver.EXPECT().Provision(0).Return(fixtureNamespaceHandle(0), nil),
+		provider.EXPECT().LoadSnapshot(ctx, gomock.Any()).Return(vm, nil),
+		vm.EXPECT().Describe(ctx).Return(&firecracker.MicroVMInfo{
+			VCPUCount: 2,
+			MemoryMiB: 1024,
+		}, nil),
+		vm.EXPECT().UpdateResources(ctx, firecracker.UpdateResourcesInput{
+			VCPUCount: 4,
+			MemoryMiB: 2048,
+		}).Return(nil),
+	)
+
+	require.NoError(t, r.Reconcile(ctx, sandbox))
+	assert.Equal(t, cpv1.SandboxStatus_PHASE_RUNNING, sandbox.GetStatus().GetPhase())
+}
+
+// TestReconcile_BootFromSnapshot_VMAlreadyExistsRunsAlignmentOnly pins
+// the retry path: when LoadSnapshot already succeeded in a prior pass,
+// a re-delivered event finds the VM in the index and only
+// re-evaluates alignment. No download, no network, no LoadSnapshot.
+func TestReconcile_BootFromSnapshot_VMAlreadyExistsRunsAlignmentOnly(t *testing.T) {
+	r, provider, _, vm, _, _ := newReconcilerFixture(t)
+	ctx := context.Background()
+
+	sandbox := fixtureSandbox("sb-retry")
+	withSnapshotSource("snap-C")(sandbox)
+	sandbox.Intent = &cpv1.Intent{Phase: cpv1.SandboxStatus_PHASE_RUNNING}
+
+	provider.EXPECT().GetMicroVM("sb-retry").Return(vm)
+	vm.EXPECT().Describe(ctx).Return(&firecracker.MicroVMInfo{
+		VCPUCount: 2,
+		MemoryMiB: 1024,
+	}, nil)
+	vm.EXPECT().UpdateResources(gomock.Any(), gomock.Any()).Times(0)
+	provider.EXPECT().LoadSnapshot(gomock.Any(), gomock.Any()).Times(0)
+
+	require.NoError(t, r.Reconcile(ctx, sandbox))
+	assert.Equal(t, cpv1.SandboxStatus_PHASE_RUNNING, sandbox.GetStatus().GetPhase())
+}
+
+// TestReconcile_BootFromSnapshot_DurableStoreFailureLeavesNetworkUntouched
+// pins the order-of-operations contract: the snapshot download
+// happens before network provisioning so a missing snapshot does not
+// leak host network resources.
+func TestReconcile_BootFromSnapshot_DurableStoreFailureLeavesNetworkUntouched(t *testing.T) {
+	r, provider, driver, _, durableStore, _ := newReconcilerFixture(t)
+	ctx := context.Background()
+
+	sandbox := fixtureSandbox("sb-no-snap")
+	withSnapshotSource("snap-missing")(sandbox)
+	sandbox.Intent = &cpv1.Intent{Phase: cpv1.SandboxStatus_PHASE_RUNNING}
+
+	downloadErr := errors.New("S3 NoSuchKey")
+	gomock.InOrder(
+		provider.EXPECT().GetMicroVM("sb-no-snap").Return(nil),
+		durableStore.EXPECT().
+			Get(gomock.Any(), "snap-missing", gomock.Any()).
+			Return(downloadErr),
+	)
+	driver.EXPECT().Provision(gomock.Any()).Times(0)
+	provider.EXPECT().LoadSnapshot(gomock.Any(), gomock.Any()).Times(0)
+
+	err := r.Reconcile(ctx, sandbox)
+	require.Error(t, err)
+	assert.ErrorIs(t, err, downloadErr)
+	assert.Contains(t, err.Error(), "snap-missing",
+		"error must surface the snapshot id the daemon failed to load")
+}
+
+// TestReconcile_BootFromSnapshot_LoadFailureRollsBackNetwork pins
+// network teardown on a LoadSnapshot failure — we must not leak an
+// orphaned namespace when the snapshot artifact downloaded but
+// firecracker refused to restore.
+func TestReconcile_BootFromSnapshot_LoadFailureRollsBackNetwork(t *testing.T) {
+	r, provider, driver, _, durableStore, _ := newReconcilerFixture(t)
+	ctx := context.Background()
+
+	sandbox := fixtureSandbox("sb-load-fail")
+	withSnapshotSource("snap-D")(sandbox)
+	sandbox.Intent = &cpv1.Intent{Phase: cpv1.SandboxStatus_PHASE_RUNNING}
+
+	loadErr := errors.New("firecracker rejected snapshot")
+	gomock.InOrder(
+		provider.EXPECT().GetMicroVM("sb-load-fail").Return(nil),
+		expectSnapshotDownload(durableStore, "snap-D", []byte("mem"), []byte("state")),
+		provider.EXPECT().Len().Return(0),
+		driver.EXPECT().Provision(0).Return(fixtureNamespaceHandle(0), nil),
+		provider.EXPECT().LoadSnapshot(ctx, gomock.Any()).Return(nil, loadErr),
+		driver.EXPECT().Deprovision(0).Return(nil),
+	)
+
+	err := r.Reconcile(ctx, sandbox)
+	require.Error(t, err)
+	assert.ErrorIs(t, err, loadErr)
+}
+
+// TestReconcile_BootFromSnapshot_FailsWithoutSnapshotStore pins the
+// "daemon was started without snapshot storage" branch. The reconciler
+// must short-circuit with a meaningful error rather than nil-deref'ing
+// the snapshot store.
+func TestReconcile_BootFromSnapshot_FailsWithoutSnapshotStore(t *testing.T) {
+	t.Helper()
+	ctrl := gomock.NewController(t)
+	provider := fcmocks.NewMockProvider(ctrl)
+	driver := netmocks.NewMockDriver(ctrl)
+	snapshotClient := cpmocks.NewMockSnapshotServiceClient(ctrl)
+	bundle := testBundle()
+	bundle.Firecracker.ChrootBaseDir = t.TempDir()
+	// Explicitly nil snapshot store — simulates a daemon configured
+	// without Snapshots.S3.
+	r := New(bundle, provider, driver, nil, snapshotClient)
+	ctx := context.Background()
+
+	sandbox := fixtureSandbox("sb-no-store")
+	withSnapshotSource("snap-E")(sandbox)
+	sandbox.Intent = &cpv1.Intent{Phase: cpv1.SandboxStatus_PHASE_RUNNING}
+
+	provider.EXPECT().GetMicroVM("sb-no-store").Return(nil)
+	driver.EXPECT().Provision(gomock.Any()).Times(0)
+	provider.EXPECT().LoadSnapshot(gomock.Any(), gomock.Any()).Times(0)
+
+	err := r.Reconcile(ctx, sandbox)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "sb-no-store")
+	assert.Contains(t, err.Error(), "snap-E")
+	assert.Contains(t, err.Error(), "snapshot storage")
 }
 
 func TestReconcile_PauseCallsMicroVMPause(t *testing.T) {

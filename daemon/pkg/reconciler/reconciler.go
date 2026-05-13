@@ -149,13 +149,33 @@ func (r *Reconciler) reconcilePhase(ctx context.Context, sandbox *controlplanev1
 	return nil
 }
 
-// boot ensures a MicroVM exists for the sandbox. Idempotent: if the
-// provider already has the VM indexed, boot returns nil without
-// touching the network driver or firecracker. The network index is
-// persisted by the firecracker package alongside the chroot so a
-// later delete (potentially after a daemon restart) can deprovision
-// the matching namespace.
+// snapshotCacheDirName is the subdirectory under
+// Bundle.Firecracker.ChrootBaseDir where bootFromSnapshot downloads the
+// snapshot artifacts retrieved from durable storage. Snapshot files
+// are reusable across MicroVMs that load from the same snapshot id, so
+// keeping them outside any single chroot lets firecracker.LoadSnapshot
+// hard-link them into per-VM chroots zero-copy.
+const snapshotCacheDirName = "snapshot-cache"
+
+// boot ensures a MicroVM exists for the sandbox. It dispatches on the
+// optional sandbox.Metadata.Source discriminator: when source carries
+// a snapshot id we restore via LoadSnapshot, otherwise we boot fresh
+// via CreateMicroVM.
 func (r *Reconciler) boot(ctx context.Context, sandbox *controlplanev1alpha1.Sandbox) error {
+	if snapshotID := sandbox.GetMetadata().GetSource().GetSnapshotId(); snapshotID != "" {
+		return r.bootFromSnapshot(ctx, sandbox, snapshotID)
+	}
+	return r.bootFresh(ctx, sandbox)
+}
+
+// bootFresh creates a brand-new MicroVM from the sandbox's intrinsic
+// resources and the daemon-level template constants. Idempotent: if
+// the provider already has the VM indexed, bootFresh returns nil
+// without touching the network driver or firecracker. The network
+// index is persisted by the firecracker package alongside the chroot
+// so a later delete (potentially after a daemon restart) can
+// deprovision the matching namespace.
+func (r *Reconciler) bootFresh(ctx context.Context, sandbox *controlplanev1alpha1.Sandbox) error {
 	id := sandbox.GetMetadata().GetId()
 	if vm := r.provider.GetMicroVM(id); vm != nil {
 		return nil
@@ -173,6 +193,100 @@ func (r *Reconciler) boot(ctx context.Context, sandbox *controlplanev1alpha1.San
 		// if the VM never came up.
 		_ = r.driver.Deprovision(index)
 		return fmt.Errorf("create microvm: %w", err)
+	}
+	return nil
+}
+
+// bootFromSnapshot provisions a MicroVM by restoring the snapshot
+// referenced by snapshotID. The order of operations is:
+//
+//  1. Fast path — if the provider already has the VM indexed, only run
+//     resource alignment so a retry that crashed between LoadSnapshot
+//     and UpdateResources still converges.
+//  2. Reject early when the daemon has no snapshot store configured;
+//     the sandbox is unbootable on this host.
+//  3. Download the snapshot artifacts into the shared cache via
+//     [snapshot.Store.Load]. The call is idempotent so subsequent
+//     boots from the same snapshot are zero-cost.
+//  4. Provision the network. Done after the download so a missing
+//     snapshot fails before we touch the host's network stack.
+//  5. Hand control to [firecracker.Provider.LoadSnapshot]; it stages
+//     the cached files into the new chroot, starts firecracker
+//     without --config-file, issues the load RPC with resume_vm=true,
+//     and waits for Running. Network is rolled back on failure.
+//  6. Align resources — the snapshot may carry different vCPU / memory
+//     than this sandbox spec wants; UpdateResources only fires when the
+//     saved values actually differ.
+//
+// Known limitation: today's snapshot artifact is mem+state only. The
+// drives the snapshot's state file references must still exist in the
+// new chroot, so bootFromSnapshot stages a PRISTINE rootfs from the
+// daemon's assets dir. Stateful workloads that wrote to rootfs between
+// boot and snapshot will observe filesystem inconsistencies on
+// restore. Extending CreateSnapshot to also persist post-snapshot
+// drive files is a separate iteration.
+func (r *Reconciler) bootFromSnapshot(ctx context.Context, sandbox *controlplanev1alpha1.Sandbox, snapshotID string) error {
+	id := sandbox.GetMetadata().GetId()
+	if vm := r.provider.GetMicroVM(id); vm != nil {
+		return r.alignResources(ctx, vm, sandbox)
+	}
+
+	if r.snapshotStore == nil {
+		return fmt.Errorf(
+			"sandbox %q references snapshot %q but this daemon was started without snapshot storage configured",
+			id, snapshotID)
+	}
+
+	stagingDir := filepath.Join(r.config.Firecracker.ChrootBaseDir, snapshotCacheDirName)
+	localRef, err := r.snapshotStore.Load(ctx, stagingDir, snapshotID)
+	if err != nil {
+		return fmt.Errorf("load snapshot %q from durable storage: %w", snapshotID, err)
+	}
+
+	index := r.provider.Len()
+	nsh, err := r.driver.Provision(index)
+	if err != nil {
+		return fmt.Errorf("provision network: %w", err)
+	}
+
+	input := r.buildLoadSnapshotInput(sandbox, nsh, localRef)
+	vm, err := r.provider.LoadSnapshot(ctx, input)
+	if err != nil {
+		_ = r.driver.Deprovision(index)
+		return fmt.Errorf("restore microvm from snapshot %q: %w", snapshotID, err)
+	}
+
+	if err := r.alignResources(ctx, vm, sandbox); err != nil {
+		// The VM is up; leave it in place so the next reconcile pass
+		// re-attempts alignment without re-downloading or
+		// re-provisioning. The "VM already exists" fast path above is
+		// what makes that retry cheap.
+		return err
+	}
+	return nil
+}
+
+// alignResources reconciles a running MicroVM's vCPU and memory with
+// the sandbox spec. After a snapshot restore the VM resumes with
+// whatever resources the snapshot carried; this helper makes
+// sandbox.Resources authoritative. No-op when the post-restore values
+// already match — saves a firecracker round-trip and avoids spurious
+// resize errors when the snapshot was taken with the same resources.
+func (r *Reconciler) alignResources(ctx context.Context, vm firecracker.MicroVM, sandbox *controlplanev1alpha1.Sandbox) error {
+	target := sandbox.GetResources()
+	info, err := vm.Describe(ctx)
+	if err != nil {
+		return fmt.Errorf("describe microvm for resource alignment: %w", err)
+	}
+	if info.VCPUCount == int64(target.GetVcpuCount()) &&
+		info.MemoryMiB == int64(target.GetMemoryMib()) {
+		return nil
+	}
+	if err := vm.UpdateResources(ctx, firecracker.UpdateResourcesInput{
+		VCPUCount: int64(target.GetVcpuCount()),
+		MemoryMiB: int64(target.GetMemoryMib()),
+	}); err != nil {
+		return fmt.Errorf("align resources after snapshot load: %w", err)
 	}
 	return nil
 }
@@ -385,6 +499,31 @@ func (r *Reconciler) buildCreateInput(sandbox *controlplanev1alpha1.Sandbox, nsh
 			// jailed firecracker uid needs write permission on the
 			// staged copy.
 			{SourcePath: filepath.Join(r.config.AssetsDir, tmpl.RootfsFile), JailPath: rootfsJail, Writable: true},
+		},
+	}
+}
+
+// buildLoadSnapshotInput composes a LoadSnapshotInput for restoring a
+// MicroVM from snapshot artifacts. It mirrors buildCreateInput on the
+// fields the firecracker package needs at runtime — Network, Assets,
+// AgentVsockPort, VsockUDSPath — but skips the per-VM Config (the
+// snapshot's state file carries that). The kernel asset is staged for
+// symmetry with the fresh-boot chroot layout even though firecracker
+// does not re-read it on restore; the rootfs is required because the
+// snapshot's state file references it as a chroot-relative drive
+// path. See the bootFromSnapshot doc for the known rootfs-staleness
+// limitation.
+func (r *Reconciler) buildLoadSnapshotInput(sandbox *controlplanev1alpha1.Sandbox, nsh network.NamespaceHandle, ref *snapshot.LocalReference) *firecracker.LoadSnapshotInput {
+	tmpl := r.config.MicroVM
+	return &firecracker.LoadSnapshotInput{
+		ID:             sandbox.GetMetadata().GetId(),
+		Network:        nsh,
+		AgentVsockPort: tmpl.AgentVsockPort,
+		LocalReference: ref,
+		VsockUDSPath:   tmpl.VsockUDSJailPath,
+		Assets: []firecracker.Asset{
+			{SourcePath: filepath.Join(r.config.AssetsDir, tmpl.KernelFile), JailPath: tmpl.KernelJailPath},
+			{SourcePath: filepath.Join(r.config.AssetsDir, tmpl.RootfsFile), JailPath: tmpl.RootfsJailPath, Writable: true},
 		},
 	}
 }
