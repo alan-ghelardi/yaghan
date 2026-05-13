@@ -89,18 +89,12 @@ type LoadSnapshotInput struct {
 	LocalReference *snapshot.LocalReference
 
 	// VsockUDSPath is the chroot-relative UDS path the snapshot was
-	// taken with (e.g. "/v.sock"). It is used to construct the
-	// host-side UDS we record in firecrackerVM.vsockUDS — for daemon
-	// snapshots this matches the path the snapshot's state file
-	// embeds, so the value we record is the same path firecracker
-	// recreates at restore time. Required when AgentVsockPort != 0;
-	// ignored otherwise.
-	//
-	// Note: the field is no longer forwarded to firecracker as a
-	// VsockOverride. The firecracker version the daemon currently
-	// targets rejects the `vsock_override` field on PUT
-	// /snapshot/load with a 400. Re-add the override once firecracker
-	// is upgraded if cross-config-drift safety becomes important.
+	// taken with (e.g. "/v.sock"). LoadSnapshot pins this path on
+	// restore via models.VsockOverride so the resulting VM uses it
+	// regardless of what the snapshot's state file embedded — keeping
+	// the host-side UDS we wire into firecrackerVM.vsockUDS
+	// authoritative. Required when AgentVsockPort != 0; ignored
+	// otherwise.
 	VsockUDSPath string
 }
 

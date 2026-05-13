@@ -302,18 +302,13 @@ func (f *firecracker) LoadSnapshot(ctx context.Context, input *LoadSnapshotInput
 		// firecracker accepts and which matches our actual intent
 		// (no per-NIC overrides at restore time).
 		NetworkOverrides: []*models.NetworkOverride{},
-		// VsockOverride is intentionally NOT set: the firecracker
-		// build the daemon talks to today does not accept the
-		// `vsock_override` field on PUT /snapshot/load (only the
-		// swagger spec we generated against supports it) and a 400
-		// drops the entire load. Omitting the field is safe because
-		// every snapshot the daemon takes uses the same
-		// chroot-relative UDS path (Bundle.MicroVM.VsockUDSJailPath),
-		// so the path the snapshot's state file embeds resolves to
-		// the same host-side UDS we record in firecrackerVM.vsockUDS.
-		// If daemon config drift between snapshot and restore ever
-		// becomes a real concern we'll re-add the override once
-		// firecracker is upgraded to a version that supports it.
+	}
+	if input.VsockUDSPath != "" {
+		// Pin the UDS path so the host-side UDS we wire into
+		// firecrackerVM.vsockUDS is authoritative regardless of what
+		// the snapshot's state file embedded.
+		udsPath := input.VsockUDSPath
+		body.VsockOverride = &models.VsockOverride{UdsPath: &udsPath}
 	}
 	params := operations.NewLoadSnapshotParamsWithContext(ctx).WithBody(body)
 	if _, err := apiClient.Operations.LoadSnapshot(params); err != nil {
