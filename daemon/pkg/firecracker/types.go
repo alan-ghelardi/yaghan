@@ -20,6 +20,14 @@ type Provider interface {
 	// in-memory index.
 	CreateMicroVM(ctx context.Context, input *CreateMicroVMInput) (MicroVM, error)
 
+	// LoadSnapshot loads the snapshot referenced by input.LocalReference,
+	// provisioning a new MicroVM under input.ID and inserting it into the
+	// in-memory index. The VM is automatically resumed before the call
+	// returns (resume_vm = true on PUT /snapshot/load). A previously-loaded
+	// VM at this ID is detected via the same attach idempotency CreateMicroVM
+	// uses; the existing instance is returned.
+	LoadSnapshot(ctx context.Context, input *LoadSnapshotInput) (MicroVM, error)
+
 	// GetMicroVM looks up an indexed MicroVM by id. Returns nil when no
 	// VM with that id exists. Callers should typically invoke
 	// [Provider.Recover] at startup to populate the index from the
@@ -41,6 +49,53 @@ type Provider interface {
 	// per-host resource keyed off the current population, such as a
 	// network namespace index.
 	Len() int
+}
+
+// LoadSnapshotInput parameterises [Provider.LoadSnapshot]. The first
+// four fields carry the same per-VM scaffolding as [CreateMicroVMInput];
+// the last two are specific to snapshot restore.
+type LoadSnapshotInput struct {
+	// ID uniquely identifies the VM on this host. Same constraints as
+	// [CreateMicroVMInput.ID] — used as the jailer --id and the chroot
+	// path segment.
+	ID string
+
+	// Network is the per-VM network topology provisioned beforehand by a
+	// [network.Driver]. Same role as [CreateMicroVMInput.Network]: the
+	// jailer is told to join Network.NamespaceName, and the snapshot's
+	// embedded virtio-net interface is expected to find
+	// Network.TapDeviceName in that namespace.
+	Network network.NamespaceHandle
+
+	// Assets stages host files into the chroot before firecracker starts.
+	// The snapshot's state file references drive paths chroot-relative,
+	// so any file referenced (rootfs, additional drives) must be present
+	// in the new chroot when load runs — list it here. Same semantics as
+	// [CreateMicroVMInput.Assets].
+	Assets []Asset
+
+	// AgentVsockPort is the vsock port the in-VM agent listens on.
+	// Recorded on the resulting MicroVM so callers can VSock() into the
+	// guest after restore. Ignored when VsockUDSPath is empty.
+	AgentVsockPort uint32
+
+	// LocalReference points at the snapshot's mem and state files on the
+	// host. Paths can live anywhere readable by the daemon —
+	// LoadSnapshot hard-links them (with copy fallback on EXDEV) into
+	// <jailRoot>/snapshots/{SnapshotID}/{mem,state} before issuing the
+	// load RPC. When the source paths already resolve to the
+	// destination (e.g. the caller used snapshot.Store.Load with
+	// chroot=newJailRoot), staging is a no-op.
+	LocalReference *snapshot.LocalReference
+
+	// VsockUDSPath is the chroot-relative UDS path the snapshot was
+	// taken with (e.g. "/v.sock"). LoadSnapshot pins this path on
+	// restore via models.VsockOverride so the resulting VM uses it
+	// regardless of what the snapshot's state file embedded — keeping
+	// the host-side UDS we wire into firecrackerVM.vsockUDS
+	// authoritative. Required when AgentVsockPort != 0; ignored
+	// otherwise.
+	VsockUDSPath string
 }
 
 type CreateMicroVMInput struct {

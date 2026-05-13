@@ -100,6 +100,21 @@ func (mr *MockProviderMockRecorder) Len() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Len", reflect.TypeOf((*MockProvider)(nil).Len))
 }
 
+// LoadSnapshot mocks base method.
+func (m *MockProvider) LoadSnapshot(ctx context.Context, input *firecracker.LoadSnapshotInput) (firecracker.MicroVM, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "LoadSnapshot", ctx, input)
+	ret0, _ := ret[0].(firecracker.MicroVM)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// LoadSnapshot indicates an expected call of LoadSnapshot.
+func (mr *MockProviderMockRecorder) LoadSnapshot(ctx, input any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LoadSnapshot", reflect.TypeOf((*MockProvider)(nil).LoadSnapshot), ctx, input)
+}
+
 // Recover mocks base method.
 func (m *MockProvider) Recover(ctx context.Context) error {
 	m.ctrl.T.Helper()

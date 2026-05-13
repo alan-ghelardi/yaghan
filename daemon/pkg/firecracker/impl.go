@@ -20,6 +20,7 @@ import (
 
 	"golang.nuinfra.net/agent/transport"
 	localclient "golang.nuinfra.net/daemon/pkg/firecracker/client"
+	"golang.nuinfra.net/daemon/pkg/network"
 	"golang.nuinfra.net/daemon/pkg/snapshot"
 	fcclient "golang.nuinfra.net/firecracker-client/client"
 	"golang.nuinfra.net/firecracker-client/client/operations"
@@ -177,10 +178,6 @@ func (f *firecracker) CreateMicroVM(ctx context.Context, input *CreateMicroVMInp
 	if !vmIDPattern.MatchString(input.ID) {
 		return nil, fmt.Errorf("invalid vm id %q: must match %s", input.ID, vmIDPattern)
 	}
-	vmDir := f.vmDir(input.ID)
-	jailRoot := f.jailRoot(input.ID)
-	socketHostPath := filepath.Join(jailRoot, apiSocketFile)
-
 	if vm, err := f.attach(ctx, input.ID); err == nil {
 		// Reusing a live VM: make sure it appears in the index. Callers
 		// of Create may not have invoked Recover yet, or this VM may
@@ -189,14 +186,9 @@ func (f *firecracker) CreateMicroVM(ctx context.Context, input *CreateMicroVMInp
 		return vm, nil
 	}
 
-	if err := os.RemoveAll(vmDir); err != nil {
-		return nil, fmt.Errorf("clean stale vm dir: %w", err)
-	}
-	// Jailer creates <vmDir>/root itself, but pre-creating it lets us
-	// drop the config file in before the process starts. 0755 so the
-	// unprivileged jail uid can traverse it post-chroot.
-	if err := os.MkdirAll(jailRoot, 0o755); err != nil {
-		return nil, fmt.Errorf("create jail root: %w", err)
+	vmDir, jailRoot, socketHostPath, err := f.prepareChroot(input.ID)
+	if err != nil {
+		return nil, err
 	}
 
 	configHostPath := filepath.Join(jailRoot, vmConfigFile)
@@ -214,42 +206,17 @@ func (f *firecracker) CreateMicroVM(ctx context.Context, input *CreateMicroVMInp
 		}
 	}
 
-	cmd := f.buildJailerCommand(ctx, input)
-	// Inherit our stdio so jailer's setup messages (including the ones
-	// emitted before --daemonize redirects firecracker's I/O to
-	// /dev/null) surface in the terminal instead of silently going to
-	// the null device, which is what exec.Cmd does by default when
-	// Stdout/Stderr are nil.
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	if err := cmd.Start(); err != nil {
-		return nil, fmt.Errorf("spawn jailer: %w", err)
-	}
-	if f.options.AttachConsole {
-		// Without --daemonize, jailer stays alive as firecracker's
-		// parent and the kernel's console streams through our stdio.
-		// Reap it in the background so Destroy's SIGTERM to firecracker
-		// still causes a clean teardown without leaking a zombie
-		// jailer.
-		go func() { _ = cmd.Wait() }()
-	} else {
-		// With --daemonize + --new-pid-ns the bootstrap jailer process
-		// exits after forking firecracker into a fresh PID namespace.
-		// Wait() reaps it so we don't leave a zombie; the surviving
-		// firecracker is a grandchild reparented to init.
-		if err := cmd.Wait(); err != nil {
-			_ = os.RemoveAll(vmDir)
-			return nil, fmt.Errorf("jailer bootstrap failed: %w", err)
-		}
+	cmd := f.buildJailerCommand(ctx, input.ID, input.Network, []string{
+		"--api-sock", "/" + apiSocketFile,
+		"--config-file", "/" + vmConfigFile,
+	})
+	if err := f.runJailer(cmd, vmDir); err != nil {
+		return nil, err
 	}
 
 	apiClient := localclient.New(socketHostPath)
 	if err := waitUntilRunning(ctx, apiClient); err != nil {
-		// Firecracker was forked before the readiness check started;
-		// kill it by the pid jailer recorded so it doesn't linger.
-		if pid, readErr := readPIDFile(f.pidFilePath(input.ID)); readErr == nil {
-			_ = syscall.Kill(pid, syscall.SIGKILL)
-		}
+		f.killForkedFirecracker(input.ID)
 		// Intentionally do NOT remove vmDir here: leaving the chroot
 		// intact lets callers inspect the firecracker log, config, and
 		// staged assets to diagnose the failure. The next CreateMicroVM
@@ -257,29 +224,198 @@ func (f *firecracker) CreateMicroVM(ctx context.Context, input *CreateMicroVMInp
 		return nil, fmt.Errorf("vm did not become ready (artifacts kept at %s): %w", vmDir, err)
 	}
 
-	pid, err := readPIDFile(f.pidFilePath(input.ID))
-	if err != nil {
-		return nil, fmt.Errorf("read firecracker pid file: %w", err)
-	}
-
-	if err := f.writeMeta(input.ID, vmMeta{
-		PID:            pid,
-		AgentVsockPort: input.AgentVsockPort,
-		NetworkIndex:   input.Network.Index,
-	}); err != nil {
-		return nil, fmt.Errorf("write meta.json: %w", err)
-	}
-
 	udsHostPath, agentPort := vsockEndpoint(jailRoot, input)
-	vm := &firecrackerVM{
-		client:       apiClient,
-		vmDir:        vmDir,
-		jailRoot:     jailRoot,
+	return f.registerVM(registerVMInput{
 		id:           input.ID,
-		pid:          pid,
 		networkIndex: input.Network.Index,
 		vsockUDS:     udsHostPath,
 		vsockPort:    agentPort,
+	}, apiClient)
+}
+
+// LoadSnapshot implements [Provider]. Snapshot restore differs from a
+// fresh boot in two ways: firecracker is started WITHOUT --config-file
+// (it parks in Uninitialized waiting on the API), and the mem + state
+// files referenced by input.LocalReference are staged into the new
+// chroot before the load RPC fires. The PUT /snapshot/load with
+// resume_vm=true does the actual restore and advances the VM to
+// Running, after which the firecrackerVM construction reuses the same
+// scaffolding CreateMicroVM does.
+func (f *firecracker) LoadSnapshot(ctx context.Context, input *LoadSnapshotInput) (MicroVM, error) {
+	if input == nil || input.LocalReference == nil {
+		return nil, errors.New("LoadSnapshotInput.LocalReference is required")
+	}
+	if input.AgentVsockPort != 0 && input.VsockUDSPath == "" {
+		return nil, errors.New("LoadSnapshotInput.VsockUDSPath is required when AgentVsockPort != 0")
+	}
+	if !vmIDPattern.MatchString(input.ID) {
+		return nil, fmt.Errorf("invalid vm id %q: must match %s", input.ID, vmIDPattern)
+	}
+	if vm, err := f.attach(ctx, input.ID); err == nil {
+		f.indexInsert(vm)
+		return vm, nil
+	}
+
+	vmDir, jailRoot, socketHostPath, err := f.prepareChroot(input.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Caller-supplied assets first (rootfs and any other drive files the
+	// snapshot's state file references at chroot-relative paths).
+	for _, asset := range input.Assets {
+		if err := stageAsset(jailRoot, asset); err != nil {
+			return nil, fmt.Errorf("stage asset %q: %w", asset.SourcePath, err)
+		}
+	}
+	// Then the snapshot's mem + state files at the conventional paths
+	// the firecracker load RPC will reference.
+	if err := stageSnapshotFiles(jailRoot, input.LocalReference); err != nil {
+		return nil, fmt.Errorf("stage snapshot: %w", err)
+	}
+
+	// Start jailer/firecracker WITHOUT --config-file so it parks in
+	// Uninitialized waiting on the API.
+	cmd := f.buildJailerCommand(ctx, input.ID, input.Network, []string{
+		"--api-sock", "/" + apiSocketFile,
+	})
+	if err := f.runJailer(cmd, vmDir); err != nil {
+		return nil, err
+	}
+
+	apiClient := localclient.New(socketHostPath)
+	if err := waitUntilAPIReady(ctx, apiClient); err != nil {
+		f.killForkedFirecracker(input.ID)
+		return nil, fmt.Errorf("api did not become ready (artifacts kept at %s): %w", vmDir, err)
+	}
+
+	memChrootPath := snapshot.MemFilePath(input.LocalReference.SnapshotID)
+	stateChrootPath := snapshot.StateFilePath(input.LocalReference.SnapshotID)
+	body := &models.SnapshotLoadParams{
+		ClockRealtime: true,
+		SnapshotPath:  &stateChrootPath,
+		MemFilePath:   memChrootPath,
+		ResumeVM:      true,
+	}
+	if input.VsockUDSPath != "" {
+		// Pin the UDS path so the host-side UDS we wire into
+		// firecrackerVM.vsockUDS is authoritative regardless of what
+		// the snapshot's state file embedded.
+		udsPath := input.VsockUDSPath
+		body.VsockOverride = &models.VsockOverride{UdsPath: &udsPath}
+	}
+	params := operations.NewLoadSnapshotParamsWithContext(ctx).WithBody(body)
+	if _, err := apiClient.Operations.LoadSnapshot(params); err != nil {
+		f.killForkedFirecracker(input.ID)
+		return nil, fmt.Errorf("firecracker load RPC (artifacts kept at %s): %w", vmDir, err)
+	}
+
+	if err := waitUntilRunning(ctx, apiClient); err != nil {
+		f.killForkedFirecracker(input.ID)
+		return nil, fmt.Errorf("loaded vm did not reach Running (artifacts kept at %s): %w", vmDir, err)
+	}
+
+	return f.registerVM(registerVMInput{
+		id:           input.ID,
+		networkIndex: input.Network.Index,
+		vsockUDS:     resolveVsockUDS(jailRoot, input.VsockUDSPath),
+		vsockPort:    input.AgentVsockPort,
+	}, apiClient)
+}
+
+// prepareChroot wipes any stale per-VM dir and creates a fresh jail root
+// for id, returning the canonical paths the caller will plug into the
+// jailer command (vmDir, jailRoot) and the API socket path firecracker
+// will create after chroot. Caller is responsible for the earlier
+// attach-idempotency check.
+func (f *firecracker) prepareChroot(id string) (vmDir, jailRoot, socketHostPath string, err error) {
+	vmDir = f.vmDir(id)
+	jailRoot = f.jailRoot(id)
+	socketHostPath = filepath.Join(jailRoot, apiSocketFile)
+
+	if err := os.RemoveAll(vmDir); err != nil {
+		return "", "", "", fmt.Errorf("clean stale vm dir: %w", err)
+	}
+	// Jailer creates <vmDir>/root itself, but pre-creating it lets us
+	// drop the config file in before the process starts. 0755 so the
+	// unprivileged jail uid can traverse it post-chroot.
+	if err := os.MkdirAll(jailRoot, 0o755); err != nil {
+		return "", "", "", fmt.Errorf("create jail root: %w", err)
+	}
+	return vmDir, jailRoot, socketHostPath, nil
+}
+
+// runJailer starts cmd with our stdio inherited and reaps it according
+// to the AttachConsole vs --daemonize mode. With --daemonize the
+// bootstrap jailer exits after forking firecracker into a fresh PID
+// namespace, so Wait reaps a zombie; in attach-console mode jailer
+// stays alive as firecracker's parent and is reaped in the background
+// so Destroy's SIGTERM still causes a clean teardown without leaking a
+// zombie jailer. On a failed bootstrap, the partial vmDir is removed
+// so the next call for the same id starts from a clean slate.
+func (f *firecracker) runJailer(cmd *exec.Cmd, vmDir string) error {
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Start(); err != nil {
+		return fmt.Errorf("spawn jailer: %w", err)
+	}
+	if f.options.AttachConsole {
+		go func() { _ = cmd.Wait() }()
+		return nil
+	}
+	if err := cmd.Wait(); err != nil {
+		_ = os.RemoveAll(vmDir)
+		return fmt.Errorf("jailer bootstrap failed: %w", err)
+	}
+	return nil
+}
+
+// killForkedFirecracker SIGKILLs the firecracker grandchild whose pid
+// was recorded by jailer, if it is still reachable. The chroot is left
+// in place so the caller can inspect logs / config / staged assets when
+// diagnosing a failure.
+func (f *firecracker) killForkedFirecracker(id string) {
+	if pid, err := readPIDFile(f.pidFilePath(id)); err == nil {
+		_ = syscall.Kill(pid, syscall.SIGKILL)
+	}
+}
+
+// registerVMInput bundles the data both CreateMicroVM and LoadSnapshot
+// have on hand once firecracker is up and ready: enough to read the pid
+// file, persist meta.json, and construct the firecrackerVM handle.
+type registerVMInput struct {
+	id           string
+	networkIndex int
+	vsockUDS     string
+	vsockPort    uint32
+}
+
+// registerVM reads the jailer-written pid file, persists meta.json, and
+// inserts a fresh firecrackerVM into the in-memory index. The caller
+// has already passed readiness checks at this point, so a meta.json
+// write failure points at a host-side problem (disk, permissions);
+// leaving the chroot for inspection is the right behaviour in that case.
+func (f *firecracker) registerVM(in registerVMInput, apiClient *fcclient.FirecrackerAPI) (*firecrackerVM, error) {
+	pid, err := readPIDFile(f.pidFilePath(in.id))
+	if err != nil {
+		return nil, fmt.Errorf("read firecracker pid file: %w", err)
+	}
+	if err := f.writeMeta(in.id, vmMeta{
+		PID:            pid,
+		AgentVsockPort: in.vsockPort,
+		NetworkIndex:   in.networkIndex,
+	}); err != nil {
+		return nil, fmt.Errorf("write meta.json: %w", err)
+	}
+	vm := &firecrackerVM{
+		client:       apiClient,
+		vmDir:        f.vmDir(in.id),
+		jailRoot:     f.jailRoot(in.id),
+		id:           in.id,
+		pid:          pid,
+		networkIndex: in.networkIndex,
+		vsockUDS:     in.vsockUDS,
+		vsockPort:    in.vsockPort,
 		jailUID:      f.options.JailUID,
 		jailGID:      f.options.JailGID,
 	}
@@ -297,33 +433,44 @@ func (f *firecracker) indexInsert(vm *firecrackerVM) {
 }
 
 // vsockEndpoint resolves the host-visible UDS path and the agent's
-// listening port for a VM. Returns ("", 0) when the input has no vsock
-// device configured — the resulting firecrackerVM will then refuse
-// VSock calls with a descriptive error.
+// listening port for a freshly-created VM. Returns ("", 0) when the
+// input has no vsock device configured — the resulting firecrackerVM
+// will then refuse VSock calls with a descriptive error.
 func vsockEndpoint(jailRoot string, input *CreateMicroVMInput) (string, uint32) {
 	if input == nil || input.Config == nil || input.Config.Vsock == nil || input.Config.Vsock.UdsPath == nil {
 		return "", 0
 	}
-	rel := strings.TrimPrefix(*input.Config.Vsock.UdsPath, "/")
-	return filepath.Join(jailRoot, rel), input.AgentVsockPort
+	return resolveVsockUDS(jailRoot, *input.Config.Vsock.UdsPath), input.AgentVsockPort
+}
+
+// resolveVsockUDS returns the host-absolute UDS path for a
+// chroot-relative path. Returns "" when udsChrootPath is empty; the
+// resulting firecrackerVM has no vsock and VSock() reports an error.
+func resolveVsockUDS(jailRoot, udsChrootPath string) string {
+	if udsChrootPath == "" {
+		return ""
+	}
+	return filepath.Join(jailRoot, strings.TrimPrefix(udsChrootPath, "/"))
 }
 
 // buildJailerCommand assembles the `jailer ... -- firecracker-args`
-// invocation. Per-VM flags come from the input; process-level flags come
-// from the Provider's Options. Everything after `--` is handed directly
-// to firecracker.
+// invocation. Process-level flags come from the Provider's Options;
+// per-VM common flags come from id + network; firecrackerArgs are the
+// caller-supplied flags handed directly to firecracker after `--`
+// (typically --api-sock plus either --config-file for fresh boots or
+// nothing else for snapshot loads).
 //
-// Note: jailer auto-appends --id to firecracker, so we don't pass it.
-// --api-sock is rooted at the chroot's /, which maps to <jailRoot> on the
-// host.
-func (f *firecracker) buildJailerCommand(ctx context.Context, input *CreateMicroVMInput) *exec.Cmd {
+// Note: jailer auto-appends --id to firecracker, so callers should not
+// include it in firecrackerArgs. --api-sock is rooted at the chroot's /,
+// which maps to <jailRoot> on the host.
+func (f *firecracker) buildJailerCommand(ctx context.Context, id string, net network.NamespaceHandle, firecrackerArgs []string) *exec.Cmd {
 	args := []string{
-		"--id", input.ID,
+		"--id", id,
 		"--exec-file", f.options.FirecrackerPath,
 		"--uid", strconv.FormatUint(uint64(f.options.JailUID), 10),
 		"--gid", strconv.FormatUint(uint64(f.options.JailGID), 10),
 		"--chroot-base-dir", f.options.ChrootBaseDir,
-		"--netns", netnsPath(input.Network.NamespaceName),
+		"--netns", netnsPath(net.NamespaceName),
 		// --new-pid-ns isolates the guest in its own PID namespace.
 		// Jailer forks firecracker as pseudo-init of that namespace and
 		// writes the host-visible PID to <vmDir>/<exec-name>.pid, which
@@ -337,16 +484,12 @@ func (f *firecracker) buildJailerCommand(ctx context.Context, input *CreateMicro
 		// output reaches the terminal.
 		args = append(args, "--daemonize")
 	}
-	args = append(args,
-		"--",
-		// Flags after `--` are handed to firecracker itself.
-		"--api-sock", "/"+apiSocketFile,
-		"--config-file", "/"+vmConfigFile,
-	)
-	// #nosec G204 -- input.ID is validated by vmIDPattern; exec.Command
-	// does not invoke a shell. Using CommandContext means ctx
-	// cancellation terminates the short-lived bootstrap jailer; it has
-	// no effect on the already-forked firecracker grandchild.
+	args = append(args, "--")
+	args = append(args, firecrackerArgs...)
+	// #nosec G204 -- id is validated by vmIDPattern; exec.Command does
+	// not invoke a shell. Using CommandContext means ctx cancellation
+	// terminates the short-lived bootstrap jailer; it has no effect on
+	// the already-forked firecracker grandchild.
 	return exec.CommandContext(ctx, f.options.JailerPath, args...)
 }
 
@@ -431,6 +574,27 @@ func readVsockUDSPath(configPath, jailRoot string) (string, error) {
 // waitUntilRunning polls DescribeInstance until the VM reaches the Running
 // state, the parent context is cancelled, or readyTimeout elapses.
 func waitUntilRunning(ctx context.Context, c *fcclient.FirecrackerAPI) error {
+	return waitForInstance(ctx, c, func(resp *operations.DescribeInstanceOK) bool {
+		return resp != nil && resp.Payload != nil && resp.Payload.State != nil &&
+			*resp.Payload.State == models.InstanceInfoStateRunning
+	})
+}
+
+// waitUntilAPIReady polls DescribeInstance until the API socket answers
+// successfully (regardless of state), the parent context is cancelled,
+// or readyTimeout elapses. Used by LoadSnapshot: firecracker started
+// without --config-file parks in Uninitialized, so we cannot wait for
+// Running here — only for the API to be responsive enough to accept
+// the load RPC.
+func waitUntilAPIReady(ctx context.Context, c *fcclient.FirecrackerAPI) error {
+	return waitForInstance(ctx, c, func(*operations.DescribeInstanceOK) bool { return true })
+}
+
+// waitForInstance shares the poll loop both waiters need: bounded
+// timeout, fixed tick, predicate over the DescribeInstance response.
+// A non-nil error from DescribeInstance is treated as "not ready yet"
+// and joined with ctx.Err() if the timeout expires.
+func waitForInstance(ctx context.Context, c *fcclient.FirecrackerAPI, ready func(*operations.DescribeInstanceOK) bool) error {
 	ctx, cancel := context.WithTimeout(ctx, readyTimeout)
 	defer cancel()
 
@@ -440,8 +604,7 @@ func waitUntilRunning(ctx context.Context, c *fcclient.FirecrackerAPI) error {
 	for {
 		params := operations.NewDescribeInstanceParamsWithContext(ctx)
 		resp, err := c.Operations.DescribeInstance(params)
-		if err == nil && resp.Payload != nil && resp.Payload.State != nil &&
-			*resp.Payload.State == models.InstanceInfoStateRunning {
+		if err == nil && ready(resp) {
 			return nil
 		}
 		select {
@@ -472,6 +635,50 @@ func readPIDFile(path string) (int, error) {
 		return 0, err
 	}
 	return strconv.Atoi(strings.TrimSpace(string(data)))
+}
+
+// stageSnapshotFiles hard-links (with copy fallback on EXDEV) the mem
+// and state files referenced by ref into the new VM's chroot at the
+// conventional snapshot path. Hard-linking lets multiple VMs share the
+// same on-disk bytes when source and destination are on the same
+// filesystem — a common case once an S3 download lands once on a host
+// and gets loaded into several VMs. No-op for either file when the
+// source already resolves to the destination via os.SameFile (the case
+// when the caller used snapshot.Store.Load with chroot=newJailRoot).
+func stageSnapshotFiles(jailRoot string, ref *snapshot.LocalReference) error {
+	snapshotChrootDir := filepath.Dir(strings.TrimPrefix(snapshot.MemFilePath(ref.SnapshotID), "/"))
+	if err := os.MkdirAll(filepath.Join(jailRoot, snapshotChrootDir), snapshot.DirMode); err != nil {
+		return err
+	}
+	pairs := [...]struct{ src, jail string }{
+		{ref.MemFilePath, snapshot.MemFilePath(ref.SnapshotID)},
+		{ref.StateFilePath, snapshot.StateFilePath(ref.SnapshotID)},
+	}
+	for _, p := range pairs {
+		dst := filepath.Join(jailRoot, strings.TrimPrefix(p.jail, "/"))
+		if sameFile(p.src, dst) {
+			continue
+		}
+		if err := stageAsset(jailRoot, Asset{SourcePath: p.src, JailPath: p.jail}); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// sameFile reports whether two paths refer to the same on-disk file via
+// os.SameFile. Returns false on either stat error — the caller falls
+// back to staging, which is the safe default.
+func sameFile(a, b string) bool {
+	sa, err := os.Stat(a)
+	if err != nil {
+		return false
+	}
+	sb, err := os.Stat(b)
+	if err != nil {
+		return false
+	}
+	return os.SameFile(sa, sb)
 }
 
 // stageAsset places a single host file inside the chroot before firecracker
