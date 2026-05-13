@@ -352,6 +352,37 @@ func withClientCreatedAt(ts time.Time) func(*cpv1.Sandbox) {
 	return func(sb *cpv1.Sandbox) { sb.Metadata.CreatedAt = timestamppb.New(ts) }
 }
 
+func withSnapshotSource(id string) func(*cpv1.Sandbox) {
+	return func(sb *cpv1.Sandbox) {
+		sb.Metadata.Source = &cpv1.SandboxSource{
+			Reference: &cpv1.SandboxSource_SnapshotId{SnapshotId: id},
+		}
+	}
+}
+
+func withImageSource(id string) func(*cpv1.Sandbox) {
+	return func(sb *cpv1.Sandbox) {
+		sb.Metadata.Source = &cpv1.SandboxSource{
+			Reference: &cpv1.SandboxSource_ImageId{ImageId: id},
+		}
+	}
+}
+
+// seedSnapshot persists a snapshot via the public RPC so the DB row
+// looks identical to one the daemon would have produced. namespace
+// must satisfy SnapshotMeta's pattern; sandboxID is the ref id the
+// snapshot is "from" (only needs to be non-empty for validation).
+func seedSnapshot(ctx context.Context, t *testing.T, h *harness, id, namespace, sandboxID string) {
+	t.Helper()
+	_, err := h.snapshot.CreateSnapshot(ctx, &cpv1.CreateSnapshotRequest{
+		Snapshot: &cpv1.Snapshot{
+			Metadata: &cpv1.SnapshotMeta{Id: id, Namespace: namespace, Description: "test"},
+			Sandbox:  &cpv1.SandboxRef{Id: sandboxID},
+		},
+	})
+	require.NoError(t, err)
+}
+
 func assertCode(t *testing.T, err error, want codes.Code) {
 	t.Helper()
 	require.Error(t, err)
@@ -627,6 +658,119 @@ func TestCreateSandbox_ValidatesLabelKeyPattern(t *testing.T) {
 	// Spaces and uppercase are not allowed in label keys.
 	_, err := h.client.CreateSandbox(ctx, newCreateRequest(withLabel("Bad Key", "v")))
 	assertCode(t, err, codes.InvalidArgument)
+}
+
+func TestCreateSandbox_Source_SnapshotResolves(t *testing.T) {
+	h := startService(t)
+	ctx := t.Context()
+
+	seedSnapshot(ctx, t, h, "snap-src-ok", validNamespace, "sb-src-origin")
+
+	resp, err := h.client.CreateSandbox(ctx,
+		newCreateRequest(withID("sb-from-snap"), withSnapshotSource("snap-src-ok")))
+	require.NoError(t, err)
+
+	assert.Equal(t, "snap-src-ok", resp.GetSandbox().GetMetadata().GetSource().GetSnapshotId(),
+		"the response must round-trip the source reference unchanged")
+
+	// Re-read via GetSandbox confirms the source persisted.
+	got, err := h.client.GetSandbox(ctx, &cpv1.GetSandboxRequest{SandboxId: "sb-from-snap"})
+	require.NoError(t, err)
+	assert.Equal(t, "snap-src-ok", got.GetSandbox().GetMetadata().GetSource().GetSnapshotId())
+}
+
+func TestCreateSandbox_Source_SnapshotMissing(t *testing.T) {
+	h := startService(t)
+	ctx := t.Context()
+
+	_, err := h.client.CreateSandbox(ctx,
+		newCreateRequest(withID("sb-from-missing"), withSnapshotSource("snap-missing")))
+	assertCode(t, err, codes.NotFound)
+
+	st, _ := status.FromError(err)
+	assert.Contains(t, st.Message(), "snap-missing",
+		"error must name the missing snapshot id")
+	assert.Contains(t, st.Message(), "sandbox.metadata.source",
+		"error must name the field that referenced the snapshot")
+}
+
+func TestCreateSandbox_Source_SnapshotNamespaceMismatch(t *testing.T) {
+	h := startService(t)
+	ctx := t.Context()
+
+	// Seed the snapshot in a different namespace than the sandbox will
+	// be created in. SnapshotMeta's namespace pattern matches the
+	// sandbox pattern, so any valid namespace works as the "other" one.
+	const otherNamespace = "team-beta"
+	seedSnapshot(ctx, t, h, "snap-cross", otherNamespace, "sb-src-cross")
+
+	_, err := h.client.CreateSandbox(ctx,
+		newCreateRequest(withID("sb-cross"), withSnapshotSource("snap-cross")))
+	assertCode(t, err, codes.FailedPrecondition)
+
+	st, _ := status.FromError(err)
+	assert.Contains(t, st.Message(), otherNamespace,
+		"error must surface the snapshot's namespace")
+	assert.Contains(t, st.Message(), validNamespace,
+		"error must surface the sandbox's namespace")
+}
+
+func TestCreateSandbox_Source_ImageIdRejectedAsUnimplemented(t *testing.T) {
+	h := startService(t)
+	ctx := t.Context()
+
+	_, err := h.client.CreateSandbox(ctx,
+		newCreateRequest(withID("sb-image"), withImageSource("img-1")))
+	assertCode(t, err, codes.Unimplemented)
+
+	st, _ := status.FromError(err)
+	assert.Contains(t, st.Message(), "img-1",
+		"error must name the image id the client supplied")
+}
+
+// TestCreateSandbox_Source_EmptyReferenceIsTreatedAsUnsourced pins the
+// behaviour when the caller serialises a SandboxSource with no oneof
+// arm set. There is nothing to validate; the request must succeed and
+// the (empty) source is preserved on the stored proto so a subsequent
+// proto round-trip stays equivalent.
+func TestCreateSandbox_Source_EmptyReferenceIsTreatedAsUnsourced(t *testing.T) {
+	h := startService(t)
+	ctx := t.Context()
+
+	resp, err := h.client.CreateSandbox(ctx,
+		newCreateRequest(withID("sb-empty-source"), func(sb *cpv1.Sandbox) {
+			sb.Metadata.Source = &cpv1.SandboxSource{}
+		}))
+	require.NoError(t, err)
+	assert.Nil(t, resp.GetSandbox().GetMetadata().GetSource().GetReference(),
+		"an empty SandboxSource must round-trip with no reference set")
+}
+
+func TestCreateSandbox_Source_IdempotentRetry(t *testing.T) {
+	h := startService(t)
+	ctx := t.Context()
+
+	seedSnapshot(ctx, t, h, "snap-idem", validNamespace, "sb-src-idem")
+
+	first, err := h.client.CreateSandbox(ctx,
+		newCreateRequest(withID("sb-idem-src"), withSnapshotSource("snap-idem")))
+	require.NoError(t, err)
+	firstLMT := first.GetSandbox().GetMetadata().GetLastModifiedAt().AsTime()
+
+	// Sleep so a non-idempotent server would stamp a strictly later
+	// LastModifiedAt — if the retry still matches, we know the digest
+	// folded into the existing row instead of writing a new one.
+	time.Sleep(2 * time.Millisecond)
+
+	_, err = h.client.CreateSandbox(ctx,
+		newCreateRequest(withID("sb-idem-src"), withSnapshotSource("snap-idem")))
+	require.NoError(t, err)
+
+	got, err := h.client.GetSandbox(ctx, &cpv1.GetSandboxRequest{SandboxId: "sb-idem-src"})
+	require.NoError(t, err)
+	assert.True(t,
+		firstLMT.Equal(got.GetSandbox().GetMetadata().GetLastModifiedAt().AsTime()),
+		"idempotent retry with the same source must not advance LastModifiedAt")
 }
 
 func TestGetSandbox_HappyPath(t *testing.T) {

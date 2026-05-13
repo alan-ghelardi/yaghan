@@ -6,6 +6,7 @@ import (
 
 	"github.com/grpc-ecosystem/go-grpc-middleware/logging/zap/ctxzap"
 	"go.uber.org/zap"
+	"golang.nuinfra.api-server/pkg/db"
 	sandboxdb "golang.nuinfra.api-server/pkg/db/sandbox"
 	"golang.nuinfra.api-server/pkg/scheduler"
 	cpv1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
@@ -44,6 +45,14 @@ func (a *apiServer) CreateSandbox(ctx context.Context, req *cpv1.CreateSandboxRe
 	sb.Node = nil
 	sb.Status = &cpv1.SandboxStatus{Phase: cpv1.SandboxStatus_PHASE_PENDING}
 	sb.Intent = &cpv1.Intent{Phase: cpv1.SandboxStatus_PHASE_RUNNING}
+
+	// Resolve the optional Metadata.Source discriminator before any
+	// scheduling work: a dangling snapshot reference would otherwise
+	// burn a Schedule call and produce a sandbox row the reconciler
+	// could not satisfy.
+	if err := a.validateSandboxSource(ctx, sb); err != nil {
+		return nil, err
+	}
 
 	if err := a.scheduler.Schedule(ctx, sb); err != nil {
 		if errors.Is(err, scheduler.ErrNoHealthyNodes) {
@@ -208,4 +217,70 @@ func (a *apiServer) StartSnapshot(ctx context.Context, req *cpv1.StartSnapshotRe
 		return nil, dbErrToStatus(ctx, "sandbox", "start snapshot", id, err)
 	}
 	return &cpv1.StartSnapshotResponse{Sandbox: sb}, nil
+}
+
+// validateSandboxSource checks the optional sandbox.Metadata.Source
+// discriminator against the api-server's view of the world. Returns nil
+// when no source is set or when the reference resolves; otherwise
+// returns a fully-formed gRPC status error suitable for direct
+// propagation to the client.
+//
+// Branch behaviour:
+//   - source unset OR reference unset → nil (legacy boot-from-Config
+//     path; the reconciler decides what to do with an unsourced
+//     sandbox).
+//   - snapshot_id set → snapshotDB.Get; ErrNotFound surfaces as NotFound
+//     with a message that names both the snapshot id and the field that
+//     referenced it. A namespace mismatch surfaces as FailedPrecondition.
+//     Any other DB error is logged and surfaced as Internal.
+//   - image_id set → Unimplemented. Image-based sandbox creation is a
+//     future addition; rejecting today prevents callers from persisting
+//     sandboxes the reconciler cannot satisfy.
+//   - unknown oneof variant → Unimplemented, so a future proto bump
+//     without a matching handler fails loud rather than silently
+//     persisting an unsourced row.
+func (a *apiServer) validateSandboxSource(ctx context.Context, sb *cpv1.Sandbox) error {
+	src := sb.GetMetadata().GetSource()
+	if src == nil || src.GetReference() == nil {
+		return nil
+	}
+	switch ref := src.GetReference().(type) {
+	case *cpv1.SandboxSource_SnapshotId:
+		return a.validateSnapshotSource(ctx, sb, ref.SnapshotId)
+	case *cpv1.SandboxSource_ImageId:
+		return status.Errorf(codes.Unimplemented,
+			"sandbox source image_id %q: image-based sandbox creation is not yet supported",
+			ref.ImageId)
+	default:
+		return status.Errorf(codes.Unimplemented,
+			"sandbox source reference type %T is not supported", ref)
+	}
+}
+
+// validateSnapshotSource resolves a snapshot_id reference: the snapshot
+// must exist and live in the same namespace as the sandbox under
+// construction. Cross-namespace restores are rejected so a snapshot
+// taken in one tenant cannot seed a sandbox in another.
+func (a *apiServer) validateSnapshotSource(ctx context.Context, sb *cpv1.Sandbox, snapshotID string) error {
+	snap, err := a.snapshotDB.Get(ctx, snapshotID)
+	if err != nil {
+		if errors.Is(err, db.ErrNotFound) {
+			return status.Errorf(codes.NotFound,
+				"snapshot %q referenced by sandbox.metadata.source not found",
+				snapshotID)
+		}
+		ctxzap.Extract(ctx).Error("lookup snapshot source failed",
+			zap.String("sandbox.id", sb.GetMetadata().GetId()),
+			zap.String("snapshot.id", snapshotID),
+			zap.Error(err))
+		return status.Error(codes.Internal, "failed to verify sandbox source")
+	}
+	if snap.GetMetadata().GetNamespace() != sb.GetMetadata().GetNamespace() {
+		return status.Errorf(codes.FailedPrecondition,
+			"snapshot %q belongs to namespace %q but sandbox is in namespace %q; cross-namespace restores are not allowed",
+			snapshotID,
+			snap.GetMetadata().GetNamespace(),
+			sb.GetMetadata().GetNamespace())
+	}
+	return nil
 }
