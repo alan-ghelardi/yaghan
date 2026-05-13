@@ -1,16 +1,25 @@
 #!/usr/bin/env bash
-# Build the agent as a static Linux/amd64 binary and install it inside
-# the provided ext4 rootfs at the path the daemon's init= boot arg
-# expects. Loop-mounting requires root.
+# Build the agent as a static Linux/amd64 binary and install it
+# inside the provided ext4 rootfs at the path the daemon's init=
+# boot arg expects.
+#
+# Runs as your normal user — the `go build` step deliberately stays
+# unprivileged so the Go cache lands in your home directory, not in
+# root's. The few steps that need CAP_SYS_ADMIN (loop mount + writes
+# inside the mount) escalate via `need_root` (defined in
+# hack/helpers.sh).
 #
 # Usage:
-#   sudo ./hack/build-and-embed-agent.sh [--rootfs PATH] [--target PATH]
+#   ./hack/build-and-embed-agent.sh [--rootfs PATH] [--target PATH]
 
 set -euo pipefail
 
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" > /dev/null && pwd)"
 repo_root="$(cd "${here}/.." > /dev/null && pwd)"
 agent_dir="${repo_root}/agent"
+
+# shellcheck disable=SC1091
+. "${here}/helpers.sh"
 
 go="/usr/local/go/bin/go"
 rootfs="${repo_root}/assets/rootfs.ext4"
@@ -29,7 +38,7 @@ while [[ $# -gt 0 ]]; do
             shift 2
             ;;
         -h|--help)
-            sed -n '2,9p' "$0"
+            sed -n '2,13p' "$0"
             exit 0
             ;;
         *)
@@ -41,11 +50,6 @@ done
 
 if [[ ! -f "${rootfs}" ]]; then
     echo "rootfs image not found: ${rootfs}" >&2
-    exit 1
-fi
-
-if [[ "${EUID}" -ne 0 ]]; then
-    echo "must run as root (loop mount requires CAP_SYS_ADMIN)" >&2
     exit 1
 fi
 
@@ -62,13 +66,13 @@ cleanup() {
         # unmount that detaches immediately and lets the kernel
         # finish when the stragglers let go.
         for _ in 1 2 3 4 5; do
-            if umount "${mnt}" 2>/dev/null; then
+            if need_root umount "${mnt}" 2>/dev/null; then
                 break
             fi
             sleep 0.5
         done
         if mountpoint -q "${mnt}"; then
-            umount -l "${mnt}" 2>/dev/null || true
+            need_root umount -l "${mnt}" 2>/dev/null || true
         fi
     fi
     rm -rf "${workdir}" 2>/dev/null || true
@@ -83,10 +87,10 @@ echo "==> building agent (static, linux/amd64)"
 )
 
 echo "==> mounting ${rootfs} at ${mnt}"
-mount -o loop,rw "${rootfs}" "${mnt}"
+need_root mount -o loop,rw "${rootfs}" "${mnt}"
 
 echo "==> installing agent to ${target} inside rootfs"
-install -D -m 0755 "${bin}" "${mnt}${target}"
+need_root install -D -m 0755 "${bin}" "${mnt}${target}"
 
 echo "==> syncing"
 sync

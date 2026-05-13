@@ -13,6 +13,29 @@ function error() {
     exit 1
 }
 
+# Doc: Invokes a command with root privileges. When the current user
+# is already root the command runs directly; otherwise it is wrapped
+# with `sudo`. Used by the hack/ scripts so that only the few syscalls
+# that need CAP_SYS_ADMIN (loop mounts and the writes inside them)
+# escalate, while the rest of the script keeps running as the
+# invoking user — leaving go caches, downloaded tarballs, etc. owned
+# by that user.
+#
+# Caveats:
+#  * Shell redirections (`>`, `<<`) happen in the parent shell, so
+#    `need_root cmd > path` writes via the unprivileged user. Use
+#    `printf ... | need_root tee path > /dev/null` (or similar) when
+#    the destination requires privilege.
+#  * `sudo` may prompt for a password on first use; subsequent calls
+#    within the sudo timestamp window reuse the cached credential.
+function need_root() {
+    if [[ "${EUID}" -eq 0 ]]; then
+        "$@"
+    else
+        sudo "$@"
+    fi
+}
+
 # Doc: Invokes mockgen tool with the correct flags.
 # Installs mockgen automatically if it isn't present in the system.
 #

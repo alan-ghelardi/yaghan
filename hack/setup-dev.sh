@@ -17,10 +17,14 @@
 # the vmlinux binary, and the Alpine minirootfs tarball are all
 # cached under assets/ and reused on re-run.
 #
-# Loop-mounting (used by both rootfs scripts) requires CAP_SYS_ADMIN,
-# so invoke with sudo:
+# Runs as your normal user. The few steps that require CAP_SYS_ADMIN
+# (loop mount + writes inside the mount, inside fetch-rootfs.sh and
+# build-and-embed-agent.sh) escalate per-command via `need_root`
+# (defined in hack/helpers.sh) which transparently shells out to
+# `sudo`. You will be prompted for the sudo password once unless
+# your timestamp is still cached.
 #
-#   sudo ./hack/setup-dev.sh
+#   ./hack/setup-dev.sh
 
 set -euo pipefail
 
@@ -29,11 +33,8 @@ repo_root="$(cd "${here}/.." > /dev/null && pwd)"
 assets_dir="${repo_root}/assets"
 version_file="${repo_root}/firecracker-version"
 
-if [[ "${EUID}" -ne 0 ]]; then
-    echo "must run as root — the rootfs scripts loop-mount images and need CAP_SYS_ADMIN" >&2
-    echo "try: sudo $0" >&2
-    exit 1
-fi
+# shellcheck disable=SC1091
+. "${here}/helpers.sh"
 
 if [[ ! -f "${version_file}" ]]; then
     echo "missing ${version_file}: this file pins the firecracker release the daemon targets" >&2
@@ -42,6 +43,18 @@ fi
 version="$(tr -d '[:space:]' < "${version_file}")"
 if [[ -z "${version}" ]]; then
     echo "${version_file} is empty" >&2
+    exit 1
+fi
+
+# Legacy migration: earlier versions of this script demanded `sudo`
+# at the top level, so a previously-set-up tree has assets/ owned by
+# root and our unprivileged writes (tarball download, binary
+# install) would fail. Detect and tell the user how to recover.
+if [[ -d "${assets_dir}" && ! -w "${assets_dir}" ]]; then
+    echo "${assets_dir} exists but is not writable by you (probably from an older sudo run of this script)." >&2
+    echo "fix once with:" >&2
+    echo "    sudo chown -R \"\$(id -u):\$(id -g)\" \"${assets_dir}\"" >&2
+    echo "then re-run this script." >&2
     exit 1
 fi
 
