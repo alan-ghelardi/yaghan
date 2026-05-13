@@ -44,9 +44,6 @@ type SnapshotLoadParams struct {
 
 	// Enable dirty page tracking to improve space efficiency of diff snapshots
 	TrackDirtyPages bool `json:"track_dirty_pages,omitempty"`
-
-	// Overrides the vsock device's UDS path on snapshot restore. This is useful for restoring a snapshot with a different socket path than the one used when the snapshot was created. For example, when the original socket path is no longer available or when deploying to a different environment.
-	VsockOverride *VsockOverride `json:"vsock_override,omitempty"`
 }
 
 // Validate validates this snapshot load params
@@ -62,10 +59,6 @@ func (m *SnapshotLoadParams) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateSnapshotPath(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateVsockOverride(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -129,25 +122,6 @@ func (m *SnapshotLoadParams) validateSnapshotPath(formats strfmt.Registry) error
 	return nil
 }
 
-func (m *SnapshotLoadParams) validateVsockOverride(formats strfmt.Registry) error {
-	if swag.IsZero(m.VsockOverride) { // not required
-		return nil
-	}
-
-	if m.VsockOverride != nil {
-		if err := m.VsockOverride.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("vsock_override")
-			} else if ce, ok := err.(*errors.CompositeError); ok {
-				return ce.ValidateName("vsock_override")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
 // ContextValidate validate this snapshot load params based on the context it is used
 func (m *SnapshotLoadParams) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -157,10 +131,6 @@ func (m *SnapshotLoadParams) ContextValidate(ctx context.Context, formats strfmt
 	}
 
 	if err := m.contextValidateNetworkOverrides(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateVsockOverride(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -211,27 +181,6 @@ func (m *SnapshotLoadParams) contextValidateNetworkOverrides(ctx context.Context
 			}
 		}
 
-	}
-
-	return nil
-}
-
-func (m *SnapshotLoadParams) contextValidateVsockOverride(ctx context.Context, formats strfmt.Registry) error {
-
-	if m.VsockOverride != nil {
-
-		if swag.IsZero(m.VsockOverride) { // not required
-			return nil
-		}
-
-		if err := m.VsockOverride.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("vsock_override")
-			} else if ce, ok := err.(*errors.CompositeError); ok {
-				return ce.ValidateName("vsock_override")
-			}
-			return err
-		}
 	}
 
 	return nil

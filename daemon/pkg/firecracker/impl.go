@@ -303,13 +303,6 @@ func (f *firecracker) LoadSnapshot(ctx context.Context, input *LoadSnapshotInput
 		// (no per-NIC overrides at restore time).
 		NetworkOverrides: []*models.NetworkOverride{},
 	}
-	if input.VsockUDSPath != "" {
-		// Pin the UDS path so the host-side UDS we wire into
-		// firecrackerVM.vsockUDS is authoritative regardless of what
-		// the snapshot's state file embedded.
-		udsPath := input.VsockUDSPath
-		body.VsockOverride = &models.VsockOverride{UdsPath: &udsPath}
-	}
 	params := operations.NewLoadSnapshotParamsWithContext(ctx).WithBody(body)
 	if _, err := apiClient.Operations.LoadSnapshot(params); err != nil {
 		f.killForkedFirecracker(input.ID)
