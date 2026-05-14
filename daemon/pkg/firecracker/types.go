@@ -45,10 +45,30 @@ type Provider interface {
 	Recover(ctx context.Context) error
 
 	// Len returns the number of MicroVMs currently held in the index.
-	// Useful for callers (e.g. the reconciler) that need to allocate a
-	// per-host resource keyed off the current population, such as a
-	// network namespace index.
+	// Useful for callers that need a population count — e.g. the
+	// node agent surfaces it as ActiveSandboxCount on the node
+	// metrics it reports to the api-server. NOT a safe choice for
+	// allocating per-VM resources (see NextNetNSIndex for that).
 	Len() int
+
+	// NextNetNSIndex returns a network-namespace index that no
+	// currently-indexed MicroVM is using. Concretely, it returns
+	// max(vm.NetworkIndex() for vm in indexed) + 1, or 0 when the
+	// index is empty.
+	//
+	// Resilience: the firecracker provider's index is rebuilt by
+	// Recover at daemon startup from each VM's persisted meta.json,
+	// so a daemon restart produces the same answer it would have
+	// produced before the restart. No new persistence surface is
+	// introduced.
+	//
+	// Caller invariant: the controller is single-worker today, so
+	// this method's "compute index, hand it to Provision, register
+	// the resulting VM" sequence is atomic from the daemon's point
+	// of view. A future move to multi-worker would require a
+	// reserve-then-commit shape (or a free-list allocator) — both
+	// out of scope here.
+	NextNetNSIndex() int
 }
 
 // LoadSnapshotInput parameterises [Provider.LoadSnapshot]. The first

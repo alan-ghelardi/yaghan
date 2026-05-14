@@ -991,6 +991,30 @@ func (f *firecracker) Len() int {
 	return len(f.vms)
 }
 
+// NextNetNSIndex implements [Provider]. Returns one greater than the
+// highest NetworkIndex currently in the in-memory index, or 0 when
+// the index is empty. After delete, the highest-watermark approach
+// keeps the returned value strictly greater than any live VM's
+// index, so the reconciler never hands the network driver an index
+// already in use by another VM on this host.
+//
+// The walk is O(N) over the live population. N is bounded by the
+// host's microVM count (single-digit to low-hundreds in practice),
+// so the cost is negligible — and Provider.Recover already produces
+// a correct in-memory index at startup, so this method gives the
+// right answer across daemon restarts without any new persistence.
+func (f *firecracker) NextNetNSIndex() int {
+	f.mu.RLock()
+	defer f.mu.RUnlock()
+	next := 0
+	for _, vm := range f.vms {
+		if candidate := vm.networkIndex + 1; candidate > next {
+			next = candidate
+		}
+	}
+	return next
+}
+
 // GetMicroVM implements [Provider].
 func (f *firecracker) GetMicroVM(id string) MicroVM {
 	f.mu.RLock()

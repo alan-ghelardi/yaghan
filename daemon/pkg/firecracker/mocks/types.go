@@ -115,6 +115,20 @@ func (mr *MockProviderMockRecorder) LoadSnapshot(ctx, input any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LoadSnapshot", reflect.TypeOf((*MockProvider)(nil).LoadSnapshot), ctx, input)
 }
 
+// NextNetNSIndex mocks base method.
+func (m *MockProvider) NextNetNSIndex() int {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NextNetNSIndex")
+	ret0, _ := ret[0].(int)
+	return ret0
+}
+
+// NextNetNSIndex indicates an expected call of NextNetNSIndex.
+func (mr *MockProviderMockRecorder) NextNetNSIndex() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NextNetNSIndex", reflect.TypeOf((*MockProvider)(nil).NextNetNSIndex))
+}
+
 // Recover mocks base method.
 func (m *MockProvider) Recover(ctx context.Context) error {
 	m.ctrl.T.Helper()
