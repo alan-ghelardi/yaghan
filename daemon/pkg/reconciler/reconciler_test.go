@@ -187,7 +187,7 @@ func TestReconcile_BootCreatesMicroVMAndUpdatesStatus(t *testing.T) {
 	nsh := fixtureNamespaceHandle(0)
 	gomock.InOrder(
 		provider.EXPECT().GetMicroVM("sb-boot").Return(nil),
-		provider.EXPECT().Len().Return(0),
+		provider.EXPECT().NextNetNSIndex().Return(0),
 		driver.EXPECT().Provision(0).Return(nsh, nil),
 		provider.EXPECT().
 			CreateMicroVM(ctx, gomock.Any()).
@@ -243,7 +243,7 @@ func TestReconcile_BootRollsBackNetworkOnCreateFailure(t *testing.T) {
 	bootErr := errors.New("jailer exploded")
 	gomock.InOrder(
 		provider.EXPECT().GetMicroVM("sb-rollback").Return(nil),
-		provider.EXPECT().Len().Return(0),
+		provider.EXPECT().NextNetNSIndex().Return(0),
 		driver.EXPECT().Provision(0).Return(nsh, nil),
 		provider.EXPECT().CreateMicroVM(ctx, gomock.Any()).Return(nil, bootErr),
 		driver.EXPECT().Deprovision(0).Return(nil),
@@ -269,7 +269,7 @@ func TestReconcile_BootSurfacesNetworkProvisionFailure(t *testing.T) {
 	provErr := errors.New("netlink ENOPERM")
 	gomock.InOrder(
 		provider.EXPECT().GetMicroVM("sb-netfail").Return(nil),
-		provider.EXPECT().Len().Return(0),
+		provider.EXPECT().NextNetNSIndex().Return(0),
 		driver.EXPECT().Provision(0).Return(network.NamespaceHandle{}, provErr),
 	)
 	provider.EXPECT().CreateMicroVM(gomock.Any(), gomock.Any()).Times(0)
@@ -277,6 +277,56 @@ func TestReconcile_BootSurfacesNetworkProvisionFailure(t *testing.T) {
 	err := r.Reconcile(ctx, sandbox)
 	require.Error(t, err)
 	assert.ErrorIs(t, err, provErr)
+}
+
+// TestReconcile_BootAfterDeleteUsesFreshIndex pins the bug fix: the
+// reconciler must consult provider.NextNetNSIndex rather than Len
+// when choosing the netns index. Before this change, a delete that
+// shrank the live population would leave Len unchanged at the
+// (delete-target's) value, and the next boot would collide with a
+// surviving VM at that index. NextNetNSIndex sits strictly above
+// every live VM, so no collision is possible.
+func TestReconcile_BootAfterDeleteUsesFreshIndex(t *testing.T) {
+	r, provider, driver, _, _, _ := newReconcilerFixture(t)
+	ctx := context.Background()
+
+	sandbox := fixtureSandbox("sb-post-delete")
+	sandbox.Intent = &cpv1.Intent{Phase: cpv1.SandboxStatus_PHASE_RUNNING}
+
+	// Live population: VM at index 1 (e.g. sb-A at 0 was deleted,
+	// leaving sb-B at 1 in the index). With the old Len()-based
+	// allocator the next index would be 1 — colliding with sb-B.
+	// NextNetNSIndex returns max+1 = 2 instead.
+	const freshIndex = 2
+	nsh := fixtureNamespaceHandle(freshIndex)
+
+	gomock.InOrder(
+		provider.EXPECT().GetMicroVM("sb-post-delete").Return(nil),
+		provider.EXPECT().NextNetNSIndex().Return(freshIndex),
+		driver.EXPECT().
+			Provision(freshIndex).
+			DoAndReturn(func(idx int) (network.NamespaceHandle, error) {
+				assert.Equal(t, freshIndex, idx,
+					"reconciler must hand the driver the fresh index returned by NextNetNSIndex, not Len")
+				return nsh, nil
+			}),
+		provider.EXPECT().
+			CreateMicroVM(ctx, gomock.Any()).
+			DoAndReturn(func(_ context.Context, input *firecracker.CreateMicroVMInput) (firecracker.MicroVM, error) {
+				assert.Equal(t, nsh, input.Network,
+					"the namespace handle passed to CreateMicroVM must be the one bound to the fresh index")
+				return nil, nil
+			}),
+	)
+	// Critically, the driver MUST NOT be invoked with index 1 — that
+	// would mean the reconciler walked back into Len's footsteps and
+	// collided with the live sb-B at index 1.
+	provider.EXPECT().GetMicroVM(gomock.Any()).Times(0)
+	provider.EXPECT().Len().Times(0)
+
+	require.NoError(t, r.Reconcile(ctx, sandbox))
+	assert.Equal(t, cpv1.SandboxStatus_PHASE_RUNNING, sandbox.GetStatus().GetPhase())
+	assert.Nil(t, sandbox.Intent)
 }
 
 // TestReconcile_BootFromSnapshot_HappyPath covers the snapshot-restore
@@ -295,7 +345,7 @@ func TestReconcile_BootFromSnapshot_HappyPath(t *testing.T) {
 	gomock.InOrder(
 		provider.EXPECT().GetMicroVM("sb-from-snap").Return(nil),
 		expectSnapshotDownload(durableStore, "snap-A", []byte("mem"), []byte("state")),
-		provider.EXPECT().Len().Return(0),
+		provider.EXPECT().NextNetNSIndex().Return(0),
 		driver.EXPECT().Provision(0).Return(nsh, nil),
 		provider.EXPECT().
 			LoadSnapshot(ctx, gomock.Any()).
@@ -347,7 +397,7 @@ func TestReconcile_BootFromSnapshot_AlignsResourcesWhenSnapshotDiffers(t *testin
 	gomock.InOrder(
 		provider.EXPECT().GetMicroVM("sb-resize").Return(nil),
 		expectSnapshotDownload(durableStore, "snap-B", []byte("mem"), []byte("state")),
-		provider.EXPECT().Len().Return(0),
+		provider.EXPECT().NextNetNSIndex().Return(0),
 		driver.EXPECT().Provision(0).Return(fixtureNamespaceHandle(0), nil),
 		provider.EXPECT().LoadSnapshot(ctx, gomock.Any()).Return(vm, nil),
 		vm.EXPECT().Describe(ctx).Return(&firecracker.MicroVMInfo{
@@ -433,7 +483,7 @@ func TestReconcile_BootFromSnapshot_LoadFailureRollsBackNetwork(t *testing.T) {
 	gomock.InOrder(
 		provider.EXPECT().GetMicroVM("sb-load-fail").Return(nil),
 		expectSnapshotDownload(durableStore, "snap-D", []byte("mem"), []byte("state")),
-		provider.EXPECT().Len().Return(0),
+		provider.EXPECT().NextNetNSIndex().Return(0),
 		driver.EXPECT().Provision(0).Return(fixtureNamespaceHandle(0), nil),
 		provider.EXPECT().LoadSnapshot(ctx, gomock.Any()).Return(nil, loadErr),
 		driver.EXPECT().Deprovision(0).Return(nil),
@@ -793,7 +843,7 @@ func TestReconcile_CombinedIntentsAreAppliedInOrderAndCleared(t *testing.T) {
 	gomock.InOrder(
 		// Boot.
 		provider.EXPECT().GetMicroVM("sb-combined").Return(nil),
-		provider.EXPECT().Len().Return(0),
+		provider.EXPECT().NextNetNSIndex().Return(0),
 		driver.EXPECT().Provision(0).Return(nsh, nil),
 		provider.EXPECT().CreateMicroVM(ctx, gomock.Any()).Return(nil, nil),
 		// Resize.
@@ -822,7 +872,7 @@ func TestReconcile_PhaseFailureSkipsResources(t *testing.T) {
 	bootErr := errors.New("kernel panic during boot")
 	gomock.InOrder(
 		provider.EXPECT().GetMicroVM("sb-phase-bad").Return(nil),
-		provider.EXPECT().Len().Return(0),
+		provider.EXPECT().NextNetNSIndex().Return(0),
 		driver.EXPECT().Provision(0).Return(fixtureNamespaceHandle(0), nil),
 		provider.EXPECT().CreateMicroVM(ctx, gomock.Any()).Return(nil, bootErr),
 		driver.EXPECT().Deprovision(0).Return(nil),

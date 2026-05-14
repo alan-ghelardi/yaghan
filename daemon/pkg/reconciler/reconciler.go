@@ -199,17 +199,22 @@ func (r *Reconciler) boot(ctx context.Context, sandbox *controlplanev1alpha1.San
 // bootFresh creates a brand-new MicroVM from the sandbox's intrinsic
 // resources and the daemon-level template constants. Idempotent: if
 // the provider already has the VM indexed, bootFresh returns nil
-// without touching the network driver or firecracker. The network
-// index is persisted by the firecracker package alongside the chroot
-// so a later delete (potentially after a daemon restart) can
-// deprovision the matching namespace.
+// without touching the network driver or firecracker.
+//
+// The netns index comes from provider.NextNetNSIndex(), which sits
+// strictly above any live VM's NetworkIndex — so the index handed to
+// the driver never collides with an existing VM, even after deletes
+// have left gaps in the population. The chosen index is persisted by
+// the firecracker package alongside the chroot (meta.json) so a
+// later delete (potentially after a daemon restart) can deprovision
+// the matching namespace.
 func (r *Reconciler) bootFresh(ctx context.Context, sandbox *controlplanev1alpha1.Sandbox) error {
 	id := sandbox.GetMetadata().GetId()
 	if vm := r.provider.GetMicroVM(id); vm != nil {
 		return nil
 	}
 
-	index := r.provider.Len()
+	index := r.provider.NextNetNSIndex()
 	nsh, err := r.driver.Provision(index)
 	if err != nil {
 		return fmt.Errorf("provision network: %w", err)
@@ -271,7 +276,7 @@ func (r *Reconciler) bootFromSnapshot(ctx context.Context, sandbox *controlplane
 		return fmt.Errorf("load snapshot %q from durable storage: %w", snapshotID, err)
 	}
 
-	index := r.provider.Len()
+	index := r.provider.NextNetNSIndex()
 	nsh, err := r.driver.Provision(index)
 	if err != nil {
 		return fmt.Errorf("provision network: %w", err)
