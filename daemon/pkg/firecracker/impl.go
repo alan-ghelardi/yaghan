@@ -793,18 +793,6 @@ func (f *firecrackerVM) Describe(ctx context.Context) (*MicroVMInfo, error) {
 	return info, nil
 }
 
-// UpdateResources implements [MicroVM].
-func (f *firecrackerVM) UpdateResources(ctx context.Context, input UpdateResourcesInput) error {
-	params := operations.NewPatchMachineConfigurationParamsWithContext(ctx).
-		WithBody(&models.MachineConfiguration{
-			VcpuCount:  &input.VCPUCount,
-			MemSizeMib: &input.MemoryMiB,
-		})
-
-	_, err := f.client.Operations.PatchMachineConfiguration(params)
-	return err
-}
-
 // Pause implements [MicroVM].
 func (f *firecrackerVM) Pause(ctx context.Context) error {
 	return f.transition(ctx, models.VMStatePaused, models.InstanceInfoStatePaused)

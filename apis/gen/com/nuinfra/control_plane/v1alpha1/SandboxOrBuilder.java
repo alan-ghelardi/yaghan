@@ -26,17 +26,44 @@ public interface SandboxOrBuilder extends
   com.nuinfra.control_plane.v1alpha1.SandboxMetaOrBuilder getMetadataOrBuilder();
 
   /**
-   * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 2 [json_name = "resources", (.buf.validate.field) = { ... }</code>
+   * <pre>
+   * Sandbox.resources is required on the wire only for image-sourced
+   * sandboxes; snapshot-sourced sandboxes inherit their resources from
+   * the snapshot record and MUST leave this field unset on
+   * CreateSandbox. The api-server validates the conditional rule and
+   * stamps the inherited values before persistence — so every persisted
+   * row carries a populated Resources regardless of how it was created.
+   * </pre>
+   *
+   * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 2 [json_name = "resources"];</code>
    * @return Whether the resources field is set.
    */
   boolean hasResources();
   /**
-   * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 2 [json_name = "resources", (.buf.validate.field) = { ... }</code>
+   * <pre>
+   * Sandbox.resources is required on the wire only for image-sourced
+   * sandboxes; snapshot-sourced sandboxes inherit their resources from
+   * the snapshot record and MUST leave this field unset on
+   * CreateSandbox. The api-server validates the conditional rule and
+   * stamps the inherited values before persistence — so every persisted
+   * row carries a populated Resources regardless of how it was created.
+   * </pre>
+   *
+   * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 2 [json_name = "resources"];</code>
    * @return The resources.
    */
   com.nuinfra.control_plane.v1alpha1.Resources getResources();
   /**
-   * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 2 [json_name = "resources", (.buf.validate.field) = { ... }</code>
+   * <pre>
+   * Sandbox.resources is required on the wire only for image-sourced
+   * sandboxes; snapshot-sourced sandboxes inherit their resources from
+   * the snapshot record and MUST leave this field unset on
+   * CreateSandbox. The api-server validates the conditional rule and
+   * stamps the inherited values before persistence — so every persisted
+   * row carries a populated Resources regardless of how it was created.
+   * </pre>
+   *
+   * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 2 [json_name = "resources"];</code>
    */
   com.nuinfra.control_plane.v1alpha1.ResourcesOrBuilder getResourcesOrBuilder();
 

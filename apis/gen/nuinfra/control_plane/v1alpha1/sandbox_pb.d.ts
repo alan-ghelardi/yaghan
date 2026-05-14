@@ -22,6 +22,13 @@ export declare type Sandbox = Message<"nuinfra.control_plane.v1alpha1.Sandbox"> 
   metadata?: SandboxMeta;
 
   /**
+   * Sandbox.resources is required on the wire only for image-sourced
+   * sandboxes; snapshot-sourced sandboxes inherit their resources from
+   * the snapshot record and MUST leave this field unset on
+   * CreateSandbox. The api-server validates the conditional rule and
+   * stamps the inherited values before persistence — so every persisted
+   * row carries a populated Resources regardless of how it was created.
+   *
    * @generated from field: nuinfra.control_plane.v1alpha1.Resources resources = 2;
    */
   resources?: Resources;
@@ -181,11 +188,6 @@ export declare type Intent = Message<"nuinfra.control_plane.v1alpha1.Intent"> & 
    * @generated from field: nuinfra.control_plane.v1alpha1.SandboxStatus.Phase phase = 1;
    */
   phase: SandboxStatus_Phase;
-
-  /**
-   * @generated from field: nuinfra.control_plane.v1alpha1.Resources resources = 2;
-   */
-  resources?: Resources;
 
   /**
    * @generated from field: nuinfra.control_plane.v1alpha1.StartSnapshotInput start_snapshot = 3;

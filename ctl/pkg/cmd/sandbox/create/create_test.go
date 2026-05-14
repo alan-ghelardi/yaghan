@@ -123,7 +123,7 @@ func TestCreate(t *testing.T) {
 			wantErr: "AlreadyExists",
 		},
 		{
-			name: "--source snapshot:<id> populates Metadata.Source.SnapshotId",
+			name: "--source snapshot:<id> populates Metadata.Source.SnapshotId and omits Resources",
 			args: "--source snapshot:snap-1",
 			capture: func(t *testing.T, req *controlplanev1alpha1.CreateSandboxRequest) (*controlplanev1alpha1.CreateSandboxResponse, error) {
 				src := req.GetSandbox().GetMetadata().GetSource()
@@ -131,27 +131,54 @@ func TestCreate(t *testing.T) {
 				assert.Equal(t, "snap-1", src.GetSnapshotId())
 				assert.Equal(t, "", src.GetImageId(),
 					"snapshot source must not also set image_id")
+				// Snapshot-sourced sandboxes inherit Resources from the
+				// snapshot record; the CLI must NOT attach a Resources
+				// proto to the request (default values would otherwise
+				// be rejected by the api-server).
+				assert.Nil(t, req.GetSandbox().GetResources(),
+					"Resources must be nil when --source is a snapshot")
 				return echo(req), nil
 			},
-			wantStdout: "source=snapshot:snap-1",
+			wantStdout: "resources inherited from snapshot",
 		},
 		{
-			name: "--source image:<id> populates Metadata.Source.ImageId",
-			args: "--source image:img-1",
+			name:    "rejects --source snapshot together with explicit --vcpu",
+			args:    "--source snapshot:snap-1 --vcpu 2",
+			wantErr: "--vcpu/--memory cannot be set when --source is a snapshot",
+		},
+		{
+			name:    "rejects --source snapshot together with explicit --memory",
+			args:    "--source snapshot:snap-1 --memory 2GiB",
+			wantErr: "--vcpu/--memory cannot be set when --source is a snapshot",
+		},
+		{
+			name:    "rejects --source snapshot together with shorthand -v",
+			args:    "-s snapshot:snap-1 -v 4",
+			wantErr: "--vcpu/--memory cannot be set when --source is a snapshot",
+		},
+		{
+			name: "--source image:<id> populates Metadata.Source.ImageId and keeps Resources",
+			args: "--source image:img-1 --vcpu 2 --memory 1GiB",
 			capture: func(t *testing.T, req *controlplanev1alpha1.CreateSandboxRequest) (*controlplanev1alpha1.CreateSandboxResponse, error) {
 				src := req.GetSandbox().GetMetadata().GetSource()
 				require.NotNil(t, src)
 				assert.Equal(t, "img-1", src.GetImageId())
 				assert.Equal(t, "", src.GetSnapshotId())
+				// Image-sourced sandboxes still attach Resources — only
+				// the snapshot path inherits from the record.
+				require.NotNil(t, req.GetSandbox().GetResources())
+				assert.Equal(t, uint32(2), req.GetSandbox().GetResources().GetVcpuCount())
+				assert.Equal(t, uint64(1024), req.GetSandbox().GetResources().GetMemoryMib())
 				return echo(req), nil
 			},
 			wantStdout: "source=image:img-1",
 		},
 		{
-			name: "honours shorthand -s",
+			name: "honours shorthand -s and omits Resources for snapshot",
 			args: "-s snapshot:abc",
 			capture: func(t *testing.T, req *controlplanev1alpha1.CreateSandboxRequest) (*controlplanev1alpha1.CreateSandboxResponse, error) {
 				assert.Equal(t, "abc", req.GetSandbox().GetMetadata().GetSource().GetSnapshotId())
+				assert.Nil(t, req.GetSandbox().GetResources())
 				return echo(req), nil
 			},
 			wantStdout: "source=snapshot:abc",

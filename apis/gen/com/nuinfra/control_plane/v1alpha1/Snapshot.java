@@ -96,6 +96,62 @@ private static final long serialVersionUID = 0L;
     return sandbox_ == null ? com.nuinfra.control_plane.v1alpha1.SandboxRef.getDefaultInstance() : sandbox_;
   }
 
+  public static final int RESOURCES_FIELD_NUMBER = 3;
+  private com.nuinfra.control_plane.v1alpha1.Resources resources_;
+  /**
+   * <pre>
+   * Resources captures the vCPU / memory configuration the source
+   * sandbox was running with at snapshot time. Firecracker bakes these
+   * into the snapshot's state file and forbids changing them on
+   * restore (PATCH /machine-config is pre-boot only), so the api-server
+   * stamps this onto any sandbox derived from the snapshot. Required so
+   * a future scheduler can treat sandbox.Resources as the single source
+   * of truth without branching on how the sandbox was created.
+   * </pre>
+   *
+   * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 3 [json_name = "resources", (.buf.validate.field) = { ... }</code>
+   * @return Whether the resources field is set.
+   */
+  @java.lang.Override
+  public boolean hasResources() {
+    return ((bitField0_ & 0x00000004) != 0);
+  }
+  /**
+   * <pre>
+   * Resources captures the vCPU / memory configuration the source
+   * sandbox was running with at snapshot time. Firecracker bakes these
+   * into the snapshot's state file and forbids changing them on
+   * restore (PATCH /machine-config is pre-boot only), so the api-server
+   * stamps this onto any sandbox derived from the snapshot. Required so
+   * a future scheduler can treat sandbox.Resources as the single source
+   * of truth without branching on how the sandbox was created.
+   * </pre>
+   *
+   * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 3 [json_name = "resources", (.buf.validate.field) = { ... }</code>
+   * @return The resources.
+   */
+  @java.lang.Override
+  public com.nuinfra.control_plane.v1alpha1.Resources getResources() {
+    return resources_ == null ? com.nuinfra.control_plane.v1alpha1.Resources.getDefaultInstance() : resources_;
+  }
+  /**
+   * <pre>
+   * Resources captures the vCPU / memory configuration the source
+   * sandbox was running with at snapshot time. Firecracker bakes these
+   * into the snapshot's state file and forbids changing them on
+   * restore (PATCH /machine-config is pre-boot only), so the api-server
+   * stamps this onto any sandbox derived from the snapshot. Required so
+   * a future scheduler can treat sandbox.Resources as the single source
+   * of truth without branching on how the sandbox was created.
+   * </pre>
+   *
+   * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 3 [json_name = "resources", (.buf.validate.field) = { ... }</code>
+   */
+  @java.lang.Override
+  public com.nuinfra.control_plane.v1alpha1.ResourcesOrBuilder getResourcesOrBuilder() {
+    return resources_ == null ? com.nuinfra.control_plane.v1alpha1.Resources.getDefaultInstance() : resources_;
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -116,6 +172,9 @@ private static final long serialVersionUID = 0L;
     if (((bitField0_ & 0x00000002) != 0)) {
       output.writeMessage(2, getSandbox());
     }
+    if (((bitField0_ & 0x00000004) != 0)) {
+      output.writeMessage(3, getResources());
+    }
     getUnknownFields().writeTo(output);
   }
 
@@ -132,6 +191,10 @@ private static final long serialVersionUID = 0L;
     if (((bitField0_ & 0x00000002) != 0)) {
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(2, getSandbox());
+    }
+    if (((bitField0_ & 0x00000004) != 0)) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(3, getResources());
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -158,6 +221,11 @@ private static final long serialVersionUID = 0L;
       if (!getSandbox()
           .equals(other.getSandbox())) return false;
     }
+    if (hasResources() != other.hasResources()) return false;
+    if (hasResources()) {
+      if (!getResources()
+          .equals(other.getResources())) return false;
+    }
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -176,6 +244,10 @@ private static final long serialVersionUID = 0L;
     if (hasSandbox()) {
       hash = (37 * hash) + SANDBOX_FIELD_NUMBER;
       hash = (53 * hash) + getSandbox().hashCode();
+    }
+    if (hasResources()) {
+      hash = (37 * hash) + RESOURCES_FIELD_NUMBER;
+      hash = (53 * hash) + getResources().hashCode();
     }
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
@@ -309,6 +381,7 @@ private static final long serialVersionUID = 0L;
               .alwaysUseFieldBuilders) {
         internalGetMetadataFieldBuilder();
         internalGetSandboxFieldBuilder();
+        internalGetResourcesFieldBuilder();
       }
     }
     @java.lang.Override
@@ -324,6 +397,11 @@ private static final long serialVersionUID = 0L;
       if (sandboxBuilder_ != null) {
         sandboxBuilder_.dispose();
         sandboxBuilder_ = null;
+      }
+      resources_ = null;
+      if (resourcesBuilder_ != null) {
+        resourcesBuilder_.dispose();
+        resourcesBuilder_ = null;
       }
       return this;
     }
@@ -371,6 +449,12 @@ private static final long serialVersionUID = 0L;
             : sandboxBuilder_.build();
         to_bitField0_ |= 0x00000002;
       }
+      if (((from_bitField0_ & 0x00000004) != 0)) {
+        result.resources_ = resourcesBuilder_ == null
+            ? resources_
+            : resourcesBuilder_.build();
+        to_bitField0_ |= 0x00000004;
+      }
       result.bitField0_ |= to_bitField0_;
     }
 
@@ -391,6 +475,9 @@ private static final long serialVersionUID = 0L;
       }
       if (other.hasSandbox()) {
         mergeSandbox(other.getSandbox());
+      }
+      if (other.hasResources()) {
+        mergeResources(other.getResources());
       }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
@@ -432,6 +519,13 @@ private static final long serialVersionUID = 0L;
               bitField0_ |= 0x00000002;
               break;
             } // case 18
+            case 26: {
+              input.readMessage(
+                  internalGetResourcesFieldBuilder().getBuilder(),
+                  extensionRegistry);
+              bitField0_ |= 0x00000004;
+              break;
+            } // case 26
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -689,6 +783,217 @@ private static final long serialVersionUID = 0L;
         sandbox_ = null;
       }
       return sandboxBuilder_;
+    }
+
+    private com.nuinfra.control_plane.v1alpha1.Resources resources_;
+    private com.google.protobuf.SingleFieldBuilder<
+        com.nuinfra.control_plane.v1alpha1.Resources, com.nuinfra.control_plane.v1alpha1.Resources.Builder, com.nuinfra.control_plane.v1alpha1.ResourcesOrBuilder> resourcesBuilder_;
+    /**
+     * <pre>
+     * Resources captures the vCPU / memory configuration the source
+     * sandbox was running with at snapshot time. Firecracker bakes these
+     * into the snapshot's state file and forbids changing them on
+     * restore (PATCH /machine-config is pre-boot only), so the api-server
+     * stamps this onto any sandbox derived from the snapshot. Required so
+     * a future scheduler can treat sandbox.Resources as the single source
+     * of truth without branching on how the sandbox was created.
+     * </pre>
+     *
+     * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 3 [json_name = "resources", (.buf.validate.field) = { ... }</code>
+     * @return Whether the resources field is set.
+     */
+    public boolean hasResources() {
+      return ((bitField0_ & 0x00000004) != 0);
+    }
+    /**
+     * <pre>
+     * Resources captures the vCPU / memory configuration the source
+     * sandbox was running with at snapshot time. Firecracker bakes these
+     * into the snapshot's state file and forbids changing them on
+     * restore (PATCH /machine-config is pre-boot only), so the api-server
+     * stamps this onto any sandbox derived from the snapshot. Required so
+     * a future scheduler can treat sandbox.Resources as the single source
+     * of truth without branching on how the sandbox was created.
+     * </pre>
+     *
+     * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 3 [json_name = "resources", (.buf.validate.field) = { ... }</code>
+     * @return The resources.
+     */
+    public com.nuinfra.control_plane.v1alpha1.Resources getResources() {
+      if (resourcesBuilder_ == null) {
+        return resources_ == null ? com.nuinfra.control_plane.v1alpha1.Resources.getDefaultInstance() : resources_;
+      } else {
+        return resourcesBuilder_.getMessage();
+      }
+    }
+    /**
+     * <pre>
+     * Resources captures the vCPU / memory configuration the source
+     * sandbox was running with at snapshot time. Firecracker bakes these
+     * into the snapshot's state file and forbids changing them on
+     * restore (PATCH /machine-config is pre-boot only), so the api-server
+     * stamps this onto any sandbox derived from the snapshot. Required so
+     * a future scheduler can treat sandbox.Resources as the single source
+     * of truth without branching on how the sandbox was created.
+     * </pre>
+     *
+     * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 3 [json_name = "resources", (.buf.validate.field) = { ... }</code>
+     */
+    public Builder setResources(com.nuinfra.control_plane.v1alpha1.Resources value) {
+      if (resourcesBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        resources_ = value;
+      } else {
+        resourcesBuilder_.setMessage(value);
+      }
+      bitField0_ |= 0x00000004;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * Resources captures the vCPU / memory configuration the source
+     * sandbox was running with at snapshot time. Firecracker bakes these
+     * into the snapshot's state file and forbids changing them on
+     * restore (PATCH /machine-config is pre-boot only), so the api-server
+     * stamps this onto any sandbox derived from the snapshot. Required so
+     * a future scheduler can treat sandbox.Resources as the single source
+     * of truth without branching on how the sandbox was created.
+     * </pre>
+     *
+     * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 3 [json_name = "resources", (.buf.validate.field) = { ... }</code>
+     */
+    public Builder setResources(
+        com.nuinfra.control_plane.v1alpha1.Resources.Builder builderForValue) {
+      if (resourcesBuilder_ == null) {
+        resources_ = builderForValue.build();
+      } else {
+        resourcesBuilder_.setMessage(builderForValue.build());
+      }
+      bitField0_ |= 0x00000004;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * Resources captures the vCPU / memory configuration the source
+     * sandbox was running with at snapshot time. Firecracker bakes these
+     * into the snapshot's state file and forbids changing them on
+     * restore (PATCH /machine-config is pre-boot only), so the api-server
+     * stamps this onto any sandbox derived from the snapshot. Required so
+     * a future scheduler can treat sandbox.Resources as the single source
+     * of truth without branching on how the sandbox was created.
+     * </pre>
+     *
+     * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 3 [json_name = "resources", (.buf.validate.field) = { ... }</code>
+     */
+    public Builder mergeResources(com.nuinfra.control_plane.v1alpha1.Resources value) {
+      if (resourcesBuilder_ == null) {
+        if (((bitField0_ & 0x00000004) != 0) &&
+          resources_ != null &&
+          resources_ != com.nuinfra.control_plane.v1alpha1.Resources.getDefaultInstance()) {
+          getResourcesBuilder().mergeFrom(value);
+        } else {
+          resources_ = value;
+        }
+      } else {
+        resourcesBuilder_.mergeFrom(value);
+      }
+      if (resources_ != null) {
+        bitField0_ |= 0x00000004;
+        onChanged();
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     * Resources captures the vCPU / memory configuration the source
+     * sandbox was running with at snapshot time. Firecracker bakes these
+     * into the snapshot's state file and forbids changing them on
+     * restore (PATCH /machine-config is pre-boot only), so the api-server
+     * stamps this onto any sandbox derived from the snapshot. Required so
+     * a future scheduler can treat sandbox.Resources as the single source
+     * of truth without branching on how the sandbox was created.
+     * </pre>
+     *
+     * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 3 [json_name = "resources", (.buf.validate.field) = { ... }</code>
+     */
+    public Builder clearResources() {
+      bitField0_ = (bitField0_ & ~0x00000004);
+      resources_ = null;
+      if (resourcesBuilder_ != null) {
+        resourcesBuilder_.dispose();
+        resourcesBuilder_ = null;
+      }
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * Resources captures the vCPU / memory configuration the source
+     * sandbox was running with at snapshot time. Firecracker bakes these
+     * into the snapshot's state file and forbids changing them on
+     * restore (PATCH /machine-config is pre-boot only), so the api-server
+     * stamps this onto any sandbox derived from the snapshot. Required so
+     * a future scheduler can treat sandbox.Resources as the single source
+     * of truth without branching on how the sandbox was created.
+     * </pre>
+     *
+     * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 3 [json_name = "resources", (.buf.validate.field) = { ... }</code>
+     */
+    public com.nuinfra.control_plane.v1alpha1.Resources.Builder getResourcesBuilder() {
+      bitField0_ |= 0x00000004;
+      onChanged();
+      return internalGetResourcesFieldBuilder().getBuilder();
+    }
+    /**
+     * <pre>
+     * Resources captures the vCPU / memory configuration the source
+     * sandbox was running with at snapshot time. Firecracker bakes these
+     * into the snapshot's state file and forbids changing them on
+     * restore (PATCH /machine-config is pre-boot only), so the api-server
+     * stamps this onto any sandbox derived from the snapshot. Required so
+     * a future scheduler can treat sandbox.Resources as the single source
+     * of truth without branching on how the sandbox was created.
+     * </pre>
+     *
+     * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 3 [json_name = "resources", (.buf.validate.field) = { ... }</code>
+     */
+    public com.nuinfra.control_plane.v1alpha1.ResourcesOrBuilder getResourcesOrBuilder() {
+      if (resourcesBuilder_ != null) {
+        return resourcesBuilder_.getMessageOrBuilder();
+      } else {
+        return resources_ == null ?
+            com.nuinfra.control_plane.v1alpha1.Resources.getDefaultInstance() : resources_;
+      }
+    }
+    /**
+     * <pre>
+     * Resources captures the vCPU / memory configuration the source
+     * sandbox was running with at snapshot time. Firecracker bakes these
+     * into the snapshot's state file and forbids changing them on
+     * restore (PATCH /machine-config is pre-boot only), so the api-server
+     * stamps this onto any sandbox derived from the snapshot. Required so
+     * a future scheduler can treat sandbox.Resources as the single source
+     * of truth without branching on how the sandbox was created.
+     * </pre>
+     *
+     * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 3 [json_name = "resources", (.buf.validate.field) = { ... }</code>
+     */
+    private com.google.protobuf.SingleFieldBuilder<
+        com.nuinfra.control_plane.v1alpha1.Resources, com.nuinfra.control_plane.v1alpha1.Resources.Builder, com.nuinfra.control_plane.v1alpha1.ResourcesOrBuilder> 
+        internalGetResourcesFieldBuilder() {
+      if (resourcesBuilder_ == null) {
+        resourcesBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+            com.nuinfra.control_plane.v1alpha1.Resources, com.nuinfra.control_plane.v1alpha1.Resources.Builder, com.nuinfra.control_plane.v1alpha1.ResourcesOrBuilder>(
+                getResources(),
+                getParentForChildren(),
+                isClean());
+        resources_ = null;
+      }
+      return resourcesBuilder_;
     }
 
     // @@protoc_insertion_point(builder_scope:nuinfra.control_plane.v1alpha1.Snapshot)

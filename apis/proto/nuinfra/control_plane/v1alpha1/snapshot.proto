@@ -5,11 +5,21 @@ package nuinfra.control_plane.v1alpha1;
 import "buf/validate/validate.proto";
 import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
+import "nuinfra/control_plane/v1alpha1/sandbox.proto";
 
 message Snapshot {
   SnapshotMeta metadata = 1 [(buf.validate.field).required = true];
 
   SandboxRef sandbox = 2 [(buf.validate.field).required = true];
+
+  // Resources captures the vCPU / memory configuration the source
+  // sandbox was running with at snapshot time. Firecracker bakes these
+  // into the snapshot's state file and forbids changing them on
+  // restore (PATCH /machine-config is pre-boot only), so the api-server
+  // stamps this onto any sandbox derived from the snapshot. Required so
+  // a future scheduler can treat sandbox.Resources as the single source
+  // of truth without branching on how the sandbox was created.
+  Resources resources = 3 [(buf.validate.field).required = true];
 }
 
 message SnapshotMeta {

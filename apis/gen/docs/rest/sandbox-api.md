@@ -120,10 +120,6 @@ The maximum allowed value is 1000.
       },
       "intent": {
         "phase": "PHASE_UNSPECIFIED",
-        "resources": {
-          "vcpuCount": 0,
-          "memoryMib": "string"
-        },
         "startSnapshot": {
           "description": "string"
         }
@@ -199,10 +195,6 @@ This operation does not require authentication
     },
     "intent": {
       "phase": "PHASE_UNSPECIFIED",
-      "resources": {
-        "vcpuCount": 0,
-        "memoryMib": "string"
-      },
       "startSnapshot": {
         "description": "string"
       }
@@ -267,10 +259,6 @@ This operation does not require authentication
     },
     "intent": {
       "phase": "PHASE_UNSPECIFIED",
-      "resources": {
-        "vcpuCount": 0,
-        "memoryMib": "string"
-      },
       "startSnapshot": {
         "description": "string"
       }
@@ -352,10 +340,6 @@ This operation does not require authentication
     },
     "intent": {
       "phase": "PHASE_UNSPECIFIED",
-      "resources": {
-        "vcpuCount": 0,
-        "memoryMib": "string"
-      },
       "startSnapshot": {
         "description": "string"
       }
@@ -438,10 +422,6 @@ This operation does not require authentication
     },
     "intent": {
       "phase": "PHASE_UNSPECIFIED",
-      "resources": {
-        "vcpuCount": 0,
-        "memoryMib": "string"
-      },
       "startSnapshot": {
         "description": "string"
       }
@@ -524,10 +504,6 @@ This operation does not require authentication
     },
     "intent": {
       "phase": "PHASE_UNSPECIFIED",
-      "resources": {
-        "vcpuCount": 0,
-        "memoryMib": "string"
-      },
       "startSnapshot": {
         "description": "string"
       }
@@ -610,10 +586,6 @@ This operation does not require authentication
     },
     "intent": {
       "phase": "PHASE_UNSPECIFIED",
-      "resources": {
-        "vcpuCount": 0,
-        "memoryMib": "string"
-      },
       "startSnapshot": {
         "description": "string"
       }
@@ -705,10 +677,6 @@ This operation does not require authentication
     },
     "intent": {
       "phase": "PHASE_UNSPECIFIED",
-      "resources": {
-        "vcpuCount": 0,
-        "memoryMib": "string"
-      },
       "startSnapshot": {
         "description": "string"
       }
@@ -952,10 +920,6 @@ You can find out more about this error model and how to work with it in the
     },
     "intent": {
       "phase": "PHASE_UNSPECIFIED",
-      "resources": {
-        "vcpuCount": 0,
-        "memoryMib": "string"
-      },
       "startSnapshot": {
         "description": "string"
       }
@@ -1024,10 +988,6 @@ You can find out more about this error model and how to work with it in the
     },
     "intent": {
       "phase": "PHASE_UNSPECIFIED",
-      "resources": {
-        "vcpuCount": 0,
-        "memoryMib": "string"
-      },
       "startSnapshot": {
         "description": "string"
       }
@@ -1096,10 +1056,6 @@ You can find out more about this error model and how to work with it in the
     },
     "intent": {
       "phase": "PHASE_UNSPECIFIED",
-      "resources": {
-        "vcpuCount": 0,
-        "memoryMib": "string"
-      },
       "startSnapshot": {
         "description": "string"
       }
@@ -1168,10 +1124,6 @@ You can find out more about this error model and how to work with it in the
     },
     "intent": {
       "phase": "PHASE_UNSPECIFIED",
-      "resources": {
-        "vcpuCount": 0,
-        "memoryMib": "string"
-      },
       "startSnapshot": {
         "description": "string"
       }
@@ -1216,10 +1168,6 @@ You can find out more about this error model and how to work with it in the
 ```json
 {
   "phase": "PHASE_UNSPECIFIED",
-  "resources": {
-    "vcpuCount": 0,
-    "memoryMib": "string"
-  },
   "startSnapshot": {
     "description": "string"
   }
@@ -1232,7 +1180,6 @@ You can find out more about this error model and how to work with it in the
 |Name|Type|Required|Restrictions|Description|
 |---|---|---|---|---|
 |phase|[v1alpha1SandboxStatusPhase](#schemav1alpha1sandboxstatusphase)|false|none|none|
-|resources|[v1alpha1Resources](#schemav1alpha1resources)|false|none|none|
 |startSnapshot|[v1alpha1StartSnapshotInput](#schemav1alpha1startsnapshotinput)|false|none|none|
 
 <h2 id="tocS_v1alpha1ListSandboxesRequestOrder">v1alpha1ListSandboxesRequestOrder</h2>
@@ -1301,10 +1248,6 @@ Controls how results are ordered by last modification time.
       },
       "intent": {
         "phase": "PHASE_UNSPECIFIED",
-        "resources": {
-          "vcpuCount": 0,
-          "memoryMib": "string"
-        },
         "startSnapshot": {
           "description": "string"
         }
@@ -1398,10 +1341,6 @@ Response message containing a page of sandboxes.
     },
     "intent": {
       "phase": "PHASE_UNSPECIFIED",
-      "resources": {
-        "vcpuCount": 0,
-        "memoryMib": "string"
-      },
       "startSnapshot": {
         "description": "string"
       }
@@ -1492,10 +1431,6 @@ Response message containing a page of sandboxes.
     },
     "intent": {
       "phase": "PHASE_UNSPECIFIED",
-      "resources": {
-        "vcpuCount": 0,
-        "memoryMib": "string"
-      },
       "startSnapshot": {
         "description": "string"
       }
@@ -1563,10 +1498,6 @@ Response message containing a page of sandboxes.
   },
   "intent": {
     "phase": "PHASE_UNSPECIFIED",
-    "resources": {
-      "vcpuCount": 0,
-      "memoryMib": "string"
-    },
     "startSnapshot": {
       "description": "string"
     }
@@ -1809,10 +1740,6 @@ Response message containing a page of sandboxes.
     },
     "intent": {
       "phase": "PHASE_UNSPECIFIED",
-      "resources": {
-        "vcpuCount": 0,
-        "memoryMib": "string"
-      },
       "startSnapshot": {
         "description": "string"
       }

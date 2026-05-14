@@ -22,21 +22,6 @@ public interface IntentOrBuilder extends
   com.nuinfra.control_plane.v1alpha1.SandboxStatus.Phase getPhase();
 
   /**
-   * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 2 [json_name = "resources"];</code>
-   * @return Whether the resources field is set.
-   */
-  boolean hasResources();
-  /**
-   * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 2 [json_name = "resources"];</code>
-   * @return The resources.
-   */
-  com.nuinfra.control_plane.v1alpha1.Resources getResources();
-  /**
-   * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 2 [json_name = "resources"];</code>
-   */
-  com.nuinfra.control_plane.v1alpha1.ResourcesOrBuilder getResourcesOrBuilder();
-
-  /**
    * <code>.nuinfra.control_plane.v1alpha1.StartSnapshotInput start_snapshot = 3 [json_name = "startSnapshot"];</code>
    * @return Whether the startSnapshot field is set.
    */

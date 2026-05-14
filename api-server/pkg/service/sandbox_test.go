@@ -360,6 +360,14 @@ func withSnapshotSource(id string) func(*cpv1.Sandbox) {
 	}
 }
 
+// withoutResources clears the default Resources from newCreateRequest.
+// Snapshot-sourced sandboxes inherit their resources from the snapshot
+// record, so callers must NOT also set them on the request — the
+// api-server stamps the snapshot's values during validation.
+func withoutResources() func(*cpv1.Sandbox) {
+	return func(sb *cpv1.Sandbox) { sb.Resources = nil }
+}
+
 func withImageSource(id string) func(*cpv1.Sandbox) {
 	return func(sb *cpv1.Sandbox) {
 		sb.Metadata.Source = &cpv1.SandboxSource{
@@ -372,15 +380,26 @@ func withImageSource(id string) func(*cpv1.Sandbox) {
 // looks identical to one the daemon would have produced. namespace
 // must satisfy SnapshotMeta's pattern; sandboxID is the ref id the
 // snapshot is "from" (only needs to be non-empty for validation).
-func seedSnapshot(ctx context.Context, t *testing.T, h *harness, id, namespace, sandboxID string) {
+// Resources defaults to the same values newCreateRequest uses so
+// derived-sandbox tests get a matching stamp; pass non-zero vcpu/mem
+// to override (e.g. when asserting that the stamp actually changed the
+// sandbox row).
+func seedSnapshot(ctx context.Context, t *testing.T, h *harness, id, namespace, sandboxID string, opts ...func(*cpv1.Snapshot)) {
 	t.Helper()
-	_, err := h.snapshot.CreateSnapshot(ctx, &cpv1.CreateSnapshotRequest{
-		Snapshot: &cpv1.Snapshot{
-			Metadata: &cpv1.SnapshotMeta{Id: id, Namespace: namespace, Description: "test"},
-			Sandbox:  &cpv1.SandboxRef{Id: sandboxID},
-		},
-	})
+	snap := &cpv1.Snapshot{
+		Metadata:  &cpv1.SnapshotMeta{Id: id, Namespace: namespace, Description: "test"},
+		Sandbox:   &cpv1.SandboxRef{Id: sandboxID},
+		Resources: &cpv1.Resources{VcpuCount: 2, MemoryMib: 1024},
+	}
+	for _, opt := range opts {
+		opt(snap)
+	}
+	_, err := h.snapshot.CreateSnapshot(ctx, &cpv1.CreateSnapshotRequest{Snapshot: snap})
 	require.NoError(t, err)
+}
+
+func snapshotResources(vcpu uint32, memMiB uint64) func(*cpv1.Snapshot) {
+	return func(s *cpv1.Snapshot) { s.Resources = &cpv1.Resources{VcpuCount: vcpu, MemoryMib: memMiB} }
 }
 
 func assertCode(t *testing.T, err error, want codes.Code) {
@@ -664,19 +683,54 @@ func TestCreateSandbox_Source_SnapshotResolves(t *testing.T) {
 	h := startService(t)
 	ctx := t.Context()
 
-	seedSnapshot(ctx, t, h, "snap-src-ok", validNamespace, "sb-src-origin")
+	// Seed a snapshot with non-default resources so we can assert the
+	// api-server actually stamps the snapshot's values onto the
+	// derived sandbox (not the defaults that newCreateRequest would
+	// have applied for an image-sourced sandbox).
+	seedSnapshot(ctx, t, h, "snap-src-ok", validNamespace, "sb-src-origin",
+		snapshotResources(4, 2048))
 
 	resp, err := h.client.CreateSandbox(ctx,
-		newCreateRequest(withID("sb-from-snap"), withSnapshotSource("snap-src-ok")))
+		newCreateRequest(withID("sb-from-snap"), withSnapshotSource("snap-src-ok"), withoutResources()))
 	require.NoError(t, err)
 
 	assert.Equal(t, "snap-src-ok", resp.GetSandbox().GetMetadata().GetSource().GetSnapshotId(),
 		"the response must round-trip the source reference unchanged")
+	assert.Equal(t, uint32(4), resp.GetSandbox().GetResources().GetVcpuCount(),
+		"snapshot-sourced sandbox must inherit vcpu from the snapshot record")
+	assert.Equal(t, uint64(2048), resp.GetSandbox().GetResources().GetMemoryMib(),
+		"snapshot-sourced sandbox must inherit memory from the snapshot record")
 
-	// Re-read via GetSandbox confirms the source persisted.
+	// Re-read via GetSandbox confirms the source and the stamped
+	// resources both persisted.
 	got, err := h.client.GetSandbox(ctx, &cpv1.GetSandboxRequest{SandboxId: "sb-from-snap"})
 	require.NoError(t, err)
 	assert.Equal(t, "snap-src-ok", got.GetSandbox().GetMetadata().GetSource().GetSnapshotId())
+	assert.Equal(t, uint32(4), got.GetSandbox().GetResources().GetVcpuCount())
+	assert.Equal(t, uint64(2048), got.GetSandbox().GetResources().GetMemoryMib())
+}
+
+// TestCreateSandbox_Source_SnapshotRejectsResourcesOverride pins the
+// hard contract: when the caller asks to restore from a snapshot AND
+// supplies Resources, the request is rejected with InvalidArgument
+// before any DB work. Firecracker bakes vCPU and memory into the
+// snapshot and forbids changing them on restore, so accepting the
+// override would produce a sandbox the daemon can never converge.
+func TestCreateSandbox_Source_SnapshotRejectsResourcesOverride(t *testing.T) {
+	h := startService(t)
+	ctx := t.Context()
+
+	seedSnapshot(ctx, t, h, "snap-override", validNamespace, "sb-src-override")
+
+	// newCreateRequest sets Resources by default; combined with
+	// withSnapshotSource we get exactly the doomed shape.
+	_, err := h.client.CreateSandbox(ctx,
+		newCreateRequest(withID("sb-override"), withSnapshotSource("snap-override")))
+	assertCode(t, err, codes.InvalidArgument)
+
+	st, _ := status.FromError(err)
+	assert.Contains(t, st.Message(), "resources",
+		"error must name the field that conflicts with the snapshot source")
 }
 
 func TestCreateSandbox_Source_SnapshotMissing(t *testing.T) {
@@ -684,7 +738,7 @@ func TestCreateSandbox_Source_SnapshotMissing(t *testing.T) {
 	ctx := t.Context()
 
 	_, err := h.client.CreateSandbox(ctx,
-		newCreateRequest(withID("sb-from-missing"), withSnapshotSource("snap-missing")))
+		newCreateRequest(withID("sb-from-missing"), withSnapshotSource("snap-missing"), withoutResources()))
 	assertCode(t, err, codes.NotFound)
 
 	st, _ := status.FromError(err)
@@ -705,7 +759,7 @@ func TestCreateSandbox_Source_SnapshotNamespaceMismatch(t *testing.T) {
 	seedSnapshot(ctx, t, h, "snap-cross", otherNamespace, "sb-src-cross")
 
 	_, err := h.client.CreateSandbox(ctx,
-		newCreateRequest(withID("sb-cross"), withSnapshotSource("snap-cross")))
+		newCreateRequest(withID("sb-cross"), withSnapshotSource("snap-cross"), withoutResources()))
 	assertCode(t, err, codes.FailedPrecondition)
 
 	st, _ := status.FromError(err)
@@ -713,6 +767,25 @@ func TestCreateSandbox_Source_SnapshotNamespaceMismatch(t *testing.T) {
 		"error must surface the snapshot's namespace")
 	assert.Contains(t, st.Message(), validNamespace,
 		"error must surface the sandbox's namespace")
+}
+
+// TestCreateSandbox_RequiresResourcesWhenNotSourcedFromSnapshot pins
+// the negative of the inheritance rule: a sandbox without
+// metadata.source MUST supply resources, because there is no snapshot
+// record to inherit from.
+func TestCreateSandbox_RequiresResourcesWhenNotSourcedFromSnapshot(t *testing.T) {
+	h := startService(t)
+	ctx := t.Context()
+
+	_, err := h.client.CreateSandbox(ctx,
+		newCreateRequest(withID("sb-no-resources"), withoutResources()))
+	assertCode(t, err, codes.InvalidArgument)
+
+	st, _ := status.FromError(err)
+	assert.Contains(t, st.Message(), "resources",
+		"error must name the missing field")
+	assert.Contains(t, st.Message(), "snapshot_id",
+		"error must hint at the inheritance path")
 }
 
 func TestCreateSandbox_Source_ImageIdRejectedAsUnimplemented(t *testing.T) {
@@ -753,7 +826,7 @@ func TestCreateSandbox_Source_IdempotentRetry(t *testing.T) {
 	seedSnapshot(ctx, t, h, "snap-idem", validNamespace, "sb-src-idem")
 
 	first, err := h.client.CreateSandbox(ctx,
-		newCreateRequest(withID("sb-idem-src"), withSnapshotSource("snap-idem")))
+		newCreateRequest(withID("sb-idem-src"), withSnapshotSource("snap-idem"), withoutResources()))
 	require.NoError(t, err)
 	firstLMT := first.GetSandbox().GetMetadata().GetLastModifiedAt().AsTime()
 
@@ -763,7 +836,7 @@ func TestCreateSandbox_Source_IdempotentRetry(t *testing.T) {
 	time.Sleep(2 * time.Millisecond)
 
 	_, err = h.client.CreateSandbox(ctx,
-		newCreateRequest(withID("sb-idem-src"), withSnapshotSource("snap-idem")))
+		newCreateRequest(withID("sb-idem-src"), withSnapshotSource("snap-idem"), withoutResources()))
 	require.NoError(t, err)
 
 	got, err := h.client.GetSandbox(ctx, &cpv1.GetSandboxRequest{SandboxId: "sb-idem-src"})

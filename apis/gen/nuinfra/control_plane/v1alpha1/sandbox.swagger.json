@@ -395,9 +395,6 @@
         "phase": {
           "$ref": "#/definitions/v1alpha1SandboxStatusPhase"
         },
-        "resources": {
-          "$ref": "#/definitions/v1alpha1Resources"
-        },
         "startSnapshot": {
           "$ref": "#/definitions/v1alpha1StartSnapshotInput"
         }
@@ -476,7 +473,8 @@
           "$ref": "#/definitions/v1alpha1SandboxMeta"
         },
         "resources": {
-          "$ref": "#/definitions/v1alpha1Resources"
+          "$ref": "#/definitions/v1alpha1Resources",
+          "description": "Sandbox.resources is required on the wire only for image-sourced\nsandboxes; snapshot-sourced sandboxes inherit their resources from\nthe snapshot record and MUST leave this field unset on\nCreateSandbox. The api-server validates the conditional rule and\nstamps the inherited values before persistence — so every persisted\nrow carries a populated Resources regardless of how it was created."
         },
         "node": {
           "$ref": "#/definitions/v1alpha1NodeRef"

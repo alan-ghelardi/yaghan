@@ -77,9 +77,17 @@ func (ListSnapshotsRequest_Order) EnumDescriptor() ([]byte, []int) {
 }
 
 type Snapshot struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Metadata      *SnapshotMeta          `protobuf:"bytes,1,opt,name=metadata,proto3" json:"metadata,omitempty"`
-	Sandbox       *SandboxRef            `protobuf:"bytes,2,opt,name=sandbox,proto3" json:"sandbox,omitempty"`
+	state    protoimpl.MessageState `protogen:"open.v1"`
+	Metadata *SnapshotMeta          `protobuf:"bytes,1,opt,name=metadata,proto3" json:"metadata,omitempty"`
+	Sandbox  *SandboxRef            `protobuf:"bytes,2,opt,name=sandbox,proto3" json:"sandbox,omitempty"`
+	// Resources captures the vCPU / memory configuration the source
+	// sandbox was running with at snapshot time. Firecracker bakes these
+	// into the snapshot's state file and forbids changing them on
+	// restore (PATCH /machine-config is pre-boot only), so the api-server
+	// stamps this onto any sandbox derived from the snapshot. Required so
+	// a future scheduler can treat sandbox.Resources as the single source
+	// of truth without branching on how the sandbox was created.
+	Resources     *Resources `protobuf:"bytes,3,opt,name=resources,proto3" json:"resources,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -124,6 +132,13 @@ func (x *Snapshot) GetMetadata() *SnapshotMeta {
 func (x *Snapshot) GetSandbox() *SandboxRef {
 	if x != nil {
 		return x.Sandbox
+	}
+	return nil
+}
+
+func (x *Snapshot) GetResources() *Resources {
+	if x != nil {
+		return x.Resources
 	}
 	return nil
 }
@@ -648,10 +663,11 @@ var File_nuinfra_control_plane_v1alpha1_snapshot_proto protoreflect.FileDescript
 
 const file_nuinfra_control_plane_v1alpha1_snapshot_proto_rawDesc = "" +
 	"\n" +
-	"-nuinfra/control_plane/v1alpha1/snapshot.proto\x12\x1enuinfra.control_plane.v1alpha1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xaa\x01\n" +
+	"-nuinfra/control_plane/v1alpha1/snapshot.proto\x12\x1enuinfra.control_plane.v1alpha1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a,nuinfra/control_plane/v1alpha1/sandbox.proto\"\xfb\x01\n" +
 	"\bSnapshot\x12P\n" +
 	"\bmetadata\x18\x01 \x01(\v2,.nuinfra.control_plane.v1alpha1.SnapshotMetaB\x06\xbaH\x03\xc8\x01\x01R\bmetadata\x12L\n" +
-	"\asandbox\x18\x02 \x01(\v2*.nuinfra.control_plane.v1alpha1.SandboxRefB\x06\xbaH\x03\xc8\x01\x01R\asandbox\"\xd5\x01\n" +
+	"\asandbox\x18\x02 \x01(\v2*.nuinfra.control_plane.v1alpha1.SandboxRefB\x06\xbaH\x03\xc8\x01\x01R\asandbox\x12O\n" +
+	"\tresources\x18\x03 \x01(\v2).nuinfra.control_plane.v1alpha1.ResourcesB\x06\xbaH\x03\xc8\x01\x01R\tresources\"\xd5\x01\n" +
 	"\fSnapshotMeta\x12\x16\n" +
 	"\x02id\x18\x01 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x02id\x12F\n" +
 	"\tnamespace\x18\x02 \x01(\tB(\xbaH%\xc8\x01\x01r 2\x1e^[a-z][a-z0-9-]{0,61}[a-z0-9]$R\tnamespace\x12*\n" +
@@ -727,30 +743,32 @@ var file_nuinfra_control_plane_v1alpha1_snapshot_proto_goTypes = []any{
 	(*ListSnapshotsResponse)(nil),   // 9: nuinfra.control_plane.v1alpha1.ListSnapshotsResponse
 	(*DeleteSnapshotRequest)(nil),   // 10: nuinfra.control_plane.v1alpha1.DeleteSnapshotRequest
 	(*DeleteSnapshotResponse)(nil),  // 11: nuinfra.control_plane.v1alpha1.DeleteSnapshotResponse
-	(*timestamppb.Timestamp)(nil),   // 12: google.protobuf.Timestamp
+	(*Resources)(nil),               // 12: nuinfra.control_plane.v1alpha1.Resources
+	(*timestamppb.Timestamp)(nil),   // 13: google.protobuf.Timestamp
 }
 var file_nuinfra_control_plane_v1alpha1_snapshot_proto_depIdxs = []int32{
 	2,  // 0: nuinfra.control_plane.v1alpha1.Snapshot.metadata:type_name -> nuinfra.control_plane.v1alpha1.SnapshotMeta
 	3,  // 1: nuinfra.control_plane.v1alpha1.Snapshot.sandbox:type_name -> nuinfra.control_plane.v1alpha1.SandboxRef
-	12, // 2: nuinfra.control_plane.v1alpha1.SnapshotMeta.created_at:type_name -> google.protobuf.Timestamp
-	1,  // 3: nuinfra.control_plane.v1alpha1.CreateSnapshotRequest.snapshot:type_name -> nuinfra.control_plane.v1alpha1.Snapshot
-	1,  // 4: nuinfra.control_plane.v1alpha1.CreateSnapshotResponse.snapshot:type_name -> nuinfra.control_plane.v1alpha1.Snapshot
-	1,  // 5: nuinfra.control_plane.v1alpha1.GetSnapshotResponse.snapshot:type_name -> nuinfra.control_plane.v1alpha1.Snapshot
-	0,  // 6: nuinfra.control_plane.v1alpha1.ListSnapshotsRequest.sort_order:type_name -> nuinfra.control_plane.v1alpha1.ListSnapshotsRequest.Order
-	1,  // 7: nuinfra.control_plane.v1alpha1.ListSnapshotsResponse.snapshots:type_name -> nuinfra.control_plane.v1alpha1.Snapshot
-	4,  // 8: nuinfra.control_plane.v1alpha1.SnapshotService.CreateSnapshot:input_type -> nuinfra.control_plane.v1alpha1.CreateSnapshotRequest
-	6,  // 9: nuinfra.control_plane.v1alpha1.SnapshotService.GetSnapshot:input_type -> nuinfra.control_plane.v1alpha1.GetSnapshotRequest
-	8,  // 10: nuinfra.control_plane.v1alpha1.SnapshotService.ListSnapshots:input_type -> nuinfra.control_plane.v1alpha1.ListSnapshotsRequest
-	10, // 11: nuinfra.control_plane.v1alpha1.SnapshotService.DeleteSnapshot:input_type -> nuinfra.control_plane.v1alpha1.DeleteSnapshotRequest
-	5,  // 12: nuinfra.control_plane.v1alpha1.SnapshotService.CreateSnapshot:output_type -> nuinfra.control_plane.v1alpha1.CreateSnapshotResponse
-	7,  // 13: nuinfra.control_plane.v1alpha1.SnapshotService.GetSnapshot:output_type -> nuinfra.control_plane.v1alpha1.GetSnapshotResponse
-	9,  // 14: nuinfra.control_plane.v1alpha1.SnapshotService.ListSnapshots:output_type -> nuinfra.control_plane.v1alpha1.ListSnapshotsResponse
-	11, // 15: nuinfra.control_plane.v1alpha1.SnapshotService.DeleteSnapshot:output_type -> nuinfra.control_plane.v1alpha1.DeleteSnapshotResponse
-	12, // [12:16] is the sub-list for method output_type
-	8,  // [8:12] is the sub-list for method input_type
-	8,  // [8:8] is the sub-list for extension type_name
-	8,  // [8:8] is the sub-list for extension extendee
-	0,  // [0:8] is the sub-list for field type_name
+	12, // 2: nuinfra.control_plane.v1alpha1.Snapshot.resources:type_name -> nuinfra.control_plane.v1alpha1.Resources
+	13, // 3: nuinfra.control_plane.v1alpha1.SnapshotMeta.created_at:type_name -> google.protobuf.Timestamp
+	1,  // 4: nuinfra.control_plane.v1alpha1.CreateSnapshotRequest.snapshot:type_name -> nuinfra.control_plane.v1alpha1.Snapshot
+	1,  // 5: nuinfra.control_plane.v1alpha1.CreateSnapshotResponse.snapshot:type_name -> nuinfra.control_plane.v1alpha1.Snapshot
+	1,  // 6: nuinfra.control_plane.v1alpha1.GetSnapshotResponse.snapshot:type_name -> nuinfra.control_plane.v1alpha1.Snapshot
+	0,  // 7: nuinfra.control_plane.v1alpha1.ListSnapshotsRequest.sort_order:type_name -> nuinfra.control_plane.v1alpha1.ListSnapshotsRequest.Order
+	1,  // 8: nuinfra.control_plane.v1alpha1.ListSnapshotsResponse.snapshots:type_name -> nuinfra.control_plane.v1alpha1.Snapshot
+	4,  // 9: nuinfra.control_plane.v1alpha1.SnapshotService.CreateSnapshot:input_type -> nuinfra.control_plane.v1alpha1.CreateSnapshotRequest
+	6,  // 10: nuinfra.control_plane.v1alpha1.SnapshotService.GetSnapshot:input_type -> nuinfra.control_plane.v1alpha1.GetSnapshotRequest
+	8,  // 11: nuinfra.control_plane.v1alpha1.SnapshotService.ListSnapshots:input_type -> nuinfra.control_plane.v1alpha1.ListSnapshotsRequest
+	10, // 12: nuinfra.control_plane.v1alpha1.SnapshotService.DeleteSnapshot:input_type -> nuinfra.control_plane.v1alpha1.DeleteSnapshotRequest
+	5,  // 13: nuinfra.control_plane.v1alpha1.SnapshotService.CreateSnapshot:output_type -> nuinfra.control_plane.v1alpha1.CreateSnapshotResponse
+	7,  // 14: nuinfra.control_plane.v1alpha1.SnapshotService.GetSnapshot:output_type -> nuinfra.control_plane.v1alpha1.GetSnapshotResponse
+	9,  // 15: nuinfra.control_plane.v1alpha1.SnapshotService.ListSnapshots:output_type -> nuinfra.control_plane.v1alpha1.ListSnapshotsResponse
+	11, // 16: nuinfra.control_plane.v1alpha1.SnapshotService.DeleteSnapshot:output_type -> nuinfra.control_plane.v1alpha1.DeleteSnapshotResponse
+	13, // [13:17] is the sub-list for method output_type
+	9,  // [9:13] is the sub-list for method input_type
+	9,  // [9:9] is the sub-list for extension type_name
+	9,  // [9:9] is the sub-list for extension extendee
+	0,  // [0:9] is the sub-list for field type_name
 }
 
 func init() { file_nuinfra_control_plane_v1alpha1_snapshot_proto_init() }
@@ -758,6 +776,7 @@ func file_nuinfra_control_plane_v1alpha1_snapshot_proto_init() {
 	if File_nuinfra_control_plane_v1alpha1_snapshot_proto != nil {
 		return
 	}
+	file_nuinfra_control_plane_v1alpha1_sandbox_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

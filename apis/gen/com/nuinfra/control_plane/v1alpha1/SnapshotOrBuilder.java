@@ -39,4 +39,49 @@ public interface SnapshotOrBuilder extends
    * <code>.nuinfra.control_plane.v1alpha1.SandboxRef sandbox = 2 [json_name = "sandbox", (.buf.validate.field) = { ... }</code>
    */
   com.nuinfra.control_plane.v1alpha1.SandboxRefOrBuilder getSandboxOrBuilder();
+
+  /**
+   * <pre>
+   * Resources captures the vCPU / memory configuration the source
+   * sandbox was running with at snapshot time. Firecracker bakes these
+   * into the snapshot's state file and forbids changing them on
+   * restore (PATCH /machine-config is pre-boot only), so the api-server
+   * stamps this onto any sandbox derived from the snapshot. Required so
+   * a future scheduler can treat sandbox.Resources as the single source
+   * of truth without branching on how the sandbox was created.
+   * </pre>
+   *
+   * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 3 [json_name = "resources", (.buf.validate.field) = { ... }</code>
+   * @return Whether the resources field is set.
+   */
+  boolean hasResources();
+  /**
+   * <pre>
+   * Resources captures the vCPU / memory configuration the source
+   * sandbox was running with at snapshot time. Firecracker bakes these
+   * into the snapshot's state file and forbids changing them on
+   * restore (PATCH /machine-config is pre-boot only), so the api-server
+   * stamps this onto any sandbox derived from the snapshot. Required so
+   * a future scheduler can treat sandbox.Resources as the single source
+   * of truth without branching on how the sandbox was created.
+   * </pre>
+   *
+   * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 3 [json_name = "resources", (.buf.validate.field) = { ... }</code>
+   * @return The resources.
+   */
+  com.nuinfra.control_plane.v1alpha1.Resources getResources();
+  /**
+   * <pre>
+   * Resources captures the vCPU / memory configuration the source
+   * sandbox was running with at snapshot time. Firecracker bakes these
+   * into the snapshot's state file and forbids changing them on
+   * restore (PATCH /machine-config is pre-boot only), so the api-server
+   * stamps this onto any sandbox derived from the snapshot. Required so
+   * a future scheduler can treat sandbox.Resources as the single source
+   * of truth without branching on how the sandbox was created.
+   * </pre>
+   *
+   * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 3 [json_name = "resources", (.buf.validate.field) = { ... }</code>
+   */
+  com.nuinfra.control_plane.v1alpha1.ResourcesOrBuilder getResourcesOrBuilder();
 }

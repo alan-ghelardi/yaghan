@@ -20,7 +20,9 @@ var staleTime = time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
 
 // newSnapshotFixture builds a Snapshot proto with the supplied id, scoped
 // to validNamespace and a sandbox ref by default. The DB stamps CreatedAt
-// itself, so the fixture leaves it unset.
+// itself, so the fixture leaves it unset. Resources defaults to the same
+// shape newCreateRequest uses; tests that need to assert inheritance can
+// override via an opt.
 func newSnapshotFixture(id string, opts ...func(*cpv1.Snapshot)) *cpv1.Snapshot {
 	sn := &cpv1.Snapshot{
 		Metadata: &cpv1.SnapshotMeta{
@@ -28,7 +30,8 @@ func newSnapshotFixture(id string, opts ...func(*cpv1.Snapshot)) *cpv1.Snapshot 
 			Namespace:   validNamespace,
 			Description: "nightly checkpoint",
 		},
-		Sandbox: &cpv1.SandboxRef{Id: "sb-001"},
+		Sandbox:   &cpv1.SandboxRef{Id: "sb-001"},
+		Resources: &cpv1.Resources{VcpuCount: 2, MemoryMib: 1024},
 	}
 	for _, opt := range opts {
 		opt(sn)
@@ -148,7 +151,21 @@ func TestCreateSnapshot_ValidatesMissingFields(t *testing.T) {
 			name: "missing sandbox ref",
 			req: &cpv1.CreateSnapshotRequest{
 				Snapshot: &cpv1.Snapshot{
-					Metadata: &cpv1.SnapshotMeta{Id: "snap-x", Namespace: validNamespace},
+					Metadata:  &cpv1.SnapshotMeta{Id: "snap-x", Namespace: validNamespace},
+					Resources: &cpv1.Resources{VcpuCount: 1, MemoryMib: 128},
+				},
+			},
+		},
+		{
+			// Snapshot.Resources is marked required at the proto level so
+			// every persisted row carries the values a derived sandbox
+			// will inherit. Omitting it must surface as InvalidArgument
+			// from the buf.validate interceptor.
+			name: "missing resources",
+			req: &cpv1.CreateSnapshotRequest{
+				Snapshot: &cpv1.Snapshot{
+					Metadata: &cpv1.SnapshotMeta{Id: "snap-y", Namespace: validNamespace},
+					Sandbox:  &cpv1.SandboxRef{Id: "sb-1"},
 				},
 			},
 		},

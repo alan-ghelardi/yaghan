@@ -505,10 +505,6 @@ You can find out more about this error model and how to work with it in the
       },
       "intent": {
         "phase": "PHASE_UNSPECIFIED",
-        "resources": {
-          "vcpuCount": 0,
-          "memoryMib": "string"
-        },
         "startSnapshot": {
           "description": "string"
         }
@@ -593,10 +589,6 @@ You can find out more about this error model and how to work with it in the
     },
     "intent": {
       "phase": "PHASE_UNSPECIFIED",
-      "resources": {
-        "vcpuCount": 0,
-        "memoryMib": "string"
-      },
       "startSnapshot": {
         "description": "string"
       }
@@ -700,10 +692,6 @@ It provides enough context for consumers to react, audit, or replicate the chang
 ```json
 {
   "phase": "PHASE_UNSPECIFIED",
-  "resources": {
-    "vcpuCount": 0,
-    "memoryMib": "string"
-  },
   "startSnapshot": {
     "description": "string"
   }
@@ -716,7 +704,6 @@ It provides enough context for consumers to react, audit, or replicate the chang
 |Name|Type|Required|Restrictions|Description|
 |---|---|---|---|---|
 |phase|[v1alpha1SandboxStatusPhase](#schemav1alpha1sandboxstatusphase)|false|none|none|
-|resources|[v1alpha1Resources](#schemav1alpha1resources)|false|none|none|
 |startSnapshot|[v1alpha1StartSnapshotInput](#schemav1alpha1startsnapshotinput)|false|none|none|
 
 <h2 id="tocS_v1alpha1ListNodesRequestOrder">v1alpha1ListNodesRequestOrder</h2>
@@ -1107,10 +1094,6 @@ Response message containing a page of nodes.
   },
   "intent": {
     "phase": "PHASE_UNSPECIFIED",
-    "resources": {
-      "vcpuCount": 0,
-      "memoryMib": "string"
-    },
     "startSnapshot": {
       "description": "string"
     }
@@ -1353,10 +1336,6 @@ Response message containing a page of nodes.
     },
     "intent": {
       "phase": "PHASE_UNSPECIFIED",
-      "resources": {
-        "vcpuCount": 0,
-        "memoryMib": "string"
-      },
       "startSnapshot": {
         "description": "string"
       }

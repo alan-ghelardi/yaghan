@@ -4,6 +4,7 @@
 
 import type { GenEnum, GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
 import type { Message } from "@bufbuild/protobuf";
+import type { Resources } from "./sandbox_pb";
 import type { Timestamp } from "@bufbuild/protobuf/wkt";
 
 /**
@@ -24,6 +25,19 @@ export declare type Snapshot = Message<"nuinfra.control_plane.v1alpha1.Snapshot"
    * @generated from field: nuinfra.control_plane.v1alpha1.SandboxRef sandbox = 2;
    */
   sandbox?: SandboxRef;
+
+  /**
+   * Resources captures the vCPU / memory configuration the source
+   * sandbox was running with at snapshot time. Firecracker bakes these
+   * into the snapshot's state file and forbids changing them on
+   * restore (PATCH /machine-config is pre-boot only), so the api-server
+   * stamps this onto any sandbox derived from the snapshot. Required so
+   * a future scheduler can treat sandbox.Resources as the single source
+   * of truth without branching on how the sandbox was created.
+   *
+   * @generated from field: nuinfra.control_plane.v1alpha1.Resources resources = 3;
+   */
+  resources?: Resources;
 };
 
 /**

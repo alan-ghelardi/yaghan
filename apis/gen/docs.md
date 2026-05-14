@@ -282,7 +282,6 @@ InsufficientScopes provides further details on unauthorized errors.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | phase | [SandboxStatus.Phase](#nuinfra-control_plane-v1alpha1-SandboxStatus-Phase) |  |  |
-| resources | [Resources](#nuinfra-control_plane-v1alpha1-Resources) |  |  |
 | start_snapshot | [StartSnapshotInput](#nuinfra-control_plane-v1alpha1-StartSnapshotInput) |  |  |
 
 
@@ -428,7 +427,7 @@ Response message containing a page of sandboxes.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | metadata | [SandboxMeta](#nuinfra-control_plane-v1alpha1-SandboxMeta) |  |  |
-| resources | [Resources](#nuinfra-control_plane-v1alpha1-Resources) |  |  |
+| resources | [Resources](#nuinfra-control_plane-v1alpha1-Resources) |  | Sandbox.resources is required on the wire only for image-sourced sandboxes; snapshot-sourced sandboxes inherit their resources from the snapshot record and MUST leave this field unset on CreateSandbox. The api-server validates the conditional rule and stamps the inherited values before persistence — so every persisted row carries a populated Resources regardless of how it was created. |
 | node | [NodeRef](#nuinfra-control_plane-v1alpha1-NodeRef) |  |  |
 | intent | [Intent](#nuinfra-control_plane-v1alpha1-Intent) |  |  |
 | last_snapshot | [SnapshotOutput](#nuinfra-control_plane-v1alpha1-SnapshotOutput) |  |  |
@@ -1129,6 +1128,7 @@ Response message containing a page of snapshots.
 | ----- | ---- | ----- | ----------- |
 | metadata | [SnapshotMeta](#nuinfra-control_plane-v1alpha1-SnapshotMeta) |  |  |
 | sandbox | [SandboxRef](#nuinfra-control_plane-v1alpha1-SandboxRef) |  |  |
+| resources | [Resources](#nuinfra-control_plane-v1alpha1-Resources) |  | Resources captures the vCPU / memory configuration the source sandbox was running with at snapshot time. Firecracker bakes these into the snapshot&#39;s state file and forbids changing them on restore (PATCH /machine-config is pre-boot only), so the api-server stamps this onto any sandbox derived from the snapshot. Required so a future scheduler can treat sandbox.Resources as the single source of truth without branching on how the sandbox was created. |
 
 
 

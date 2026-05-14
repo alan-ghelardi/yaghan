@@ -68,7 +68,8 @@ func newFixture(opts ...func(*cpv1.Snapshot)) *cpv1.Snapshot {
 			Namespace:   "team-alpha",
 			Description: "nightly checkpoint",
 		},
-		Sandbox: &cpv1.SandboxRef{Id: "sb-001"},
+		Sandbox:   &cpv1.SandboxRef{Id: "sb-001"},
+		Resources: &cpv1.Resources{VcpuCount: 2, MemoryMib: 1024},
 	}
 	for _, opt := range opts {
 		opt(sn)

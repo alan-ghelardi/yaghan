@@ -331,8 +331,10 @@ func TestReconcile_BootAfterDeleteUsesFreshIndex(t *testing.T) {
 
 // TestReconcile_BootFromSnapshot_HappyPath covers the snapshot-restore
 // boot path end-to-end: the durable store is queried, the network is
-// provisioned, LoadSnapshot fires, and post-restore Describe matches
-// the sandbox spec so no UpdateResources call is needed.
+// provisioned, and LoadSnapshot fires. Resource alignment is no longer
+// a reconciler step — Firecracker's PATCH /machine-config is pre-boot
+// only, so the api-server enforces that snapshot-sourced sandboxes
+// inherit the snapshot's resources by the time the reconcile runs.
 func TestReconcile_BootFromSnapshot_HappyPath(t *testing.T) {
 	r, provider, driver, vm, durableStore, _ := newReconcilerFixture(t)
 	ctx := context.Background()
@@ -365,13 +367,11 @@ func TestReconcile_BootFromSnapshot_HappyPath(t *testing.T) {
 				assert.Equal(t, uint32(1024), input.AgentVsockPort)
 				return vm, nil
 			}),
-		vm.EXPECT().Describe(ctx).Return(&firecracker.MicroVMInfo{
-			VCPUCount: 2,
-			MemoryMiB: 1024,
-		}, nil),
 	)
-	// Describe matches sandbox.Resources → no UpdateResources call.
-	vm.EXPECT().UpdateResources(gomock.Any(), gomock.Any()).Times(0)
+	// Describe must NOT be called — the reconciler trusts the api-server
+	// to have aligned sandbox.Resources with the snapshot's at create
+	// time, so a post-load round-trip is wasteful.
+	vm.EXPECT().Describe(gomock.Any()).Times(0)
 
 	require.NoError(t, r.Reconcile(ctx, sandbox))
 	assert.Nil(t, sandbox.Intent)
@@ -379,46 +379,12 @@ func TestReconcile_BootFromSnapshot_HappyPath(t *testing.T) {
 	assert.Equal(t, "Sandbox is running", sandbox.GetStatus().GetMessage())
 }
 
-// TestReconcile_BootFromSnapshot_AlignsResourcesWhenSnapshotDiffers
-// pins the "callers may tune resources for a new run" behaviour: when
-// the snapshot's saved vCPU/memory differs from the sandbox spec, the
-// reconciler calls UpdateResources to make the spec authoritative.
-func TestReconcile_BootFromSnapshot_AlignsResourcesWhenSnapshotDiffers(t *testing.T) {
-	r, provider, driver, vm, durableStore, _ := newReconcilerFixture(t)
-	ctx := context.Background()
-
-	sandbox := fixtureSandbox("sb-resize")
-	withSnapshotSource("snap-B")(sandbox)
-	// Sandbox wants 4 vCPU / 2048 MiB; snapshot saved 2 vCPU / 1024 MiB.
-	sandbox.Resources.VcpuCount = 4
-	sandbox.Resources.MemoryMib = 2048
-	sandbox.Intent = &cpv1.Intent{Phase: cpv1.SandboxStatus_PHASE_RUNNING}
-
-	gomock.InOrder(
-		provider.EXPECT().GetMicroVM("sb-resize").Return(nil),
-		expectSnapshotDownload(durableStore, "snap-B", []byte("mem"), []byte("state")),
-		provider.EXPECT().NextNetNSIndex().Return(0),
-		driver.EXPECT().Provision(0).Return(fixtureNamespaceHandle(0), nil),
-		provider.EXPECT().LoadSnapshot(ctx, gomock.Any()).Return(vm, nil),
-		vm.EXPECT().Describe(ctx).Return(&firecracker.MicroVMInfo{
-			VCPUCount: 2,
-			MemoryMiB: 1024,
-		}, nil),
-		vm.EXPECT().UpdateResources(ctx, firecracker.UpdateResourcesInput{
-			VCPUCount: 4,
-			MemoryMiB: 2048,
-		}).Return(nil),
-	)
-
-	require.NoError(t, r.Reconcile(ctx, sandbox))
-	assert.Equal(t, cpv1.SandboxStatus_PHASE_RUNNING, sandbox.GetStatus().GetPhase())
-}
-
-// TestReconcile_BootFromSnapshot_VMAlreadyExistsRunsAlignmentOnly pins
-// the retry path: when LoadSnapshot already succeeded in a prior pass,
-// a re-delivered event finds the VM in the index and only
-// re-evaluates alignment. No download, no network, no LoadSnapshot.
-func TestReconcile_BootFromSnapshot_VMAlreadyExistsRunsAlignmentOnly(t *testing.T) {
+// TestReconcile_BootFromSnapshot_VMAlreadyExistsIsNoOp pins the retry
+// path: when LoadSnapshot already succeeded in a prior pass, a
+// re-delivered event finds the VM in the index and short-circuits. No
+// download, no network, no LoadSnapshot, no Describe — the VM is up
+// and there is nothing left to converge.
+func TestReconcile_BootFromSnapshot_VMAlreadyExistsIsNoOp(t *testing.T) {
 	r, provider, _, vm, _, _ := newReconcilerFixture(t)
 	ctx := context.Background()
 
@@ -427,11 +393,7 @@ func TestReconcile_BootFromSnapshot_VMAlreadyExistsRunsAlignmentOnly(t *testing.
 	sandbox.Intent = &cpv1.Intent{Phase: cpv1.SandboxStatus_PHASE_RUNNING}
 
 	provider.EXPECT().GetMicroVM("sb-retry").Return(vm)
-	vm.EXPECT().Describe(ctx).Return(&firecracker.MicroVMInfo{
-		VCPUCount: 2,
-		MemoryMiB: 1024,
-	}, nil)
-	vm.EXPECT().UpdateResources(gomock.Any(), gomock.Any()).Times(0)
+	vm.EXPECT().Describe(gomock.Any()).Times(0)
 	provider.EXPECT().LoadSnapshot(gomock.Any(), gomock.Any()).Times(0)
 
 	require.NoError(t, r.Reconcile(ctx, sandbox))
@@ -627,79 +589,6 @@ func TestReconcile_DeleteIsIdempotentForUnknownVMs(t *testing.T) {
 	assert.Nil(t, sandbox.Intent)
 }
 
-func TestReconcile_UpdateResourcesAppliesAndMirrors(t *testing.T) {
-	r, provider, _, vm, _, _ := newReconcilerFixture(t)
-	ctx := context.Background()
-
-	sandbox := fixtureSandbox("sb-resize")
-	sandbox.Status.Phase = cpv1.SandboxStatus_PHASE_RUNNING
-	sandbox.Intent = &cpv1.Intent{
-		Resources: &cpv1.Resources{VcpuCount: 4, MemoryMib: 2048},
-	}
-
-	gomock.InOrder(
-		provider.EXPECT().GetMicroVM("sb-resize").Return(vm),
-		vm.EXPECT().UpdateResources(ctx, firecracker.UpdateResourcesInput{
-			VCPUCount: 4,
-			MemoryMiB: 2048,
-		}).Return(nil),
-	)
-
-	require.NoError(t, r.Reconcile(ctx, sandbox))
-	assert.Equal(t, uint32(4), sandbox.GetResources().GetVcpuCount(),
-		"sandbox.Resources must mirror the applied intent")
-	assert.Equal(t, uint64(2048), sandbox.GetResources().GetMemoryMib())
-	assert.Nil(t, sandbox.Intent)
-}
-
-func TestReconcile_UpdateResourcesNoOpWhenIntentMatchesSandbox(t *testing.T) {
-	// Event redelivered after a previous successful update: Intent.Resources
-	// matches sandbox.Resources, so the reconciler must clear the intent
-	// without touching firecracker.
-	r, provider, _, _, _, _ := newReconcilerFixture(t)
-	ctx := context.Background()
-
-	sandbox := fixtureSandbox("sb-resize-noop")
-	sandbox.Status.Phase = cpv1.SandboxStatus_PHASE_RUNNING
-	sandbox.Resources = &cpv1.Resources{VcpuCount: 4, MemoryMib: 2048}
-	sandbox.Intent = &cpv1.Intent{
-		Resources: &cpv1.Resources{VcpuCount: 4, MemoryMib: 2048},
-	}
-
-	// No GetMicroVM, no UpdateResources — the fast path skips the lookup.
-	provider.EXPECT().GetMicroVM(gomock.Any()).Times(0)
-
-	require.NoError(t, r.Reconcile(ctx, sandbox))
-	assert.Nil(t, sandbox.Intent)
-	assert.Equal(t, uint32(4), sandbox.GetResources().GetVcpuCount())
-	assert.Equal(t, uint64(2048), sandbox.GetResources().GetMemoryMib())
-}
-
-func TestReconcile_UpdateResourcesFailureKeepsIntent(t *testing.T) {
-	r, provider, _, vm, _, _ := newReconcilerFixture(t)
-	ctx := context.Background()
-
-	sandbox := fixtureSandbox("sb-update-fail")
-	sandbox.Status.Phase = cpv1.SandboxStatus_PHASE_RUNNING
-	sandbox.Intent = &cpv1.Intent{
-		Resources: &cpv1.Resources{VcpuCount: 8, MemoryMib: 4096},
-	}
-
-	apiErr := errors.New("firecracker rejected resize")
-	gomock.InOrder(
-		provider.EXPECT().GetMicroVM("sb-update-fail").Return(vm),
-		vm.EXPECT().UpdateResources(ctx, gomock.Any()).Return(apiErr),
-	)
-
-	err := r.Reconcile(ctx, sandbox)
-	require.ErrorIs(t, err, apiErr)
-	assert.Equal(t, uint32(2), sandbox.GetResources().GetVcpuCount(),
-		"sandbox.Resources must not be mutated when UpdateResources fails")
-	require.NotNil(t, sandbox.Intent)
-	require.NotNil(t, sandbox.GetIntent().GetResources(),
-		"Intent.Resources must be preserved for retry")
-}
-
 // TestReconcile_SnapshotRestoresRunningPhase exercises the
 // happy path from a sandbox that was running when the snapshot
 // request arrived. The api-server stamps Status.Phase = SNAPSHOTTING
@@ -733,6 +622,15 @@ func TestReconcile_SnapshotRestoresRunningPhase(t *testing.T) {
 				assert.Equal(t, "before-deploy", req.GetSnapshot().GetMetadata().GetDescription(),
 					"description from Intent.StartSnapshot must be forwarded to the api-server")
 				assert.Equal(t, "sb-snap", req.GetSnapshot().GetSandbox().GetId())
+				// The Snapshot row must carry the source sandbox's
+				// resources so the api-server can stamp them onto any
+				// sandbox later restored from this snapshot.
+				assert.Equal(t, sandbox.GetResources().GetVcpuCount(),
+					req.GetSnapshot().GetResources().GetVcpuCount(),
+					"Snapshot.Resources.VcpuCount must mirror the source sandbox")
+				assert.Equal(t, sandbox.GetResources().GetMemoryMib(),
+					req.GetSnapshot().GetResources().GetMemoryMib(),
+					"Snapshot.Resources.MemoryMib must mirror the source sandbox")
 				return &cpv1.CreateSnapshotResponse{Snapshot: req.GetSnapshot()}, nil
 			}),
 	)
@@ -823,51 +721,39 @@ func TestReconcile_SnapshotFailsWhenApiServerRegistrationFails(t *testing.T) {
 		"LastSnapshot must NOT be stamped when api-server registration fails")
 }
 
-// TestReconcile_CombinedIntentsAreAppliedInOrderAndCleared covers a
-// boot + resize fanout in a single reconcile. StartSnapshot is no
-// longer combinable with a phase transition — the api-server rejects
-// StartSnapshot unless saved Status.Phase ∈ {RUNNING, PAUSED}, and
-// the snapshot itself flows through PHASE_SNAPSHOTTING as its own
-// transitional state.
-func TestReconcile_CombinedIntentsAreAppliedInOrderAndCleared(t *testing.T) {
-	r, provider, driver, vm, _, _ := newReconcilerFixture(t)
+// TestReconcile_BootIntentRunsCreateMicroVMAndClearsIntent covers a
+// fresh boot from intent in a single reconcile pass. With live resize
+// removed, this is the simple boot-and-converge case.
+func TestReconcile_BootIntentRunsCreateMicroVMAndClearsIntent(t *testing.T) {
+	r, provider, driver, _, _, _ := newReconcilerFixture(t)
 	ctx := context.Background()
 
 	sandbox := fixtureSandbox("sb-combined")
-	sandbox.Intent = &cpv1.Intent{
-		Phase:     cpv1.SandboxStatus_PHASE_RUNNING,
-		Resources: &cpv1.Resources{VcpuCount: 4, MemoryMib: 4096},
-	}
+	sandbox.Intent = &cpv1.Intent{Phase: cpv1.SandboxStatus_PHASE_RUNNING}
 
 	nsh := fixtureNamespaceHandle(0)
 	gomock.InOrder(
-		// Boot.
 		provider.EXPECT().GetMicroVM("sb-combined").Return(nil),
 		provider.EXPECT().NextNetNSIndex().Return(0),
 		driver.EXPECT().Provision(0).Return(nsh, nil),
 		provider.EXPECT().CreateMicroVM(ctx, gomock.Any()).Return(nil, nil),
-		// Resize.
-		provider.EXPECT().GetMicroVM("sb-combined").Return(vm),
-		vm.EXPECT().UpdateResources(ctx, firecracker.UpdateResourcesInput{
-			VCPUCount: 4, MemoryMiB: 4096,
-		}).Return(nil),
 	)
 
 	require.NoError(t, r.Reconcile(ctx, sandbox))
 	assert.Equal(t, cpv1.SandboxStatus_PHASE_RUNNING, sandbox.GetStatus().GetPhase())
-	assert.Equal(t, uint32(4), sandbox.GetResources().GetVcpuCount())
 	assert.Nil(t, sandbox.Intent)
 }
 
-func TestReconcile_PhaseFailureSkipsResources(t *testing.T) {
+// TestReconcile_PhaseFailureReturnsError pins that a boot failure
+// surfaces up to the caller (which is responsible for marking the
+// sandbox PHASE_FAILED). The network is rolled back so a retry on the
+// next reconcile starts from a clean slate.
+func TestReconcile_PhaseFailureReturnsError(t *testing.T) {
 	r, provider, driver, _, _, _ := newReconcilerFixture(t)
 	ctx := context.Background()
 
 	sandbox := fixtureSandbox("sb-phase-bad")
-	sandbox.Intent = &cpv1.Intent{
-		Phase:     cpv1.SandboxStatus_PHASE_RUNNING,
-		Resources: &cpv1.Resources{VcpuCount: 4, MemoryMib: 4096},
-	}
+	sandbox.Intent = &cpv1.Intent{Phase: cpv1.SandboxStatus_PHASE_RUNNING}
 
 	bootErr := errors.New("kernel panic during boot")
 	gomock.InOrder(
@@ -882,7 +768,6 @@ func TestReconcile_PhaseFailureSkipsResources(t *testing.T) {
 	require.ErrorIs(t, err, bootErr)
 	require.NotNil(t, sandbox.Intent, "Intent stays set so the retry resumes")
 	assert.Equal(t, cpv1.SandboxStatus_PHASE_RUNNING, sandbox.GetIntent().GetPhase())
-	require.NotNil(t, sandbox.GetIntent().GetResources())
 }
 
 func TestReconcile_UnsupportedPhaseReturnsError(t *testing.T) {

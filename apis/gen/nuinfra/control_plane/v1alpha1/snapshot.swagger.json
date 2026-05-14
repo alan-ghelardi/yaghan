@@ -261,6 +261,20 @@
       },
       "description": "Response message containing a page of snapshots."
     },
+    "v1alpha1Resources": {
+      "type": "object",
+      "properties": {
+        "vcpuCount": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "memoryMib": {
+          "type": "string",
+          "format": "uint64",
+          "description": "Memory in MiB. Lower bound matches the smallest useful\nFirecracker VM; upper bound leaves room for 128 GiB sandboxes."
+        }
+      }
+    },
     "v1alpha1SandboxRef": {
       "type": "object",
       "properties": {
@@ -277,6 +291,10 @@
         },
         "sandbox": {
           "$ref": "#/definitions/v1alpha1SandboxRef"
+        },
+        "resources": {
+          "$ref": "#/definitions/v1alpha1Resources",
+          "description": "Resources captures the vCPU / memory configuration the source\nsandbox was running with at snapshot time. Firecracker bakes these\ninto the snapshot's state file and forbids changing them on\nrestore (PATCH /machine-config is pre-boot only), so the api-server\nstamps this onto any sandbox derived from the snapshot. Required so\na future scheduler can treat sandbox.Resources as the single source\nof truth without branching on how the sandbox was created."
         }
       }
     },

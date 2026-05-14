@@ -193,8 +193,6 @@ type Config struct {
 type MicroVM interface {
 	Describe(ctx context.Context) (*MicroVMInfo, error)
 
-	UpdateResources(ctx context.Context, input UpdateResourcesInput) error
-
 	CreateSnapshot(ctx context.Context) (*snapshot.LocalReference, error)
 
 	Pause(ctx context.Context) error
@@ -214,12 +212,6 @@ type MicroVM interface {
 	// VM has no vsock device configured or when the initial CONNECT
 	// handshake fails.
 	VSock() (transport.Transport, error)
-}
-
-type UpdateResourcesInput struct {
-	VCPUCount int64
-
-	MemoryMiB int64
 }
 
 type MicroVMInfo struct {

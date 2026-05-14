@@ -94,78 +94,82 @@ public final class SnapshotProto extends com.google.protobuf.GeneratedFile {
       "t.proto\022\036nuinfra.control_plane.v1alpha1\032" +
       "\033buf/validate/validate.proto\032\034google/api" +
       "/annotations.proto\032\037google/protobuf/time" +
-      "stamp.proto\"\252\001\n\010Snapshot\022P\n\010metadata\030\001 \001" +
-      "(\0132,.nuinfra.control_plane.v1alpha1.Snap" +
-      "shotMetaB\006\272H\003\310\001\001R\010metadata\022L\n\007sandbox\030\002 " +
-      "\001(\0132*.nuinfra.control_plane.v1alpha1.San" +
-      "dboxRefB\006\272H\003\310\001\001R\007sandbox\"\325\001\n\014SnapshotMet" +
-      "a\022\026\n\002id\030\001 \001(\tB\006\272H\003\310\001\001R\002id\022F\n\tnamespace\030\002" +
-      " \001(\tB(\272H%r 2\036^[a-z][a-z0-9-]{0,61}[a-z0-" +
-      "9]$\310\001\001R\tnamespace\022*\n\013description\030\003 \001(\tB\010" +
-      "\272H\005r\003\030\200\002R\013description\0229\n\ncreated_at\030\004 \001(" +
-      "\0132\032.google.protobuf.TimestampR\tcreatedAt" +
-      "\"$\n\nSandboxRef\022\026\n\002id\030\001 \001(\tB\006\272H\003\310\001\001R\002id\"e" +
-      "\n\025CreateSnapshotRequest\022L\n\010snapshot\030\001 \001(" +
-      "\0132(.nuinfra.control_plane.v1alpha1.Snaps" +
-      "hotB\006\272H\003\310\001\001R\010snapshot\"^\n\026CreateSnapshotR" +
-      "esponse\022D\n\010snapshot\030\001 \001(\0132(.nuinfra.cont" +
-      "rol_plane.v1alpha1.SnapshotR\010snapshot\"=\n" +
-      "\022GetSnapshotRequest\022\'\n\013snapshot_id\030\001 \001(\t" +
-      "B\006\272H\003\310\001\001R\nsnapshotId\"[\n\023GetSnapshotRespo" +
-      "nse\022D\n\010snapshot\030\001 \001(\0132(.nuinfra.control_" +
-      "plane.v1alpha1.SnapshotR\010snapshot\"\355\006\n\024Li" +
-      "stSnapshotsRequest\022\034\n\tnamespace\030\001 \001(\tR\tn" +
-      "amespace\022\035\n\nsandbox_id\030\002 \001(\tR\tsandboxId\022" +
-      "-\n\022continuation_token\030\003 \001(\tR\021continuatio" +
-      "nToken\022\'\n\tpage_size\030\004 \001(\005B\n\272H\007\032\005\030\350\007(\000R\010p" +
-      "ageSize\022Y\n\nsort_order\030\005 \001(\0162:.nuinfra.co" +
-      "ntrol_plane.v1alpha1.ListSnapshotsReques" +
-      "t.OrderR\tsortOrder\"N\n\005Order\022\025\n\021ORDER_UNS" +
-      "PECIFIED\020\000\022\026\n\022ORDER_NEWEST_FIRST\020\001\022\026\n\022OR" +
-      "DER_OLDEST_FIRST\020\002:\224\004\272H\220\004\032\244\001\n$ListSnapsh" +
-      "otsRequest.required_fields\022OAt least one" +
-      " of `namespace` or `sandbox_id` must be " +
-      "provided to list snapshots.\032+has(this.na" +
-      "mespace) || has(this.sandbox_id)\032\245\001\n.Lis" +
-      "tSnapshotsRequest.mutually_exclusive_fie" +
-      "lds\022COnly one of the fields `namespace` " +
-      "or `sandbox_id` may be specified\032.!(has(" +
-      "this.namespace) && has(this.sandbox_id))" +
-      "\032\276\001\n&ListSnapshotsRequest.namespace_patt" +
-      "ern\022Bnamespace must match ^[a-z][a-z0-9-" +
-      "]{0,61}[a-z0-9]$ when provided.\032Pthis.na" +
-      "mespace == \'\' || this.namespace.matches(" +
-      "\'^[a-z][a-z0-9-]{0,61}[a-z0-9]$\')\"\216\001\n\025Li" +
-      "stSnapshotsResponse\022F\n\tsnapshots\030\001 \003(\0132(" +
-      ".nuinfra.control_plane.v1alpha1.Snapshot" +
-      "R\tsnapshots\022-\n\022continuation_token\030\002 \001(\tR" +
-      "\021continuationToken\"@\n\025DeleteSnapshotRequ" +
-      "est\022\'\n\013snapshot_id\030\001 \001(\tB\006\272H\003\310\001\001R\nsnapsh" +
-      "otId\"\030\n\026DeleteSnapshotResponse2\240\005\n\017Snaps" +
-      "hotService\022\237\001\n\016CreateSnapshot\0225.nuinfra." +
-      "control_plane.v1alpha1.CreateSnapshotReq" +
-      "uest\0326.nuinfra.control_plane.v1alpha1.Cr" +
-      "eateSnapshotResponse\"\036\202\323\344\223\002\030\"\023/v1alpha1/" +
-      "snapshots:\001*\022\241\001\n\013GetSnapshot\0222.nuinfra.c" +
-      "ontrol_plane.v1alpha1.GetSnapshotRequest" +
-      "\0323.nuinfra.control_plane.v1alpha1.GetSna" +
-      "pshotResponse\")\202\323\344\223\002#\022!/v1alpha1/snapsho" +
-      "ts/{snapshot_id}\022\231\001\n\rListSnapshots\0224.nui" +
+      "stamp.proto\032,nuinfra/control_plane/v1alp" +
+      "ha1/sandbox.proto\"\373\001\n\010Snapshot\022P\n\010metada" +
+      "ta\030\001 \001(\0132,.nuinfra.control_plane.v1alpha" +
+      "1.SnapshotMetaB\006\272H\003\310\001\001R\010metadata\022L\n\007sand" +
+      "box\030\002 \001(\0132*.nuinfra.control_plane.v1alph" +
+      "a1.SandboxRefB\006\272H\003\310\001\001R\007sandbox\022O\n\tresour" +
+      "ces\030\003 \001(\0132).nuinfra.control_plane.v1alph" +
+      "a1.ResourcesB\006\272H\003\310\001\001R\tresources\"\325\001\n\014Snap" +
+      "shotMeta\022\026\n\002id\030\001 \001(\tB\006\272H\003\310\001\001R\002id\022F\n\tname" +
+      "space\030\002 \001(\tB(\272H%r 2\036^[a-z][a-z0-9-]{0,61" +
+      "}[a-z0-9]$\310\001\001R\tnamespace\022*\n\013description\030" +
+      "\003 \001(\tB\010\272H\005r\003\030\200\002R\013description\0229\n\ncreated_" +
+      "at\030\004 \001(\0132\032.google.protobuf.TimestampR\tcr" +
+      "eatedAt\"$\n\nSandboxRef\022\026\n\002id\030\001 \001(\tB\006\272H\003\310\001" +
+      "\001R\002id\"e\n\025CreateSnapshotRequest\022L\n\010snapsh" +
+      "ot\030\001 \001(\0132(.nuinfra.control_plane.v1alpha" +
+      "1.SnapshotB\006\272H\003\310\001\001R\010snapshot\"^\n\026CreateSn" +
+      "apshotResponse\022D\n\010snapshot\030\001 \001(\0132(.nuinf" +
+      "ra.control_plane.v1alpha1.SnapshotR\010snap" +
+      "shot\"=\n\022GetSnapshotRequest\022\'\n\013snapshot_i" +
+      "d\030\001 \001(\tB\006\272H\003\310\001\001R\nsnapshotId\"[\n\023GetSnapsh" +
+      "otResponse\022D\n\010snapshot\030\001 \001(\0132(.nuinfra.c" +
+      "ontrol_plane.v1alpha1.SnapshotR\010snapshot" +
+      "\"\355\006\n\024ListSnapshotsRequest\022\034\n\tnamespace\030\001" +
+      " \001(\tR\tnamespace\022\035\n\nsandbox_id\030\002 \001(\tR\tsan" +
+      "dboxId\022-\n\022continuation_token\030\003 \001(\tR\021cont" +
+      "inuationToken\022\'\n\tpage_size\030\004 \001(\005B\n\272H\007\032\005\030" +
+      "\350\007(\000R\010pageSize\022Y\n\nsort_order\030\005 \001(\0162:.nui" +
       "nfra.control_plane.v1alpha1.ListSnapshot" +
-      "sRequest\0325.nuinfra.control_plane.v1alpha" +
-      "1.ListSnapshotsResponse\"\033\202\323\344\223\002\025\022\023/v1alph" +
-      "a1/snapshots\022\252\001\n\016DeleteSnapshot\0225.nuinfr" +
-      "a.control_plane.v1alpha1.DeleteSnapshotR" +
-      "equest\0326.nuinfra.control_plane.v1alpha1." +
-      "DeleteSnapshotResponse\")\202\323\344\223\002#*!/v1alpha" +
-      "1/snapshots/{snapshot_id}B\233\002\n\"com.nuinfr" +
-      "a.control_plane.v1alpha1B\rSnapshotProtoP" +
-      "\001ZPgolang.nuinfra.net/apis/gen/nuinfra/c" +
-      "ontrol_plane/v1alpha1;control_planev1alp" +
-      "ha1\242\002\003NCX\252\002\035Nuinfra.ControlPlane.V1alpha" +
-      "1\312\002\035Nuinfra\\ControlPlane\\V1alpha1\342\002)Nuin" +
-      "fra\\ControlPlane\\V1alpha1\\GPBMetadata\352\002\037" +
-      "Nuinfra::ControlPlane::V1alpha1b\006proto3"
+      "sRequest.OrderR\tsortOrder\"N\n\005Order\022\025\n\021OR" +
+      "DER_UNSPECIFIED\020\000\022\026\n\022ORDER_NEWEST_FIRST\020" +
+      "\001\022\026\n\022ORDER_OLDEST_FIRST\020\002:\224\004\272H\220\004\032\244\001\n$Lis" +
+      "tSnapshotsRequest.required_fields\022OAt le" +
+      "ast one of `namespace` or `sandbox_id` m" +
+      "ust be provided to list snapshots.\032+has(" +
+      "this.namespace) || has(this.sandbox_id)\032" +
+      "\245\001\n.ListSnapshotsRequest.mutually_exclus" +
+      "ive_fields\022COnly one of the fields `name" +
+      "space` or `sandbox_id` may be specified\032" +
+      ".!(has(this.namespace) && has(this.sandb" +
+      "ox_id))\032\276\001\n&ListSnapshotsRequest.namespa" +
+      "ce_pattern\022Bnamespace must match ^[a-z][" +
+      "a-z0-9-]{0,61}[a-z0-9]$ when provided.\032P" +
+      "this.namespace == \'\' || this.namespace.m" +
+      "atches(\'^[a-z][a-z0-9-]{0,61}[a-z0-9]$\')" +
+      "\"\216\001\n\025ListSnapshotsResponse\022F\n\tsnapshots\030" +
+      "\001 \003(\0132(.nuinfra.control_plane.v1alpha1.S" +
+      "napshotR\tsnapshots\022-\n\022continuation_token" +
+      "\030\002 \001(\tR\021continuationToken\"@\n\025DeleteSnaps" +
+      "hotRequest\022\'\n\013snapshot_id\030\001 \001(\tB\006\272H\003\310\001\001R" +
+      "\nsnapshotId\"\030\n\026DeleteSnapshotResponse2\240\005" +
+      "\n\017SnapshotService\022\237\001\n\016CreateSnapshot\0225.n" +
+      "uinfra.control_plane.v1alpha1.CreateSnap" +
+      "shotRequest\0326.nuinfra.control_plane.v1al" +
+      "pha1.CreateSnapshotResponse\"\036\202\323\344\223\002\030\"\023/v1" +
+      "alpha1/snapshots:\001*\022\241\001\n\013GetSnapshot\0222.nu" +
+      "infra.control_plane.v1alpha1.GetSnapshot" +
+      "Request\0323.nuinfra.control_plane.v1alpha1" +
+      ".GetSnapshotResponse\")\202\323\344\223\002#\022!/v1alpha1/" +
+      "snapshots/{snapshot_id}\022\231\001\n\rListSnapshot" +
+      "s\0224.nuinfra.control_plane.v1alpha1.ListS" +
+      "napshotsRequest\0325.nuinfra.control_plane." +
+      "v1alpha1.ListSnapshotsResponse\"\033\202\323\344\223\002\025\022\023" +
+      "/v1alpha1/snapshots\022\252\001\n\016DeleteSnapshot\0225" +
+      ".nuinfra.control_plane.v1alpha1.DeleteSn" +
+      "apshotRequest\0326.nuinfra.control_plane.v1" +
+      "alpha1.DeleteSnapshotResponse\")\202\323\344\223\002#*!/" +
+      "v1alpha1/snapshots/{snapshot_id}B\233\002\n\"com" +
+      ".nuinfra.control_plane.v1alpha1B\rSnapsho" +
+      "tProtoP\001ZPgolang.nuinfra.net/apis/gen/nu" +
+      "infra/control_plane/v1alpha1;control_pla" +
+      "nev1alpha1\242\002\003NCX\252\002\035Nuinfra.ControlPlane." +
+      "V1alpha1\312\002\035Nuinfra\\ControlPlane\\V1alpha1" +
+      "\342\002)Nuinfra\\ControlPlane\\V1alpha1\\GPBMeta" +
+      "data\352\002\037Nuinfra::ControlPlane::V1alpha1b\006" +
+      "proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -173,13 +177,14 @@ public final class SnapshotProto extends com.google.protobuf.GeneratedFile {
           com.buf.validate.ValidateProto.getDescriptor(),
           com.google.api.AnnotationsProto.getDescriptor(),
           com.google.protobuf.TimestampProto.getDescriptor(),
+          com.nuinfra.control_plane.v1alpha1.SandboxProto.getDescriptor(),
         });
     internal_static_nuinfra_control_plane_v1alpha1_Snapshot_descriptor =
       getDescriptor().getMessageType(0);
     internal_static_nuinfra_control_plane_v1alpha1_Snapshot_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_nuinfra_control_plane_v1alpha1_Snapshot_descriptor,
-        new java.lang.String[] { "Metadata", "Sandbox", });
+        new java.lang.String[] { "Metadata", "Sandbox", "Resources", });
     internal_static_nuinfra_control_plane_v1alpha1_SnapshotMeta_descriptor =
       getDescriptor().getMessageType(1);
     internal_static_nuinfra_control_plane_v1alpha1_SnapshotMeta_fieldAccessorTable = new
@@ -244,6 +249,7 @@ public final class SnapshotProto extends com.google.protobuf.GeneratedFile {
     com.buf.validate.ValidateProto.getDescriptor();
     com.google.api.AnnotationsProto.getDescriptor();
     com.google.protobuf.TimestampProto.getDescriptor();
+    com.nuinfra.control_plane.v1alpha1.SandboxProto.getDescriptor();
     com.google.protobuf.ExtensionRegistry registry =
         com.google.protobuf.ExtensionRegistry.newInstance();
     registry.add(com.buf.validate.ValidateProto.field);

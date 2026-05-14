@@ -116,9 +116,32 @@ func run(ctx *cli.Context, cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	// Snapshot-sourced sandboxes inherit vCPU and memory from the
+	// snapshot: Firecracker bakes them into the snapshot state and
+	// forbids changing them on restore. Refuse the request early when
+	// the user explicitly passed -v / -m alongside --source snapshot,
+	// and otherwise omit Resources from the request so the api-server
+	// stamps the snapshot's values onto the sandbox.
+	vcpuSet := cmd.Flags().Changed(flagVCPU)
+	memorySet := cmd.Flags().Changed(flagMemory)
+	isSnapshotSource := source.GetSnapshotId() != ""
+	if isSnapshotSource && (vcpuSet || memorySet) {
+		return fmt.Errorf(
+			"--%s/--%s cannot be set when --%s is a snapshot: the snapshot's vCPU and memory are immutable on restore",
+			flagVCPU, flagMemory, flagSource)
+	}
+
+	resources := &controlplanev1alpha1.Resources{
+		VcpuCount: uint32(vcpu),
+		MemoryMib: memoryMiB,
+	}
+	if isSnapshotSource {
+		resources = nil
+	}
+
 	fmt.Fprintf(ctx.IOStreams.Stdout,
-		"Creating sandbox %q in namespace %q (vcpu=%d, memory=%dMiB%s)...\n",
-		id, namespace, vcpu, memoryMiB, sourceStatusSuffix(sourceStr))
+		"Creating sandbox %q in namespace %q (%s%s)...\n",
+		id, namespace, resourceStatusFragment(resources, vcpu, memoryMiB), sourceStatusSuffix(sourceStr))
 
 	resp, err := ctx.ClientSet.SandboxService.CreateSandbox(cmd.Context(),
 		&controlplanev1alpha1.CreateSandboxRequest{
@@ -128,10 +151,7 @@ func run(ctx *cli.Context, cmd *cobra.Command, args []string) error {
 					Namespace: namespace,
 					Source:    source,
 				},
-				Resources: &controlplanev1alpha1.Resources{
-					VcpuCount: uint32(vcpu),
-					MemoryMib: memoryMiB,
-				},
+				Resources: resources,
 			},
 		})
 	if err != nil {
@@ -143,6 +163,18 @@ func run(ctx *cli.Context, cmd *cobra.Command, args []string) error {
 		resp.GetSandbox().GetMetadata().GetId(),
 		resp.GetSandbox().GetMetadata().GetId())
 	return nil
+}
+
+// resourceStatusFragment renders the resource portion of the "Creating
+// sandbox..." status line. For snapshot-sourced sandboxes (where the
+// CLI does not attach Resources to the request) it surfaces the
+// inherited intent rather than the flag defaults, so the user sees that
+// vCPU/memory will be supplied by the snapshot.
+func resourceStatusFragment(resources *controlplanev1alpha1.Resources, vcpu int32, memoryMiB uint64) string {
+	if resources == nil {
+		return "resources inherited from snapshot"
+	}
+	return fmt.Sprintf("vcpu=%d, memory=%dMiB", vcpu, memoryMiB)
 }
 
 // resolveID returns args[0] when supplied; otherwise generates a UUID.

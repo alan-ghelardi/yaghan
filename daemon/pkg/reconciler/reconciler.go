@@ -19,7 +19,6 @@ import (
 	"golang.nuinfra.net/daemon/pkg/network"
 	"golang.nuinfra.net/daemon/pkg/snapshot"
 	"golang.nuinfra.net/firecracker-client/models"
-	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -59,16 +58,15 @@ func New(
 	}
 }
 
-// Reconcile converges sandbox towards its Intent in three steps —
-// state transition, resource update, snapshot — applied in order. Each
-// step that succeeds clears the corresponding intent field and, where
-// applicable, mirrors the achieved state into Status. Once every step
-// has run successfully the entire Intent is set to nil.
+// Reconcile converges sandbox towards its Intent. The only remaining
+// intent step is the phase transition (boot / pause / resume / delete /
+// snapshot); the snapshot sub-step is dispatched from inside
+// reconcilePhase via the SNAPSHOTTING status. Once it runs successfully
+// the entire Intent is cleared.
 //
-// A nil Intent is treated as a no-op. The first step that fails
-// returns its error immediately; subsequent steps are not attempted,
-// and intent fields belonging to steps that already succeeded stay
-// cleared so a retry resumes from where the previous attempt left off.
+// A nil Intent is treated as a no-op. A failed step returns its error
+// immediately so the controller can mark the sandbox failed and surface
+// the message to the caller.
 //
 // All operations are designed to be idempotent.
 func (r *Reconciler) Reconcile(ctx context.Context, sandbox *controlplanev1alpha1.Sandbox) error {
@@ -77,9 +75,6 @@ func (r *Reconciler) Reconcile(ctx context.Context, sandbox *controlplanev1alpha
 	}
 
 	if err := r.reconcilePhase(ctx, sandbox); err != nil {
-		return err
-	}
-	if err := r.reconcileResources(ctx, sandbox); err != nil {
 		return err
 	}
 
@@ -234,9 +229,8 @@ func (r *Reconciler) bootFresh(ctx context.Context, sandbox *controlplanev1alpha
 // bootFromSnapshot provisions a MicroVM by restoring the snapshot
 // referenced by snapshotID. The order of operations is:
 //
-//  1. Fast path — if the provider already has the VM indexed, only run
-//     resource alignment so a retry that crashed between LoadSnapshot
-//     and UpdateResources still converges.
+//  1. Fast path — if the provider already has the VM indexed, the
+//     restore is already done; return immediately.
 //  2. Reject early when the daemon has no snapshot store configured;
 //     the sandbox is unbootable on this host.
 //  3. Download the snapshot artifacts into the shared cache via
@@ -248,9 +242,12 @@ func (r *Reconciler) bootFresh(ctx context.Context, sandbox *controlplanev1alpha
 //     the cached files into the new chroot, starts firecracker
 //     without --config-file, issues the load RPC with resume_vm=true,
 //     and waits for Running. Network is rolled back on failure.
-//  6. Align resources — the snapshot may carry different vCPU / memory
-//     than this sandbox spec wants; UpdateResources only fires when the
-//     saved values actually differ.
+//
+// Resource alignment is not a step here: the api-server enforces that
+// snapshot-sourced sandboxes inherit the snapshot's resources, so by
+// the time the reconcile runs sandbox.Resources already matches what
+// the snapshot will boot with. Firecracker's PATCH /machine-config is
+// pre-boot only — there is no in-band resize path on restore anyway.
 //
 // Known limitation: today's snapshot artifact is mem+state only. The
 // drives the snapshot's state file references must still exist in the
@@ -261,8 +258,8 @@ func (r *Reconciler) bootFresh(ctx context.Context, sandbox *controlplanev1alpha
 // drive files is a separate iteration.
 func (r *Reconciler) bootFromSnapshot(ctx context.Context, sandbox *controlplanev1alpha1.Sandbox, snapshotID string) error {
 	id := sandbox.GetMetadata().GetId()
-	if vm := r.provider.GetMicroVM(id); vm != nil {
-		return r.alignResources(ctx, vm, sandbox)
+	if r.provider.GetMicroVM(id) != nil {
+		return nil
 	}
 
 	if r.snapshotStore == nil {
@@ -284,43 +281,9 @@ func (r *Reconciler) bootFromSnapshot(ctx context.Context, sandbox *controlplane
 	}
 
 	input := r.buildLoadSnapshotInput(sandbox, nsh, localRef)
-	vm, err := r.provider.LoadSnapshot(ctx, input)
-	if err != nil {
+	if _, err := r.provider.LoadSnapshot(ctx, input); err != nil {
 		_ = r.driver.Deprovision(index)
 		return fmt.Errorf("restore microvm from snapshot %q: %w", snapshotID, err)
-	}
-
-	if err := r.alignResources(ctx, vm, sandbox); err != nil {
-		// The VM is up; leave it in place so the next reconcile pass
-		// re-attempts alignment without re-downloading or
-		// re-provisioning. The "VM already exists" fast path above is
-		// what makes that retry cheap.
-		return err
-	}
-	return nil
-}
-
-// alignResources reconciles a running MicroVM's vCPU and memory with
-// the sandbox spec. After a snapshot restore the VM resumes with
-// whatever resources the snapshot carried; this helper makes
-// sandbox.Resources authoritative. No-op when the post-restore values
-// already match — saves a firecracker round-trip and avoids spurious
-// resize errors when the snapshot was taken with the same resources.
-func (r *Reconciler) alignResources(ctx context.Context, vm firecracker.MicroVM, sandbox *controlplanev1alpha1.Sandbox) error {
-	target := sandbox.GetResources()
-	info, err := vm.Describe(ctx)
-	if err != nil {
-		return fmt.Errorf("describe microvm for resource alignment: %w", err)
-	}
-	if info.VCPUCount == int64(target.GetVcpuCount()) &&
-		info.MemoryMiB == int64(target.GetMemoryMib()) {
-		return nil
-	}
-	if err := vm.UpdateResources(ctx, firecracker.UpdateResourcesInput{
-		VCPUCount: int64(target.GetVcpuCount()),
-		MemoryMiB: int64(target.GetMemoryMib()),
-	}); err != nil {
-		return fmt.Errorf("align resources after snapshot load: %w", err)
 	}
 	return nil
 }
@@ -381,40 +344,6 @@ func (r *Reconciler) delete(ctx context.Context, sandbox *controlplanev1alpha1.S
 	return nil
 }
 
-// reconcileResources applies an in-place vCPU/memory update. No-op
-// when Intent.Resources is unset, and a free fast-path no-op when the
-// intent matches the sandbox's last-applied resources — that case
-// shows up when an event is redelivered after a successful update,
-// and there's no point round-tripping firecracker just to set the
-// values it already has.
-func (r *Reconciler) reconcileResources(ctx context.Context, sandbox *controlplanev1alpha1.Sandbox) error {
-	intent := sandbox.GetIntent()
-	if intent.GetResources() == nil {
-		return nil
-	}
-
-	if proto.Equal(intent.GetResources(), sandbox.GetResources()) {
-		intent.Resources = nil
-		return nil
-	}
-
-	vm, err := r.lookup(sandbox.GetMetadata().GetId(), "update resources")
-	if err != nil {
-		return err
-	}
-
-	if err := vm.UpdateResources(ctx, firecracker.UpdateResourcesInput{
-		VCPUCount: int64(intent.Resources.GetVcpuCount()),
-		MemoryMiB: int64(intent.Resources.GetMemoryMib()),
-	}); err != nil {
-		return fmt.Errorf("update resources: %w", err)
-	}
-
-	sandbox.Resources = intent.Resources
-	intent.Resources = nil
-	return nil
-}
-
 // snapshot triggers a CreateSnapshot on the microVM, persists the
 // resulting artifacts to durable storage, and registers a Snapshot row
 // in the api-server. Dispatched from reconcilePhase when
@@ -453,6 +382,13 @@ func (r *Reconciler) snapshot(ctx context.Context, sandbox *controlplanev1alpha1
 				Description: sandbox.GetIntent().GetStartSnapshot().GetDescription(),
 			},
 			Sandbox: &controlplanev1alpha1.SandboxRef{Id: sandbox.GetMetadata().GetId()},
+			// Capture the resources the source sandbox is running with so
+			// the api-server can later stamp them onto any sandbox
+			// derived from this snapshot. Firecracker bakes vCPU /
+			// memory into the snapshot state and forbids changing them
+			// on restore, so this field — not user input — is the
+			// authoritative source of resources for derived sandboxes.
+			Resources: sandbox.GetResources(),
 		}
 		if _, err := r.snapshotClient.CreateSnapshot(ctx,
 			&controlplanev1alpha1.CreateSnapshotRequest{Snapshot: snap}); err != nil {

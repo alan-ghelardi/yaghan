@@ -239,20 +239,6 @@ func (mr *MockMicroVMMockRecorder) Resume(ctx any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Resume", reflect.TypeOf((*MockMicroVM)(nil).Resume), ctx)
 }
 
-// UpdateResources mocks base method.
-func (m *MockMicroVM) UpdateResources(ctx context.Context, input firecracker.UpdateResourcesInput) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateResources", ctx, input)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UpdateResources indicates an expected call of UpdateResources.
-func (mr *MockMicroVMMockRecorder) UpdateResources(ctx, input any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateResources", reflect.TypeOf((*MockMicroVM)(nil).UpdateResources), ctx, input)
-}
-
 // VSock mocks base method.
 func (m *MockMicroVM) VSock() (transport.Transport, error) {
 	m.ctrl.T.Helper()

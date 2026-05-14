@@ -49,9 +49,24 @@ func (a *apiServer) CreateSandbox(ctx context.Context, req *cpv1.CreateSandboxRe
 	// Resolve the optional Metadata.Source discriminator before any
 	// scheduling work: a dangling snapshot reference would otherwise
 	// burn a Schedule call and produce a sandbox row the reconciler
-	// could not satisfy.
-	if err := a.validateSandboxSource(ctx, sb); err != nil {
+	// could not satisfy. For snapshot-sourced sandboxes the lookup
+	// also returns the resolved snapshot so we can stamp its baked-in
+	// resources onto the sandbox below — Firecracker forbids changing
+	// vCPU/memory on restore, so the snapshot's values are the only
+	// ones that will actually take effect on the host.
+	snap, err := a.validateSandboxSource(ctx, sb)
+	if err != nil {
 		return nil, err
+	}
+	if snap != nil {
+		sb.Resources = snap.GetResources()
+	} else if sb.GetResources() == nil {
+		// Fresh sandbox (no source, or a future image source). The
+		// caller must supply resources — there is no other place to
+		// derive them from. Snapshot-sourced sandboxes hit the branch
+		// above and never land here.
+		return nil, status.Error(codes.InvalidArgument,
+			"sandbox.resources is required unless metadata.source carries a snapshot_id")
 	}
 
 	if err := a.scheduler.Schedule(ctx, sb); err != nil {
@@ -190,8 +205,7 @@ func (a *apiServer) DeleteSandbox(ctx context.Context, req *cpv1.DeleteSandboxRe
 // marker) and Intent.Phase is stamped with the saved phase the
 // daemon should restore the sandbox to after the snapshot completes
 // (either RUNNING or PAUSED — these are the two phases the DB
-// state-machine guard accepts as prior). Intent.Resources is left
-// alone if previously set.
+// state-machine guard accepts as prior).
 //
 // Preflight: existence via db.Get → ErrNotFound → codes.NotFound;
 // version conflicts → codes.Aborted; state-machine violations
@@ -220,52 +234,61 @@ func (a *apiServer) StartSnapshot(ctx context.Context, req *cpv1.StartSnapshotRe
 }
 
 // validateSandboxSource checks the optional sandbox.Metadata.Source
-// discriminator against the api-server's view of the world. Returns nil
-// when no source is set or when the reference resolves; otherwise
-// returns a fully-formed gRPC status error suitable for direct
-// propagation to the client.
+// discriminator against the api-server's view of the world.
+//
+// Returns (nil, nil) when no source is set; the snapshot path returns
+// the resolved Snapshot so callers can stamp its inherited fields
+// (notably Resources) onto the sandbox without a second DB round-trip.
 //
 // Branch behaviour:
-//   - source unset OR reference unset → nil (legacy boot-from-Config
-//     path; the reconciler decides what to do with an unsourced
-//     sandbox).
+//   - source unset OR reference unset → (nil, nil) (legacy
+//     boot-from-Config path; the reconciler decides what to do).
 //   - snapshot_id set → snapshotDB.Get; ErrNotFound surfaces as NotFound
 //     with a message that names both the snapshot id and the field that
 //     referenced it. A namespace mismatch surfaces as FailedPrecondition.
-//     Any other DB error is logged and surfaced as Internal.
+//     Resources set on the request alongside a snapshot source is
+//     rejected as InvalidArgument (Firecracker forbids overriding vCPU
+//     or memory on restore). Any other DB error is logged and surfaced
+//     as Internal.
 //   - image_id set → Unimplemented. Image-based sandbox creation is a
 //     future addition; rejecting today prevents callers from persisting
 //     sandboxes the reconciler cannot satisfy.
 //   - unknown oneof variant → Unimplemented, so a future proto bump
 //     without a matching handler fails loud rather than silently
 //     persisting an unsourced row.
-func (a *apiServer) validateSandboxSource(ctx context.Context, sb *cpv1.Sandbox) error {
+func (a *apiServer) validateSandboxSource(ctx context.Context, sb *cpv1.Sandbox) (*cpv1.Snapshot, error) {
 	src := sb.GetMetadata().GetSource()
 	if src == nil || src.GetReference() == nil {
-		return nil
+		return nil, nil
 	}
 	switch ref := src.GetReference().(type) {
 	case *cpv1.SandboxSource_SnapshotId:
 		return a.validateSnapshotSource(ctx, sb, ref.SnapshotId)
 	case *cpv1.SandboxSource_ImageId:
-		return status.Errorf(codes.Unimplemented,
+		return nil, status.Errorf(codes.Unimplemented,
 			"sandbox source image_id %q: image-based sandbox creation is not yet supported",
 			ref.ImageId)
 	default:
-		return status.Errorf(codes.Unimplemented,
+		return nil, status.Errorf(codes.Unimplemented,
 			"sandbox source reference type %T is not supported", ref)
 	}
 }
 
 // validateSnapshotSource resolves a snapshot_id reference: the snapshot
 // must exist and live in the same namespace as the sandbox under
-// construction. Cross-namespace restores are rejected so a snapshot
-// taken in one tenant cannot seed a sandbox in another.
-func (a *apiServer) validateSnapshotSource(ctx context.Context, sb *cpv1.Sandbox, snapshotID string) error {
+// construction, the request must not also try to set resources (the
+// snapshot's are authoritative), and the looked-up snapshot must
+// itself carry resources so the caller has a value to inherit.
+func (a *apiServer) validateSnapshotSource(ctx context.Context, sb *cpv1.Sandbox, snapshotID string) (*cpv1.Snapshot, error) {
+	if sb.GetResources() != nil {
+		return nil, status.Error(codes.InvalidArgument,
+			"sandbox.resources must not be set when metadata.source carries a snapshot_id: "+
+				"Firecracker bakes vCPU and memory into the snapshot and forbids overriding them on restore")
+	}
 	snap, err := a.snapshotDB.Get(ctx, snapshotID)
 	if err != nil {
 		if errors.Is(err, db.ErrNotFound) {
-			return status.Errorf(codes.NotFound,
+			return nil, status.Errorf(codes.NotFound,
 				"snapshot %q referenced by sandbox.metadata.source not found",
 				snapshotID)
 		}
@@ -273,14 +296,19 @@ func (a *apiServer) validateSnapshotSource(ctx context.Context, sb *cpv1.Sandbox
 			zap.String("sandbox.id", sb.GetMetadata().GetId()),
 			zap.String("snapshot.id", snapshotID),
 			zap.Error(err))
-		return status.Error(codes.Internal, "failed to verify sandbox source")
+		return nil, status.Error(codes.Internal, "failed to verify sandbox source")
 	}
 	if snap.GetMetadata().GetNamespace() != sb.GetMetadata().GetNamespace() {
-		return status.Errorf(codes.FailedPrecondition,
+		return nil, status.Errorf(codes.FailedPrecondition,
 			"snapshot %q belongs to namespace %q but sandbox is in namespace %q; cross-namespace restores are not allowed",
 			snapshotID,
 			snap.GetMetadata().GetNamespace(),
 			sb.GetMetadata().GetNamespace())
 	}
-	return nil
+	if snap.GetResources() == nil {
+		return nil, status.Errorf(codes.FailedPrecondition,
+			"snapshot %q predates the resources contract — re-take the snapshot to record its vCPU and memory configuration",
+			snapshotID)
+	}
+	return snap, nil
 }

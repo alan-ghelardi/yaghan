@@ -63,32 +63,6 @@ private static final long serialVersionUID = 0L;
     return result == null ? com.nuinfra.control_plane.v1alpha1.SandboxStatus.Phase.UNRECOGNIZED : result;
   }
 
-  public static final int RESOURCES_FIELD_NUMBER = 2;
-  private com.nuinfra.control_plane.v1alpha1.Resources resources_;
-  /**
-   * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 2 [json_name = "resources"];</code>
-   * @return Whether the resources field is set.
-   */
-  @java.lang.Override
-  public boolean hasResources() {
-    return ((bitField0_ & 0x00000001) != 0);
-  }
-  /**
-   * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 2 [json_name = "resources"];</code>
-   * @return The resources.
-   */
-  @java.lang.Override
-  public com.nuinfra.control_plane.v1alpha1.Resources getResources() {
-    return resources_ == null ? com.nuinfra.control_plane.v1alpha1.Resources.getDefaultInstance() : resources_;
-  }
-  /**
-   * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 2 [json_name = "resources"];</code>
-   */
-  @java.lang.Override
-  public com.nuinfra.control_plane.v1alpha1.ResourcesOrBuilder getResourcesOrBuilder() {
-    return resources_ == null ? com.nuinfra.control_plane.v1alpha1.Resources.getDefaultInstance() : resources_;
-  }
-
   public static final int START_SNAPSHOT_FIELD_NUMBER = 3;
   private com.nuinfra.control_plane.v1alpha1.StartSnapshotInput startSnapshot_;
   /**
@@ -97,7 +71,7 @@ private static final long serialVersionUID = 0L;
    */
   @java.lang.Override
   public boolean hasStartSnapshot() {
-    return ((bitField0_ & 0x00000002) != 0);
+    return ((bitField0_ & 0x00000001) != 0);
   }
   /**
    * <code>.nuinfra.control_plane.v1alpha1.StartSnapshotInput start_snapshot = 3 [json_name = "startSnapshot"];</code>
@@ -133,9 +107,6 @@ private static final long serialVersionUID = 0L;
       output.writeEnum(1, phase_);
     }
     if (((bitField0_ & 0x00000001) != 0)) {
-      output.writeMessage(2, getResources());
-    }
-    if (((bitField0_ & 0x00000002) != 0)) {
       output.writeMessage(3, getStartSnapshot());
     }
     getUnknownFields().writeTo(output);
@@ -152,10 +123,6 @@ private static final long serialVersionUID = 0L;
         .computeEnumSize(1, phase_);
     }
     if (((bitField0_ & 0x00000001) != 0)) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(2, getResources());
-    }
-    if (((bitField0_ & 0x00000002) != 0)) {
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(3, getStartSnapshot());
     }
@@ -175,11 +142,6 @@ private static final long serialVersionUID = 0L;
     com.nuinfra.control_plane.v1alpha1.Intent other = (com.nuinfra.control_plane.v1alpha1.Intent) obj;
 
     if (phase_ != other.phase_) return false;
-    if (hasResources() != other.hasResources()) return false;
-    if (hasResources()) {
-      if (!getResources()
-          .equals(other.getResources())) return false;
-    }
     if (hasStartSnapshot() != other.hasStartSnapshot()) return false;
     if (hasStartSnapshot()) {
       if (!getStartSnapshot()
@@ -198,10 +160,6 @@ private static final long serialVersionUID = 0L;
     hash = (19 * hash) + getDescriptor().hashCode();
     hash = (37 * hash) + PHASE_FIELD_NUMBER;
     hash = (53 * hash) + phase_;
-    if (hasResources()) {
-      hash = (37 * hash) + RESOURCES_FIELD_NUMBER;
-      hash = (53 * hash) + getResources().hashCode();
-    }
     if (hasStartSnapshot()) {
       hash = (37 * hash) + START_SNAPSHOT_FIELD_NUMBER;
       hash = (53 * hash) + getStartSnapshot().hashCode();
@@ -336,7 +294,6 @@ private static final long serialVersionUID = 0L;
     private void maybeForceBuilderInitialization() {
       if (com.google.protobuf.GeneratedMessage
               .alwaysUseFieldBuilders) {
-        internalGetResourcesFieldBuilder();
         internalGetStartSnapshotFieldBuilder();
       }
     }
@@ -345,11 +302,6 @@ private static final long serialVersionUID = 0L;
       super.clear();
       bitField0_ = 0;
       phase_ = 0;
-      resources_ = null;
-      if (resourcesBuilder_ != null) {
-        resourcesBuilder_.dispose();
-        resourcesBuilder_ = null;
-      }
       startSnapshot_ = null;
       if (startSnapshotBuilder_ != null) {
         startSnapshotBuilder_.dispose();
@@ -393,16 +345,10 @@ private static final long serialVersionUID = 0L;
       }
       int to_bitField0_ = 0;
       if (((from_bitField0_ & 0x00000002) != 0)) {
-        result.resources_ = resourcesBuilder_ == null
-            ? resources_
-            : resourcesBuilder_.build();
-        to_bitField0_ |= 0x00000001;
-      }
-      if (((from_bitField0_ & 0x00000004) != 0)) {
         result.startSnapshot_ = startSnapshotBuilder_ == null
             ? startSnapshot_
             : startSnapshotBuilder_.build();
-        to_bitField0_ |= 0x00000002;
+        to_bitField0_ |= 0x00000001;
       }
       result.bitField0_ |= to_bitField0_;
     }
@@ -421,9 +367,6 @@ private static final long serialVersionUID = 0L;
       if (other == com.nuinfra.control_plane.v1alpha1.Intent.getDefaultInstance()) return this;
       if (other.phase_ != 0) {
         setPhaseValue(other.getPhaseValue());
-      }
-      if (other.hasResources()) {
-        mergeResources(other.getResources());
       }
       if (other.hasStartSnapshot()) {
         mergeStartSnapshot(other.getStartSnapshot());
@@ -459,18 +402,11 @@ private static final long serialVersionUID = 0L;
               bitField0_ |= 0x00000001;
               break;
             } // case 8
-            case 18: {
-              input.readMessage(
-                  internalGetResourcesFieldBuilder().getBuilder(),
-                  extensionRegistry);
-              bitField0_ |= 0x00000002;
-              break;
-            } // case 18
             case 26: {
               input.readMessage(
                   internalGetStartSnapshotFieldBuilder().getBuilder(),
                   extensionRegistry);
-              bitField0_ |= 0x00000004;
+              bitField0_ |= 0x00000002;
               break;
             } // case 26
             default: {
@@ -541,127 +477,6 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    private com.nuinfra.control_plane.v1alpha1.Resources resources_;
-    private com.google.protobuf.SingleFieldBuilder<
-        com.nuinfra.control_plane.v1alpha1.Resources, com.nuinfra.control_plane.v1alpha1.Resources.Builder, com.nuinfra.control_plane.v1alpha1.ResourcesOrBuilder> resourcesBuilder_;
-    /**
-     * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 2 [json_name = "resources"];</code>
-     * @return Whether the resources field is set.
-     */
-    public boolean hasResources() {
-      return ((bitField0_ & 0x00000002) != 0);
-    }
-    /**
-     * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 2 [json_name = "resources"];</code>
-     * @return The resources.
-     */
-    public com.nuinfra.control_plane.v1alpha1.Resources getResources() {
-      if (resourcesBuilder_ == null) {
-        return resources_ == null ? com.nuinfra.control_plane.v1alpha1.Resources.getDefaultInstance() : resources_;
-      } else {
-        return resourcesBuilder_.getMessage();
-      }
-    }
-    /**
-     * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 2 [json_name = "resources"];</code>
-     */
-    public Builder setResources(com.nuinfra.control_plane.v1alpha1.Resources value) {
-      if (resourcesBuilder_ == null) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
-        resources_ = value;
-      } else {
-        resourcesBuilder_.setMessage(value);
-      }
-      bitField0_ |= 0x00000002;
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 2 [json_name = "resources"];</code>
-     */
-    public Builder setResources(
-        com.nuinfra.control_plane.v1alpha1.Resources.Builder builderForValue) {
-      if (resourcesBuilder_ == null) {
-        resources_ = builderForValue.build();
-      } else {
-        resourcesBuilder_.setMessage(builderForValue.build());
-      }
-      bitField0_ |= 0x00000002;
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 2 [json_name = "resources"];</code>
-     */
-    public Builder mergeResources(com.nuinfra.control_plane.v1alpha1.Resources value) {
-      if (resourcesBuilder_ == null) {
-        if (((bitField0_ & 0x00000002) != 0) &&
-          resources_ != null &&
-          resources_ != com.nuinfra.control_plane.v1alpha1.Resources.getDefaultInstance()) {
-          getResourcesBuilder().mergeFrom(value);
-        } else {
-          resources_ = value;
-        }
-      } else {
-        resourcesBuilder_.mergeFrom(value);
-      }
-      if (resources_ != null) {
-        bitField0_ |= 0x00000002;
-        onChanged();
-      }
-      return this;
-    }
-    /**
-     * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 2 [json_name = "resources"];</code>
-     */
-    public Builder clearResources() {
-      bitField0_ = (bitField0_ & ~0x00000002);
-      resources_ = null;
-      if (resourcesBuilder_ != null) {
-        resourcesBuilder_.dispose();
-        resourcesBuilder_ = null;
-      }
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 2 [json_name = "resources"];</code>
-     */
-    public com.nuinfra.control_plane.v1alpha1.Resources.Builder getResourcesBuilder() {
-      bitField0_ |= 0x00000002;
-      onChanged();
-      return internalGetResourcesFieldBuilder().getBuilder();
-    }
-    /**
-     * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 2 [json_name = "resources"];</code>
-     */
-    public com.nuinfra.control_plane.v1alpha1.ResourcesOrBuilder getResourcesOrBuilder() {
-      if (resourcesBuilder_ != null) {
-        return resourcesBuilder_.getMessageOrBuilder();
-      } else {
-        return resources_ == null ?
-            com.nuinfra.control_plane.v1alpha1.Resources.getDefaultInstance() : resources_;
-      }
-    }
-    /**
-     * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 2 [json_name = "resources"];</code>
-     */
-    private com.google.protobuf.SingleFieldBuilder<
-        com.nuinfra.control_plane.v1alpha1.Resources, com.nuinfra.control_plane.v1alpha1.Resources.Builder, com.nuinfra.control_plane.v1alpha1.ResourcesOrBuilder> 
-        internalGetResourcesFieldBuilder() {
-      if (resourcesBuilder_ == null) {
-        resourcesBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-            com.nuinfra.control_plane.v1alpha1.Resources, com.nuinfra.control_plane.v1alpha1.Resources.Builder, com.nuinfra.control_plane.v1alpha1.ResourcesOrBuilder>(
-                getResources(),
-                getParentForChildren(),
-                isClean());
-        resources_ = null;
-      }
-      return resourcesBuilder_;
-    }
-
     private com.nuinfra.control_plane.v1alpha1.StartSnapshotInput startSnapshot_;
     private com.google.protobuf.SingleFieldBuilder<
         com.nuinfra.control_plane.v1alpha1.StartSnapshotInput, com.nuinfra.control_plane.v1alpha1.StartSnapshotInput.Builder, com.nuinfra.control_plane.v1alpha1.StartSnapshotInputOrBuilder> startSnapshotBuilder_;
@@ -670,7 +485,7 @@ private static final long serialVersionUID = 0L;
      * @return Whether the startSnapshot field is set.
      */
     public boolean hasStartSnapshot() {
-      return ((bitField0_ & 0x00000004) != 0);
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      * <code>.nuinfra.control_plane.v1alpha1.StartSnapshotInput start_snapshot = 3 [json_name = "startSnapshot"];</code>
@@ -695,7 +510,7 @@ private static final long serialVersionUID = 0L;
       } else {
         startSnapshotBuilder_.setMessage(value);
       }
-      bitField0_ |= 0x00000004;
+      bitField0_ |= 0x00000002;
       onChanged();
       return this;
     }
@@ -709,7 +524,7 @@ private static final long serialVersionUID = 0L;
       } else {
         startSnapshotBuilder_.setMessage(builderForValue.build());
       }
-      bitField0_ |= 0x00000004;
+      bitField0_ |= 0x00000002;
       onChanged();
       return this;
     }
@@ -718,7 +533,7 @@ private static final long serialVersionUID = 0L;
      */
     public Builder mergeStartSnapshot(com.nuinfra.control_plane.v1alpha1.StartSnapshotInput value) {
       if (startSnapshotBuilder_ == null) {
-        if (((bitField0_ & 0x00000004) != 0) &&
+        if (((bitField0_ & 0x00000002) != 0) &&
           startSnapshot_ != null &&
           startSnapshot_ != com.nuinfra.control_plane.v1alpha1.StartSnapshotInput.getDefaultInstance()) {
           getStartSnapshotBuilder().mergeFrom(value);
@@ -729,7 +544,7 @@ private static final long serialVersionUID = 0L;
         startSnapshotBuilder_.mergeFrom(value);
       }
       if (startSnapshot_ != null) {
-        bitField0_ |= 0x00000004;
+        bitField0_ |= 0x00000002;
         onChanged();
       }
       return this;
@@ -738,7 +553,7 @@ private static final long serialVersionUID = 0L;
      * <code>.nuinfra.control_plane.v1alpha1.StartSnapshotInput start_snapshot = 3 [json_name = "startSnapshot"];</code>
      */
     public Builder clearStartSnapshot() {
-      bitField0_ = (bitField0_ & ~0x00000004);
+      bitField0_ = (bitField0_ & ~0x00000002);
       startSnapshot_ = null;
       if (startSnapshotBuilder_ != null) {
         startSnapshotBuilder_.dispose();
@@ -751,7 +566,7 @@ private static final long serialVersionUID = 0L;
      * <code>.nuinfra.control_plane.v1alpha1.StartSnapshotInput start_snapshot = 3 [json_name = "startSnapshot"];</code>
      */
     public com.nuinfra.control_plane.v1alpha1.StartSnapshotInput.Builder getStartSnapshotBuilder() {
-      bitField0_ |= 0x00000004;
+      bitField0_ |= 0x00000002;
       onChanged();
       return internalGetStartSnapshotFieldBuilder().getBuilder();
     }

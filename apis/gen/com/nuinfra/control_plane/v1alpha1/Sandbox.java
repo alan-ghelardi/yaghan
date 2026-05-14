@@ -73,7 +73,16 @@ private static final long serialVersionUID = 0L;
   public static final int RESOURCES_FIELD_NUMBER = 2;
   private com.nuinfra.control_plane.v1alpha1.Resources resources_;
   /**
-   * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 2 [json_name = "resources", (.buf.validate.field) = { ... }</code>
+   * <pre>
+   * Sandbox.resources is required on the wire only for image-sourced
+   * sandboxes; snapshot-sourced sandboxes inherit their resources from
+   * the snapshot record and MUST leave this field unset on
+   * CreateSandbox. The api-server validates the conditional rule and
+   * stamps the inherited values before persistence — so every persisted
+   * row carries a populated Resources regardless of how it was created.
+   * </pre>
+   *
+   * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 2 [json_name = "resources"];</code>
    * @return Whether the resources field is set.
    */
   @java.lang.Override
@@ -81,7 +90,16 @@ private static final long serialVersionUID = 0L;
     return ((bitField0_ & 0x00000002) != 0);
   }
   /**
-   * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 2 [json_name = "resources", (.buf.validate.field) = { ... }</code>
+   * <pre>
+   * Sandbox.resources is required on the wire only for image-sourced
+   * sandboxes; snapshot-sourced sandboxes inherit their resources from
+   * the snapshot record and MUST leave this field unset on
+   * CreateSandbox. The api-server validates the conditional rule and
+   * stamps the inherited values before persistence — so every persisted
+   * row carries a populated Resources regardless of how it was created.
+   * </pre>
+   *
+   * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 2 [json_name = "resources"];</code>
    * @return The resources.
    */
   @java.lang.Override
@@ -89,7 +107,16 @@ private static final long serialVersionUID = 0L;
     return resources_ == null ? com.nuinfra.control_plane.v1alpha1.Resources.getDefaultInstance() : resources_;
   }
   /**
-   * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 2 [json_name = "resources", (.buf.validate.field) = { ... }</code>
+   * <pre>
+   * Sandbox.resources is required on the wire only for image-sourced
+   * sandboxes; snapshot-sourced sandboxes inherit their resources from
+   * the snapshot record and MUST leave this field unset on
+   * CreateSandbox. The api-server validates the conditional rule and
+   * stamps the inherited values before persistence — so every persisted
+   * row carries a populated Resources regardless of how it was created.
+   * </pre>
+   *
+   * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 2 [json_name = "resources"];</code>
    */
   @java.lang.Override
   public com.nuinfra.control_plane.v1alpha1.ResourcesOrBuilder getResourcesOrBuilder() {
@@ -830,14 +857,32 @@ private static final long serialVersionUID = 0L;
     private com.google.protobuf.SingleFieldBuilder<
         com.nuinfra.control_plane.v1alpha1.Resources, com.nuinfra.control_plane.v1alpha1.Resources.Builder, com.nuinfra.control_plane.v1alpha1.ResourcesOrBuilder> resourcesBuilder_;
     /**
-     * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 2 [json_name = "resources", (.buf.validate.field) = { ... }</code>
+     * <pre>
+     * Sandbox.resources is required on the wire only for image-sourced
+     * sandboxes; snapshot-sourced sandboxes inherit their resources from
+     * the snapshot record and MUST leave this field unset on
+     * CreateSandbox. The api-server validates the conditional rule and
+     * stamps the inherited values before persistence — so every persisted
+     * row carries a populated Resources regardless of how it was created.
+     * </pre>
+     *
+     * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 2 [json_name = "resources"];</code>
      * @return Whether the resources field is set.
      */
     public boolean hasResources() {
       return ((bitField0_ & 0x00000002) != 0);
     }
     /**
-     * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 2 [json_name = "resources", (.buf.validate.field) = { ... }</code>
+     * <pre>
+     * Sandbox.resources is required on the wire only for image-sourced
+     * sandboxes; snapshot-sourced sandboxes inherit their resources from
+     * the snapshot record and MUST leave this field unset on
+     * CreateSandbox. The api-server validates the conditional rule and
+     * stamps the inherited values before persistence — so every persisted
+     * row carries a populated Resources regardless of how it was created.
+     * </pre>
+     *
+     * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 2 [json_name = "resources"];</code>
      * @return The resources.
      */
     public com.nuinfra.control_plane.v1alpha1.Resources getResources() {
@@ -848,7 +893,16 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 2 [json_name = "resources", (.buf.validate.field) = { ... }</code>
+     * <pre>
+     * Sandbox.resources is required on the wire only for image-sourced
+     * sandboxes; snapshot-sourced sandboxes inherit their resources from
+     * the snapshot record and MUST leave this field unset on
+     * CreateSandbox. The api-server validates the conditional rule and
+     * stamps the inherited values before persistence — so every persisted
+     * row carries a populated Resources regardless of how it was created.
+     * </pre>
+     *
+     * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 2 [json_name = "resources"];</code>
      */
     public Builder setResources(com.nuinfra.control_plane.v1alpha1.Resources value) {
       if (resourcesBuilder_ == null) {
@@ -864,7 +918,16 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 2 [json_name = "resources", (.buf.validate.field) = { ... }</code>
+     * <pre>
+     * Sandbox.resources is required on the wire only for image-sourced
+     * sandboxes; snapshot-sourced sandboxes inherit their resources from
+     * the snapshot record and MUST leave this field unset on
+     * CreateSandbox. The api-server validates the conditional rule and
+     * stamps the inherited values before persistence — so every persisted
+     * row carries a populated Resources regardless of how it was created.
+     * </pre>
+     *
+     * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 2 [json_name = "resources"];</code>
      */
     public Builder setResources(
         com.nuinfra.control_plane.v1alpha1.Resources.Builder builderForValue) {
@@ -878,7 +941,16 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 2 [json_name = "resources", (.buf.validate.field) = { ... }</code>
+     * <pre>
+     * Sandbox.resources is required on the wire only for image-sourced
+     * sandboxes; snapshot-sourced sandboxes inherit their resources from
+     * the snapshot record and MUST leave this field unset on
+     * CreateSandbox. The api-server validates the conditional rule and
+     * stamps the inherited values before persistence — so every persisted
+     * row carries a populated Resources regardless of how it was created.
+     * </pre>
+     *
+     * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 2 [json_name = "resources"];</code>
      */
     public Builder mergeResources(com.nuinfra.control_plane.v1alpha1.Resources value) {
       if (resourcesBuilder_ == null) {
@@ -899,7 +971,16 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 2 [json_name = "resources", (.buf.validate.field) = { ... }</code>
+     * <pre>
+     * Sandbox.resources is required on the wire only for image-sourced
+     * sandboxes; snapshot-sourced sandboxes inherit their resources from
+     * the snapshot record and MUST leave this field unset on
+     * CreateSandbox. The api-server validates the conditional rule and
+     * stamps the inherited values before persistence — so every persisted
+     * row carries a populated Resources regardless of how it was created.
+     * </pre>
+     *
+     * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 2 [json_name = "resources"];</code>
      */
     public Builder clearResources() {
       bitField0_ = (bitField0_ & ~0x00000002);
@@ -912,7 +993,16 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 2 [json_name = "resources", (.buf.validate.field) = { ... }</code>
+     * <pre>
+     * Sandbox.resources is required on the wire only for image-sourced
+     * sandboxes; snapshot-sourced sandboxes inherit their resources from
+     * the snapshot record and MUST leave this field unset on
+     * CreateSandbox. The api-server validates the conditional rule and
+     * stamps the inherited values before persistence — so every persisted
+     * row carries a populated Resources regardless of how it was created.
+     * </pre>
+     *
+     * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 2 [json_name = "resources"];</code>
      */
     public com.nuinfra.control_plane.v1alpha1.Resources.Builder getResourcesBuilder() {
       bitField0_ |= 0x00000002;
@@ -920,7 +1010,16 @@ private static final long serialVersionUID = 0L;
       return internalGetResourcesFieldBuilder().getBuilder();
     }
     /**
-     * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 2 [json_name = "resources", (.buf.validate.field) = { ... }</code>
+     * <pre>
+     * Sandbox.resources is required on the wire only for image-sourced
+     * sandboxes; snapshot-sourced sandboxes inherit their resources from
+     * the snapshot record and MUST leave this field unset on
+     * CreateSandbox. The api-server validates the conditional rule and
+     * stamps the inherited values before persistence — so every persisted
+     * row carries a populated Resources regardless of how it was created.
+     * </pre>
+     *
+     * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 2 [json_name = "resources"];</code>
      */
     public com.nuinfra.control_plane.v1alpha1.ResourcesOrBuilder getResourcesOrBuilder() {
       if (resourcesBuilder_ != null) {
@@ -931,7 +1030,16 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 2 [json_name = "resources", (.buf.validate.field) = { ... }</code>
+     * <pre>
+     * Sandbox.resources is required on the wire only for image-sourced
+     * sandboxes; snapshot-sourced sandboxes inherit their resources from
+     * the snapshot record and MUST leave this field unset on
+     * CreateSandbox. The api-server validates the conditional rule and
+     * stamps the inherited values before persistence — so every persisted
+     * row carries a populated Resources regardless of how it was created.
+     * </pre>
+     *
+     * <code>.nuinfra.control_plane.v1alpha1.Resources resources = 2 [json_name = "resources"];</code>
      */
     private com.google.protobuf.SingleFieldBuilder<
         com.nuinfra.control_plane.v1alpha1.Resources, com.nuinfra.control_plane.v1alpha1.Resources.Builder, com.nuinfra.control_plane.v1alpha1.ResourcesOrBuilder> 
