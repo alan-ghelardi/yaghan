@@ -399,6 +399,56 @@ func TestPeerDropClosesConversationsAndRecordsError(t *testing.T) {
 	assert.Error(t, tr.Err(), "a dirty close must be reflected in Err")
 }
 
+// TestOpenConversationAfterPeerDrop covers the snapshot regression: when
+// the peer tears the conn down out-of-band (Firecracker breaks vsock
+// connections across snapshot), the read loop exits and the transport
+// is left without an explicit Close. A later OpenConversation must NOT
+// race into a nil conversations map — it must observe the closed state
+// and hand back a Conversation whose Recv is already drained.
+func TestOpenConversationAfterPeerDrop(t *testing.T) {
+	fa := newFakeAgent(t)
+
+	go func() {
+		conn, err := fa.ln.Accept()
+		if !assert.NoError(t, err) {
+			return
+		}
+		br := bufio.NewReader(conn)
+		readConnectLine(t, br, 7)
+		writeOK(t, conn)
+		// Drop the conn immediately to simulate the post-snapshot EOF.
+		_ = conn.Close()
+	}()
+
+	tr, err := New(fa.path, 7)
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = tr.Close() })
+
+	// Open one conversation before the read loop notices the drop, so
+	// we have a synchronisation point: its Recv closing means the read
+	// loop has exited and its deferred cleanup has run.
+	early := tr.OpenConversation()
+	select {
+	case _, ok := <-early.Recv():
+		assert.False(t, ok, "early conversation channel must close after peer drop")
+	case <-time.After(receiveTimeout):
+		t.Fatal("read loop did not unwind after peer drop")
+	}
+
+	// The transport is now in the post-peer-drop state. A fresh
+	// OpenConversation must be safe and yield a pre-closed Recv.
+	require.NotPanics(t, func() {
+		conv := tr.OpenConversation()
+		select {
+		case _, ok := <-conv.Recv():
+			assert.False(t, ok,
+				"OpenConversation after peer drop must hand back a closed channel")
+		case <-time.After(receiveTimeout):
+			t.Fatal("post-drop OpenConversation did not return a closed channel")
+		}
+	})
+}
+
 // --- concurrency --------------------------------------------------------
 
 func TestConcurrentSendsSerializeFrames(t *testing.T) {

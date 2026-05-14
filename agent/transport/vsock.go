@@ -270,9 +270,11 @@ func (t *vsockTransport) sendFrame(ctx context.Context, req *dataplanev1alpha1.A
 // readLoop is the sole reader on the conn. Each successfully decoded
 // AgentResponse is dispatched to the conversation that owns its id.
 // On error the loop stops, the error is stashed for [Transport.Err],
-// and every still-open conversation is shut down.
+// and the transport is fully closed — closing t.closed ensures any
+// later OpenConversation observes the closed state instead of racing
+// against the now-nil conversations map.
 func (t *vsockTransport) readLoop() {
-	defer t.closeAllConversations()
+	defer func() { _ = t.Close() }()
 	for {
 		resp := new(dataplanev1alpha1.AgentResponse)
 		if err := framing.Read(t.reader, resp); err != nil {

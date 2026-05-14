@@ -901,6 +901,17 @@ func (f *firecrackerVM) CreateSnapshot(ctx context.Context) (*snapshot.LocalRefe
 		return nil, fmt.Errorf("firecracker snapshot RPC: %w", err)
 	}
 
+	// Firecracker tears down the guest's vsock connections across
+	// snapshot, so the memoised transport's read loop is already (or
+	// about to be) EOF'd. Drop the cache so the next VSock() caller
+	// dials a fresh connection once Resume runs.
+	f.vsockMu.Lock()
+	if f.vsock != nil {
+		_ = f.vsock.Close()
+		f.vsock = nil
+	}
+	f.vsockMu.Unlock()
+
 	return localRef, nil
 }
 
