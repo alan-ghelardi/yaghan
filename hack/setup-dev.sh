@@ -8,14 +8,14 @@
 #      pick them up.
 #   3. Runs hack/fetch-kernel.sh to download a firecracker-tested
 #      vmlinux into assets/.
-#   4. Runs hack/fetch-rootfs.sh to build the Alpine rootfs.
+#   4. Runs hack/fetch-rootfs.sh to build the Ubuntu Base rootfs.
 #   5. Runs hack/build-and-embed-agent.sh to build the agent and
 #      embed it into the rootfs as /init.
 #
 # Future contributors should run this once before hacking on the
 # microvm stack. Every step is idempotent — the firecracker tarball,
-# the vmlinux binary, and the Alpine minirootfs tarball are all
-# cached under assets/ and reused on re-run.
+# the vmlinux binary, and the Ubuntu Base tarball are all cached
+# under assets/ and reused on re-run.
 #
 # Runs as your normal user. The few steps that require CAP_SYS_ADMIN
 # (loop mount + writes inside the mount, inside fetch-rootfs.sh and
