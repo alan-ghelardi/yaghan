@@ -45,7 +45,18 @@ const (
 	defaultNodeRuntime               NodeRuntime = NodeRuntimeLocal
 	defaultNodeMetricsReportInterval             = 30 * time.Second
 	defaultNodeHealthReportInterval              = 30 * time.Second
+
+	// defaultEgressEnabled installs MASQUERADE + FORWARD rules so
+	// guest traffic reaches the outside world. Operators who want
+	// fully air-gapped sandboxes can override this in the config.
+	defaultEgressEnabled = true
 )
+
+// defaultGuestDNS is the resolver list every guest is bootstrapped
+// with when [Network.GuestDNS] is unset. Public, no-auth nameservers
+// keep the daemon usable on hosts that don't run their own resolver.
+// Override in config for environments that require an internal DNS.
+var defaultGuestDNS = []string{"8.8.8.8", "1.1.1.1"}
 
 // Bundle is the daemon's top-level configuration. It embeds the gRPC
 // server base shared with the api-server via [config.Base] and adds
@@ -81,6 +92,34 @@ type Bundle struct {
 
 	// Snapshots configures how the daemon manages Firecracker snapshot files.
 	Snapshots *Snapshots
+
+	// Network configures egress connectivity for sandboxes. When nil,
+	// defaults are applied via [applyDefaults]: egress enabled, public
+	// DNS, upstream device auto-detected from the default IPv4 route.
+	Network *Network `mapstructure:"network"`
+}
+
+// Network configures host-level networking for the sandboxes the
+// daemon spawns. Specifically: whether to install the netfilter rules
+// required for VM egress, which host device to MASQUERADE through,
+// and which resolvers the guest's /etc/resolv.conf is seeded with.
+type Network struct {
+	// EgressEnabled toggles installation of MASQUERADE + FORWARD
+	// rules at daemon startup and inside each provisioned namespace.
+	// Defaults to true. Set to false for air-gapped or
+	// externally-managed firewall setups.
+	EgressEnabled bool `mapstructure:"egress-enabled"`
+
+	// UpstreamDevice is the host interface NAT'd traffic exits
+	// through. Empty (the default) means "auto-detect via the
+	// default IPv4 route"; set explicitly when the host has
+	// multiple egress devices and the wrong one would be picked.
+	UpstreamDevice string `mapstructure:"upstream-device"`
+
+	// GuestDNS is the list of resolver IPs the agent writes into
+	// /etc/resolv.conf at boot. Order is preserved. Empty means
+	// "use the daemon-wide default" (public no-auth resolvers).
+	GuestDNS []string `mapstructure:"guest-dns"`
 }
 
 // APIServer points the daemon at its control plane.
@@ -267,4 +306,7 @@ func applyDefaults(v *viper.Viper) {
 	v.SetDefault("node-agent.runtime", defaultNodeRuntime)
 	v.SetDefault("node-agent.metrics-report-interval", defaultNodeMetricsReportInterval)
 	v.SetDefault("node-agent.health-report-interval", defaultNodeHealthReportInterval)
+
+	v.SetDefault("network.egress-enabled", defaultEgressEnabled)
+	v.SetDefault("network.guest-dns", defaultGuestDNS)
 }

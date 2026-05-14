@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"strings"
 
 	"github.com/go-openapi/swag/conv"
 	"github.com/grpc-ecosystem/go-grpc-middleware/logging/zap/ctxzap"
@@ -490,7 +491,7 @@ func (r *Reconciler) buildCreateInput(sandbox *controlplanev1alpha1.Sandbox, nsh
 	fcConfig := &firecracker.Config{
 		BootSource: &models.BootSource{
 			KernelImagePath: &kernelJail,
-			BootArgs:        buildBootArgs(tmpl, nsh),
+			BootArgs:        buildBootArgs(tmpl, nsh, r.config.Network),
 		},
 		Drives: []*models.Drive{
 			{
@@ -565,9 +566,15 @@ func (r *Reconciler) buildLoadSnapshotInput(sandbox *controlplanev1alpha1.Sandbo
 // drives the in-guest agent's network stack: address, gateway, mask,
 // device, off-DHCP. init= names the agent binary execed by the kernel
 // as PID 1; agent.port= tells the agent which vsock port to listen on.
-func buildBootArgs(tmpl *config.MicroVM, nsh network.NamespaceHandle) string {
-	return fmt.Sprintf(
+// agent.dns=, when present, is a comma-separated resolver list the
+// agent writes into /etc/resolv.conf early in PID-1 init.
+func buildBootArgs(tmpl *config.MicroVM, nsh network.NamespaceHandle, netCfg *config.Network) string {
+	base := fmt.Sprintf(
 		"console=ttyS0 reboot=k panic=1 pci=off ip=%s::%s:255.255.255.252::eth0:off init=%s agent.port=%d",
 		nsh.GuestIP, nsh.TapIP, tmpl.AgentInitPath, tmpl.AgentVsockPort,
 	)
+	if netCfg != nil && len(netCfg.GuestDNS) > 0 {
+		base += " agent.dns=" + strings.Join(netCfg.GuestDNS, ",")
+	}
+	return base
 }

@@ -1,5 +1,7 @@
 package network
 
+import "golang.nuinfra.net/daemon/pkg/network/firewall"
+
 // Options controls the behavior of a [Driver]. Construct an Options value
 // implicitly by passing [Option] values to [NewLinuxDriver].
 type Options struct {
@@ -12,6 +14,13 @@ type Options struct {
 	// TAPGroup sets the gid allowed to attach to the TAP device.
 	// Zero means "leave unset".
 	TAPGroup uint32
+
+	// Firewall installs the netfilter rules required for VM egress
+	// connectivity. Nil disables firewall configuration entirely;
+	// in that case the driver still provisions the netns/TAP/veth
+	// topology but the guest will not reach anything beyond the
+	// host-side of its own veth (the pre-egress behaviour).
+	Firewall firewall.Firewall
 }
 
 // Option represents a single override applied to [Options].
@@ -38,5 +47,15 @@ func WithTAPOwner(uid uint32) Option {
 func WithTAPGroup(gid uint32) Option {
 	return OptionAdapter(func(opts *Options) {
 		opts.TAPGroup = gid
+	})
+}
+
+// WithFirewall installs fw as the driver's firewall configurator.
+// Passing nil (or omitting WithFirewall entirely) leaves egress
+// disabled — useful in tests and on hosts where the operator manages
+// netfilter rules externally.
+func WithFirewall(fw firewall.Firewall) Option {
+	return OptionAdapter(func(opts *Options) {
+		opts.Firewall = fw
 	})
 }

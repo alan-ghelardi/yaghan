@@ -7,10 +7,14 @@
 // assigned a /30 carved deterministically out of 10.0.0.0/16, and the
 // namespace's default route points at it.
 //
-// Explicitly out of scope for this package: IP forwarding, rp_filter,
-// iptables/NAT. Until those are configured by a separate component, traffic
-// from a guest can reach the host side of its own veth but will not
-// traverse further. Forwarding sysctls and NAT live in a follow-up.
+// When [Options.Firewall] is set, Provision additionally enables
+// net.ipv4.ip_forward inside the namespace and installs the per-VM
+// MASQUERADE/FORWARD rules required for egress. The host-wide
+// counterpart (single MASQUERADE for the entire VM pool plus the host
+// ip_forward sysctl) is set up once at daemon startup via
+// [EnableHostIPForward] and [firewall.Firewall.EnsureHost]. With no
+// firewall configured Provision stops at L3 plumbing — guest can reach
+// the host-side of its own veth, nothing further.
 //
 // Host prerequisites: the `tun` kernel module must be loaded and the
 // process must hold CAP_NET_ADMIN (typically runs as root).
@@ -30,6 +34,8 @@ import (
 	"github.com/vishvananda/netlink"
 	"github.com/vishvananda/netns"
 	"golang.org/x/sys/unix"
+
+	"golang.nuinfra.net/daemon/pkg/network/firewall"
 )
 
 // netnsMountDir is the kernel-iproute2-compatible mount point where
@@ -103,6 +109,11 @@ func (d *linuxDriver) Provision(index int) (NamespaceHandle, error) {
 	}
 	if err := installDefaultRoute(nsFd, meta.HostVethIP); err != nil {
 		return NamespaceHandle{}, rollback(fmt.Errorf("install default route: %w", err))
+	}
+	if d.options.Firewall != nil {
+		if err := configureEgress(nsFd, d.options.Firewall); err != nil {
+			return NamespaceHandle{}, rollback(fmt.Errorf("configure egress: %w", err))
+		}
 	}
 	return meta, nil
 }
@@ -299,6 +310,42 @@ func setupVethPair(nsFd netns.NsHandle, meta NamespaceHandle) error {
 	}
 	if err := nsHandle.LinkSetUp(nsLink); err != nil {
 		return fmt.Errorf("bring ns veth up: %w", err)
+	}
+	return nil
+}
+
+// configureEgress enables IPv4 forwarding inside the namespace and
+// installs the per-VM MASQUERADE/FORWARD rules. Both operations
+// require running inside the target namespace, so they share a single
+// thread-lock + setns block to amortise the namespace dance.
+//
+// The sysctl write must come before the firewall rules: without
+// forwarding enabled the FORWARD chain never fires, and any test
+// using the rules would silently fail.
+func configureEgress(nsFd netns.NsHandle, fw firewall.Firewall) error {
+	runtime.LockOSThread()
+	origin, err := netns.Get()
+	if err != nil {
+		runtime.UnlockOSThread()
+		return fmt.Errorf("get origin netns: %w", err)
+	}
+	defer func() {
+		_ = netns.Set(origin)
+		_ = origin.Close()
+		runtime.UnlockOSThread()
+	}()
+	if err := netns.Set(nsFd); err != nil {
+		return fmt.Errorf("enter netns: %w", err)
+	}
+
+	if err := EnableNamespaceIPForward(); err != nil {
+		return fmt.Errorf("enable ip_forward in netns: %w", err)
+	}
+	if err := fw.ConfigureNamespace(firewall.NamespaceConfig{
+		NamespaceVethName: namespaceVethName,
+		GuestSubnet:       GuestSubnet(),
+	}); err != nil {
+		return fmt.Errorf("install firewall rules in netns: %w", err)
 	}
 	return nil
 }

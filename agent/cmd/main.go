@@ -33,6 +33,18 @@ const (
 	// BootArgs to name the vsock port.
 	cmdlineKey = "agent.port"
 
+	// dnsCmdlineKey is the /proc/cmdline token the daemon injects to
+	// seed /etc/resolv.conf. The value is a comma-separated list of
+	// resolver IPs; absent means the guest gets no nameserver entry
+	// and DNS resolution will fall back to whatever the rootfs
+	// already ships with (or fail).
+	dnsCmdlineKey = "agent.dns"
+
+	// resolvConfPath is the location the agent writes nameserver
+	// entries to. Standard glibc/musl location — both libcs read
+	// from here on every resolve.
+	resolvConfPath = "/etc/resolv.conf"
+
 	// logFilePath is where the agent writes its own log. Firecracker
 	// runs with --daemonize, so anything the kernel forwards to ttyS0
 	// is discarded; a file on the rootfs is the only output surface
@@ -59,6 +71,7 @@ func main() {
 	mountPseudoFS(logger)
 	ensureBaseDirs(logger)
 	ensureDefaultPath(logger)
+	writeResolvConf(logger)
 
 	port := parseVsockPort(logger)
 	logger.Printf("vsock port %d", port)
@@ -194,6 +207,52 @@ func ensureBaseDirs(logger *log.Logger) {
 			logger.Printf("chmod %s: %v", d.path, err)
 		}
 	}
+}
+
+// writeResolvConf seeds /etc/resolv.conf with the resolvers the daemon
+// passed in via agent.dns=. Missing token or unreadable cmdline is
+// non-fatal — the agent still comes up, the guest just won't resolve
+// names. Any pre-existing /etc/resolv.conf in the rootfs is replaced,
+// since the daemon's value is the authoritative one for this boot.
+func writeResolvConf(logger *log.Logger) {
+	data, err := os.ReadFile("/proc/cmdline")
+	if err != nil {
+		logger.Printf("read /proc/cmdline for DNS: %v (skipping resolv.conf)", err)
+		return
+	}
+	var servers []string
+	for _, tok := range strings.Fields(string(data)) {
+		k, v, ok := strings.Cut(tok, "=")
+		if !ok || k != dnsCmdlineKey || v == "" {
+			continue
+		}
+		for _, ip := range strings.Split(v, ",") {
+			ip = strings.TrimSpace(ip)
+			if ip != "" {
+				servers = append(servers, ip)
+			}
+		}
+		break
+	}
+	if len(servers) == 0 {
+		logger.Printf("no %s= on cmdline; leaving resolv.conf untouched", dnsCmdlineKey)
+		return
+	}
+	var b strings.Builder
+	for _, s := range servers {
+		b.WriteString("nameserver ")
+		b.WriteString(s)
+		b.WriteByte('\n')
+	}
+	// 0o644 is the conventional resolv.conf mode — libc resolvers in
+	// non-root processes (the workload running inside the sandbox)
+	// need read access, and 0o600 would prevent DNS resolution for
+	// any uid other than root.
+	if err := os.WriteFile(resolvConfPath, []byte(b.String()), 0o644); err != nil { //nolint:gosec // see comment above
+		logger.Printf("write %s: %v (DNS will not resolve in this guest)", resolvConfPath, err)
+		return
+	}
+	logger.Printf("wrote %s with %d nameserver(s)", resolvConfPath, len(servers))
 }
 
 // parseVsockPort reads /proc/cmdline once at startup and extracts the

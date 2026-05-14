@@ -37,6 +37,31 @@ const (
 // vethBaseNetwork is the first address of the veth allocator pool.
 var vethBaseNetwork = netip.MustParseAddr("10.0.0.0")
 
+// VMSubnet returns the IPv4 CIDR that covers every per-VM veth subnet
+// the allocator can hand out. Stable across processes — the firewall
+// package uses it as the source-match for the host-wide MASQUERADE
+// rule, so it must encompass the entire allocator pool regardless of
+// how many indexes are currently live.
+func VMSubnet() netip.Prefix {
+	// vethBaseNetwork is 10.0.0.0; the allocator consumes
+	// maxIndex * vethSubnetSize = 16384 * 4 = 65536 addresses,
+	// exactly one /16.
+	return netip.PrefixFrom(vethBaseNetwork, 16)
+}
+
+// GuestSubnet returns the CIDR every guest's virtio-net interface
+// occupies inside its namespace. Identical for all VMs (isolation
+// comes from the namespace boundary, not addressing). Used as the
+// source-match for the per-namespace MASQUERADE rule.
+func GuestSubnet() netip.Prefix {
+	// tapIP is 172.16.0.1/30 by design — the /30 holds tapIP and
+	// guestIP exclusively.
+	return netip.PrefixFrom(
+		netip.AddrFrom4([4]byte{172, 16, 0, 0}),
+		tapPrefixBits,
+	)
+}
+
 // Every namespace uses the same TAP subnet. Isolation is enforced by the
 // namespace boundary, so identical addressing across VMs is safe and lets
 // the guest userspace hard-code the gateway.

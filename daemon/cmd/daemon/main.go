@@ -8,6 +8,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"log"
 	"os/signal"
 	"path/filepath"
@@ -24,6 +25,7 @@ import (
 	"golang.nuinfra.net/daemon/pkg/config"
 	"golang.nuinfra.net/daemon/pkg/firecracker"
 	"golang.nuinfra.net/daemon/pkg/network"
+	"golang.nuinfra.net/daemon/pkg/network/firewall"
 	"golang.nuinfra.net/daemon/pkg/service"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -82,10 +84,20 @@ func main() {
 		zapLogger.Warn("firecracker recover", zap.Error(err))
 	}
 
-	netDrv := network.NewLinuxDriver(
+	netOpts := []network.Option{
 		network.WithTAPOwner(bundle.Firecracker.JailUID),
 		network.WithTAPGroup(bundle.Firecracker.JailGID),
-	)
+	}
+	if bundle.Network != nil && bundle.Network.EgressEnabled {
+		fw, err := setupEgress(ctx, bundle, zapLogger)
+		if err != nil {
+			zapLogger.Fatal("setup egress connectivity", zap.Error(err))
+		}
+		netOpts = append(netOpts, network.WithFirewall(fw))
+	} else {
+		zapLogger.Warn("egress connectivity disabled — sandboxes will not reach the outside network")
+	}
+	netDrv := network.NewLinuxDriver(netOpts...)
 
 	// grpc.NewClient is non-blocking. The controller's connect loop
 	// handles a temporarily unreachable api-server with backoff, so we
@@ -103,4 +115,39 @@ func main() {
 	snapshotClient := controlplanev1alpha1.NewSnapshotServiceClient(conn)
 
 	server.Start(ctx, service.New(provider, netDrv, clusterClient, sandboxClient, snapshotClient, bundle))
+}
+
+// setupEgress wires up host-side egress connectivity: enables IPv4
+// forwarding, resolves the upstream device (auto-detect when not set
+// in config), and installs the host-wide MASQUERADE/FORWARD rules.
+// Returns the firewall the per-VM driver will use for namespace
+// configuration. Idempotent — safe to call on every daemon start.
+func setupEgress(ctx context.Context, bundle *config.Bundle, logger *zap.Logger) (firewall.Firewall, error) {
+	_ = ctx // reserved for future cancellation-aware steps
+
+	if err := network.EnableHostIPForward(); err != nil {
+		return nil, fmt.Errorf("enable host ip_forward: %w", err)
+	}
+
+	upstream := bundle.Network.UpstreamDevice
+	if upstream == "" {
+		detected, err := network.DefaultUpstreamDevice()
+		if err != nil {
+			return nil, fmt.Errorf("auto-detect upstream device (set network.upstream-device explicitly): %w", err)
+		}
+		upstream = detected
+		logger.Info("auto-detected upstream egress device", zap.String("device", upstream))
+	}
+
+	fw, err := firewall.NewIPTables()
+	if err != nil {
+		return nil, fmt.Errorf("init firewall: %w", err)
+	}
+	if err := fw.EnsureHost(upstream, network.VMSubnet()); err != nil {
+		return nil, fmt.Errorf("install host firewall rules on %s: %w", upstream, err)
+	}
+	logger.Info("egress connectivity configured",
+		zap.String("upstream", upstream),
+		zap.String("vm-subnet", network.VMSubnet().String()))
+	return fw, nil
 }
