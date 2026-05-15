@@ -17,8 +17,8 @@ import (
 	"github.com/alan-ghelardi/yaghan/e2e/internal/infra"
 	"github.com/alan-ghelardi/yaghan/e2e/internal/yag"
 
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	. "github.com/onsi/ginkgo/v2" //nolint:revive // ginkgo's idiom requires dot-import
+	. "github.com/onsi/gomega"    //nolint:revive // gomega's idiom requires dot-import
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -241,7 +241,7 @@ func waitForRegisteredNode(ctx context.Context, cli controlplanev1alpha1.Cluster
 		}
 		select {
 		case <-ctx.Done():
-			return fmt.Errorf("wait for registered node: %w (last: %v)", ctx.Err(), lastErr)
+			return fmt.Errorf("wait for registered node: %w (last: %w)", ctx.Err(), lastErr)
 		case <-ticker.C:
 		}
 	}

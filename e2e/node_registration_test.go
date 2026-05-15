@@ -7,8 +7,8 @@ import (
 	controlplanev1alpha1 "github.com/alan-ghelardi/yaghan/apis/gen/yaghan/control_plane/v1alpha1"
 	"github.com/alan-ghelardi/yaghan/e2e/internal/yag"
 
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	. "github.com/onsi/ginkgo/v2" //nolint:revive // ginkgo's idiom requires dot-import
+	. "github.com/onsi/gomega"    //nolint:revive // gomega's idiom requires dot-import
 )
 
 var _ = Describe("Node registration", func() {

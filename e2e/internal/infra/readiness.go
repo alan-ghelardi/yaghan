@@ -13,32 +13,35 @@ import (
 	"google.golang.org/grpc/health/grpc_health_v1"
 )
 
-// poll re-invokes probe every interval until it succeeds or ctx is
-// done. Returns the last error if the deadline trips before probe
-// returns nil.
-func poll(ctx context.Context, interval time.Duration, probe func(context.Context) error) error {
-	var lastErr error
-	ticker := time.NewTicker(interval)
+// pollInterval is the cadence every readiness probe runs at. Half a
+// second keeps total bringup latency reasonable on slow CI workers
+// while remaining far below the timeouts probes themselves carry.
+const pollInterval = 500 * time.Millisecond
+
+// poll re-invokes probe every pollInterval until it succeeds or ctx
+// is done. Returns a wrapped error joining the context error with
+// the last probe error so callers can errors.Is() either cause.
+func poll(ctx context.Context, probe func(context.Context) error) error {
+	ticker := time.NewTicker(pollInterval)
 	defer ticker.Stop()
 
 	// Try once up-front so a service that's already healthy doesn't
 	// wait the first interval.
-	if err := probe(ctx); err == nil {
+	lastErr := probe(ctx)
+	if lastErr == nil {
 		return nil
-	} else {
-		lastErr = err
 	}
 
 	for {
 		select {
 		case <-ctx.Done():
-			return fmt.Errorf("readiness: %w (last probe error: %v)", ctx.Err(), lastErr)
+			return fmt.Errorf("readiness: %w (last probe error: %w)", ctx.Err(), lastErr)
 		case <-ticker.C:
-			if err := probe(ctx); err == nil {
+			err := probe(ctx)
+			if err == nil {
 				return nil
-			} else {
-				lastErr = err
 			}
+			lastErr = err
 		}
 	}
 }
@@ -48,7 +51,7 @@ func poll(ctx context.Context, interval time.Duration, probe func(context.Contex
 // so a successful API call is the readiness signal — same approach as
 // api-server/dev/start.sh.
 func WaitForDynamoDB(ctx context.Context, client *dynamodb.Client) error {
-	return poll(ctx, 500*time.Millisecond, func(ctx context.Context) error {
+	return poll(ctx, func(ctx context.Context) error {
 		_, err := client.ListTables(ctx, &dynamodb.ListTablesInput{})
 		return err
 	})
@@ -57,7 +60,7 @@ func WaitForDynamoDB(ctx context.Context, client *dynamodb.Client) error {
 // WaitForRedis polls a Redis address with a RESP `PING` until it gets
 // back `+PONG`. Avoids pulling in the redis client just for readiness.
 func WaitForRedis(ctx context.Context, addr string) error {
-	return poll(ctx, 500*time.Millisecond, func(ctx context.Context) error {
+	return poll(ctx, func(ctx context.Context) error {
 		d := net.Dialer{Timeout: 2 * time.Second}
 		conn, err := d.DialContext(ctx, "tcp", addr)
 		if err != nil {
@@ -81,7 +84,7 @@ func WaitForRedis(ctx context.Context, addr string) error {
 // WaitForS3 polls ListBuckets until it succeeds — same pattern
 // daemon/dev/start.sh uses against MinIO.
 func WaitForS3(ctx context.Context, client *s3.Client) error {
-	return poll(ctx, 500*time.Millisecond, func(ctx context.Context) error {
+	return poll(ctx, func(ctx context.Context) error {
 		_, err := client.ListBuckets(ctx, &s3.ListBucketsInput{})
 		return err
 	})
@@ -99,7 +102,7 @@ func WaitForGRPCHealth(ctx context.Context, addr string) error {
 	defer func() { _ = conn.Close() }()
 	client := grpc_health_v1.NewHealthClient(conn)
 
-	return poll(ctx, 500*time.Millisecond, func(ctx context.Context) error {
+	return poll(ctx, func(ctx context.Context) error {
 		resp, err := client.Check(ctx, &grpc_health_v1.HealthCheckRequest{})
 		if err != nil {
 			return err

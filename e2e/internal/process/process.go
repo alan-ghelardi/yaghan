@@ -54,7 +54,7 @@ type Process struct {
 // Start does not wait for the binary to become ready — readiness is a
 // service-level concern handled by infra.WaitFor* probes in the
 // caller.
-func Start(ctx context.Context, spec Spec) (*Process, error) {
+func Start(_ context.Context, spec Spec) (*Process, error) {
 	if spec.LogFile == "" {
 		return nil, fmt.Errorf("process %s: LogFile is required", spec.Name)
 	}
@@ -63,7 +63,10 @@ func Start(ctx context.Context, spec Spec) (*Process, error) {
 		return nil, fmt.Errorf("open log file %s: %w", spec.LogFile, err)
 	}
 
-	cmd := exec.Command(spec.BinPath, spec.Args...)
+	// G204: spec.BinPath and spec.Args are not user input — they are
+	// hardcoded by the suite's process supervisors (e2e/bin/<name>
+	// and `-config <path>`). Test-code only.
+	cmd := exec.Command(spec.BinPath, spec.Args...) //nolint:gosec
 	cmd.Env = append(os.Environ(), spec.Env...)
 	cmd.Stdout = logFile
 	cmd.Stderr = logFile

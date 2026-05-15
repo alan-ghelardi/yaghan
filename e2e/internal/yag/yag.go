@@ -41,7 +41,11 @@ func Run(ctx context.Context, args ...string) (*Result, error) {
 			"or export it manually to e2e/bin/yag", BinEnvVar)
 	}
 
-	cmd := exec.CommandContext(ctx, binPath, args...)
+	// G702: binPath and args are not user input — binPath is
+	// resolved from BinEnvVar set by the e2e suite to a fixed
+	// e2e/bin/yag path, and args come from spec authors writing
+	// scenarios in this same module. Test-code only.
+	cmd := exec.CommandContext(ctx, binPath, args...) //nolint:gosec
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
