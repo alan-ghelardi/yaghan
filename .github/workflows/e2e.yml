@@ -1,0 +1,97 @@
+---
+name: e2e
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  e2e:
+    # x86_64 only — GitHub's ARM runners don't expose /dev/kvm.
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      # GitHub-hosted Linux runners ship /dev/kvm but leave it
+      # root-owned. A one-shot udev rule sets mode 0666 so the runner
+      # user (and any non-root process firecracker drops to via jailer)
+      # can open it. ls afterwards is a self-test: the workflow fails
+      # loudly here rather than 10 steps later if /dev/kvm is missing.
+      - name: Enable KVM (/dev/kvm 0666)
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+          ls -l /dev/kvm
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: e2e/go.mod
+          cache: true
+
+      # The cache key hashes every input that affects what ends up in
+      # assets/. firecracker-version covers the firecracker/jailer
+      # binaries; hack/*.sh covers the kernel version, Ubuntu version,
+      # and the rootfs post-install tweaks; the agent + apis + commons
+      # source covers the agent binary that gets embedded into
+      # rootfs.ext4 as /init. Keying on firecracker-version alone
+      # would silently serve a stale agent.
+      - name: Cache microVM assets
+        id: cache-assets
+        uses: actions/cache@v4
+        with:
+          path: assets
+          key: assets-${{ runner.os }}-${{ hashFiles('firecracker-version', 'hack/*.sh', 'agent/**/*.go', 'agent/go.mod', 'agent/go.sum', 'apis/**/*.go', 'commons/**/*.go') }}
+
+      # fetch-rootfs.sh unconditionally rebuilds rootfs.ext4 (it
+      # doesn't honour an existing image), so on a cache hit we skip
+      # setup-dev.sh entirely rather than re-running it for no benefit.
+      - name: hack/setup-dev.sh
+        if: steps.cache-assets.outputs.cache-hit != 'true'
+        run: ./hack/setup-dev.sh
+
+      - uses: golangci/golangci-lint-action@v6
+        with:
+          version: latest
+          working-directory: e2e
+
+      # `sudo -E env "PATH=$PATH"` is the same incantation README.md
+      # documents for local runs — sudo's secure_path strips the Go
+      # toolchain from PATH otherwise, and the daemon needs root to
+      # set up jailer + netns + iptables MASQUERADE.
+      - name: sudo -E make test
+        run: |
+          cd e2e
+          sudo -E env "PATH=$PATH" make test
+
+      # On failure: every per-run dir under e2e/run-* carries the
+      # daemon and api-server logs plus the rendered configs. Also
+      # grab compose logs in case a backing service (DynamoDB Local,
+      # Redis, MinIO) was what failed readiness.
+      #
+      # The suite runs under sudo so artefacts are root-owned; chown
+      # them to the runner user before upload-artifact tries to read
+      # them. Best-effort — partial state shouldn't break the upload.
+      - name: Collect artefacts (failure only)
+        if: failure()
+        run: |
+          mkdir -p ci-artefacts
+          sudo chown -R "$(id -u):$(id -g)" e2e/run-* 2>/dev/null || true
+          cp -r e2e/run-* ci-artefacts/ 2>/dev/null || true
+          docker compose -p yaghan-e2e-apiserver -f api-server/dev/docker-compose.yml logs \
+            > ci-artefacts/compose-apiserver.log 2>&1 || true
+          docker compose -p yaghan-e2e-daemon -f daemon/dev/docker-compose.yml logs \
+            > ci-artefacts/compose-daemon.log 2>&1 || true
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: e2e-artefacts-${{ github.run_id }}
+          path: ci-artefacts/
+          retention-days: 7
+          if-no-files-found: ignore
