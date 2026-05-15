@@ -21,7 +21,11 @@ agent_dir="${repo_root}/agent"
 # shellcheck disable=SC1091
 . "${here}/helpers.sh"
 
-go="/usr/local/go/bin/go"
+# Prefer `go` from PATH (what setup-go puts on the runner, and what
+# most contributors have via a version manager); fall back to the
+# Ubuntu-package install path for sudo invocations where secure_path
+# strips PATH.
+go="${GO:-$(command -v go || echo /usr/local/go/bin/go)}"
 rootfs="${repo_root}/assets/rootfs.ext4"
 # Root-level path dodges usr-merge symlinks (/sbin → usr/sbin) that
 # can confuse the kernel's init= lookup on some distros.
