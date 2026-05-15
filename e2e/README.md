@@ -14,14 +14,20 @@ drives them through the `yag` CLI — the same path a user takes.
    the suite reuses the same host ports (8000, 6379, 9000, 9090, 9091, 9092)
    and will conflict.
 
-Sudo is **not** required for the current scenarios. It will become a
-requirement when sandbox-lifecycle scenarios land (jailer needs
-`CAP_NET_ADMIN`).
+Sudo is required for the sandbox-lifecycle scenarios — jailer + the
+daemon's TAP-device setup use netlink (`CAP_NET_ADMIN`). The node
+registration scenario runs without sudo.
 
 ## Running
 
 ```sh
+# node registration only (no VMs; lifecycle scenarios skip with a
+# clear message)
 make test
+
+# full suite, including sandbox lifecycle, snapshot round-trip, and
+# network connectivity
+sudo -E make test
 ```
 
 This builds the three binaries into `./bin/`, brings up both docker compose
@@ -30,6 +36,10 @@ starts the api-server and daemon as child processes, runs the Ginkgo suite,
 then tears everything down. Per-run artefacts (binary stdout/stderr, rendered
 config files) land under `./run-<timestamp>/` so a flake is debuggable
 without re-running.
+
+When running under sudo, the `./run-<ts>/` directories are root-owned.
+Clean them up with `sudo rm -rf run-*/` (or just leave them — the
+gitignore covers them).
 
 ## Layout
 

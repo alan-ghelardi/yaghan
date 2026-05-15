@@ -45,10 +45,21 @@ type SuiteContext struct {
 	StartTime   time.Time
 	APIServerCC *grpc.ClientConn
 	ClusterCli  controlplanev1alpha1.ClusterServiceClient
+	SandboxCli  controlplanev1alpha1.SandboxServiceClient
 	RepoRoot    string
 	RunDir      string
 	ConfigDir   string
 	AssetsDir   string
+
+	// DaemonNodeID is the UUID the daemon-under-test reported when it
+	// registered. Specs that issue ListSandboxes use it to scope the
+	// query to "our" daemon — DynamoDB Local is shared, so a leftover
+	// row from a previous run could otherwise leak through.
+	DaemonNodeID string
+
+	// EgressEnabled reflects what the daemon config was rendered
+	// with. The network scenario reads this to decide whether to run.
+	EgressEnabled bool
 }
 
 // suite is the package-level handle scenarios read from.
@@ -117,17 +128,44 @@ var _ = BeforeSuite(func() {
 
 	// --- snapshot bucket -----------------------------------------------
 	Expect(infra.EnsureBucket(ctx, s3Client, snapshotBucket)).To(Succeed())
+	// Empty any artefacts that survived a previous run so the
+	// scenario-C snapshot assertions don't see ghost objects, and
+	// register a cleanup so we leave MinIO tidy.
+	Expect(infra.EmptyBucket(ctx, s3Client, snapshotBucket)).To(Succeed())
+	DeferCleanup(func() {
+		cleanCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+		_ = infra.EmptyBucket(cleanCtx, s3Client, snapshotBucket)
+	})
 
 	// --- render configs ------------------------------------------------
+	suite.EgressEnabled = os.Geteuid() == 0
+
+	// The firecracker API socket lives at
+	// <chroot>/firecracker/<sandbox-id>/root/firecracker.sock — and
+	// Linux caps sun_path at 108 bytes. Our run-dir under the
+	// project tree already eats ~75 chars, which blows the limit
+	// once the daemon appends its bookkeeping suffix.
+	//
+	// /tmp would have headroom but is mounted nodev on Ubuntu, so
+	// the jailer-created /dev/net/tun device node inside the
+	// chroot can't be opened (firecracker exits with TapOpen
+	// PermissionDenied). /var/tmp is on the root filesystem on
+	// stock distros — short path AND device access. Logs and
+	// configs stay in run-dir where the long path doesn't matter.
+	chrootDir, err := os.MkdirTemp("/var/tmp", "yaghan-e2e-chroot-")
+	Expect(err).NotTo(HaveOccurred(), "create chroot tempdir")
+	DeferCleanup(func() { _ = os.RemoveAll(chrootDir) })
+
 	apiCfg := filepath.Join(suite.ConfigDir, "api-server.yaml")
 	daemonCfg := filepath.Join(suite.ConfigDir, "daemon.yaml")
 	renderTemplate(filepath.Join("testdata", "api-server.yaml.tmpl"), apiCfg, nil)
-	renderTemplate(filepath.Join("testdata", "daemon.yaml.tmpl"), daemonCfg, map[string]string{
+	renderTemplate(filepath.Join("testdata", "daemon.yaml.tmpl"), daemonCfg, map[string]any{
 		"AssetsDir":     suite.AssetsDir,
-		"ChrootDir":     filepath.Join(suite.RunDir, "chroot"),
+		"ChrootDir":     chrootDir,
 		"SessionIDFile": filepath.Join(suite.RunDir, "session.id"),
+		"EgressEnabled": suite.EgressEnabled,
 	})
-	Expect(os.MkdirAll(filepath.Join(suite.RunDir, "chroot"), 0o755)).To(Succeed())
 
 	// --- binaries on PATH ---------------------------------------------
 	binDir := filepath.Join(suite.RepoRoot, "e2e", "bin")
@@ -154,6 +192,7 @@ var _ = BeforeSuite(func() {
 	Expect(err).NotTo(HaveOccurred())
 	DeferCleanup(func() { _ = suite.APIServerCC.Close() })
 	suite.ClusterCli = controlplanev1alpha1.NewClusterServiceClient(suite.APIServerCC)
+	suite.SandboxCli = controlplanev1alpha1.NewSandboxServiceClient(suite.APIServerCC)
 
 	// --- daemon --------------------------------------------------------
 	daemonProc, err := daemonproc.Start(ctx, daemonproc.Options{
@@ -168,8 +207,9 @@ var _ = BeforeSuite(func() {
 		"daemon gRPC health (log: %s)", daemonProc.LogPath())
 
 	// --- daemon registers a healthy node ------------------------------
-	Expect(waitForRegisteredNode(ctx, suite.ClusterCli)).To(Succeed(),
-		"daemon never registered as healthy")
+	nodeID, err := waitForRegisteredNode(ctx, suite.ClusterCli)
+	Expect(err).NotTo(HaveOccurred(), "daemon never registered as healthy")
+	suite.DaemonNodeID = nodeID
 })
 
 // preflight fails the suite early with a clear message when something
@@ -220,8 +260,8 @@ func renderTemplate(tmplPath, outPath string, data any) {
 }
 
 // waitForRegisteredNode blocks until ListNodes returns one node in
-// PHASE_HEALTHY. Polls every 500ms.
-func waitForRegisteredNode(ctx context.Context, cli controlplanev1alpha1.ClusterServiceClient) error {
+// PHASE_HEALTHY and returns that node's id. Polls every 500ms.
+func waitForRegisteredNode(ctx context.Context, cli controlplanev1alpha1.ClusterServiceClient) (string, error) {
 	ticker := time.NewTicker(500 * time.Millisecond)
 	defer ticker.Stop()
 
@@ -235,13 +275,13 @@ func waitForRegisteredNode(ctx context.Context, cli controlplanev1alpha1.Cluster
 		case err != nil:
 			lastErr = err
 		case len(resp.GetNodes()) >= 1:
-			return nil
+			return resp.GetNodes()[0].GetMetadata().GetId(), nil
 		default:
 			lastErr = errors.New("no nodes in PHASE_HEALTHY yet")
 		}
 		select {
 		case <-ctx.Done():
-			return fmt.Errorf("wait for registered node: %w (last: %w)", ctx.Err(), lastErr)
+			return "", fmt.Errorf("wait for registered node: %w (last: %w)", ctx.Err(), lastErr)
 		case <-ticker.C:
 		}
 	}

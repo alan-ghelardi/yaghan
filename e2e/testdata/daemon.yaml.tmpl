@@ -8,11 +8,10 @@
 #   {{.SessionIDFile}}   per-run path the controller persists its
 #                        session_id to (default /var/lib/yaghan/...
 #                        requires root)
-#
-# `network.egress-enabled` is explicitly false: the daemon's config
-# default is true, and setupEgress writes to /proc/sys/net/ipv4/ip_forward
-# (requires root). The first scenario tests node registration only —
-# sandbox launch is out of scope, so we don't need egress.
+#   {{.EgressEnabled}}   true when running under sudo (sandbox-launching
+#                        scenarios), false otherwise. setupEgress
+#                        writes to /proc/sys/net/ipv4/ip_forward and
+#                        installs iptables rules, both root-only.
 
 grpc-port: 9091
 
@@ -55,7 +54,7 @@ api-server:
   address: localhost:9090
 
 network:
-  egress-enabled: false
+  egress-enabled: {{.EgressEnabled}}
 
 firecracker:
   binary-name: firecracker
