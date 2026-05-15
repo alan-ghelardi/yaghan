@@ -52,6 +52,17 @@ const (
 	pidPollInterval   = 10 * time.Millisecond
 	gracefulShutdown  = 500 * time.Millisecond
 	forceShutdownWait = 100 * time.Millisecond
+
+	// agentReadyTimeout bounds how long CreateMicroVM / LoadSnapshot
+	// wait for the in-guest agent to bind its vsock listener after
+	// firecracker reports InstanceInfoStateRunning. The kernel boot
+	// and init handoff dominate; 30s is comfortable on slow hosts.
+	agentReadyTimeout = 30 * time.Second
+	// agentReadyPollInterval governs the retry cadence between
+	// CONNECT handshake attempts during the readiness wait. 100ms is
+	// well below the typical kernel-boot time so we don't drag out
+	// the happy path with idle sleeps.
+	agentReadyPollInterval = 100 * time.Millisecond
 )
 
 // vmIDPattern is the constraint both Firecracker and the jailer enforce on
@@ -236,6 +247,12 @@ func (f *firecracker) CreateMicroVM(ctx context.Context, input *CreateMicroVMInp
 	}
 
 	udsHostPath, agentPort := vsockEndpoint(jailRoot, input)
+	if agentPort != 0 {
+		if err := waitUntilAgentReady(ctx, udsHostPath, agentPort); err != nil {
+			f.killForkedFirecracker(input.ID)
+			return nil, fmt.Errorf("agent did not become ready (artifacts kept at %s): %w", vmDir, err)
+		}
+	}
 	return f.registerVM(registerVMInput{
 		id:           input.ID,
 		networkIndex: input.Network.Index,
@@ -325,10 +342,17 @@ func (f *firecracker) LoadSnapshot(ctx context.Context, input *LoadSnapshotInput
 		return nil, fmt.Errorf("loaded vm did not reach Running (artifacts kept at %s): %w", vmDir, err)
 	}
 
+	vsockUDS := resolveVsockUDS(jailRoot, input.VsockUDSPath)
+	if input.AgentVsockPort != 0 {
+		if err := waitUntilAgentReady(ctx, vsockUDS, input.AgentVsockPort); err != nil {
+			f.killForkedFirecracker(input.ID)
+			return nil, fmt.Errorf("agent did not become ready after restore (artifacts kept at %s): %w", vmDir, err)
+		}
+	}
 	return f.registerVM(registerVMInput{
 		id:           input.ID,
 		networkIndex: input.Network.Index,
-		vsockUDS:     resolveVsockUDS(jailRoot, input.VsockUDSPath),
+		vsockUDS:     vsockUDS,
 		vsockPort:    input.AgentVsockPort,
 	}, apiClient)
 }
@@ -588,6 +612,37 @@ func waitUntilRunning(ctx context.Context, c *fcclient.FirecrackerAPI) error {
 		return resp != nil && resp.Payload != nil && resp.Payload.State != nil &&
 			*resp.Payload.State == models.InstanceInfoStateRunning
 	})
+}
+
+// waitUntilAgentReady retries a vsock CONNECT handshake until the
+// in-guest agent has bound its listener — closing the proto contract
+// for PHASE_RUNNING ("VM booted, agent ready") against the
+// firecracker-side ready signal, which only reflects that the VM CPU
+// is running. Returns as soon as one handshake succeeds; the probe
+// transport is closed immediately, and the long-lived transport is
+// dialed lazily by [firecrackerVM.VSock] on the first real RPC.
+func waitUntilAgentReady(ctx context.Context, udsPath string, agentPort uint32) error {
+	ctx, cancel := context.WithTimeout(ctx, agentReadyTimeout)
+	defer cancel()
+
+	ticker := time.NewTicker(agentReadyPollInterval)
+	defer ticker.Stop()
+
+	var lastErr error
+	for {
+		tr, err := transport.New(udsPath, agentPort)
+		if err == nil {
+			_ = tr.Close()
+			return nil
+		}
+		lastErr = err
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf("agent vsock not ready after %s: %w (last: %w)",
+				agentReadyTimeout, ctx.Err(), lastErr)
+		case <-ticker.C:
+		}
+	}
 }
 
 // waitUntilAPIReady polls DescribeInstance until the API socket answers
