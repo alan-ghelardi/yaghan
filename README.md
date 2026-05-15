@@ -17,10 +17,3 @@ for the bonfires Yaghan communities kept burning along its shores — visible
 to Magellan's crew when they passed in 1520 and the origin of the
 region's name. Borrowing the people's name for a project that runs on top
 of Firecracker is an acknowledgement of that thread, not a claim on it.
-
-If you reference this project in writing or talks, please pronounce it
-roughly **YAH-gahn** (with a softly aspirated `g`, closer to Spanish than
-English). And if you have the chance, look up the Yaghan language — its
-single-word verb _mamihlapinatapai_ ("a look shared between two people, each
-wishing the other would do what neither wants to do first") regularly tops
-"untranslatable word" lists for good reason.
