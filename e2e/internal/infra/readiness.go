@@ -63,7 +63,7 @@ func WaitForRedis(ctx context.Context, addr string) error {
 		if err != nil {
 			return err
 		}
-		defer conn.Close()
+		defer func() { _ = conn.Close() }()
 		if _, err := conn.Write([]byte("PING\r\n")); err != nil {
 			return err
 		}
@@ -96,7 +96,7 @@ func WaitForGRPCHealth(ctx context.Context, addr string) error {
 	if err != nil {
 		return fmt.Errorf("dial %s: %w", addr, err)
 	}
-	defer conn.Close()
+	defer func() { _ = conn.Close() }()
 	client := grpc_health_v1.NewHealthClient(conn)
 
 	return poll(ctx, 500*time.Millisecond, func(ctx context.Context) error {

@@ -1,0 +1,89 @@
+---
+# Rendered into the per-run config directory by suite_test.go.
+# Derived from daemon/dev/config.yaml with three placeholders:
+#
+#   {{.AssetsDir}}       absolute path to <repo>/assets
+#   {{.ChrootDir}}       per-run, user-owned chroot tempdir (so the
+#                        daemon doesn't need root to read /srv/jailer)
+#   {{.SessionIDFile}}   per-run path the controller persists its
+#                        session_id to (default /var/lib/yaghan/...
+#                        requires root)
+#
+# `network.egress-enabled` is explicitly false: the daemon's config
+# default is true, and setupEgress writes to /proc/sys/net/ipv4/ip_forward
+# (requires root). The first scenario tests node registration only —
+# sandbox launch is out of scope, so we don't need egress.
+
+grpc-port: 9091
+
+keep-alive:
+  min-time: 30s
+  interval: 30s
+  timeout: 20s
+
+max-concurrent-streams: 4294967295
+
+logger:
+  log-level: debug
+  zap-config:
+    development: true
+    encoding: console
+    outputPaths:
+      - stdout
+    errorOutputPaths:
+      - stderr
+    disableCaller: false
+    disableStacktrace: false
+    sampling:
+    encoderConfig:
+      messageKey: msg
+      levelKey: level
+      timeKey: ts
+      nameKey: logger
+      callerKey: caller
+      functionKey: ""
+      stacktraceKey: stacktrace
+      lineEnding: "\n"
+      levelEncoder: capital
+      timeEncoder: iso8601
+      durationEncoder: string
+      callerEncoder: short
+
+assets-dir: {{.AssetsDir}}
+
+api-server:
+  address: localhost:9090
+
+network:
+  egress-enabled: false
+
+firecracker:
+  binary-name: firecracker
+  jailer-binary-name: jailer
+  jail-uid: 1001
+  jail-gid: 1001
+  attach-console: true
+  chroot-base-dir: {{.ChrootDir}}
+
+microvm:
+  kernel-file: vmlinux
+  rootfs-file: rootfs.ext4
+  kernel-jail-path: /vmlinux
+  rootfs-jail-path: /rootfs.ext4
+  log-jail-path: /firecracker.log
+  vsock-uds-jail-path: /v.sock
+  agent-init-path: /init
+  agent-vsock-port: 1024
+  guest-cid: 3
+  guest-mac: "06:00:AC:10:00:02"
+
+controller:
+  session-id-file: {{.SessionIDFile}}
+  max-retries: 10
+  reconnect-max-interval: 2m
+
+snapshots:
+  s3:
+    bucket-name: microvm-snapshots
+    endpoint: http://localhost:9000
+    use-path-style: true
