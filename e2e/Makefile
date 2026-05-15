@@ -33,7 +33,13 @@ binaries: ## Build api-server, daemon, and yag into ./bin/.
 
 .PHONY: test
 test: fmt vet binaries ## Run the e2e suite. Brings up docker compose stacks, starts the binaries, runs Ginkgo, tears everything down.
-	go test $$(go list ./... ) -coverprofile cover.out
+	# -count=1 bypasses the go test cache: the api-server/daemon/yag
+	# binaries this suite drives are rebuilt outside Go's view (see
+	# hack/build.sh), so a cached pass can mask a broken binary.
+	# Coverage is intentionally not collected here — the code under
+	# test runs in child processes, so `go test -cover` would only
+	# report on e2e/internal/*, not on api-server/daemon/yag.
+	go test -count=1 $$(go list ./... )
 
 ##@ Operational escape hatches
 
