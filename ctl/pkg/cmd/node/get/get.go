@@ -1,4 +1,4 @@
-// Package get implements `sindri node get`. It calls
+// Package get implements `yag node get`. It calls
 // ClusterService.GetNode and renders the response in the user-selected
 // output format using the helpers in ctl/pkg/cli.
 package get
@@ -6,9 +6,9 @@ package get
 import (
 	"fmt"
 
+	controlplanev1alpha1 "github.com/alan-ghelardi/yaghan/apis/gen/yaghan/control_plane/v1alpha1"
+	"github.com/alan-ghelardi/yaghan/ctl/pkg/cli"
 	"github.com/spf13/cobra"
-	controlplanev1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
-	"golang.nuinfra.net/ctl/pkg/cli"
 )
 
 func New(ctx *cli.Context) *cobra.Command {
@@ -22,10 +22,10 @@ The api-server returns the full Node object (metadata, resources,
 status). Use --output-format to switch between yaml (default) and
 json. A human-friendly text view will be added in a future release.`,
 		Example: `  # Show the node in YAML (default).
-  sindri node get my-node
+  yag node get my-node
 
   # Show it as JSON for piping into jq.
-  sindri node get my-node -o json`,
+  yag node get my-node -o json`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return run(ctx, cmd, args)

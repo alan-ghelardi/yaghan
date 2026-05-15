@@ -12,7 +12,7 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/strfmt"
 
-	"golang.nuinfra.net/firecracker-client/models"
+	"github.com/alan-ghelardi/yaghan/firecracker-client/models"
 )
 
 // PutGuestVsockReader is a Reader for the PutGuestVsock structure.

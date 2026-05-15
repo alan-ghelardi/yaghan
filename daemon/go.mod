@@ -1,21 +1,26 @@
-module golang.nuinfra.net/daemon
+module github.com/alan-ghelardi/yaghan/daemon
 
 go 1.26.1
 
 replace (
-	golang.nuinfra.net/agent => ../agent
-	golang.nuinfra.net/apis => ../apis
-	golang.nuinfra.net/commons => ../commons
-	golang.nuinfra.net/firecracker-client => ../firecracker-client
+	github.com/alan-ghelardi/yaghan/agent => ../agent
+	github.com/alan-ghelardi/yaghan/apis => ../apis
+	github.com/alan-ghelardi/yaghan/commons => ../commons
+	github.com/alan-ghelardi/yaghan/firecracker-client => ../firecracker-client
 )
 
 require (
+	github.com/alan-ghelardi/yaghan/agent v0.0.0-00010101000000-000000000000
+	github.com/alan-ghelardi/yaghan/apis v0.0.0-00010101000000-000000000000
+	github.com/alan-ghelardi/yaghan/commons v0.0.0-00010101000000-000000000000
+	github.com/alan-ghelardi/yaghan/firecracker-client v0.0.0-00010101000000-000000000000
 	github.com/aws/aws-sdk-go-v2 v1.41.7
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.16.31
 	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.17.71
 	github.com/aws/aws-sdk-go-v2/service/ec2 v1.300.0
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.80.2
 	github.com/cenkalti/backoff/v5 v5.0.3
+	github.com/coreos/go-iptables v0.8.0
 	github.com/go-openapi/runtime v0.29.3
 	github.com/go-openapi/strfmt v0.26.1
 	github.com/go-openapi/swag/conv v0.26.0
@@ -29,10 +34,6 @@ require (
 	github.com/vishvananda/netns v0.0.5
 	go.uber.org/mock v0.6.0
 	go.uber.org/zap v1.27.0
-	golang.nuinfra.net/agent v0.0.0-00010101000000-000000000000
-	golang.nuinfra.net/apis v0.0.0-00010101000000-000000000000
-	golang.nuinfra.net/commons v0.0.0-00010101000000-000000000000
-	golang.nuinfra.net/firecracker-client v0.0.0-00010101000000-000000000000
 	golang.org/x/sync v0.19.0
 	golang.org/x/sys v0.42.0
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250528174236-200df99c418a
@@ -72,7 +73,6 @@ require (
 	github.com/containerd/errdefs/pkg v0.3.0 // indirect
 	github.com/containerd/log v0.1.0 // indirect
 	github.com/containerd/platforms v0.2.1 // indirect
-	github.com/coreos/go-iptables v0.8.0 // indirect
 	github.com/cpuguy83/dockercfg v0.3.2 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.4.0 // indirect

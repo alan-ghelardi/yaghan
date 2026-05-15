@@ -3,119 +3,119 @@
 
 ## Table of Contents
 
-- [nuinfra/auth/v1/auth.proto](#nuinfra_auth_v1_auth-proto)
-    - [Actor](#nuinfra-auth-v1-Actor)
-    - [InsufficientScopes](#nuinfra-auth-v1-InsufficientScopes)
+- [yaghan/auth/v1/auth.proto](#yaghan_auth_v1_auth-proto)
+    - [Actor](#yaghan-auth-v1-Actor)
+    - [InsufficientScopes](#yaghan-auth-v1-InsufficientScopes)
   
-    - [File-level Extensions](#nuinfra_auth_v1_auth-proto-extensions)
+    - [File-level Extensions](#yaghan_auth_v1_auth-proto-extensions)
   
-- [nuinfra/control_plane/v1alpha1/sandbox.proto](#nuinfra_control_plane_v1alpha1_sandbox-proto)
-    - [CreateSandboxRequest](#nuinfra-control_plane-v1alpha1-CreateSandboxRequest)
-    - [CreateSandboxResponse](#nuinfra-control_plane-v1alpha1-CreateSandboxResponse)
-    - [DeleteSandboxRequest](#nuinfra-control_plane-v1alpha1-DeleteSandboxRequest)
-    - [DeleteSandboxResponse](#nuinfra-control_plane-v1alpha1-DeleteSandboxResponse)
-    - [GetSandboxRequest](#nuinfra-control_plane-v1alpha1-GetSandboxRequest)
-    - [GetSandboxResponse](#nuinfra-control_plane-v1alpha1-GetSandboxResponse)
-    - [Intent](#nuinfra-control_plane-v1alpha1-Intent)
-    - [ListSandboxesRequest](#nuinfra-control_plane-v1alpha1-ListSandboxesRequest)
-    - [ListSandboxesResponse](#nuinfra-control_plane-v1alpha1-ListSandboxesResponse)
-    - [NodeRef](#nuinfra-control_plane-v1alpha1-NodeRef)
-    - [PauseSandboxRequest](#nuinfra-control_plane-v1alpha1-PauseSandboxRequest)
-    - [PauseSandboxResponse](#nuinfra-control_plane-v1alpha1-PauseSandboxResponse)
-    - [Resources](#nuinfra-control_plane-v1alpha1-Resources)
-    - [ResumeSandboxRequest](#nuinfra-control_plane-v1alpha1-ResumeSandboxRequest)
-    - [ResumeSandboxResponse](#nuinfra-control_plane-v1alpha1-ResumeSandboxResponse)
-    - [Sandbox](#nuinfra-control_plane-v1alpha1-Sandbox)
-    - [SandboxMeta](#nuinfra-control_plane-v1alpha1-SandboxMeta)
-    - [SandboxMeta.LabelsEntry](#nuinfra-control_plane-v1alpha1-SandboxMeta-LabelsEntry)
-    - [SandboxSource](#nuinfra-control_plane-v1alpha1-SandboxSource)
-    - [SandboxStatus](#nuinfra-control_plane-v1alpha1-SandboxStatus)
-    - [SnapshotOutput](#nuinfra-control_plane-v1alpha1-SnapshotOutput)
-    - [StartSnapshotInput](#nuinfra-control_plane-v1alpha1-StartSnapshotInput)
-    - [StartSnapshotRequest](#nuinfra-control_plane-v1alpha1-StartSnapshotRequest)
-    - [StartSnapshotResponse](#nuinfra-control_plane-v1alpha1-StartSnapshotResponse)
+- [yaghan/control_plane/v1alpha1/sandbox.proto](#yaghan_control_plane_v1alpha1_sandbox-proto)
+    - [CreateSandboxRequest](#yaghan-control_plane-v1alpha1-CreateSandboxRequest)
+    - [CreateSandboxResponse](#yaghan-control_plane-v1alpha1-CreateSandboxResponse)
+    - [DeleteSandboxRequest](#yaghan-control_plane-v1alpha1-DeleteSandboxRequest)
+    - [DeleteSandboxResponse](#yaghan-control_plane-v1alpha1-DeleteSandboxResponse)
+    - [GetSandboxRequest](#yaghan-control_plane-v1alpha1-GetSandboxRequest)
+    - [GetSandboxResponse](#yaghan-control_plane-v1alpha1-GetSandboxResponse)
+    - [Intent](#yaghan-control_plane-v1alpha1-Intent)
+    - [ListSandboxesRequest](#yaghan-control_plane-v1alpha1-ListSandboxesRequest)
+    - [ListSandboxesResponse](#yaghan-control_plane-v1alpha1-ListSandboxesResponse)
+    - [NodeRef](#yaghan-control_plane-v1alpha1-NodeRef)
+    - [PauseSandboxRequest](#yaghan-control_plane-v1alpha1-PauseSandboxRequest)
+    - [PauseSandboxResponse](#yaghan-control_plane-v1alpha1-PauseSandboxResponse)
+    - [Resources](#yaghan-control_plane-v1alpha1-Resources)
+    - [ResumeSandboxRequest](#yaghan-control_plane-v1alpha1-ResumeSandboxRequest)
+    - [ResumeSandboxResponse](#yaghan-control_plane-v1alpha1-ResumeSandboxResponse)
+    - [Sandbox](#yaghan-control_plane-v1alpha1-Sandbox)
+    - [SandboxMeta](#yaghan-control_plane-v1alpha1-SandboxMeta)
+    - [SandboxMeta.LabelsEntry](#yaghan-control_plane-v1alpha1-SandboxMeta-LabelsEntry)
+    - [SandboxSource](#yaghan-control_plane-v1alpha1-SandboxSource)
+    - [SandboxStatus](#yaghan-control_plane-v1alpha1-SandboxStatus)
+    - [SnapshotOutput](#yaghan-control_plane-v1alpha1-SnapshotOutput)
+    - [StartSnapshotInput](#yaghan-control_plane-v1alpha1-StartSnapshotInput)
+    - [StartSnapshotRequest](#yaghan-control_plane-v1alpha1-StartSnapshotRequest)
+    - [StartSnapshotResponse](#yaghan-control_plane-v1alpha1-StartSnapshotResponse)
   
-    - [ListSandboxesRequest.Order](#nuinfra-control_plane-v1alpha1-ListSandboxesRequest-Order)
-    - [SandboxStatus.Phase](#nuinfra-control_plane-v1alpha1-SandboxStatus-Phase)
+    - [ListSandboxesRequest.Order](#yaghan-control_plane-v1alpha1-ListSandboxesRequest-Order)
+    - [SandboxStatus.Phase](#yaghan-control_plane-v1alpha1-SandboxStatus-Phase)
   
-    - [SandboxService](#nuinfra-control_plane-v1alpha1-SandboxService)
+    - [SandboxService](#yaghan-control_plane-v1alpha1-SandboxService)
   
-- [nuinfra/control_plane/v1alpha1/cluster.proto](#nuinfra_control_plane_v1alpha1_cluster-proto)
-    - [ConnectionRequest](#nuinfra-control_plane-v1alpha1-ConnectionRequest)
-    - [ConnectionResponse](#nuinfra-control_plane-v1alpha1-ConnectionResponse)
-    - [EC2InstanceMeta](#nuinfra-control_plane-v1alpha1-EC2InstanceMeta)
-    - [EstablishSessionRequest](#nuinfra-control_plane-v1alpha1-EstablishSessionRequest)
-    - [EstablishSessionResponse](#nuinfra-control_plane-v1alpha1-EstablishSessionResponse)
-    - [Event](#nuinfra-control_plane-v1alpha1-Event)
-    - [GetNodeRequest](#nuinfra-control_plane-v1alpha1-GetNodeRequest)
-    - [GetNodeResponse](#nuinfra-control_plane-v1alpha1-GetNodeResponse)
-    - [ListNodesRequest](#nuinfra-control_plane-v1alpha1-ListNodesRequest)
-    - [ListNodesResponse](#nuinfra-control_plane-v1alpha1-ListNodesResponse)
-    - [Node](#nuinfra-control_plane-v1alpha1-Node)
-    - [NodeMeta](#nuinfra-control_plane-v1alpha1-NodeMeta)
-    - [NodeMetrics](#nuinfra-control_plane-v1alpha1-NodeMetrics)
-    - [NodeResources](#nuinfra-control_plane-v1alpha1-NodeResources)
-    - [NodeStatus](#nuinfra-control_plane-v1alpha1-NodeStatus)
-    - [PatchNodeRequest](#nuinfra-control_plane-v1alpha1-PatchNodeRequest)
-    - [UpdateSandboxRequest](#nuinfra-control_plane-v1alpha1-UpdateSandboxRequest)
+- [yaghan/control_plane/v1alpha1/cluster.proto](#yaghan_control_plane_v1alpha1_cluster-proto)
+    - [ConnectionRequest](#yaghan-control_plane-v1alpha1-ConnectionRequest)
+    - [ConnectionResponse](#yaghan-control_plane-v1alpha1-ConnectionResponse)
+    - [EC2InstanceMeta](#yaghan-control_plane-v1alpha1-EC2InstanceMeta)
+    - [EstablishSessionRequest](#yaghan-control_plane-v1alpha1-EstablishSessionRequest)
+    - [EstablishSessionResponse](#yaghan-control_plane-v1alpha1-EstablishSessionResponse)
+    - [Event](#yaghan-control_plane-v1alpha1-Event)
+    - [GetNodeRequest](#yaghan-control_plane-v1alpha1-GetNodeRequest)
+    - [GetNodeResponse](#yaghan-control_plane-v1alpha1-GetNodeResponse)
+    - [ListNodesRequest](#yaghan-control_plane-v1alpha1-ListNodesRequest)
+    - [ListNodesResponse](#yaghan-control_plane-v1alpha1-ListNodesResponse)
+    - [Node](#yaghan-control_plane-v1alpha1-Node)
+    - [NodeMeta](#yaghan-control_plane-v1alpha1-NodeMeta)
+    - [NodeMetrics](#yaghan-control_plane-v1alpha1-NodeMetrics)
+    - [NodeResources](#yaghan-control_plane-v1alpha1-NodeResources)
+    - [NodeStatus](#yaghan-control_plane-v1alpha1-NodeStatus)
+    - [PatchNodeRequest](#yaghan-control_plane-v1alpha1-PatchNodeRequest)
+    - [UpdateSandboxRequest](#yaghan-control_plane-v1alpha1-UpdateSandboxRequest)
   
-    - [ListNodesRequest.Order](#nuinfra-control_plane-v1alpha1-ListNodesRequest-Order)
-    - [NodeStatus.Phase](#nuinfra-control_plane-v1alpha1-NodeStatus-Phase)
+    - [ListNodesRequest.Order](#yaghan-control_plane-v1alpha1-ListNodesRequest-Order)
+    - [NodeStatus.Phase](#yaghan-control_plane-v1alpha1-NodeStatus-Phase)
   
-    - [ClusterService](#nuinfra-control_plane-v1alpha1-ClusterService)
+    - [ClusterService](#yaghan-control_plane-v1alpha1-ClusterService)
   
-- [nuinfra/control_plane/v1alpha1/snapshot.proto](#nuinfra_control_plane_v1alpha1_snapshot-proto)
-    - [CreateSnapshotRequest](#nuinfra-control_plane-v1alpha1-CreateSnapshotRequest)
-    - [CreateSnapshotResponse](#nuinfra-control_plane-v1alpha1-CreateSnapshotResponse)
-    - [DeleteSnapshotRequest](#nuinfra-control_plane-v1alpha1-DeleteSnapshotRequest)
-    - [DeleteSnapshotResponse](#nuinfra-control_plane-v1alpha1-DeleteSnapshotResponse)
-    - [GetSnapshotRequest](#nuinfra-control_plane-v1alpha1-GetSnapshotRequest)
-    - [GetSnapshotResponse](#nuinfra-control_plane-v1alpha1-GetSnapshotResponse)
-    - [ListSnapshotsRequest](#nuinfra-control_plane-v1alpha1-ListSnapshotsRequest)
-    - [ListSnapshotsResponse](#nuinfra-control_plane-v1alpha1-ListSnapshotsResponse)
-    - [SandboxRef](#nuinfra-control_plane-v1alpha1-SandboxRef)
-    - [Snapshot](#nuinfra-control_plane-v1alpha1-Snapshot)
-    - [SnapshotMeta](#nuinfra-control_plane-v1alpha1-SnapshotMeta)
+- [yaghan/control_plane/v1alpha1/snapshot.proto](#yaghan_control_plane_v1alpha1_snapshot-proto)
+    - [CreateSnapshotRequest](#yaghan-control_plane-v1alpha1-CreateSnapshotRequest)
+    - [CreateSnapshotResponse](#yaghan-control_plane-v1alpha1-CreateSnapshotResponse)
+    - [DeleteSnapshotRequest](#yaghan-control_plane-v1alpha1-DeleteSnapshotRequest)
+    - [DeleteSnapshotResponse](#yaghan-control_plane-v1alpha1-DeleteSnapshotResponse)
+    - [GetSnapshotRequest](#yaghan-control_plane-v1alpha1-GetSnapshotRequest)
+    - [GetSnapshotResponse](#yaghan-control_plane-v1alpha1-GetSnapshotResponse)
+    - [ListSnapshotsRequest](#yaghan-control_plane-v1alpha1-ListSnapshotsRequest)
+    - [ListSnapshotsResponse](#yaghan-control_plane-v1alpha1-ListSnapshotsResponse)
+    - [SandboxRef](#yaghan-control_plane-v1alpha1-SandboxRef)
+    - [Snapshot](#yaghan-control_plane-v1alpha1-Snapshot)
+    - [SnapshotMeta](#yaghan-control_plane-v1alpha1-SnapshotMeta)
   
-    - [ListSnapshotsRequest.Order](#nuinfra-control_plane-v1alpha1-ListSnapshotsRequest-Order)
+    - [ListSnapshotsRequest.Order](#yaghan-control_plane-v1alpha1-ListSnapshotsRequest-Order)
   
-    - [SnapshotService](#nuinfra-control_plane-v1alpha1-SnapshotService)
+    - [SnapshotService](#yaghan-control_plane-v1alpha1-SnapshotService)
   
-- [nuinfra/data_plane/v1alpha1/daemon.proto](#nuinfra_data_plane_v1alpha1_daemon-proto)
-    - [CancelRequest](#nuinfra-data_plane-v1alpha1-CancelRequest)
-    - [DownloadFileRequest](#nuinfra-data_plane-v1alpha1-DownloadFileRequest)
-    - [DownloadFileResponse](#nuinfra-data_plane-v1alpha1-DownloadFileResponse)
-    - [ExecProcess](#nuinfra-data_plane-v1alpha1-ExecProcess)
-    - [ExecProcess.EnvEntry](#nuinfra-data_plane-v1alpha1-ExecProcess-EnvEntry)
-    - [ExecRequest](#nuinfra-data_plane-v1alpha1-ExecRequest)
-    - [ExecResponse](#nuinfra-data_plane-v1alpha1-ExecResponse)
-    - [ProcessResult](#nuinfra-data_plane-v1alpha1-ProcessResult)
-    - [ResizePTY](#nuinfra-data_plane-v1alpha1-ResizePTY)
-    - [StdinChunk](#nuinfra-data_plane-v1alpha1-StdinChunk)
-    - [StreamChunk](#nuinfra-data_plane-v1alpha1-StreamChunk)
-    - [UploadFileRequest](#nuinfra-data_plane-v1alpha1-UploadFileRequest)
-    - [UploadFileResponse](#nuinfra-data_plane-v1alpha1-UploadFileResponse)
+- [yaghan/data_plane/v1alpha1/daemon.proto](#yaghan_data_plane_v1alpha1_daemon-proto)
+    - [CancelRequest](#yaghan-data_plane-v1alpha1-CancelRequest)
+    - [DownloadFileRequest](#yaghan-data_plane-v1alpha1-DownloadFileRequest)
+    - [DownloadFileResponse](#yaghan-data_plane-v1alpha1-DownloadFileResponse)
+    - [ExecProcess](#yaghan-data_plane-v1alpha1-ExecProcess)
+    - [ExecProcess.EnvEntry](#yaghan-data_plane-v1alpha1-ExecProcess-EnvEntry)
+    - [ExecRequest](#yaghan-data_plane-v1alpha1-ExecRequest)
+    - [ExecResponse](#yaghan-data_plane-v1alpha1-ExecResponse)
+    - [ProcessResult](#yaghan-data_plane-v1alpha1-ProcessResult)
+    - [ResizePTY](#yaghan-data_plane-v1alpha1-ResizePTY)
+    - [StdinChunk](#yaghan-data_plane-v1alpha1-StdinChunk)
+    - [StreamChunk](#yaghan-data_plane-v1alpha1-StreamChunk)
+    - [UploadFileRequest](#yaghan-data_plane-v1alpha1-UploadFileRequest)
+    - [UploadFileResponse](#yaghan-data_plane-v1alpha1-UploadFileResponse)
   
-    - [StreamChunk.StreamType](#nuinfra-data_plane-v1alpha1-StreamChunk-StreamType)
+    - [StreamChunk.StreamType](#yaghan-data_plane-v1alpha1-StreamChunk-StreamType)
   
-    - [DaemonService](#nuinfra-data_plane-v1alpha1-DaemonService)
+    - [DaemonService](#yaghan-data_plane-v1alpha1-DaemonService)
   
-- [nuinfra/data_plane/v1alpha1/agent.proto](#nuinfra_data_plane_v1alpha1_agent-proto)
-    - [AgentRequest](#nuinfra-data_plane-v1alpha1-AgentRequest)
-    - [AgentResponse](#nuinfra-data_plane-v1alpha1-AgentResponse)
+- [yaghan/data_plane/v1alpha1/agent.proto](#yaghan_data_plane_v1alpha1_agent-proto)
+    - [AgentRequest](#yaghan-data_plane-v1alpha1-AgentRequest)
+    - [AgentResponse](#yaghan-data_plane-v1alpha1-AgentResponse)
   
 - [Scalar Value Types](#scalar-value-types)
 
 
 
-<a name="nuinfra_auth_v1_auth-proto"></a>
+<a name="yaghan_auth_v1_auth-proto"></a>
 <p align="right"><a href="#top">Top</a></p>
 
-## nuinfra/auth/v1/auth.proto
+## yaghan/auth/v1/auth.proto
 
 
 
-<a name="nuinfra-auth-v1-Actor"></a>
+<a name="yaghan-auth-v1-Actor"></a>
 
 ### Actor
 Actor represents the identity that performed an action on a Resource,
@@ -142,7 +142,7 @@ The identity is derived from the authentication context.
 
 
 
-<a name="nuinfra-auth-v1-InsufficientScopes"></a>
+<a name="yaghan-auth-v1-InsufficientScopes"></a>
 
 ### InsufficientScopes
 InsufficientScopes provides further details on unauthorized errors.
@@ -162,7 +162,7 @@ InsufficientScopes provides further details on unauthorized errors.
  
 
 
-<a name="nuinfra_auth_v1_auth-proto-extensions"></a>
+<a name="yaghan_auth_v1_auth-proto-extensions"></a>
 
 ### File-level Extensions
 | Extension | Type | Base | Number | Description |
@@ -175,14 +175,14 @@ InsufficientScopes provides further details on unauthorized errors.
 
 
 
-<a name="nuinfra_control_plane_v1alpha1_sandbox-proto"></a>
+<a name="yaghan_control_plane_v1alpha1_sandbox-proto"></a>
 <p align="right"><a href="#top">Top</a></p>
 
-## nuinfra/control_plane/v1alpha1/sandbox.proto
+## yaghan/control_plane/v1alpha1/sandbox.proto
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-CreateSandboxRequest"></a>
+<a name="yaghan-control_plane-v1alpha1-CreateSandboxRequest"></a>
 
 ### CreateSandboxRequest
 
@@ -190,14 +190,14 @@ InsufficientScopes provides further details on unauthorized errors.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| sandbox | [Sandbox](#nuinfra-control_plane-v1alpha1-Sandbox) |  |  |
+| sandbox | [Sandbox](#yaghan-control_plane-v1alpha1-Sandbox) |  |  |
 
 
 
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-CreateSandboxResponse"></a>
+<a name="yaghan-control_plane-v1alpha1-CreateSandboxResponse"></a>
 
 ### CreateSandboxResponse
 
@@ -205,14 +205,14 @@ InsufficientScopes provides further details on unauthorized errors.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| sandbox | [Sandbox](#nuinfra-control_plane-v1alpha1-Sandbox) |  |  |
+| sandbox | [Sandbox](#yaghan-control_plane-v1alpha1-Sandbox) |  |  |
 
 
 
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-DeleteSandboxRequest"></a>
+<a name="yaghan-control_plane-v1alpha1-DeleteSandboxRequest"></a>
 
 ### DeleteSandboxRequest
 
@@ -228,7 +228,7 @@ InsufficientScopes provides further details on unauthorized errors.
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-DeleteSandboxResponse"></a>
+<a name="yaghan-control_plane-v1alpha1-DeleteSandboxResponse"></a>
 
 ### DeleteSandboxResponse
 
@@ -236,14 +236,14 @@ InsufficientScopes provides further details on unauthorized errors.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| sandbox | [Sandbox](#nuinfra-control_plane-v1alpha1-Sandbox) |  |  |
+| sandbox | [Sandbox](#yaghan-control_plane-v1alpha1-Sandbox) |  |  |
 
 
 
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-GetSandboxRequest"></a>
+<a name="yaghan-control_plane-v1alpha1-GetSandboxRequest"></a>
 
 ### GetSandboxRequest
 
@@ -258,7 +258,7 @@ InsufficientScopes provides further details on unauthorized errors.
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-GetSandboxResponse"></a>
+<a name="yaghan-control_plane-v1alpha1-GetSandboxResponse"></a>
 
 ### GetSandboxResponse
 
@@ -266,14 +266,14 @@ InsufficientScopes provides further details on unauthorized errors.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| sandbox | [Sandbox](#nuinfra-control_plane-v1alpha1-Sandbox) |  |  |
+| sandbox | [Sandbox](#yaghan-control_plane-v1alpha1-Sandbox) |  |  |
 
 
 
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-Intent"></a>
+<a name="yaghan-control_plane-v1alpha1-Intent"></a>
 
 ### Intent
 
@@ -281,15 +281,15 @@ InsufficientScopes provides further details on unauthorized errors.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| phase | [SandboxStatus.Phase](#nuinfra-control_plane-v1alpha1-SandboxStatus-Phase) |  |  |
-| start_snapshot | [StartSnapshotInput](#nuinfra-control_plane-v1alpha1-StartSnapshotInput) |  |  |
+| phase | [SandboxStatus.Phase](#yaghan-control_plane-v1alpha1-SandboxStatus-Phase) |  |  |
+| start_snapshot | [StartSnapshotInput](#yaghan-control_plane-v1alpha1-StartSnapshotInput) |  |  |
 
 
 
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-ListSandboxesRequest"></a>
+<a name="yaghan-control_plane-v1alpha1-ListSandboxesRequest"></a>
 
 ### ListSandboxesRequest
 Request message for listing sandboxes with optional filtering and pagination.
@@ -299,17 +299,17 @@ Request message for listing sandboxes with optional filtering and pagination.
 | ----- | ---- | ----- | ----------- |
 | namespace | [string](#string) |  | Filters sandboxes by namespace. When provided, must match the format: - starts with a lowercase letter - contains only lowercase alphanumeric characters or hyphens - ends with an alphanumeric character Example: &#34;default&#34;, &#34;team-a&#34; May be empty when node_id is supplied (e.g. the data-plane daemon&#39;s per-node resync scan). |
 | node_id | [string](#string) |  | Filters sandboxes by the ID of the node where they are scheduled or running. |
-| status_phase | [SandboxStatus.Phase](#nuinfra-control_plane-v1alpha1-SandboxStatus-Phase) |  | Filters sandboxes by their current lifecycle phase. If unset, sandboxes in all phases are returned. |
+| status_phase | [SandboxStatus.Phase](#yaghan-control_plane-v1alpha1-SandboxStatus-Phase) |  | Filters sandboxes by their current lifecycle phase. If unset, sandboxes in all phases are returned. |
 | continuation_token | [string](#string) |  | Token used for pagination. Pass the value returned in a previous response to retrieve the next page of results. Leave empty to start listing from the beginning. |
 | page_size | [int32](#int32) |  | Maximum number of sandboxes to return in this request. Defaults to 30 if not specified. The maximum allowed value is 1000. |
-| sort_order | [ListSandboxesRequest.Order](#nuinfra-control_plane-v1alpha1-ListSandboxesRequest-Order) |  | Sort order applied to the results based on last_modified_at. |
+| sort_order | [ListSandboxesRequest.Order](#yaghan-control_plane-v1alpha1-ListSandboxesRequest-Order) |  | Sort order applied to the results based on last_modified_at. |
 
 
 
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-ListSandboxesResponse"></a>
+<a name="yaghan-control_plane-v1alpha1-ListSandboxesResponse"></a>
 
 ### ListSandboxesResponse
 Response message containing a page of sandboxes.
@@ -317,7 +317,7 @@ Response message containing a page of sandboxes.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| sandboxes | [Sandbox](#nuinfra-control_plane-v1alpha1-Sandbox) | repeated | The list of sandboxes matching the request filters. |
+| sandboxes | [Sandbox](#yaghan-control_plane-v1alpha1-Sandbox) | repeated | The list of sandboxes matching the request filters. |
 | continuation_token | [string](#string) |  | Token to retrieve the next page of results. Empty if there are no more results. |
 
 
@@ -325,7 +325,7 @@ Response message containing a page of sandboxes.
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-NodeRef"></a>
+<a name="yaghan-control_plane-v1alpha1-NodeRef"></a>
 
 ### NodeRef
 
@@ -340,7 +340,7 @@ Response message containing a page of sandboxes.
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-PauseSandboxRequest"></a>
+<a name="yaghan-control_plane-v1alpha1-PauseSandboxRequest"></a>
 
 ### PauseSandboxRequest
 
@@ -356,7 +356,7 @@ Response message containing a page of sandboxes.
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-PauseSandboxResponse"></a>
+<a name="yaghan-control_plane-v1alpha1-PauseSandboxResponse"></a>
 
 ### PauseSandboxResponse
 
@@ -364,14 +364,14 @@ Response message containing a page of sandboxes.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| sandbox | [Sandbox](#nuinfra-control_plane-v1alpha1-Sandbox) |  |  |
+| sandbox | [Sandbox](#yaghan-control_plane-v1alpha1-Sandbox) |  |  |
 
 
 
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-Resources"></a>
+<a name="yaghan-control_plane-v1alpha1-Resources"></a>
 
 ### Resources
 
@@ -388,7 +388,7 @@ Response message containing a page of sandboxes.
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-ResumeSandboxRequest"></a>
+<a name="yaghan-control_plane-v1alpha1-ResumeSandboxRequest"></a>
 
 ### ResumeSandboxRequest
 
@@ -404,7 +404,7 @@ Response message containing a page of sandboxes.
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-ResumeSandboxResponse"></a>
+<a name="yaghan-control_plane-v1alpha1-ResumeSandboxResponse"></a>
 
 ### ResumeSandboxResponse
 
@@ -412,14 +412,14 @@ Response message containing a page of sandboxes.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| sandbox | [Sandbox](#nuinfra-control_plane-v1alpha1-Sandbox) |  |  |
+| sandbox | [Sandbox](#yaghan-control_plane-v1alpha1-Sandbox) |  |  |
 
 
 
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-Sandbox"></a>
+<a name="yaghan-control_plane-v1alpha1-Sandbox"></a>
 
 ### Sandbox
 
@@ -427,19 +427,19 @@ Response message containing a page of sandboxes.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| metadata | [SandboxMeta](#nuinfra-control_plane-v1alpha1-SandboxMeta) |  |  |
-| resources | [Resources](#nuinfra-control_plane-v1alpha1-Resources) |  | Sandbox.resources is required on the wire only for image-sourced sandboxes; snapshot-sourced sandboxes inherit their resources from the snapshot record and MUST leave this field unset on CreateSandbox. The api-server validates the conditional rule and stamps the inherited values before persistence — so every persisted row carries a populated Resources regardless of how it was created. |
-| node | [NodeRef](#nuinfra-control_plane-v1alpha1-NodeRef) |  |  |
-| intent | [Intent](#nuinfra-control_plane-v1alpha1-Intent) |  |  |
-| last_snapshot | [SnapshotOutput](#nuinfra-control_plane-v1alpha1-SnapshotOutput) |  |  |
-| status | [SandboxStatus](#nuinfra-control_plane-v1alpha1-SandboxStatus) |  |  |
+| metadata | [SandboxMeta](#yaghan-control_plane-v1alpha1-SandboxMeta) |  |  |
+| resources | [Resources](#yaghan-control_plane-v1alpha1-Resources) |  | Sandbox.resources is required on the wire only for image-sourced sandboxes; snapshot-sourced sandboxes inherit their resources from the snapshot record and MUST leave this field unset on CreateSandbox. The api-server validates the conditional rule and stamps the inherited values before persistence — so every persisted row carries a populated Resources regardless of how it was created. |
+| node | [NodeRef](#yaghan-control_plane-v1alpha1-NodeRef) |  |  |
+| intent | [Intent](#yaghan-control_plane-v1alpha1-Intent) |  |  |
+| last_snapshot | [SnapshotOutput](#yaghan-control_plane-v1alpha1-SnapshotOutput) |  |  |
+| status | [SandboxStatus](#yaghan-control_plane-v1alpha1-SandboxStatus) |  |  |
 
 
 
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-SandboxMeta"></a>
+<a name="yaghan-control_plane-v1alpha1-SandboxMeta"></a>
 
 ### SandboxMeta
 
@@ -449,18 +449,18 @@ Response message containing a page of sandboxes.
 | ----- | ---- | ----- | ----------- |
 | id | [string](#string) |  |  |
 | namespace | [string](#string) |  |  |
-| source | [SandboxSource](#nuinfra-control_plane-v1alpha1-SandboxSource) |  |  |
+| source | [SandboxSource](#yaghan-control_plane-v1alpha1-SandboxSource) |  |  |
 | version | [int64](#int64) |  |  |
 | created_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  |  |
 | last_modified_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  |  |
-| labels | [SandboxMeta.LabelsEntry](#nuinfra-control_plane-v1alpha1-SandboxMeta-LabelsEntry) | repeated | Arbitrary key/value labels for client-side grouping and filtering (e.g. &#34;project=foo&#34;, &#34;ci-run=123&#34;). Keys are required to be 1-63 chars, lowercase alphanumeric with dots/dashes/ underscores, starting and ending with an alphanumeric. Values may be empty or follow the same rules (uppercase permitted). |
+| labels | [SandboxMeta.LabelsEntry](#yaghan-control_plane-v1alpha1-SandboxMeta-LabelsEntry) | repeated | Arbitrary key/value labels for client-side grouping and filtering (e.g. &#34;project=foo&#34;, &#34;ci-run=123&#34;). Keys are required to be 1-63 chars, lowercase alphanumeric with dots/dashes/ underscores, starting and ending with an alphanumeric. Values may be empty or follow the same rules (uppercase permitted). |
 
 
 
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-SandboxMeta-LabelsEntry"></a>
+<a name="yaghan-control_plane-v1alpha1-SandboxMeta-LabelsEntry"></a>
 
 ### SandboxMeta.LabelsEntry
 
@@ -476,7 +476,7 @@ Response message containing a page of sandboxes.
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-SandboxSource"></a>
+<a name="yaghan-control_plane-v1alpha1-SandboxSource"></a>
 
 ### SandboxSource
 
@@ -492,7 +492,7 @@ Response message containing a page of sandboxes.
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-SandboxStatus"></a>
+<a name="yaghan-control_plane-v1alpha1-SandboxStatus"></a>
 
 ### SandboxStatus
 
@@ -500,7 +500,7 @@ Response message containing a page of sandboxes.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| phase | [SandboxStatus.Phase](#nuinfra-control_plane-v1alpha1-SandboxStatus-Phase) |  |  |
+| phase | [SandboxStatus.Phase](#yaghan-control_plane-v1alpha1-SandboxStatus-Phase) |  |  |
 | message | [string](#string) |  |  |
 
 
@@ -508,7 +508,7 @@ Response message containing a page of sandboxes.
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-SnapshotOutput"></a>
+<a name="yaghan-control_plane-v1alpha1-SnapshotOutput"></a>
 
 ### SnapshotOutput
 
@@ -525,7 +525,7 @@ Response message containing a page of sandboxes.
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-StartSnapshotInput"></a>
+<a name="yaghan-control_plane-v1alpha1-StartSnapshotInput"></a>
 
 ### StartSnapshotInput
 
@@ -540,7 +540,7 @@ Response message containing a page of sandboxes.
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-StartSnapshotRequest"></a>
+<a name="yaghan-control_plane-v1alpha1-StartSnapshotRequest"></a>
 
 ### StartSnapshotRequest
 
@@ -557,7 +557,7 @@ Response message containing a page of sandboxes.
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-StartSnapshotResponse"></a>
+<a name="yaghan-control_plane-v1alpha1-StartSnapshotResponse"></a>
 
 ### StartSnapshotResponse
 
@@ -565,7 +565,7 @@ Response message containing a page of sandboxes.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| sandbox | [Sandbox](#nuinfra-control_plane-v1alpha1-Sandbox) |  |  |
+| sandbox | [Sandbox](#yaghan-control_plane-v1alpha1-Sandbox) |  |  |
 
 
 
@@ -574,7 +574,7 @@ Response message containing a page of sandboxes.
  
 
 
-<a name="nuinfra-control_plane-v1alpha1-ListSandboxesRequest-Order"></a>
+<a name="yaghan-control_plane-v1alpha1-ListSandboxesRequest-Order"></a>
 
 ### ListSandboxesRequest.Order
 Controls how results are ordered by last modification time.
@@ -587,7 +587,7 @@ Controls how results are ordered by last modification time.
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-SandboxStatus-Phase"></a>
+<a name="yaghan-control_plane-v1alpha1-SandboxStatus-Phase"></a>
 
 ### SandboxStatus.Phase
 
@@ -611,33 +611,33 @@ Controls how results are ordered by last modification time.
  
 
 
-<a name="nuinfra-control_plane-v1alpha1-SandboxService"></a>
+<a name="yaghan-control_plane-v1alpha1-SandboxService"></a>
 
 ### SandboxService
 
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
-| CreateSandbox | [CreateSandboxRequest](#nuinfra-control_plane-v1alpha1-CreateSandboxRequest) | [CreateSandboxResponse](#nuinfra-control_plane-v1alpha1-CreateSandboxResponse) |  |
-| GetSandbox | [GetSandboxRequest](#nuinfra-control_plane-v1alpha1-GetSandboxRequest) | [GetSandboxResponse](#nuinfra-control_plane-v1alpha1-GetSandboxResponse) |  |
-| ListSandboxes | [ListSandboxesRequest](#nuinfra-control_plane-v1alpha1-ListSandboxesRequest) | [ListSandboxesResponse](#nuinfra-control_plane-v1alpha1-ListSandboxesResponse) |  |
-| PauseSandbox | [PauseSandboxRequest](#nuinfra-control_plane-v1alpha1-PauseSandboxRequest) | [PauseSandboxResponse](#nuinfra-control_plane-v1alpha1-PauseSandboxResponse) |  |
-| ResumeSandbox | [ResumeSandboxRequest](#nuinfra-control_plane-v1alpha1-ResumeSandboxRequest) | [ResumeSandboxResponse](#nuinfra-control_plane-v1alpha1-ResumeSandboxResponse) |  |
-| DeleteSandbox | [DeleteSandboxRequest](#nuinfra-control_plane-v1alpha1-DeleteSandboxRequest) | [DeleteSandboxResponse](#nuinfra-control_plane-v1alpha1-DeleteSandboxResponse) |  |
-| StartSnapshot | [StartSnapshotRequest](#nuinfra-control_plane-v1alpha1-StartSnapshotRequest) | [StartSnapshotResponse](#nuinfra-control_plane-v1alpha1-StartSnapshotResponse) |  |
+| CreateSandbox | [CreateSandboxRequest](#yaghan-control_plane-v1alpha1-CreateSandboxRequest) | [CreateSandboxResponse](#yaghan-control_plane-v1alpha1-CreateSandboxResponse) |  |
+| GetSandbox | [GetSandboxRequest](#yaghan-control_plane-v1alpha1-GetSandboxRequest) | [GetSandboxResponse](#yaghan-control_plane-v1alpha1-GetSandboxResponse) |  |
+| ListSandboxes | [ListSandboxesRequest](#yaghan-control_plane-v1alpha1-ListSandboxesRequest) | [ListSandboxesResponse](#yaghan-control_plane-v1alpha1-ListSandboxesResponse) |  |
+| PauseSandbox | [PauseSandboxRequest](#yaghan-control_plane-v1alpha1-PauseSandboxRequest) | [PauseSandboxResponse](#yaghan-control_plane-v1alpha1-PauseSandboxResponse) |  |
+| ResumeSandbox | [ResumeSandboxRequest](#yaghan-control_plane-v1alpha1-ResumeSandboxRequest) | [ResumeSandboxResponse](#yaghan-control_plane-v1alpha1-ResumeSandboxResponse) |  |
+| DeleteSandbox | [DeleteSandboxRequest](#yaghan-control_plane-v1alpha1-DeleteSandboxRequest) | [DeleteSandboxResponse](#yaghan-control_plane-v1alpha1-DeleteSandboxResponse) |  |
+| StartSnapshot | [StartSnapshotRequest](#yaghan-control_plane-v1alpha1-StartSnapshotRequest) | [StartSnapshotResponse](#yaghan-control_plane-v1alpha1-StartSnapshotResponse) |  |
 
  
 
 
 
-<a name="nuinfra_control_plane_v1alpha1_cluster-proto"></a>
+<a name="yaghan_control_plane_v1alpha1_cluster-proto"></a>
 <p align="right"><a href="#top">Top</a></p>
 
-## nuinfra/control_plane/v1alpha1/cluster.proto
+## yaghan/control_plane/v1alpha1/cluster.proto
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-ConnectionRequest"></a>
+<a name="yaghan-control_plane-v1alpha1-ConnectionRequest"></a>
 
 ### ConnectionRequest
 
@@ -646,14 +646,14 @@ Controls how results are ordered by last modification time.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | session_id | [int64](#int64) |  | Identifier of the session. This value is optional. If omitted by the client, the server will auto-generate a unique identifier and return it in the response. If the client crashes and later reconnects to the API, it may send the same identifier to attempt resuming events from where it left off. Note, however, that there is no guarantee all missed events will be available after reconnecting, as some events may have been discarded if the retention thresholds were reached. |
-| node | [Node](#nuinfra-control_plane-v1alpha1-Node) |  |  |
+| node | [Node](#yaghan-control_plane-v1alpha1-Node) |  |  |
 
 
 
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-ConnectionResponse"></a>
+<a name="yaghan-control_plane-v1alpha1-ConnectionResponse"></a>
 
 ### ConnectionResponse
 
@@ -668,7 +668,7 @@ Controls how results are ordered by last modification time.
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-EC2InstanceMeta"></a>
+<a name="yaghan-control_plane-v1alpha1-EC2InstanceMeta"></a>
 
 ### EC2InstanceMeta
 
@@ -691,7 +691,7 @@ Controls how results are ordered by last modification time.
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-EstablishSessionRequest"></a>
+<a name="yaghan-control_plane-v1alpha1-EstablishSessionRequest"></a>
 
 ### EstablishSessionRequest
 
@@ -699,16 +699,16 @@ Controls how results are ordered by last modification time.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| connect | [ConnectionRequest](#nuinfra-control_plane-v1alpha1-ConnectionRequest) |  |  |
-| patch_node | [PatchNodeRequest](#nuinfra-control_plane-v1alpha1-PatchNodeRequest) |  |  |
-| update_sandbox | [UpdateSandboxRequest](#nuinfra-control_plane-v1alpha1-UpdateSandboxRequest) |  |  |
+| connect | [ConnectionRequest](#yaghan-control_plane-v1alpha1-ConnectionRequest) |  |  |
+| patch_node | [PatchNodeRequest](#yaghan-control_plane-v1alpha1-PatchNodeRequest) |  |  |
+| update_sandbox | [UpdateSandboxRequest](#yaghan-control_plane-v1alpha1-UpdateSandboxRequest) |  |  |
 
 
 
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-EstablishSessionResponse"></a>
+<a name="yaghan-control_plane-v1alpha1-EstablishSessionResponse"></a>
 
 ### EstablishSessionResponse
 
@@ -716,8 +716,8 @@ Controls how results are ordered by last modification time.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| acknowledge | [ConnectionResponse](#nuinfra-control_plane-v1alpha1-ConnectionResponse) |  |  |
-| event | [Event](#nuinfra-control_plane-v1alpha1-Event) |  |  |
+| acknowledge | [ConnectionResponse](#yaghan-control_plane-v1alpha1-ConnectionResponse) |  |  |
+| event | [Event](#yaghan-control_plane-v1alpha1-Event) |  |  |
 | error | [google.rpc.Status](#google-rpc-Status) |  |  |
 
 
@@ -725,7 +725,7 @@ Controls how results are ordered by last modification time.
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-Event"></a>
+<a name="yaghan-control_plane-v1alpha1-Event"></a>
 
 ### Event
 Event represents an activity in the system to which clients may subscribe.
@@ -736,14 +736,14 @@ It provides enough context for consumers to react, audit, or replicate the chang
 | ----- | ---- | ----- | ----------- |
 | id | [string](#string) |  | A unique identifier for this event. |
 | emitted_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | The timestamp at which this event was emitted by the system. |
-| sandbox | [Sandbox](#nuinfra-control_plane-v1alpha1-Sandbox) |  |  |
+| sandbox | [Sandbox](#yaghan-control_plane-v1alpha1-Sandbox) |  |  |
 
 
 
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-GetNodeRequest"></a>
+<a name="yaghan-control_plane-v1alpha1-GetNodeRequest"></a>
 
 ### GetNodeRequest
 
@@ -758,7 +758,7 @@ It provides enough context for consumers to react, audit, or replicate the chang
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-GetNodeResponse"></a>
+<a name="yaghan-control_plane-v1alpha1-GetNodeResponse"></a>
 
 ### GetNodeResponse
 
@@ -766,14 +766,14 @@ It provides enough context for consumers to react, audit, or replicate the chang
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| node | [Node](#nuinfra-control_plane-v1alpha1-Node) |  |  |
+| node | [Node](#yaghan-control_plane-v1alpha1-Node) |  |  |
 
 
 
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-ListNodesRequest"></a>
+<a name="yaghan-control_plane-v1alpha1-ListNodesRequest"></a>
 
 ### ListNodesRequest
 Request message for listing nodes with optional filtering and pagination.
@@ -781,17 +781,17 @@ Request message for listing nodes with optional filtering and pagination.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| status_phase | [NodeStatus.Phase](#nuinfra-control_plane-v1alpha1-NodeStatus-Phase) |  | Filters nodes by their current lifecycle phase. If unset, nodes in all phases are returned. |
+| status_phase | [NodeStatus.Phase](#yaghan-control_plane-v1alpha1-NodeStatus-Phase) |  | Filters nodes by their current lifecycle phase. If unset, nodes in all phases are returned. |
 | continuation_token | [string](#string) |  | Token used for pagination. Pass the value returned in a previous response to retrieve the next page of results. Leave empty to start listing from the beginning. |
 | page_size | [int32](#int32) |  | Maximum number of nodes to return in this request. Defaults to 30 if not specified. The maximum allowed value is 1000. |
-| sort_order | [ListNodesRequest.Order](#nuinfra-control_plane-v1alpha1-ListNodesRequest-Order) |  | Sort order applied to the results based on last_modified_at. |
+| sort_order | [ListNodesRequest.Order](#yaghan-control_plane-v1alpha1-ListNodesRequest-Order) |  | Sort order applied to the results based on last_modified_at. |
 
 
 
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-ListNodesResponse"></a>
+<a name="yaghan-control_plane-v1alpha1-ListNodesResponse"></a>
 
 ### ListNodesResponse
 Response message containing a page of nodes.
@@ -799,7 +799,7 @@ Response message containing a page of nodes.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| nodes | [Node](#nuinfra-control_plane-v1alpha1-Node) | repeated | The list of nodes matching the request filters. |
+| nodes | [Node](#yaghan-control_plane-v1alpha1-Node) | repeated | The list of nodes matching the request filters. |
 | continuation_token | [string](#string) |  | Token to retrieve the next page of results. Empty if there are no more results. |
 
 
@@ -807,7 +807,7 @@ Response message containing a page of nodes.
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-Node"></a>
+<a name="yaghan-control_plane-v1alpha1-Node"></a>
 
 ### Node
 
@@ -815,18 +815,18 @@ Response message containing a page of nodes.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| metadata | [NodeMeta](#nuinfra-control_plane-v1alpha1-NodeMeta) |  |  |
-| resources | [NodeResources](#nuinfra-control_plane-v1alpha1-NodeResources) |  | Static/allocatable characteristics of the node. |
-| metrics | [NodeMetrics](#nuinfra-control_plane-v1alpha1-NodeMetrics) |  | Dynamic periodically sampled metrics. |
-| status | [NodeStatus](#nuinfra-control_plane-v1alpha1-NodeStatus) |  | Health and lifecycle state. |
-| aws_ec2 | [EC2InstanceMeta](#nuinfra-control_plane-v1alpha1-EC2InstanceMeta) |  |  |
+| metadata | [NodeMeta](#yaghan-control_plane-v1alpha1-NodeMeta) |  |  |
+| resources | [NodeResources](#yaghan-control_plane-v1alpha1-NodeResources) |  | Static/allocatable characteristics of the node. |
+| metrics | [NodeMetrics](#yaghan-control_plane-v1alpha1-NodeMetrics) |  | Dynamic periodically sampled metrics. |
+| status | [NodeStatus](#yaghan-control_plane-v1alpha1-NodeStatus) |  | Health and lifecycle state. |
+| aws_ec2 | [EC2InstanceMeta](#yaghan-control_plane-v1alpha1-EC2InstanceMeta) |  |  |
 
 
 
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-NodeMeta"></a>
+<a name="yaghan-control_plane-v1alpha1-NodeMeta"></a>
 
 ### NodeMeta
 
@@ -844,7 +844,7 @@ Response message containing a page of nodes.
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-NodeMetrics"></a>
+<a name="yaghan-control_plane-v1alpha1-NodeMetrics"></a>
 
 ### NodeMetrics
 
@@ -863,7 +863,7 @@ Response message containing a page of nodes.
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-NodeResources"></a>
+<a name="yaghan-control_plane-v1alpha1-NodeResources"></a>
 
 ### NodeResources
 
@@ -880,7 +880,7 @@ Response message containing a page of nodes.
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-NodeStatus"></a>
+<a name="yaghan-control_plane-v1alpha1-NodeStatus"></a>
 
 ### NodeStatus
 
@@ -888,7 +888,7 @@ Response message containing a page of nodes.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| phase | [NodeStatus.Phase](#nuinfra-control_plane-v1alpha1-NodeStatus-Phase) |  |  |
+| phase | [NodeStatus.Phase](#yaghan-control_plane-v1alpha1-NodeStatus-Phase) |  |  |
 | message | [string](#string) |  | Human-readable status message. |
 
 
@@ -896,7 +896,7 @@ Response message containing a page of nodes.
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-PatchNodeRequest"></a>
+<a name="yaghan-control_plane-v1alpha1-PatchNodeRequest"></a>
 
 ### PatchNodeRequest
 
@@ -904,15 +904,15 @@ Response message containing a page of nodes.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| node_metrics | [NodeMetrics](#nuinfra-control_plane-v1alpha1-NodeMetrics) |  |  |
-| node_status | [NodeStatus](#nuinfra-control_plane-v1alpha1-NodeStatus) |  |  |
+| node_metrics | [NodeMetrics](#yaghan-control_plane-v1alpha1-NodeMetrics) |  |  |
+| node_status | [NodeStatus](#yaghan-control_plane-v1alpha1-NodeStatus) |  |  |
 
 
 
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-UpdateSandboxRequest"></a>
+<a name="yaghan-control_plane-v1alpha1-UpdateSandboxRequest"></a>
 
 ### UpdateSandboxRequest
 
@@ -920,7 +920,7 @@ Response message containing a page of nodes.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| sandbox | [Sandbox](#nuinfra-control_plane-v1alpha1-Sandbox) |  |  |
+| sandbox | [Sandbox](#yaghan-control_plane-v1alpha1-Sandbox) |  |  |
 
 
 
@@ -929,7 +929,7 @@ Response message containing a page of nodes.
  
 
 
-<a name="nuinfra-control_plane-v1alpha1-ListNodesRequest-Order"></a>
+<a name="yaghan-control_plane-v1alpha1-ListNodesRequest-Order"></a>
 
 ### ListNodesRequest.Order
 Controls how results are ordered by last modification time.
@@ -942,7 +942,7 @@ Controls how results are ordered by last modification time.
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-NodeStatus-Phase"></a>
+<a name="yaghan-control_plane-v1alpha1-NodeStatus-Phase"></a>
 
 ### NodeStatus.Phase
 
@@ -962,29 +962,29 @@ Controls how results are ordered by last modification time.
  
 
 
-<a name="nuinfra-control_plane-v1alpha1-ClusterService"></a>
+<a name="yaghan-control_plane-v1alpha1-ClusterService"></a>
 
 ### ClusterService
 
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
-| EstablishSession | [EstablishSessionRequest](#nuinfra-control_plane-v1alpha1-EstablishSessionRequest) stream | [EstablishSessionResponse](#nuinfra-control_plane-v1alpha1-EstablishSessionResponse) stream |  |
-| GetNode | [GetNodeRequest](#nuinfra-control_plane-v1alpha1-GetNodeRequest) | [GetNodeResponse](#nuinfra-control_plane-v1alpha1-GetNodeResponse) |  |
-| ListNodes | [ListNodesRequest](#nuinfra-control_plane-v1alpha1-ListNodesRequest) | [ListNodesResponse](#nuinfra-control_plane-v1alpha1-ListNodesResponse) |  |
+| EstablishSession | [EstablishSessionRequest](#yaghan-control_plane-v1alpha1-EstablishSessionRequest) stream | [EstablishSessionResponse](#yaghan-control_plane-v1alpha1-EstablishSessionResponse) stream |  |
+| GetNode | [GetNodeRequest](#yaghan-control_plane-v1alpha1-GetNodeRequest) | [GetNodeResponse](#yaghan-control_plane-v1alpha1-GetNodeResponse) |  |
+| ListNodes | [ListNodesRequest](#yaghan-control_plane-v1alpha1-ListNodesRequest) | [ListNodesResponse](#yaghan-control_plane-v1alpha1-ListNodesResponse) |  |
 
  
 
 
 
-<a name="nuinfra_control_plane_v1alpha1_snapshot-proto"></a>
+<a name="yaghan_control_plane_v1alpha1_snapshot-proto"></a>
 <p align="right"><a href="#top">Top</a></p>
 
-## nuinfra/control_plane/v1alpha1/snapshot.proto
+## yaghan/control_plane/v1alpha1/snapshot.proto
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-CreateSnapshotRequest"></a>
+<a name="yaghan-control_plane-v1alpha1-CreateSnapshotRequest"></a>
 
 ### CreateSnapshotRequest
 
@@ -992,14 +992,14 @@ Controls how results are ordered by last modification time.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| snapshot | [Snapshot](#nuinfra-control_plane-v1alpha1-Snapshot) |  |  |
+| snapshot | [Snapshot](#yaghan-control_plane-v1alpha1-Snapshot) |  |  |
 
 
 
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-CreateSnapshotResponse"></a>
+<a name="yaghan-control_plane-v1alpha1-CreateSnapshotResponse"></a>
 
 ### CreateSnapshotResponse
 
@@ -1007,14 +1007,14 @@ Controls how results are ordered by last modification time.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| snapshot | [Snapshot](#nuinfra-control_plane-v1alpha1-Snapshot) |  |  |
+| snapshot | [Snapshot](#yaghan-control_plane-v1alpha1-Snapshot) |  |  |
 
 
 
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-DeleteSnapshotRequest"></a>
+<a name="yaghan-control_plane-v1alpha1-DeleteSnapshotRequest"></a>
 
 ### DeleteSnapshotRequest
 
@@ -1029,7 +1029,7 @@ Controls how results are ordered by last modification time.
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-DeleteSnapshotResponse"></a>
+<a name="yaghan-control_plane-v1alpha1-DeleteSnapshotResponse"></a>
 
 ### DeleteSnapshotResponse
 
@@ -1039,7 +1039,7 @@ Controls how results are ordered by last modification time.
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-GetSnapshotRequest"></a>
+<a name="yaghan-control_plane-v1alpha1-GetSnapshotRequest"></a>
 
 ### GetSnapshotRequest
 
@@ -1054,7 +1054,7 @@ Controls how results are ordered by last modification time.
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-GetSnapshotResponse"></a>
+<a name="yaghan-control_plane-v1alpha1-GetSnapshotResponse"></a>
 
 ### GetSnapshotResponse
 
@@ -1062,14 +1062,14 @@ Controls how results are ordered by last modification time.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| snapshot | [Snapshot](#nuinfra-control_plane-v1alpha1-Snapshot) |  |  |
+| snapshot | [Snapshot](#yaghan-control_plane-v1alpha1-Snapshot) |  |  |
 
 
 
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-ListSnapshotsRequest"></a>
+<a name="yaghan-control_plane-v1alpha1-ListSnapshotsRequest"></a>
 
 ### ListSnapshotsRequest
 Request message for listing snapshots with optional filtering and pagination.
@@ -1081,14 +1081,14 @@ Request message for listing snapshots with optional filtering and pagination.
 | sandbox_id | [string](#string) |  | Filters snapshots by the ID of the sandbox from which they were taken. |
 | continuation_token | [string](#string) |  | Token used for pagination. Pass the value returned in a previous response to retrieve the next page of results. Leave empty to start listing from the beginning. |
 | page_size | [int32](#int32) |  | Maximum number of snapshots to return in this request. Defaults to 30 if not specified. The maximum allowed value is 1000. |
-| sort_order | [ListSnapshotsRequest.Order](#nuinfra-control_plane-v1alpha1-ListSnapshotsRequest-Order) |  | Sort order applied to the results based on created_at. |
+| sort_order | [ListSnapshotsRequest.Order](#yaghan-control_plane-v1alpha1-ListSnapshotsRequest-Order) |  | Sort order applied to the results based on created_at. |
 
 
 
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-ListSnapshotsResponse"></a>
+<a name="yaghan-control_plane-v1alpha1-ListSnapshotsResponse"></a>
 
 ### ListSnapshotsResponse
 Response message containing a page of snapshots.
@@ -1096,7 +1096,7 @@ Response message containing a page of snapshots.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| snapshots | [Snapshot](#nuinfra-control_plane-v1alpha1-Snapshot) | repeated | The list of snapshots matching the request filters. |
+| snapshots | [Snapshot](#yaghan-control_plane-v1alpha1-Snapshot) | repeated | The list of snapshots matching the request filters. |
 | continuation_token | [string](#string) |  | Token to retrieve the next page of results. Empty if there are no more results. |
 
 
@@ -1104,7 +1104,7 @@ Response message containing a page of snapshots.
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-SandboxRef"></a>
+<a name="yaghan-control_plane-v1alpha1-SandboxRef"></a>
 
 ### SandboxRef
 
@@ -1119,7 +1119,7 @@ Response message containing a page of snapshots.
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-Snapshot"></a>
+<a name="yaghan-control_plane-v1alpha1-Snapshot"></a>
 
 ### Snapshot
 
@@ -1127,16 +1127,16 @@ Response message containing a page of snapshots.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| metadata | [SnapshotMeta](#nuinfra-control_plane-v1alpha1-SnapshotMeta) |  |  |
-| sandbox | [SandboxRef](#nuinfra-control_plane-v1alpha1-SandboxRef) |  |  |
-| resources | [Resources](#nuinfra-control_plane-v1alpha1-Resources) |  | Resources captures the vCPU / memory configuration the source sandbox was running with at snapshot time. Firecracker bakes these into the snapshot&#39;s state file and forbids changing them on restore (PATCH /machine-config is pre-boot only), so the api-server stamps this onto any sandbox derived from the snapshot. Required so a future scheduler can treat sandbox.Resources as the single source of truth without branching on how the sandbox was created. |
+| metadata | [SnapshotMeta](#yaghan-control_plane-v1alpha1-SnapshotMeta) |  |  |
+| sandbox | [SandboxRef](#yaghan-control_plane-v1alpha1-SandboxRef) |  |  |
+| resources | [Resources](#yaghan-control_plane-v1alpha1-Resources) |  | Resources captures the vCPU / memory configuration the source sandbox was running with at snapshot time. Firecracker bakes these into the snapshot&#39;s state file and forbids changing them on restore (PATCH /machine-config is pre-boot only), so the api-server stamps this onto any sandbox derived from the snapshot. Required so a future scheduler can treat sandbox.Resources as the single source of truth without branching on how the sandbox was created. |
 
 
 
 
 
 
-<a name="nuinfra-control_plane-v1alpha1-SnapshotMeta"></a>
+<a name="yaghan-control_plane-v1alpha1-SnapshotMeta"></a>
 
 ### SnapshotMeta
 
@@ -1156,7 +1156,7 @@ Response message containing a page of snapshots.
  
 
 
-<a name="nuinfra-control_plane-v1alpha1-ListSnapshotsRequest-Order"></a>
+<a name="yaghan-control_plane-v1alpha1-ListSnapshotsRequest-Order"></a>
 
 ### ListSnapshotsRequest.Order
 Controls how results are ordered by creation time.
@@ -1173,30 +1173,30 @@ Controls how results are ordered by creation time.
  
 
 
-<a name="nuinfra-control_plane-v1alpha1-SnapshotService"></a>
+<a name="yaghan-control_plane-v1alpha1-SnapshotService"></a>
 
 ### SnapshotService
 
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
-| CreateSnapshot | [CreateSnapshotRequest](#nuinfra-control_plane-v1alpha1-CreateSnapshotRequest) | [CreateSnapshotResponse](#nuinfra-control_plane-v1alpha1-CreateSnapshotResponse) |  |
-| GetSnapshot | [GetSnapshotRequest](#nuinfra-control_plane-v1alpha1-GetSnapshotRequest) | [GetSnapshotResponse](#nuinfra-control_plane-v1alpha1-GetSnapshotResponse) |  |
-| ListSnapshots | [ListSnapshotsRequest](#nuinfra-control_plane-v1alpha1-ListSnapshotsRequest) | [ListSnapshotsResponse](#nuinfra-control_plane-v1alpha1-ListSnapshotsResponse) |  |
-| DeleteSnapshot | [DeleteSnapshotRequest](#nuinfra-control_plane-v1alpha1-DeleteSnapshotRequest) | [DeleteSnapshotResponse](#nuinfra-control_plane-v1alpha1-DeleteSnapshotResponse) |  |
+| CreateSnapshot | [CreateSnapshotRequest](#yaghan-control_plane-v1alpha1-CreateSnapshotRequest) | [CreateSnapshotResponse](#yaghan-control_plane-v1alpha1-CreateSnapshotResponse) |  |
+| GetSnapshot | [GetSnapshotRequest](#yaghan-control_plane-v1alpha1-GetSnapshotRequest) | [GetSnapshotResponse](#yaghan-control_plane-v1alpha1-GetSnapshotResponse) |  |
+| ListSnapshots | [ListSnapshotsRequest](#yaghan-control_plane-v1alpha1-ListSnapshotsRequest) | [ListSnapshotsResponse](#yaghan-control_plane-v1alpha1-ListSnapshotsResponse) |  |
+| DeleteSnapshot | [DeleteSnapshotRequest](#yaghan-control_plane-v1alpha1-DeleteSnapshotRequest) | [DeleteSnapshotResponse](#yaghan-control_plane-v1alpha1-DeleteSnapshotResponse) |  |
 
  
 
 
 
-<a name="nuinfra_data_plane_v1alpha1_daemon-proto"></a>
+<a name="yaghan_data_plane_v1alpha1_daemon-proto"></a>
 <p align="right"><a href="#top">Top</a></p>
 
-## nuinfra/data_plane/v1alpha1/daemon.proto
+## yaghan/data_plane/v1alpha1/daemon.proto
 
 
 
-<a name="nuinfra-data_plane-v1alpha1-CancelRequest"></a>
+<a name="yaghan-data_plane-v1alpha1-CancelRequest"></a>
 
 ### CancelRequest
 
@@ -1206,7 +1206,7 @@ Controls how results are ordered by creation time.
 
 
 
-<a name="nuinfra-data_plane-v1alpha1-DownloadFileRequest"></a>
+<a name="yaghan-data_plane-v1alpha1-DownloadFileRequest"></a>
 
 ### DownloadFileRequest
 
@@ -1222,7 +1222,7 @@ Controls how results are ordered by creation time.
 
 
 
-<a name="nuinfra-data_plane-v1alpha1-DownloadFileResponse"></a>
+<a name="yaghan-data_plane-v1alpha1-DownloadFileResponse"></a>
 
 ### DownloadFileResponse
 
@@ -1237,7 +1237,7 @@ Controls how results are ordered by creation time.
 
 
 
-<a name="nuinfra-data_plane-v1alpha1-ExecProcess"></a>
+<a name="yaghan-data_plane-v1alpha1-ExecProcess"></a>
 
 ### ExecProcess
 
@@ -1247,7 +1247,7 @@ Controls how results are ordered by creation time.
 | ----- | ---- | ----- | ----------- |
 | command | [string](#string) |  |  |
 | args | [string](#string) | repeated |  |
-| env | [ExecProcess.EnvEntry](#nuinfra-data_plane-v1alpha1-ExecProcess-EnvEntry) | repeated |  |
+| env | [ExecProcess.EnvEntry](#yaghan-data_plane-v1alpha1-ExecProcess-EnvEntry) | repeated |  |
 | cwd | [string](#string) |  |  |
 | tty | [bool](#bool) |  |  |
 
@@ -1256,7 +1256,7 @@ Controls how results are ordered by creation time.
 
 
 
-<a name="nuinfra-data_plane-v1alpha1-ExecProcess-EnvEntry"></a>
+<a name="yaghan-data_plane-v1alpha1-ExecProcess-EnvEntry"></a>
 
 ### ExecProcess.EnvEntry
 
@@ -1272,7 +1272,7 @@ Controls how results are ordered by creation time.
 
 
 
-<a name="nuinfra-data_plane-v1alpha1-ExecRequest"></a>
+<a name="yaghan-data_plane-v1alpha1-ExecRequest"></a>
 
 ### ExecRequest
 
@@ -1281,16 +1281,16 @@ Controls how results are ordered by creation time.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | sandbox_id | [string](#string) |  |  |
-| exec_process | [ExecProcess](#nuinfra-data_plane-v1alpha1-ExecProcess) |  |  |
-| stdin | [StdinChunk](#nuinfra-data_plane-v1alpha1-StdinChunk) |  |  |
-| resize | [ResizePTY](#nuinfra-data_plane-v1alpha1-ResizePTY) |  |  |
+| exec_process | [ExecProcess](#yaghan-data_plane-v1alpha1-ExecProcess) |  |  |
+| stdin | [StdinChunk](#yaghan-data_plane-v1alpha1-StdinChunk) |  |  |
+| resize | [ResizePTY](#yaghan-data_plane-v1alpha1-ResizePTY) |  |  |
 
 
 
 
 
 
-<a name="nuinfra-data_plane-v1alpha1-ExecResponse"></a>
+<a name="yaghan-data_plane-v1alpha1-ExecResponse"></a>
 
 ### ExecResponse
 
@@ -1298,15 +1298,15 @@ Controls how results are ordered by creation time.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| process_result | [ProcessResult](#nuinfra-data_plane-v1alpha1-ProcessResult) |  |  |
-| stream_chunk | [StreamChunk](#nuinfra-data_plane-v1alpha1-StreamChunk) |  |  |
+| process_result | [ProcessResult](#yaghan-data_plane-v1alpha1-ProcessResult) |  |  |
+| stream_chunk | [StreamChunk](#yaghan-data_plane-v1alpha1-StreamChunk) |  |  |
 
 
 
 
 
 
-<a name="nuinfra-data_plane-v1alpha1-ProcessResult"></a>
+<a name="yaghan-data_plane-v1alpha1-ProcessResult"></a>
 
 ### ProcessResult
 
@@ -1321,7 +1321,7 @@ Controls how results are ordered by creation time.
 
 
 
-<a name="nuinfra-data_plane-v1alpha1-ResizePTY"></a>
+<a name="yaghan-data_plane-v1alpha1-ResizePTY"></a>
 
 ### ResizePTY
 
@@ -1337,7 +1337,7 @@ Controls how results are ordered by creation time.
 
 
 
-<a name="nuinfra-data_plane-v1alpha1-StdinChunk"></a>
+<a name="yaghan-data_plane-v1alpha1-StdinChunk"></a>
 
 ### StdinChunk
 
@@ -1353,7 +1353,7 @@ Controls how results are ordered by creation time.
 
 
 
-<a name="nuinfra-data_plane-v1alpha1-StreamChunk"></a>
+<a name="yaghan-data_plane-v1alpha1-StreamChunk"></a>
 
 ### StreamChunk
 
@@ -1362,7 +1362,7 @@ Controls how results are ordered by creation time.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | pid | [int32](#int32) |  |  |
-| stream | [StreamChunk.StreamType](#nuinfra-data_plane-v1alpha1-StreamChunk-StreamType) |  |  |
+| stream | [StreamChunk.StreamType](#yaghan-data_plane-v1alpha1-StreamChunk-StreamType) |  |  |
 | data | [bytes](#bytes) |  |  |
 | eof | [bool](#bool) |  |  |
 
@@ -1371,7 +1371,7 @@ Controls how results are ordered by creation time.
 
 
 
-<a name="nuinfra-data_plane-v1alpha1-UploadFileRequest"></a>
+<a name="yaghan-data_plane-v1alpha1-UploadFileRequest"></a>
 
 ### UploadFileRequest
 
@@ -1388,7 +1388,7 @@ Controls how results are ordered by creation time.
 
 
 
-<a name="nuinfra-data_plane-v1alpha1-UploadFileResponse"></a>
+<a name="yaghan-data_plane-v1alpha1-UploadFileResponse"></a>
 
 ### UploadFileResponse
 
@@ -1400,7 +1400,7 @@ Controls how results are ordered by creation time.
  
 
 
-<a name="nuinfra-data_plane-v1alpha1-StreamChunk-StreamType"></a>
+<a name="yaghan-data_plane-v1alpha1-StreamChunk-StreamType"></a>
 
 ### StreamChunk.StreamType
 
@@ -1417,29 +1417,29 @@ Controls how results are ordered by creation time.
  
 
 
-<a name="nuinfra-data_plane-v1alpha1-DaemonService"></a>
+<a name="yaghan-data_plane-v1alpha1-DaemonService"></a>
 
 ### DaemonService
 
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
-| Exec | [ExecRequest](#nuinfra-data_plane-v1alpha1-ExecRequest) stream | [ExecResponse](#nuinfra-data_plane-v1alpha1-ExecResponse) stream |  |
-| UploadFile | [UploadFileRequest](#nuinfra-data_plane-v1alpha1-UploadFileRequest) | [UploadFileResponse](#nuinfra-data_plane-v1alpha1-UploadFileResponse) |  |
-| DownloadFile | [DownloadFileRequest](#nuinfra-data_plane-v1alpha1-DownloadFileRequest) | [DownloadFileResponse](#nuinfra-data_plane-v1alpha1-DownloadFileResponse) |  |
+| Exec | [ExecRequest](#yaghan-data_plane-v1alpha1-ExecRequest) stream | [ExecResponse](#yaghan-data_plane-v1alpha1-ExecResponse) stream |  |
+| UploadFile | [UploadFileRequest](#yaghan-data_plane-v1alpha1-UploadFileRequest) | [UploadFileResponse](#yaghan-data_plane-v1alpha1-UploadFileResponse) |  |
+| DownloadFile | [DownloadFileRequest](#yaghan-data_plane-v1alpha1-DownloadFileRequest) | [DownloadFileResponse](#yaghan-data_plane-v1alpha1-DownloadFileResponse) |  |
 
  
 
 
 
-<a name="nuinfra_data_plane_v1alpha1_agent-proto"></a>
+<a name="yaghan_data_plane_v1alpha1_agent-proto"></a>
 <p align="right"><a href="#top">Top</a></p>
 
-## nuinfra/data_plane/v1alpha1/agent.proto
+## yaghan/data_plane/v1alpha1/agent.proto
 
 
 
-<a name="nuinfra-data_plane-v1alpha1-AgentRequest"></a>
+<a name="yaghan-data_plane-v1alpha1-AgentRequest"></a>
 
 ### AgentRequest
 
@@ -1448,19 +1448,19 @@ Controls how results are ordered by creation time.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | id | [uint64](#uint64) |  |  |
-| exec_request | [ExecRequest](#nuinfra-data_plane-v1alpha1-ExecRequest) |  |  |
-| cancel | [CancelRequest](#nuinfra-data_plane-v1alpha1-CancelRequest) |  |  |
-| stdin | [StdinChunk](#nuinfra-data_plane-v1alpha1-StdinChunk) |  |  |
-| resize | [ResizePTY](#nuinfra-data_plane-v1alpha1-ResizePTY) |  |  |
-| upload_file | [UploadFileRequest](#nuinfra-data_plane-v1alpha1-UploadFileRequest) |  |  |
-| download_file | [DownloadFileRequest](#nuinfra-data_plane-v1alpha1-DownloadFileRequest) |  |  |
+| exec_request | [ExecRequest](#yaghan-data_plane-v1alpha1-ExecRequest) |  |  |
+| cancel | [CancelRequest](#yaghan-data_plane-v1alpha1-CancelRequest) |  |  |
+| stdin | [StdinChunk](#yaghan-data_plane-v1alpha1-StdinChunk) |  |  |
+| resize | [ResizePTY](#yaghan-data_plane-v1alpha1-ResizePTY) |  |  |
+| upload_file | [UploadFileRequest](#yaghan-data_plane-v1alpha1-UploadFileRequest) |  |  |
+| download_file | [DownloadFileRequest](#yaghan-data_plane-v1alpha1-DownloadFileRequest) |  |  |
 
 
 
 
 
 
-<a name="nuinfra-data_plane-v1alpha1-AgentResponse"></a>
+<a name="yaghan-data_plane-v1alpha1-AgentResponse"></a>
 
 ### AgentResponse
 
@@ -1470,9 +1470,9 @@ Controls how results are ordered by creation time.
 | ----- | ---- | ----- | ----------- |
 | id | [uint64](#uint64) |  |  |
 | error | [google.rpc.Status](#google-rpc-Status) |  |  |
-| exec_response | [ExecResponse](#nuinfra-data_plane-v1alpha1-ExecResponse) |  |  |
-| upload_file | [UploadFileResponse](#nuinfra-data_plane-v1alpha1-UploadFileResponse) |  |  |
-| download_file | [DownloadFileResponse](#nuinfra-data_plane-v1alpha1-DownloadFileResponse) |  |  |
+| exec_response | [ExecResponse](#yaghan-data_plane-v1alpha1-ExecResponse) |  |  |
+| upload_file | [UploadFileResponse](#yaghan-data_plane-v1alpha1-UploadFileResponse) |  |  |
+| download_file | [DownloadFileResponse](#yaghan-data_plane-v1alpha1-DownloadFileResponse) |  |  |
 
 
 

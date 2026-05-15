@@ -1,15 +1,15 @@
-module golang.nuinfra.net/agent
+module github.com/alan-ghelardi/yaghan/agent
 
 go 1.26.1
 
-replace golang.nuinfra.net/apis => ../apis
+replace github.com/alan-ghelardi/yaghan/apis => ../apis
 
 require (
+	github.com/alan-ghelardi/yaghan/apis v0.0.0-00010101000000-000000000000
 	github.com/creack/pty v1.1.24
 	github.com/mdlayher/vsock v1.2.1
 	github.com/stretchr/testify v1.11.1
 	go.uber.org/mock v0.6.0
-	golang.nuinfra.net/apis v0.0.0-00010101000000-000000000000
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250528174236-200df99c418a
 	google.golang.org/grpc v1.73.0
 	google.golang.org/protobuf v1.36.11

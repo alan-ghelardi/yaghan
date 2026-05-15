@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 
-	"golang.nuinfra.net/agent/transport"
-	"golang.nuinfra.net/daemon/pkg/network"
-	"golang.nuinfra.net/daemon/pkg/snapshot"
-	"golang.nuinfra.net/firecracker-client/models"
+	"github.com/alan-ghelardi/yaghan/agent/transport"
+	"github.com/alan-ghelardi/yaghan/daemon/pkg/network"
+	"github.com/alan-ghelardi/yaghan/daemon/pkg/snapshot"
+	"github.com/alan-ghelardi/yaghan/firecracker-client/models"
 )
 
 // ErrVMNotFound is returned by [Provider.DeleteMicroVM] when no MicroVM

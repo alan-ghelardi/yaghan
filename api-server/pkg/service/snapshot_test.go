@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
+	cpv1 "github.com/alan-ghelardi/yaghan/apis/gen/yaghan/control_plane/v1alpha1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	cpv1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"

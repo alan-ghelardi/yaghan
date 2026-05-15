@@ -19,7 +19,7 @@ import (
 	"strings"
 	"syscall"
 
-	"golang.nuinfra.net/agent/internal/guest"
+	"github.com/alan-ghelardi/yaghan/agent/internal/guest"
 )
 
 const (

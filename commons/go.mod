@@ -1,11 +1,12 @@
-module golang.nuinfra.net/commons
+module github.com/alan-ghelardi/yaghan/commons
 
 go 1.26.1
 
-replace golang.nuinfra.net/apis => ../apis
+replace github.com/alan-ghelardi/yaghan/apis => ../apis
 
 require (
 	buf.build/go/protovalidate v0.12.0
+	github.com/alan-ghelardi/yaghan/apis v0.0.0-00010101000000-000000000000
 	github.com/aws/aws-sdk-go-v2 v1.41.7
 	github.com/aws/aws-sdk-go-v2/config v1.29.16
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.16.31
@@ -31,7 +32,6 @@ require (
 	go.uber.org/automaxprocs v1.6.0
 	go.uber.org/mock v0.6.0
 	go.uber.org/zap v1.27.0
-	golang.nuinfra.net/apis v0.0.0-00010101000000-000000000000
 	google.golang.org/grpc v1.73.0
 	google.golang.org/protobuf v1.36.6
 )

@@ -2,7 +2,7 @@ package create
 
 import (
 	"github.com/spf13/cobra"
-	"golang.nuinfra.net/ctl/pkg/machinery"
+	"github.com/alan-ghelardi/yaghan/ctl/pkg/machinery"
 )
 
 const (

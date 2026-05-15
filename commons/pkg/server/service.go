@@ -3,8 +3,8 @@ package server
 import (
 	"context"
 
+	"github.com/alan-ghelardi/yaghan/commons/pkg/config"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"golang.nuinfra.net/commons/pkg/config"
 	"google.golang.org/grpc"
 	grpc_health "google.golang.org/grpc/health/grpc_health_v1"
 )

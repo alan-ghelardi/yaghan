@@ -4,11 +4,11 @@ import (
 	"context"
 	"net/url"
 
+	awsconfig "github.com/alan-ghelardi/yaghan/commons/pkg/aws/config"
 	"github.com/aws/aws-sdk-go-v2/service/secretsmanager"
 	smithyendpoints "github.com/aws/smithy-go/endpoints"
 	"github.com/grpc-ecosystem/go-grpc-middleware/logging/zap/ctxzap"
 	"go.uber.org/zap"
-	awsconfig "golang.nuinfra.net/commons/pkg/aws/config"
 )
 
 // Config configures the Secrets Manager client.

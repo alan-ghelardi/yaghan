@@ -7,10 +7,10 @@ import (
 	"io"
 	"path"
 
+	s3 "github.com/alan-ghelardi/yaghan/commons/pkg/aws/s3"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	s3sdk "github.com/aws/aws-sdk-go-v2/service/s3"
 	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
-	s3 "golang.nuinfra.net/commons/pkg/aws/s3"
 	"golang.org/x/sync/errgroup"
 )
 

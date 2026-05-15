@@ -1,4 +1,4 @@
-// Package delete implements `sindri snapshot delete`. It calls
+// Package delete implements `yag snapshot delete`. It calls
 // SnapshotService.DeleteSnapshot, which removes the DB row
 // synchronously. Snapshots are immutable, so the operation has no
 // version handshake and is idempotent server-side.
@@ -7,9 +7,9 @@ package delete
 import (
 	"fmt"
 
+	controlplanev1alpha1 "github.com/alan-ghelardi/yaghan/apis/gen/yaghan/control_plane/v1alpha1"
+	"github.com/alan-ghelardi/yaghan/ctl/pkg/cli"
 	"github.com/spf13/cobra"
-	controlplanev1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
-	"golang.nuinfra.net/ctl/pkg/cli"
 )
 
 func New(ctx *cli.Context) *cobra.Command {
@@ -26,8 +26,8 @@ delete is safe.
 Cleanup of the snapshot artifact in durable storage is a separate
 concern owned by the daemon-side store; this command does not block on
 artifact teardown.`,
-		Example: `  sindri snapshot delete snap-123
-  sindri snapshot rm snap-123`,
+		Example: `  yag snapshot delete snap-123
+  yag snapshot rm snap-123`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return run(ctx, cmd, args)

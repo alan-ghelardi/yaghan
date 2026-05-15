@@ -12,8 +12,8 @@ package mocks
 import (
 	reflect "reflect"
 
+	cli "github.com/alan-ghelardi/yaghan/ctl/pkg/cli"
 	gomock "go.uber.org/mock/gomock"
-	cli "golang.nuinfra.net/ctl/pkg/cli"
 )
 
 // MockPrompter is a mock of Prompter interface.

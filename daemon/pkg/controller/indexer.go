@@ -3,7 +3,7 @@ package controller
 import (
 	"sync"
 
-	controlplanev1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
+	controlplanev1alpha1 "github.com/alan-ghelardi/yaghan/apis/gen/yaghan/control_plane/v1alpha1"
 )
 
 // indexer is a thread-safe in-memory store of the latest observed

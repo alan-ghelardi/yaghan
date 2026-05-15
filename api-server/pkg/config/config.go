@@ -3,15 +3,15 @@ package config
 import (
 	"time"
 
+	"github.com/alan-ghelardi/yaghan/commons/pkg/config"
+	"github.com/alan-ghelardi/yaghan/commons/pkg/secret"
 	"github.com/spf13/viper"
-	"golang.nuinfra.net/commons/pkg/config"
-	"golang.nuinfra.net/commons/pkg/secret"
 )
 
 const (
 	defaultEventDeliveryTimeout        = 3 * time.Minute
-	defaultRedisStreamName             = "nuinfra"
-	defaultRedisStreamKey              = "nuinfra"
+	defaultRedisStreamName             = "yaghan"
+	defaultRedisStreamKey              = "yaghan"
 	defaultRedisMaxStreamLength        = 1000
 	defaultRedisTTL                    = 24 * time.Hour
 	defaultRedisStreamReadinessTimeout = time.Minute

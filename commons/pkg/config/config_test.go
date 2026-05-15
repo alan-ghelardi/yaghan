@@ -6,12 +6,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/alan-ghelardi/yaghan/commons/pkg/logger"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"golang.nuinfra.net/commons/pkg/logger"
 )
 
 type testConfig struct {

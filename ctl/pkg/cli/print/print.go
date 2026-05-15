@@ -6,7 +6,7 @@ import (
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 
-	cpv1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
+	cpv1alpha1 "github.com/alan-ghelardi/yaghan/apis/gen/yaghan/control_plane/v1alpha1"
 )
 
 // NodesTable returns a Table to display nodes.

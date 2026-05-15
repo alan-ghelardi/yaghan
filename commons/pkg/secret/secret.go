@@ -9,10 +9,10 @@ import (
 	"os"
 	"reflect"
 
+	smclient "github.com/alan-ghelardi/yaghan/commons/pkg/aws/secretsmanager"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/secretsmanager"
 	"github.com/go-viper/mapstructure/v2"
-	smclient "golang.nuinfra.net/commons/pkg/aws/secretsmanager"
 )
 
 const (

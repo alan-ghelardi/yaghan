@@ -3,8 +3,8 @@ package service
 import (
 	"context"
 
-	snapshotdb "golang.nuinfra.api-server/pkg/db/snapshot"
-	cpv1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
+	snapshotdb "github.com/alan-ghelardi/yaghan/api-server/pkg/db/snapshot"
+	cpv1 "github.com/alan-ghelardi/yaghan/apis/gen/yaghan/control_plane/v1alpha1"
 )
 
 // defaultListSnapshotsPageSize is the page size applied when ListSnapshots

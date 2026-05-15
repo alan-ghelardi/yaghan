@@ -13,7 +13,7 @@ import (
 	"github.com/shirou/gopsutil/v4/disk"
 	"github.com/shirou/gopsutil/v4/mem"
 
-	"golang.nuinfra.net/daemon/pkg/config"
+	"github.com/alan-ghelardi/yaghan/daemon/pkg/config"
 )
 
 // Sample is a single snapshot of node-local resource capacity and current

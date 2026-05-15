@@ -12,8 +12,8 @@ package mocks
 import (
 	reflect "reflect"
 
+	network "github.com/alan-ghelardi/yaghan/daemon/pkg/network"
 	gomock "go.uber.org/mock/gomock"
-	network "golang.nuinfra.net/daemon/pkg/network"
 )
 
 // MockDriver is a mock of Driver interface.

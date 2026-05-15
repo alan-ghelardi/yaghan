@@ -6,12 +6,12 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/alan-ghelardi/yaghan/api-server/pkg/db"
+	nodedb "github.com/alan-ghelardi/yaghan/api-server/pkg/db/node"
+	cpv1 "github.com/alan-ghelardi/yaghan/apis/gen/yaghan/control_plane/v1alpha1"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	dynamodbservice "github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	"golang.nuinfra.api-server/pkg/db"
-	nodedb "golang.nuinfra.api-server/pkg/db/node"
-	cpv1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
 )
 
 // GSI names. Kept in sync with api-server/dynamodb-tables/nodes.json.

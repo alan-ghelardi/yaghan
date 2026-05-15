@@ -7,9 +7,9 @@ package lifecycle
 import (
 	"fmt"
 
+	controlplanev1alpha1 "github.com/alan-ghelardi/yaghan/apis/gen/yaghan/control_plane/v1alpha1"
+	"github.com/alan-ghelardi/yaghan/ctl/pkg/cli"
 	"github.com/spf13/cobra"
-	controlplanev1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
-	"golang.nuinfra.net/ctl/pkg/cli"
 )
 
 // FlagVersion is the flag name. Callers reference it via this const so

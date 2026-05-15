@@ -1,4 +1,4 @@
-module golang.nuinfra.net/firecracker-client
+module github.com/alan-ghelardi/yaghan/firecracker-client
 
 go 1.26.1
 

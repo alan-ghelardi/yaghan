@@ -1,4 +1,4 @@
-module golang.nuinfra.net/apis
+module github.com/alan-ghelardi/yaghan/apis
 
 go 1.26.1
 

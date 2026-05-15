@@ -3,11 +3,11 @@ package auth
 import (
 	"context"
 
+	authv1 "github.com/alan-ghelardi/yaghan/apis/gen/yaghan/auth/v1"
+	"github.com/alan-ghelardi/yaghan/commons/pkg/config"
 	"github.com/grpc-ecosystem/go-grpc-middleware/logging/zap/ctxzap"
 	grpc_ctxtags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
 	"go.uber.org/zap"
-	authv1 "golang.nuinfra.net/apis/gen/nuinfra/auth/v1"
-	"golang.nuinfra.net/commons/pkg/config"
 	"google.golang.org/grpc"
 )
 

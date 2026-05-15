@@ -3,9 +3,9 @@ package factory
 import (
 	"context"
 
-	"golang.nuinfra.api-server/pkg/config"
-	"golang.nuinfra.api-server/pkg/watch"
-	"golang.nuinfra.api-server/pkg/watch/providers/redis"
+	"github.com/alan-ghelardi/yaghan/api-server/pkg/config"
+	"github.com/alan-ghelardi/yaghan/api-server/pkg/watch"
+	"github.com/alan-ghelardi/yaghan/api-server/pkg/watch/providers/redis"
 	"google.golang.org/protobuf/proto"
 )
 

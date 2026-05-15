@@ -6,11 +6,11 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/alan-ghelardi/yaghan/ctl/pkg/cli"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/x/ansi"
 	"github.com/charmbracelet/x/term"
-	"golang.nuinfra.net/ctl/pkg/cli"
 )
 
 var (

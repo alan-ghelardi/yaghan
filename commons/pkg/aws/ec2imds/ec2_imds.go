@@ -5,8 +5,8 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/feature/ec2/imds"
 
+	awsconfig "github.com/alan-ghelardi/yaghan/commons/pkg/aws/config"
 	"github.com/grpc-ecosystem/go-grpc-middleware/logging/zap/ctxzap"
-	awsconfig "golang.nuinfra.net/commons/pkg/aws/config"
 )
 
 // Config configures the EC2 instance metadata service client.

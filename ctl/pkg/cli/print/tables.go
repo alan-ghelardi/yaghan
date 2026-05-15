@@ -6,8 +6,8 @@ import (
 	"text/tabwriter"
 	"time"
 
+	"github.com/alan-ghelardi/yaghan/ctl/pkg/cli"
 	"github.com/charmbracelet/lipgloss"
-	"golang.nuinfra.net/ctl/pkg/cli"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 

@@ -3,7 +3,7 @@ package auth
 import (
 	"testing"
 
-	"golang.nuinfra.net/commons/pkg/config"
+	"github.com/alan-ghelardi/yaghan/commons/pkg/config"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

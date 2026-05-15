@@ -6,10 +6,10 @@ import (
 	"io"
 	"sync"
 
+	"github.com/alan-ghelardi/yaghan/api-server/pkg/watch"
+	cpv1 "github.com/alan-ghelardi/yaghan/apis/gen/yaghan/control_plane/v1alpha1"
 	"github.com/grpc-ecosystem/go-grpc-middleware/logging/zap/ctxzap"
 	"go.uber.org/zap"
-	"golang.nuinfra.api-server/pkg/watch"
-	cpv1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

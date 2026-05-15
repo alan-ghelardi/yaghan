@@ -1,4 +1,4 @@
-// Package list implements `sindri sandbox list`. It calls
+// Package list implements `yag sandbox list`. It calls
 // SandboxService.ListSandboxes and renders the response either as a
 // formatted table (default) or as JSON / YAML for piping.
 package list
@@ -7,10 +7,10 @@ import (
 	"fmt"
 	"strings"
 
+	controlplanev1alpha1 "github.com/alan-ghelardi/yaghan/apis/gen/yaghan/control_plane/v1alpha1"
+	"github.com/alan-ghelardi/yaghan/ctl/pkg/cli"
+	"github.com/alan-ghelardi/yaghan/ctl/pkg/cli/print"
 	"github.com/spf13/cobra"
-	controlplanev1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
-	"golang.nuinfra.net/ctl/pkg/cli"
-	"golang.nuinfra.net/ctl/pkg/cli/print"
 )
 
 const (
@@ -48,17 +48,17 @@ The default view is a formatted table with interactive pagination.
 JSON and YAML output marshal the full ListSandboxesResponse — including
 the continuation_token — so callers can drive their own pagination.`,
 		Example: `  # Default table view, scoped to a namespace.
-  sindri sandbox list --namespace team-alpha
+  yag sandbox list --namespace team-alpha
 
   # All sandboxes scheduled on a node.
-  sindri sandbox list --node-id node-7
+  yag sandbox list --node-id node-7
 
   # Combine both filters and only show running sandboxes.
-  sindri sandbox list -N team-alpha --node-id node-7 --phase running
+  yag sandbox list -N team-alpha --node-id node-7 --phase running
 
   # JSON for piping into jq, walking pages by hand.
-  sindri sandbox list -N team-alpha -o json
-  sindri sandbox list -N team-alpha -o json -c <token-from-previous-response>`,
+  yag sandbox list -N team-alpha -o json
+  yag sandbox list -N team-alpha -o json -c <token-from-previous-response>`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			return run(ctx, cmd)

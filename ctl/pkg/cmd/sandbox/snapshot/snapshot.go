@@ -1,4 +1,4 @@
-// Package snapshot implements `sindri sandbox snapshot`.
+// Package snapshot implements `yag sandbox snapshot`.
 // It records the user's intent to snapshot a sandbox via
 // SandboxService.StartSnapshot; the data-plane daemon performs the
 // firecracker snapshot, persists the artifacts to durable storage,
@@ -8,10 +8,10 @@ package snapshot
 import (
 	"fmt"
 
+	controlplanev1alpha1 "github.com/alan-ghelardi/yaghan/apis/gen/yaghan/control_plane/v1alpha1"
+	"github.com/alan-ghelardi/yaghan/ctl/pkg/cli"
+	"github.com/alan-ghelardi/yaghan/ctl/pkg/cmd/sandbox/lifecycle"
 	"github.com/spf13/cobra"
-	controlplanev1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
-	"golang.nuinfra.net/ctl/pkg/cli"
-	"golang.nuinfra.net/ctl/pkg/cmd/sandbox/lifecycle"
 )
 
 const flagDescription = "description"
@@ -30,13 +30,13 @@ concurrency control on the sandbox version. Pass --version to skip the
 lookup; otherwise the CLI fetches the current sandbox to read the
 version before issuing the snapshot request.`,
 		Example: `  # Auto-resolve the version, then trigger.
-  sindri sandbox snapshot my-sandbox
+  yag sandbox snapshot my-sandbox
 
   # Attach a description for operators.
-  sindri sandbox snapshot my-sandbox --description "pre-deploy"
+  yag sandbox snapshot my-sandbox --description "pre-deploy"
 
   # Skip the lookup with an explicit version.
-  sindri sandbox snapshot my-sandbox --version 3`,
+  yag sandbox snapshot my-sandbox --version 3`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return run(ctx, cmd, args)
@@ -73,7 +73,7 @@ func run(ctx *cli.Context, cmd *cobra.Command, args []string) error {
 	}
 
 	fmt.Fprintf(ctx.IOStreams.Stdout,
-		"Snapshot requested for sandbox %q. Run 'sindri sandbox get %s' to follow its progress.\n",
+		"Snapshot requested for sandbox %q. Run 'yag sandbox get %s' to follow its progress.\n",
 		id, id)
 	return nil
 }

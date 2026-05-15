@@ -8,15 +8,15 @@ import (
 	"strings"
 	"testing"
 
+	awsconfig "github.com/alan-ghelardi/yaghan/commons/pkg/aws/config"
+	s3 "github.com/alan-ghelardi/yaghan/commons/pkg/aws/s3"
+	awstesting "github.com/alan-ghelardi/yaghan/commons/pkg/aws/testing"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	s3sdk "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	awsconfig "golang.nuinfra.net/commons/pkg/aws/config"
-	s3 "golang.nuinfra.net/commons/pkg/aws/s3"
-	awstesting "golang.nuinfra.net/commons/pkg/aws/testing"
 )
 
 // s3Fixture bundles everything an s3Store test needs: the store under test,

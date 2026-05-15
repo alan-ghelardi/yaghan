@@ -24,9 +24,9 @@ import (
 	grpc_zap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
 	"github.com/grpc-ecosystem/go-grpc-middleware/logging/zap/ctxzap"
 
+	"github.com/alan-ghelardi/yaghan/commons/pkg/auth"
+	"github.com/alan-ghelardi/yaghan/commons/pkg/validation"
 	"go.uber.org/zap"
-	"golang.nuinfra.net/commons/pkg/auth"
-	"golang.nuinfra.net/commons/pkg/validation"
 	"google.golang.org/grpc"
 	grpc_health "google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/keepalive"

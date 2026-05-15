@@ -13,8 +13,8 @@ import (
 	context "context"
 	reflect "reflect"
 
+	snapshot "github.com/alan-ghelardi/yaghan/daemon/pkg/snapshot"
 	gomock "go.uber.org/mock/gomock"
-	snapshot "golang.nuinfra.net/daemon/pkg/snapshot"
 )
 
 // MockDurableStore is a mock of DurableStore interface.

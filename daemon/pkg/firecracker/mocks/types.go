@@ -13,10 +13,10 @@ import (
 	context "context"
 	reflect "reflect"
 
+	transport "github.com/alan-ghelardi/yaghan/agent/transport"
+	firecracker "github.com/alan-ghelardi/yaghan/daemon/pkg/firecracker"
+	snapshot "github.com/alan-ghelardi/yaghan/daemon/pkg/snapshot"
 	gomock "go.uber.org/mock/gomock"
-	transport "golang.nuinfra.net/agent/transport"
-	firecracker "golang.nuinfra.net/daemon/pkg/firecracker"
-	snapshot "golang.nuinfra.net/daemon/pkg/snapshot"
 )
 
 // MockProvider is a mock of Provider interface.

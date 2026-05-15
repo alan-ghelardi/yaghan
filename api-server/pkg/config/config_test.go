@@ -6,13 +6,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/alan-ghelardi/yaghan/commons/pkg/config"
+	"github.com/alan-ghelardi/yaghan/commons/pkg/logger"
+	"github.com/alan-ghelardi/yaghan/commons/pkg/secret"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"golang.nuinfra.net/commons/pkg/config"
-	"golang.nuinfra.net/commons/pkg/logger"
-	"golang.nuinfra.net/commons/pkg/secret"
 )
 
 func TestNewFromFile(t *testing.T) {

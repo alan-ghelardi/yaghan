@@ -6,15 +6,15 @@ import (
 	"testing"
 	"time"
 
+	"github.com/alan-ghelardi/yaghan/api-server/pkg/config"
+	"github.com/alan-ghelardi/yaghan/api-server/pkg/watch"
+	redistesting "github.com/alan-ghelardi/yaghan/api-server/pkg/watch/providers/redis/testing"
+	controlplanev1alpha1 "github.com/alan-ghelardi/yaghan/apis/gen/yaghan/control_plane/v1alpha1"
+	"github.com/alan-ghelardi/yaghan/commons/pkg/utilities"
 	"github.com/google/go-cmp/cmp"
 	"github.com/grpc-ecosystem/go-grpc-middleware/logging/zap/ctxzap"
 	"go.uber.org/zap/zapcore"
 	"go.uber.org/zap/zaptest"
-	"golang.nuinfra.api-server/pkg/config"
-	"golang.nuinfra.api-server/pkg/watch"
-	redistesting "golang.nuinfra.api-server/pkg/watch/providers/redis/testing"
-	controlplanev1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
-	"golang.nuinfra.net/commons/pkg/utilities"
 	"google.golang.org/protobuf/testing/protocmp"
 )
 

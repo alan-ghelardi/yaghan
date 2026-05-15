@@ -13,9 +13,9 @@ import (
 	context "context"
 	reflect "reflect"
 
+	node "github.com/alan-ghelardi/yaghan/api-server/pkg/db/node"
+	control_planev1alpha1 "github.com/alan-ghelardi/yaghan/apis/gen/yaghan/control_plane/v1alpha1"
 	gomock "go.uber.org/mock/gomock"
-	node "golang.nuinfra.api-server/pkg/db/node"
-	control_planev1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
 )
 
 // MockDB is a mock of DB interface.

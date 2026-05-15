@@ -1,17 +1,17 @@
 package sandbox
 
 import (
+	"github.com/alan-ghelardi/yaghan/ctl/pkg/cli"
+	"github.com/alan-ghelardi/yaghan/ctl/pkg/cmd/sandbox/cp"
+	"github.com/alan-ghelardi/yaghan/ctl/pkg/cmd/sandbox/create"
+	deletecmd "github.com/alan-ghelardi/yaghan/ctl/pkg/cmd/sandbox/delete"
+	"github.com/alan-ghelardi/yaghan/ctl/pkg/cmd/sandbox/exec"
+	"github.com/alan-ghelardi/yaghan/ctl/pkg/cmd/sandbox/get"
+	"github.com/alan-ghelardi/yaghan/ctl/pkg/cmd/sandbox/list"
+	"github.com/alan-ghelardi/yaghan/ctl/pkg/cmd/sandbox/pause"
+	"github.com/alan-ghelardi/yaghan/ctl/pkg/cmd/sandbox/resume"
+	"github.com/alan-ghelardi/yaghan/ctl/pkg/cmd/sandbox/snapshot"
 	"github.com/spf13/cobra"
-	"golang.nuinfra.net/ctl/pkg/cli"
-	"golang.nuinfra.net/ctl/pkg/cmd/sandbox/cp"
-	"golang.nuinfra.net/ctl/pkg/cmd/sandbox/create"
-	deletecmd "golang.nuinfra.net/ctl/pkg/cmd/sandbox/delete"
-	"golang.nuinfra.net/ctl/pkg/cmd/sandbox/exec"
-	"golang.nuinfra.net/ctl/pkg/cmd/sandbox/get"
-	"golang.nuinfra.net/ctl/pkg/cmd/sandbox/list"
-	"golang.nuinfra.net/ctl/pkg/cmd/sandbox/pause"
-	"golang.nuinfra.net/ctl/pkg/cmd/sandbox/resume"
-	"golang.nuinfra.net/ctl/pkg/cmd/sandbox/snapshot"
 )
 
 func New(ctx *cli.Context) *cobra.Command {

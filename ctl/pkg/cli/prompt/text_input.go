@@ -3,9 +3,9 @@ package prompt
 import (
 	"fmt"
 
+	"github.com/alan-ghelardi/yaghan/ctl/pkg/cli"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
-	"golang.nuinfra.net/ctl/pkg/cli"
 )
 
 const (

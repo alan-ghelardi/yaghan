@@ -1,4 +1,4 @@
-// Package exec implements `sindri sandbox exec`. It opens a
+// Package exec implements `yag sandbox exec`. It opens a
 // bidirectional stream against the daemon's Exec RPC and shuttles
 // stdin/stdout/stderr between the local terminal and a guest process,
 // forwarding the guest's exit code via cli.ExitCodeError.
@@ -16,9 +16,9 @@ import (
 	"sync"
 	"syscall"
 
+	dataplanev1alpha1 "github.com/alan-ghelardi/yaghan/apis/gen/yaghan/data_plane/v1alpha1"
+	"github.com/alan-ghelardi/yaghan/ctl/pkg/cli"
 	"github.com/spf13/cobra"
-	dataplanev1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/data_plane/v1alpha1"
-	"golang.nuinfra.net/ctl/pkg/cli"
 	"golang.org/x/term"
 )
 
@@ -59,18 +59,18 @@ pipelines.
 
 Arguments after the literal '--' separator are passed verbatim to the
 command — that lets you forward flags ('-l', '--all', etc.) to the
-guest without sindri trying to parse them.`,
+guest without yag trying to parse them.`,
 		Example: `  # Print the guest hostname.
-  sindri sandbox exec my-sandbox -- hostname
+  yag sandbox exec my-sandbox -- hostname
 
   # Open an interactive shell with a TTY allocated.
-  sindri sandbox exec my-sandbox -it -- /bin/bash
+  yag sandbox exec my-sandbox -it -- /bin/bash
 
   # Run a build with extra env and a custom working directory.
-  sindri sandbox exec my-sandbox -w /workspace -e GOOS=linux -e GOARCH=amd64 -- go build ./...
+  yag sandbox exec my-sandbox -w /workspace -e GOOS=linux -e GOARCH=amd64 -- go build ./...
 
   # Pipe data on stdin without a TTY.
-  cat input.txt | sindri sandbox exec my-sandbox -i -- sh -c 'cat > /tmp/out'`,
+  cat input.txt | yag sandbox exec my-sandbox -i -- sh -c 'cat > /tmp/out'`,
 		Args: validateArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return run(ctx, cmd, args)
@@ -101,7 +101,7 @@ func validateArgs(cmd *cobra.Command, args []string) error {
 	dash := cmd.ArgsLenAtDash()
 	if dash != 1 {
 		return errors.New(
-			"usage: sindri sandbox exec <id> [flags] -- <command> [args...]\n" +
+			"usage: yag sandbox exec <id> [flags] -- <command> [args...]\n" +
 				"the sandbox id must be the only argument before `--`")
 	}
 	if len(args) < 2 {

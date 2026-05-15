@@ -1,11 +1,12 @@
-module golang.nuinfra.net/ctl
+module github.com/alan-ghelardi/yaghan/ctl
 
 go 1.26.1
 
-replace golang.nuinfra.net/apis => ../apis
+replace github.com/alan-ghelardi/yaghan/apis => ../apis
 
 require (
 	buf.build/go/protoyaml v0.6.0
+	github.com/alan-ghelardi/yaghan/apis v0.0.0-00010101000000-000000000000
 	github.com/charmbracelet/bubbles v1.0.0
 	github.com/charmbracelet/bubbletea v1.3.10
 	github.com/charmbracelet/lipgloss v1.1.0
@@ -15,7 +16,6 @@ require (
 	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.10.0
 	go.uber.org/mock v0.6.0
-	golang.nuinfra.net/apis v0.0.0-00010101000000-000000000000
 	golang.org/x/term v0.42.0
 	golang.org/x/text v0.33.0
 	google.golang.org/grpc v1.80.0

@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"golang.nuinfra.api-server/pkg/watch"
+	"github.com/alan-ghelardi/yaghan/api-server/pkg/watch"
 	"google.golang.org/protobuf/proto"
 )
 

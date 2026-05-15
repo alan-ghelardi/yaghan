@@ -6,12 +6,12 @@ import (
 	"errors"
 	"testing"
 
+	smclient "github.com/alan-ghelardi/yaghan/commons/pkg/aws/secretsmanager"
+	smmocks "github.com/alan-ghelardi/yaghan/commons/pkg/aws/secretsmanager/mocks"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/secretsmanager"
 	"github.com/google/go-cmp/cmp"
 	"go.uber.org/mock/gomock"
-	smclient "golang.nuinfra.net/commons/pkg/aws/secretsmanager"
-	smmocks "golang.nuinfra.net/commons/pkg/aws/secretsmanager/mocks"
 )
 
 func TestSecrets(t *testing.T) {

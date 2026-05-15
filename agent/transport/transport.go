@@ -13,7 +13,7 @@ import (
 	"context"
 	"io"
 
-	dataplanev1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/data_plane/v1alpha1"
+	dataplanev1alpha1 "github.com/alan-ghelardi/yaghan/apis/gen/yaghan/data_plane/v1alpha1"
 )
 
 // Transport is the host-side channel to one guest agent.

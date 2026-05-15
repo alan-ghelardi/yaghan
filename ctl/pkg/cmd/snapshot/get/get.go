@@ -1,4 +1,4 @@
-// Package get implements `sindri snapshot get`. It calls
+// Package get implements `yag snapshot get`. It calls
 // SnapshotService.GetSnapshot and renders the response in the
 // user-selected output format using the helpers in ctl/pkg/cli.
 package get
@@ -6,9 +6,9 @@ package get
 import (
 	"fmt"
 
+	controlplanev1alpha1 "github.com/alan-ghelardi/yaghan/apis/gen/yaghan/control_plane/v1alpha1"
+	"github.com/alan-ghelardi/yaghan/ctl/pkg/cli"
 	"github.com/spf13/cobra"
-	controlplanev1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
-	"golang.nuinfra.net/ctl/pkg/cli"
 )
 
 func New(ctx *cli.Context) *cobra.Command {
@@ -22,10 +22,10 @@ The api-server returns the full Snapshot object (metadata, sandbox
 reference). Use --output-format to switch between yaml (default) and
 json.`,
 		Example: `  # Show the snapshot in YAML (default).
-  sindri snapshot get snap-123
+  yag snapshot get snap-123
 
   # Show it as JSON for piping into jq.
-  sindri snapshot get snap-123 -o json`,
+  yag snapshot get snap-123 -o json`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return run(ctx, cmd, args)

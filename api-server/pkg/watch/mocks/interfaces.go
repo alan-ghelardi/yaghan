@@ -13,8 +13,8 @@ import (
 	context "context"
 	reflect "reflect"
 
+	watch "github.com/alan-ghelardi/yaghan/api-server/pkg/watch"
 	gomock "go.uber.org/mock/gomock"
-	watch "golang.nuinfra.api-server/pkg/watch"
 	proto "google.golang.org/protobuf/proto"
 )
 

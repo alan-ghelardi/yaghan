@@ -1,4 +1,4 @@
-// Package cp implements `sindri sandbox cp` — copy a single file
+// Package cp implements `yag sandbox cp` — copy a single file
 // between the local filesystem and a sandbox. It wraps the daemon's
 // UploadFile / DownloadFile RPCs and applies docker-shaped argument
 // parsing: arguments of the form `<sandbox-id>:<path>` reference a
@@ -13,9 +13,9 @@ import (
 	"path/filepath"
 	"strings"
 
+	dataplanev1alpha1 "github.com/alan-ghelardi/yaghan/apis/gen/yaghan/data_plane/v1alpha1"
+	"github.com/alan-ghelardi/yaghan/ctl/pkg/cli"
 	"github.com/spf13/cobra"
-	dataplanev1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/data_plane/v1alpha1"
-	"golang.nuinfra.net/ctl/pkg/cli"
 )
 
 // localFileMode is the mode used when writing a downloaded file. The
@@ -92,13 +92,13 @@ When the destination ends with '/' (or, for local destinations, refers
 to an existing directory) the source's basename is appended
 automatically, matching POSIX cp.`,
 		Example: `  # Download a file from the sandbox into the current directory.
-  sindri sandbox cp my-sandbox:/var/log/app.log .
+  yag sandbox cp my-sandbox:/var/log/app.log .
 
   # Upload a local file into the sandbox.
-  sindri sandbox cp ./build.tar.gz my-sandbox:/srv/build.tar.gz
+  yag sandbox cp ./build.tar.gz my-sandbox:/srv/build.tar.gz
 
   # Upload into a remote directory (basename appended).
-  sindri sandbox cp ./report.txt my-sandbox:/srv/reports/`,
+  yag sandbox cp ./report.txt my-sandbox:/srv/reports/`,
 		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return run(ctx, cmd, args)

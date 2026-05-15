@@ -7,12 +7,12 @@ import (
 	"testing"
 	"time"
 
+	dberrors "github.com/alan-ghelardi/yaghan/api-server/pkg/db"
+	sandboxdb "github.com/alan-ghelardi/yaghan/api-server/pkg/db/sandbox"
+	cpv1 "github.com/alan-ghelardi/yaghan/apis/gen/yaghan/control_plane/v1alpha1"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	dberrors "golang.nuinfra.api-server/pkg/db"
-	sandboxdb "golang.nuinfra.api-server/pkg/db/sandbox"
-	cpv1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
 	"google.golang.org/protobuf/proto"
 )
 

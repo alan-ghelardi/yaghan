@@ -11,8 +11,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"golang.nuinfra.net/agent/internal/framing"
-	dataplanev1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/data_plane/v1alpha1"
+	"github.com/alan-ghelardi/yaghan/agent/internal/framing"
+	dataplanev1alpha1 "github.com/alan-ghelardi/yaghan/apis/gen/yaghan/data_plane/v1alpha1"
 )
 
 const (

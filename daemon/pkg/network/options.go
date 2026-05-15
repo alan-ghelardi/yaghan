@@ -1,6 +1,6 @@
 package network
 
-import "golang.nuinfra.net/daemon/pkg/network/firewall"
+import "github.com/alan-ghelardi/yaghan/daemon/pkg/network/firewall"
 
 // Options controls the behavior of a [Driver]. Construct an Options value
 // implicitly by passing [Option] values to [NewLinuxDriver].

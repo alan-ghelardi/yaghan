@@ -1,12 +1,14 @@
-module golang.nuinfra.api-server
+module github.com/alan-ghelardi/yaghan/api-server
 
 go 1.26.1
 
-replace golang.nuinfra.net/apis => ../apis
+replace github.com/alan-ghelardi/yaghan/apis => ../apis
 
-replace golang.nuinfra.net/commons => ../commons
+replace github.com/alan-ghelardi/yaghan/commons => ../commons
 
 require (
+	github.com/alan-ghelardi/yaghan/apis v0.0.0-00010101000000-000000000000
+	github.com/alan-ghelardi/yaghan/commons v0.0.0-00010101000000-000000000000
 	github.com/aws/aws-sdk-go-v2 v1.41.7
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.43.3
 	github.com/cenkalti/backoff/v5 v5.0.3
@@ -19,8 +21,6 @@ require (
 	github.com/testcontainers/testcontainers-go/modules/redis v0.42.0
 	go.uber.org/mock v0.6.0
 	go.uber.org/zap v1.27.1
-	golang.nuinfra.net/apis v0.0.0-00010101000000-000000000000
-	golang.nuinfra.net/commons v0.0.0-00010101000000-000000000000
 	google.golang.org/grpc v1.73.0
 	google.golang.org/protobuf v1.36.6
 )

@@ -5,8 +5,8 @@ package config
 import (
 	"time"
 
+	"github.com/alan-ghelardi/yaghan/commons/pkg/config"
 	"github.com/spf13/viper"
-	"golang.nuinfra.net/commons/pkg/config"
 )
 
 type NodeRuntime string
@@ -46,7 +46,7 @@ const (
 	// across runs so tcpdump output stays predictable.
 	defaultGuestMAC = "06:00:AC:10:00:02"
 
-	defaultSessionIDFile        = "/var/lib/nuinfra/daemon/session.id"
+	defaultSessionIDFile        = "/var/lib/yaghan/daemon/session.id"
 	defaultControllerMaxRetries = 10
 	defaultReconnectMaxInterval = 2 * time.Minute
 	defaultResyncInterval       = 5 * time.Minute
@@ -143,7 +143,7 @@ type Controller struct {
 	// session id assigned by the api-server. Read at startup and sent
 	// on connect to resume the previous session; written after the
 	// first acknowledgement of a new session. Defaults to
-	// "/var/lib/nuinfra/daemon/session.id".
+	// "/var/lib/yaghan/daemon/session.id".
 	SessionIDFile string `mapstructure:"session-id-file"`
 
 	// MaxRetries caps how many times a single sandbox can be requeued

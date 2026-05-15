@@ -3,10 +3,10 @@ package metrics_test
 import (
 	"testing"
 
+	"github.com/alan-ghelardi/yaghan/daemon/pkg/config"
+	"github.com/alan-ghelardi/yaghan/daemon/pkg/node/metrics"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"golang.nuinfra.net/daemon/pkg/config"
-	"golang.nuinfra.net/daemon/pkg/node/metrics"
 )
 
 func TestCollector(t *testing.T) {

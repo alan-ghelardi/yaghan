@@ -102,7 +102,7 @@ fi
 # 4. exec daemon (sudo if needed) ---------------------------------------------
 
 # The chroot-base-dir is created lazily under /srv by jailer. Make sure
-# /var/lib/nuinfra (where the controller persists its session id) is
+# /var/lib/yaghan (where the controller persists its session id) is
 # writable by root before the daemon starts.
 #
 # AWS_* are forwarded so the daemon's SDK credential chain finds the

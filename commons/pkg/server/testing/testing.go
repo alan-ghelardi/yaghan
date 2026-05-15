@@ -7,16 +7,16 @@ import (
 	"testing"
 	"time"
 
+	"github.com/alan-ghelardi/yaghan/commons/pkg/server"
 	"github.com/grpc-ecosystem/go-grpc-middleware/logging/zap/ctxzap"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"golang.nuinfra.net/commons/pkg/server"
 
 	// Embeds the Zap logger development configuration
 	_ "embed"
 
-	baseconfig "golang.nuinfra.net/commons/pkg/config"
-	"golang.nuinfra.net/commons/pkg/logger"
+	baseconfig "github.com/alan-ghelardi/yaghan/commons/pkg/config"
+	"github.com/alan-ghelardi/yaghan/commons/pkg/logger"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"

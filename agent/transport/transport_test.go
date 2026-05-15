@@ -13,11 +13,11 @@ import (
 	"testing"
 	"time"
 
-	dataplanev1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/data_plane/v1alpha1"
+	dataplanev1alpha1 "github.com/alan-ghelardi/yaghan/apis/gen/yaghan/data_plane/v1alpha1"
 
+	"github.com/alan-ghelardi/yaghan/agent/internal/framing"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"golang.nuinfra.net/agent/internal/framing"
 )
 
 // receiveTimeout bounds any single channel read or server-side

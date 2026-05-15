@@ -1,4 +1,4 @@
-// Package get implements `sindri sandbox get`. It calls
+// Package get implements `yag sandbox get`. It calls
 // SandboxService.GetSandbox and renders the response in the
 // user-selected output format using the helpers in
 // ctl/pkg/cli.
@@ -7,9 +7,9 @@ package get
 import (
 	"fmt"
 
+	controlplanev1alpha1 "github.com/alan-ghelardi/yaghan/apis/gen/yaghan/control_plane/v1alpha1"
+	"github.com/alan-ghelardi/yaghan/ctl/pkg/cli"
 	"github.com/spf13/cobra"
-	controlplanev1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
-	"golang.nuinfra.net/ctl/pkg/cli"
 )
 
 func New(ctx *cli.Context) *cobra.Command {
@@ -24,10 +24,10 @@ node assignment, intent, status). Use --output-format to switch
 between yaml (default) and json. A human-friendly text view will be
 added in a future release.`,
 		Example: `  # Show the sandbox in YAML (default).
-  sindri sandbox get my-sandbox
+  yag sandbox get my-sandbox
 
   # Show it as JSON for piping into jq.
-  sindri sandbox get my-sandbox -o json`,
+  yag sandbox get my-sandbox -o json`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return run(ctx, cmd, args)

@@ -7,8 +7,8 @@ import (
 	"io"
 	"os"
 
-	controlplanev1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
-	dataplanev1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/data_plane/v1alpha1"
+	controlplanev1alpha1 "github.com/alan-ghelardi/yaghan/apis/gen/yaghan/control_plane/v1alpha1"
+	dataplanev1alpha1 "github.com/alan-ghelardi/yaghan/apis/gen/yaghan/data_plane/v1alpha1"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -125,7 +125,7 @@ func defaultErrorHandler(err error) {
 	}
 	switch {
 	case status.Code(err) == codes.Unauthenticated:
-		fmt.Fprintln(os.Stderr, "Authentication required. Run `sindri auth login`, then try again.")
+		fmt.Fprintln(os.Stderr, "Authentication required. Run `yag auth login`, then try again.")
 	case isExitCodeError(err):
 		// The guest already wrote its own stdout/stderr; the CLI just
 		// propagates the status code. Quiet exit.

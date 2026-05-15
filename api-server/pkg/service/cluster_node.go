@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 
-	db "golang.nuinfra.api-server/pkg/db"
-	nodedb "golang.nuinfra.api-server/pkg/db/node"
-	cpv1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
+	db "github.com/alan-ghelardi/yaghan/api-server/pkg/db"
+	nodedb "github.com/alan-ghelardi/yaghan/api-server/pkg/db/node"
+	cpv1 "github.com/alan-ghelardi/yaghan/apis/gen/yaghan/control_plane/v1alpha1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

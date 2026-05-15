@@ -1,4 +1,4 @@
-// Package create implements `sindri sandbox create`. The command builds a
+// Package create implements `yag sandbox create`. The command builds a
 // CreateSandboxRequest from a small set of flags and forwards it to the
 // SandboxService on the api-server. The server applies its own validation
 // (buf.validate) — this command stays thin and only normalises user input
@@ -11,10 +11,10 @@ import (
 	"strconv"
 	"strings"
 
+	controlplanev1alpha1 "github.com/alan-ghelardi/yaghan/apis/gen/yaghan/control_plane/v1alpha1"
+	"github.com/alan-ghelardi/yaghan/ctl/pkg/cli"
 	"github.com/google/uuid"
 	"github.com/spf13/cobra"
-	controlplanev1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
-	"golang.nuinfra.net/ctl/pkg/cli"
 )
 
 const (
@@ -47,28 +47,28 @@ func New(ctx *cli.Context) *cobra.Command {
 		Use:     "create [id]",
 		Aliases: []string{"new"},
 		Short:   "Create a sandbox",
-		Long: `Create a sandbox in the Sindri platform.
+		Long: `Create a sandbox in the Yaghan platform.
 
 A sandbox is a lightweight microVM scheduled on one of the cluster's
 worker nodes. The api-server returns as soon as the request is
 persisted; the sandbox then transitions through PENDING into RUNNING
-as the target node boots it. Use 'sindri sandbox get' to observe the
+as the target node boots it. Use 'yag sandbox get' to observe the
 current phase.
 
 The id argument is optional — when omitted, a fresh UUID is generated
 client-side and printed back.`,
 		Example: `  # Create a sandbox with a generated id, default namespace and minimum
   # resources (1 vCPU, 128 MiB).
-  sindri sandbox create
+  yag sandbox create
 
   # Create a sandbox with an explicit id and larger resources.
-  sindri sandbox create my-sandbox --vcpu 2 --memory 1GiB
+  yag sandbox create my-sandbox --vcpu 2 --memory 1GiB
 
   # Create a sandbox in a non-default namespace.
-  sindri sandbox create --namespace tenant-a --memory 512MiB
+  yag sandbox create --namespace tenant-a --memory 512MiB
 
   # Restore a sandbox from a snapshot (the snapshot must live in the same namespace).
-  sindri sandbox create --source snapshot:my-snapshot-id`,
+  yag sandbox create --source snapshot:my-snapshot-id`,
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return run(ctx, cmd, args)
@@ -176,7 +176,7 @@ func run(ctx *cli.Context, cmd *cobra.Command, args []string) error {
 	}
 
 	fmt.Fprintf(ctx.IOStreams.Stdout,
-		"Sandbox %q created. Run 'sindri sandbox get %s' to follow its phase.\n",
+		"Sandbox %q created. Run 'yag sandbox get %s' to follow its phase.\n",
 		resp.GetSandbox().GetMetadata().GetId(),
 		resp.GetSandbox().GetMetadata().GetId())
 	return nil

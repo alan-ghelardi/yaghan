@@ -3,9 +3,9 @@ package controller
 import (
 	"testing"
 
+	controlplanev1alpha1 "github.com/alan-ghelardi/yaghan/apis/gen/yaghan/control_plane/v1alpha1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	controlplanev1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
 )
 
 func sandboxAt(id string, version int64) *controlplanev1alpha1.Sandbox { //nolint:unparam // id stays a parameter so tests asserting on multiple ids stay readable

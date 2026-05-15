@@ -13,9 +13,9 @@ import (
 	context "context"
 	reflect "reflect"
 
+	transport "github.com/alan-ghelardi/yaghan/agent/transport"
+	data_planev1alpha1 "github.com/alan-ghelardi/yaghan/apis/gen/yaghan/data_plane/v1alpha1"
 	gomock "go.uber.org/mock/gomock"
-	transport "golang.nuinfra.net/agent/transport"
-	data_planev1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/data_plane/v1alpha1"
 )
 
 // MockTransport is a mock of Transport interface.

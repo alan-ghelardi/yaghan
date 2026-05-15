@@ -5,10 +5,10 @@ import (
 	"net"
 	"net/http"
 
+	"github.com/alan-ghelardi/yaghan/firecracker-client/client"
+	"github.com/alan-ghelardi/yaghan/firecracker-client/client/operations"
 	httptransport "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
-	"golang.nuinfra.net/firecracker-client/client"
-	"golang.nuinfra.net/firecracker-client/client/operations"
 )
 
 // New creates a new firecracker API client

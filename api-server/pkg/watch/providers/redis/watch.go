@@ -10,20 +10,20 @@ import (
 	"sync"
 	"time"
 
+	"github.com/alan-ghelardi/yaghan/api-server/pkg/config"
+	"github.com/alan-ghelardi/yaghan/api-server/pkg/watch"
+	"github.com/alan-ghelardi/yaghan/commons/pkg/utilities"
 	"github.com/cenkalti/backoff/v5"
 	"github.com/grpc-ecosystem/go-grpc-middleware/logging/zap/ctxzap"
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
-	"golang.nuinfra.api-server/pkg/config"
-	"golang.nuinfra.api-server/pkg/watch"
-	"golang.nuinfra.net/commons/pkg/utilities"
 	"google.golang.org/protobuf/proto"
 )
 
 const (
 	// Template for the keys where we store the last event identifier a
 	// given client has processed.
-	lastEventIDFmt = "nuinfra/%d/last-event-id"
+	lastEventIDFmt = "yaghan/%d/last-event-id"
 
 	eventKey = "event"
 
@@ -76,7 +76,7 @@ func NewFromConfig[E proto.Message](ctx context.Context, config *config.WatchStr
 	opts := &redis.Options{
 		Addr:                  config.Redis.Address,
 		ContextTimeoutEnabled: true,
-		ClientName:            "nuinfra",
+		ClientName:            "yaghan",
 		DB:                    int(config.Redis.Database),
 	}
 

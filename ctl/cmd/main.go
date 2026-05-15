@@ -16,7 +16,7 @@ limitations under the License.
 package main
 
 import (
-	"golang.nuinfra.net/ctl/pkg/cmd"
+	"github.com/alan-ghelardi/yaghan/ctl/pkg/cmd"
 )
 
 func main() {

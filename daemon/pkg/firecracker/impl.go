@@ -18,13 +18,13 @@ import (
 	"syscall"
 	"time"
 
-	"golang.nuinfra.net/agent/transport"
-	localclient "golang.nuinfra.net/daemon/pkg/firecracker/client"
-	"golang.nuinfra.net/daemon/pkg/network"
-	"golang.nuinfra.net/daemon/pkg/snapshot"
-	fcclient "golang.nuinfra.net/firecracker-client/client"
-	"golang.nuinfra.net/firecracker-client/client/operations"
-	"golang.nuinfra.net/firecracker-client/models"
+	"github.com/alan-ghelardi/yaghan/agent/transport"
+	localclient "github.com/alan-ghelardi/yaghan/daemon/pkg/firecracker/client"
+	"github.com/alan-ghelardi/yaghan/daemon/pkg/network"
+	"github.com/alan-ghelardi/yaghan/daemon/pkg/snapshot"
+	fcclient "github.com/alan-ghelardi/yaghan/firecracker-client/client"
+	"github.com/alan-ghelardi/yaghan/firecracker-client/client/operations"
+	"github.com/alan-ghelardi/yaghan/firecracker-client/models"
 )
 
 const (

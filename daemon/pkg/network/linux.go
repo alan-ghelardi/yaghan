@@ -35,7 +35,7 @@ import (
 	"github.com/vishvananda/netns"
 	"golang.org/x/sys/unix"
 
-	"golang.nuinfra.net/daemon/pkg/network/firewall"
+	"github.com/alan-ghelardi/yaghan/daemon/pkg/network/firewall"
 )
 
 // netnsMountDir is the kernel-iproute2-compatible mount point where

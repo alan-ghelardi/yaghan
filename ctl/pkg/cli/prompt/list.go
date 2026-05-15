@@ -5,7 +5,7 @@ import (
 	"io"
 	"strings"
 
-	"golang.nuinfra.net/ctl/pkg/cli"
+	"github.com/alan-ghelardi/yaghan/ctl/pkg/cli"
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"

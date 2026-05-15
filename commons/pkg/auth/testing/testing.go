@@ -9,10 +9,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/alan-ghelardi/yaghan/commons/pkg/utilities"
 	"github.com/lestrrat-go/jwx/v3/jwa"
 	"github.com/lestrrat-go/jwx/v3/jwk"
 	"github.com/lestrrat-go/jwx/v3/jwt"
-	"golang.nuinfra.net/commons/pkg/utilities"
 )
 
 type Claims map[string]any

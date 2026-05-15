@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"slices"
 
+	"github.com/alan-ghelardi/yaghan/ctl/pkg/cli"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"golang.nuinfra.net/ctl/pkg/cli"
 )
 
 type keyInputModel struct {

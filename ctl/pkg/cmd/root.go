@@ -20,18 +20,18 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/alan-ghelardi/yaghan/ctl/pkg/cli"
+	"github.com/alan-ghelardi/yaghan/ctl/pkg/cli/prompt"
+	"github.com/alan-ghelardi/yaghan/ctl/pkg/cmd/node"
+	"github.com/alan-ghelardi/yaghan/ctl/pkg/cmd/sandbox"
+	"github.com/alan-ghelardi/yaghan/ctl/pkg/cmd/snapshot"
 	"github.com/spf13/cobra"
-	"golang.nuinfra.net/ctl/pkg/cli"
-	"golang.nuinfra.net/ctl/pkg/cli/prompt"
-	"golang.nuinfra.net/ctl/pkg/cmd/node"
-	"golang.nuinfra.net/ctl/pkg/cmd/sandbox"
-	"golang.nuinfra.net/ctl/pkg/cmd/snapshot"
 )
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "sindri",
-	Short: "The CLI for Sindri platform",
+	Use:   "yag",
+	Short: "The CLI for Yaghan platform",
 	Long:  ``,
 }
 

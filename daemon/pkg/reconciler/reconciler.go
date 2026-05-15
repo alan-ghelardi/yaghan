@@ -10,15 +10,15 @@ import (
 	"path/filepath"
 	"strings"
 
+	controlplanev1alpha1 "github.com/alan-ghelardi/yaghan/apis/gen/yaghan/control_plane/v1alpha1"
+	"github.com/alan-ghelardi/yaghan/daemon/pkg/config"
+	"github.com/alan-ghelardi/yaghan/daemon/pkg/firecracker"
+	"github.com/alan-ghelardi/yaghan/daemon/pkg/network"
+	"github.com/alan-ghelardi/yaghan/daemon/pkg/snapshot"
+	"github.com/alan-ghelardi/yaghan/firecracker-client/models"
 	"github.com/go-openapi/swag/conv"
 	"github.com/grpc-ecosystem/go-grpc-middleware/logging/zap/ctxzap"
 	"go.uber.org/zap"
-	controlplanev1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
-	"golang.nuinfra.net/daemon/pkg/config"
-	"golang.nuinfra.net/daemon/pkg/firecracker"
-	"golang.nuinfra.net/daemon/pkg/network"
-	"golang.nuinfra.net/daemon/pkg/snapshot"
-	"golang.nuinfra.net/firecracker-client/models"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 

@@ -16,11 +16,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/alan-ghelardi/yaghan/commons/pkg/logger"
+	"github.com/alan-ghelardi/yaghan/commons/pkg/utilities"
 	"github.com/go-playground/validator/v10"
 	"github.com/go-viper/mapstructure/v2"
 	"github.com/spf13/viper"
-	"golang.nuinfra.net/commons/pkg/logger"
-	"golang.nuinfra.net/commons/pkg/utilities"
 )
 
 const (

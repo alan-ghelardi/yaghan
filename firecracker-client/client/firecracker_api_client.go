@@ -9,7 +9,7 @@ import (
 	"github.com/go-openapi/runtime"
 	httptransport "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
-	"golang.nuinfra.net/firecracker-client/client/operations"
+	"github.com/alan-ghelardi/yaghan/firecracker-client/client/operations"
 )
 
 // Default firecracker API HTTP client.

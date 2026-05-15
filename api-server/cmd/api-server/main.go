@@ -12,13 +12,13 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/alan-ghelardi/yaghan/api-server/pkg/config"
+	"github.com/alan-ghelardi/yaghan/api-server/pkg/service"
+	awsconfig "github.com/alan-ghelardi/yaghan/commons/pkg/aws/config"
+	awsdynamodb "github.com/alan-ghelardi/yaghan/commons/pkg/aws/dynamodb"
+	"github.com/alan-ghelardi/yaghan/commons/pkg/logger"
+	"github.com/alan-ghelardi/yaghan/commons/pkg/server"
 	"github.com/grpc-ecosystem/go-grpc-middleware/logging/zap/ctxzap"
-	"golang.nuinfra.api-server/pkg/config"
-	"golang.nuinfra.api-server/pkg/service"
-	awsconfig "golang.nuinfra.net/commons/pkg/aws/config"
-	awsdynamodb "golang.nuinfra.net/commons/pkg/aws/dynamodb"
-	"golang.nuinfra.net/commons/pkg/logger"
-	"golang.nuinfra.net/commons/pkg/server"
 )
 
 func main() {

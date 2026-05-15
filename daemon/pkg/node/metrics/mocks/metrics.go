@@ -13,8 +13,8 @@ import (
 	context "context"
 	reflect "reflect"
 
+	metrics "github.com/alan-ghelardi/yaghan/daemon/pkg/node/metrics"
 	gomock "go.uber.org/mock/gomock"
-	metrics "golang.nuinfra.net/daemon/pkg/node/metrics"
 )
 
 // MockCollector is a mock of Collector interface.

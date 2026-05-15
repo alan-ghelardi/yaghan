@@ -53,8 +53,8 @@ watch-stream:
   event-delivery-timeout: 30s
   redis:
     address: localhost:6379
-    stream-name: nuinfra
-    stream-key: nuinfra
+    stream-name: yaghan
+    stream-key: yaghan
     max-stream-length: 1000
     key-ttl: 24h
     timeout: 30s

@@ -1,19 +1,19 @@
 // Package snapshot groups subcommands that operate on Snapshot
-// resources. It exists as a registration point under the root `sindri`
+// resources. It exists as a registration point under the root `yag`
 // command; the concrete behaviour lives in the per-verb subpackages.
 //
-// Note: `sindri sandbox snapshot` (under ctl/pkg/cmd/sandbox/snapshot)
+// Note: `yag sandbox snapshot` (under ctl/pkg/cmd/sandbox/snapshot)
 // is a different command — it triggers a snapshot on a sandbox via
 // SandboxService.StartSnapshot. This package contains the resource
 // surface (get / list / delete) backed by SnapshotService.
 package snapshot
 
 import (
+	"github.com/alan-ghelardi/yaghan/ctl/pkg/cli"
+	deletecmd "github.com/alan-ghelardi/yaghan/ctl/pkg/cmd/snapshot/delete"
+	"github.com/alan-ghelardi/yaghan/ctl/pkg/cmd/snapshot/get"
+	"github.com/alan-ghelardi/yaghan/ctl/pkg/cmd/snapshot/list"
 	"github.com/spf13/cobra"
-	"golang.nuinfra.net/ctl/pkg/cli"
-	deletecmd "golang.nuinfra.net/ctl/pkg/cmd/snapshot/delete"
-	"golang.nuinfra.net/ctl/pkg/cmd/snapshot/get"
-	"golang.nuinfra.net/ctl/pkg/cmd/snapshot/list"
 )
 
 func New(ctx *cli.Context) *cobra.Command {

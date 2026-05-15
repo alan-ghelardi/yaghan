@@ -4,10 +4,10 @@ import (
 	"io"
 	"testing"
 
+	awsconfig "github.com/alan-ghelardi/yaghan/commons/pkg/aws/config"
+	"github.com/alan-ghelardi/yaghan/commons/pkg/aws/s3"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	s3service "github.com/aws/aws-sdk-go-v2/service/s3"
-	awsconfig "golang.nuinfra.net/commons/pkg/aws/config"
-	"golang.nuinfra.net/commons/pkg/aws/s3"
 )
 
 func CreateBucket(t *testing.T, endpoint, bucketName string) {

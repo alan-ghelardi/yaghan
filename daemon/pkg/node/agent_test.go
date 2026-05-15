@@ -8,6 +8,16 @@ import (
 	"testing"
 	"time"
 
+	controlplanev1alpha1 "github.com/alan-ghelardi/yaghan/apis/gen/yaghan/control_plane/v1alpha1"
+	ec2client "github.com/alan-ghelardi/yaghan/commons/pkg/aws/ec2"
+	ec2mocks "github.com/alan-ghelardi/yaghan/commons/pkg/aws/ec2/mocks"
+	ec2imdsclient "github.com/alan-ghelardi/yaghan/commons/pkg/aws/ec2imds"
+	imdsmocks "github.com/alan-ghelardi/yaghan/commons/pkg/aws/ec2imds/mocks"
+	"github.com/alan-ghelardi/yaghan/daemon/pkg/config"
+	fcmocks "github.com/alan-ghelardi/yaghan/daemon/pkg/firecracker/mocks"
+	"github.com/alan-ghelardi/yaghan/daemon/pkg/node/metrics"
+	metricsmocks "github.com/alan-ghelardi/yaghan/daemon/pkg/node/metrics/mocks"
+	nodemocks "github.com/alan-ghelardi/yaghan/daemon/pkg/node/mocks"
 	"github.com/aws/aws-sdk-go-v2/feature/ec2/imds"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
@@ -15,16 +25,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
-	controlplanev1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
-	ec2client "golang.nuinfra.net/commons/pkg/aws/ec2"
-	ec2mocks "golang.nuinfra.net/commons/pkg/aws/ec2/mocks"
-	ec2imdsclient "golang.nuinfra.net/commons/pkg/aws/ec2imds"
-	imdsmocks "golang.nuinfra.net/commons/pkg/aws/ec2imds/mocks"
-	"golang.nuinfra.net/daemon/pkg/config"
-	fcmocks "golang.nuinfra.net/daemon/pkg/firecracker/mocks"
-	"golang.nuinfra.net/daemon/pkg/node/metrics"
-	metricsmocks "golang.nuinfra.net/daemon/pkg/node/metrics/mocks"
-	nodemocks "golang.nuinfra.net/daemon/pkg/node/mocks"
 )
 
 type agentFixture struct {

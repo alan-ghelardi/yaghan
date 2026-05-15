@@ -1,0 +1,83 @@
+syntax = "proto3";
+
+package yaghan.data_plane.v1alpha1;
+
+import "buf/validate/validate.proto";
+
+message ExecRequest {
+  string sandbox_id = 1 [(buf.validate.field).required = true];
+  oneof payload {
+    ExecProcess exec_process = 2;
+    StdinChunk stdin = 3;
+    ResizePTY resize = 4;
+  }
+}
+
+message StdinChunk {
+  bytes data = 1;
+  bool eof = 2;
+}
+
+message ExecProcess {
+  string command = 1;
+  repeated string args = 2;
+  map<string, string> env = 3;
+  string cwd = 4;
+  bool tty = 5;
+}
+
+message ExecResponse {
+  oneof payload {
+    ProcessResult process_result = 1;
+    StreamChunk stream_chunk = 2;
+  }
+}
+
+message ProcessResult {
+  int32 exit_code = 1;
+}
+
+message StreamChunk {
+  enum StreamType {
+    STREAM_TYPE_UNSPECIFIED = 0;
+    STREAM_TYPE_STDOUT = 1;
+    STREAM_TYPE_STDERR = 2;
+  }
+
+  int32 pid = 1;
+  StreamType stream = 2;
+  bytes data = 3;
+  bool eof = 4;
+}
+
+message CancelRequest {}
+
+message ResizePTY {
+  uint32 cols = 1;
+  uint32 rows = 2;
+}
+
+message UploadFileRequest {
+  string sandbox_id = 1 [(buf.validate.field).required = true];
+  bytes source = 2 [(buf.validate.field).required = true];
+  string dest = 3 [(buf.validate.field).required = true];
+}
+
+message UploadFileResponse {}
+
+message DownloadFileRequest {
+  string sandbox_id = 1 [(buf.validate.field).required = true];
+  string source = 2 [(buf.validate.field).required = true];
+}
+
+message DownloadFileResponse {
+  bytes file_content = 1;
+}
+
+service DaemonService {
+  rpc Exec(stream ExecRequest) returns (stream ExecResponse);
+
+  rpc UploadFile(UploadFileRequest) returns (UploadFileResponse);
+
+  rpc DownloadFile(DownloadFileRequest) returns (DownloadFileResponse);
+}

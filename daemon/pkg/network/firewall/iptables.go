@@ -12,14 +12,14 @@ import (
 // here so foreign rules (operator-installed, k8s, etc.) stay
 // untouched.
 const (
-	hostForwardChain = "NUINFRA-FORWARD"
-	hostNATChain     = "NUINFRA-POSTROUTING"
+	hostForwardChain = "YAGHAN-FORWARD"
+	hostNATChain     = "YAGHAN-POSTROUTING"
 
 	// ruleComment tags every rule the daemon installs. It serves two
 	// purposes: it makes the rules trivially greppable in iptables-save
 	// output, and it lets a future Sweep() distinguish daemon rules
 	// from anything else without parsing rule-specs.
-	ruleComment = "nuinfra"
+	ruleComment = "yaghan"
 )
 
 // adder is the small subset of iptables.IPTables the firewall uses,
@@ -53,7 +53,7 @@ func (f *iptablesFirewall) EnsureHost(upstream string, vmSubnet netip.Prefix) er
 	}
 	subnet := vmSubnet.String()
 
-	// filter: ensure NUINFRA-FORWARD exists and is jumped to from FORWARD.
+	// filter: ensure YAGHAN-FORWARD exists and is jumped to from FORWARD.
 	if err := ensureChain(f.ipt, "filter", hostForwardChain); err != nil {
 		return err
 	}
@@ -81,7 +81,7 @@ func (f *iptablesFirewall) EnsureHost(upstream string, vmSubnet netip.Prefix) er
 		return fmt.Errorf("allow host forward return: %w", err)
 	}
 
-	// nat: ensure NUINFRA-POSTROUTING exists and is jumped to from POSTROUTING.
+	// nat: ensure YAGHAN-POSTROUTING exists and is jumped to from POSTROUTING.
 	if err := ensureChain(f.ipt, "nat", hostNATChain); err != nil {
 		return err
 	}

@@ -3,7 +3,7 @@ package node
 import (
 	"context"
 
-	controlplanev1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
+	controlplanev1alpha1 "github.com/alan-ghelardi/yaghan/apis/gen/yaghan/control_plane/v1alpha1"
 )
 
 // Reporter publishes node updates back to the api-server. Production

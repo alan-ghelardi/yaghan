@@ -6,6 +6,9 @@ import (
 	"testing"
 	"time"
 
+	sandboxmocks "github.com/alan-ghelardi/yaghan/api-server/pkg/db/sandbox/mocks"
+	watchmocks "github.com/alan-ghelardi/yaghan/api-server/pkg/watch/mocks"
+	controlplanev1alpha1 "github.com/alan-ghelardi/yaghan/apis/gen/yaghan/control_plane/v1alpha1"
 	"github.com/cenkalti/backoff/v5"
 	"github.com/grpc-ecosystem/go-grpc-middleware/logging/zap/ctxzap"
 	"github.com/stretchr/testify/assert"
@@ -15,9 +18,6 @@ import (
 	"go.uber.org/zap/zapcore"
 	"go.uber.org/zap/zaptest"
 	"go.uber.org/zap/zaptest/observer"
-	sandboxmocks "golang.nuinfra.api-server/pkg/db/sandbox/mocks"
-	watchmocks "golang.nuinfra.api-server/pkg/watch/mocks"
-	controlplanev1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
 	"google.golang.org/protobuf/proto"
 )
 

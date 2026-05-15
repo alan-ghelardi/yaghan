@@ -15,9 +15,9 @@ import (
 	"fmt"
 	"math/rand/v2"
 
-	nodedb "golang.nuinfra.api-server/pkg/db/node"
-	"golang.nuinfra.api-server/pkg/scheduler"
-	cpv1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
+	nodedb "github.com/alan-ghelardi/yaghan/api-server/pkg/db/node"
+	"github.com/alan-ghelardi/yaghan/api-server/pkg/scheduler"
+	cpv1 "github.com/alan-ghelardi/yaghan/apis/gen/yaghan/control_plane/v1alpha1"
 )
 
 // schedulerPageSize matches the proto's documented maximum, so the

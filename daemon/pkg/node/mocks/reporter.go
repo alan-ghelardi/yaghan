@@ -13,8 +13,8 @@ import (
 	context "context"
 	reflect "reflect"
 
+	control_planev1alpha1 "github.com/alan-ghelardi/yaghan/apis/gen/yaghan/control_plane/v1alpha1"
 	gomock "go.uber.org/mock/gomock"
-	control_planev1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
 )
 
 // MockReporter is a mock of Reporter interface.

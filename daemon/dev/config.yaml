@@ -70,7 +70,7 @@ microvm:
   guest-mac: "06:00:AC:10:00:02"
 
 controller:
-  session-id-file: /var/lib/nuinfra/daemon/session.id
+  session-id-file: /var/lib/yaghan/daemon/session.id
   max-retries: 10
   reconnect-max-interval: 2m
 

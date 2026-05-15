@@ -5,14 +5,14 @@ import (
 	"errors"
 	"testing"
 
+	nodedb "github.com/alan-ghelardi/yaghan/api-server/pkg/db/node"
+	nodemocks "github.com/alan-ghelardi/yaghan/api-server/pkg/db/node/mocks"
+	"github.com/alan-ghelardi/yaghan/api-server/pkg/scheduler"
+	"github.com/alan-ghelardi/yaghan/api-server/pkg/scheduler/random"
+	cpv1 "github.com/alan-ghelardi/yaghan/apis/gen/yaghan/control_plane/v1alpha1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
-	nodedb "golang.nuinfra.api-server/pkg/db/node"
-	nodemocks "golang.nuinfra.api-server/pkg/db/node/mocks"
-	"golang.nuinfra.api-server/pkg/scheduler"
-	"golang.nuinfra.api-server/pkg/scheduler/random"
-	cpv1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
 )
 
 func newSandbox() *cpv1.Sandbox {

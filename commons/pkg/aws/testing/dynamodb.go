@@ -10,13 +10,13 @@ import (
 	"testing"
 	"time"
 
+	awsconfig "github.com/alan-ghelardi/yaghan/commons/pkg/aws/config"
+	"github.com/alan-ghelardi/yaghan/commons/pkg/aws/dynamodb"
+	"github.com/alan-ghelardi/yaghan/commons/pkg/utilities"
 	dynamodbservice "github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
-	awsconfig "golang.nuinfra.net/commons/pkg/aws/config"
-	"golang.nuinfra.net/commons/pkg/aws/dynamodb"
-	"golang.nuinfra.net/commons/pkg/utilities"
 )
 
 // dynamoDBContainerRequest is the testcontainers spec for the

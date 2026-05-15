@@ -47,11 +47,11 @@ func TestEnsureHost(t *testing.T) {
 	// substrings keeps the test resilient to flag-ordering tweaks
 	// in EnsureHost while still anchoring the important bits.
 	want := []string{
-		"filter/FORWARD | -m comment --comment nuinfra -j " + hostForwardChain,
+		"filter/FORWARD | -m comment --comment yaghan -j " + hostForwardChain,
 		"filter/" + hostForwardChain + " | -s 10.0.0.0/16 -o eth0",
 		"filter/" + hostForwardChain + " | -i eth0 -d 10.0.0.0/16",
-		"nat/POSTROUTING | -m comment --comment nuinfra -j " + hostNATChain,
-		"nat/" + hostNATChain + " | -s 10.0.0.0/16 -o eth0 -m comment --comment nuinfra -j MASQUERADE",
+		"nat/POSTROUTING | -m comment --comment yaghan -j " + hostNATChain,
+		"nat/" + hostNATChain + " | -s 10.0.0.0/16 -o eth0 -m comment --comment yaghan -j MASQUERADE",
 	}
 	for _, fragment := range want {
 		assert.True(t, containsAny(r.appends, fragment),

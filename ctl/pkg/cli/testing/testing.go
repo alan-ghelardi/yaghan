@@ -6,13 +6,13 @@ import (
 	"strings"
 	"testing"
 
-	cpmocks "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1/mocks"
-	dpmocks "golang.nuinfra.net/apis/gen/nuinfra/data_plane/v1alpha1/mocks"
+	cpmocks "github.com/alan-ghelardi/yaghan/apis/gen/yaghan/control_plane/v1alpha1/mocks"
+	dpmocks "github.com/alan-ghelardi/yaghan/apis/gen/yaghan/data_plane/v1alpha1/mocks"
 
+	"github.com/alan-ghelardi/yaghan/ctl/pkg/cli"
+	climocks "github.com/alan-ghelardi/yaghan/ctl/pkg/cli/mocks"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
-	"golang.nuinfra.net/ctl/pkg/cli"
-	climocks "golang.nuinfra.net/ctl/pkg/cli/mocks"
 )
 
 // NewContext creates a cli.Context object for testing purposes.

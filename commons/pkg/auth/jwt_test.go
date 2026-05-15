@@ -12,13 +12,13 @@ import (
 	"net/http"
 	"net/http/httptest"
 
+	authv1 "github.com/alan-ghelardi/yaghan/apis/gen/yaghan/auth/v1"
+	authtesting "github.com/alan-ghelardi/yaghan/commons/pkg/auth/testing"
+	"github.com/alan-ghelardi/yaghan/commons/pkg/config"
 	"github.com/grpc-ecosystem/go-grpc-middleware/logging/zap/ctxzap"
 	"github.com/lestrrat-go/jwx/v3/jwt"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	authv1 "golang.nuinfra.net/apis/gen/nuinfra/auth/v1"
-	authtesting "golang.nuinfra.net/commons/pkg/auth/testing"
-	"golang.nuinfra.net/commons/pkg/config"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

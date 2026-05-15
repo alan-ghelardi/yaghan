@@ -1,4 +1,4 @@
-// Package list implements `sindri snapshot list`. It calls
+// Package list implements `yag snapshot list`. It calls
 // SnapshotService.ListSnapshots and renders the response either as a
 // formatted table (default) or as JSON / YAML for piping.
 package list
@@ -7,10 +7,10 @@ import (
 	"fmt"
 	"strings"
 
+	controlplanev1alpha1 "github.com/alan-ghelardi/yaghan/apis/gen/yaghan/control_plane/v1alpha1"
+	"github.com/alan-ghelardi/yaghan/ctl/pkg/cli"
+	"github.com/alan-ghelardi/yaghan/ctl/pkg/cli/print"
 	"github.com/spf13/cobra"
-	controlplanev1alpha1 "golang.nuinfra.net/apis/gen/nuinfra/control_plane/v1alpha1"
-	"golang.nuinfra.net/ctl/pkg/cli"
-	"golang.nuinfra.net/ctl/pkg/cli/print"
 )
 
 const (
@@ -40,14 +40,14 @@ The default view is a formatted table with interactive pagination. JSON
 and YAML output marshal the full ListSnapshotsResponse — including the
 continuation_token — so callers can drive their own pagination.`,
 		Example: `  # Default table view, scoped to a namespace.
-  sindri snapshot list --namespace team-alpha
+  yag snapshot list --namespace team-alpha
 
   # All snapshots taken from a specific sandbox.
-  sindri snapshot list --sandbox-id sb-42
+  yag snapshot list --sandbox-id sb-42
 
   # JSON for piping into jq, walking pages by hand.
-  sindri snapshot list -N team-alpha -o json
-  sindri snapshot list -N team-alpha -o json -c <token-from-previous-response>`,
+  yag snapshot list -N team-alpha -o json
+  yag snapshot list -N team-alpha -o json -c <token-from-previous-response>`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			return run(ctx, cmd)

@@ -15,7 +15,7 @@ import (
 	cr "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
 
-	"golang.nuinfra.net/firecracker-client/models"
+	"github.com/alan-ghelardi/yaghan/firecracker-client/models"
 )
 
 // NewPutMachineConfigurationParams creates a new PutMachineConfigurationParams object,
