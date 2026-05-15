@@ -33,6 +33,15 @@ const (
 	defaultAgentVsockPort   = uint32(1024)
 	defaultGuestCID         = int64(3)
 
+	// defaultRootfsDiskMiB is the per-sandbox root disk size applied
+	// when Resources.disk_mib on the spec is 0 (unset). 4 GiB leaves
+	// usable headroom for an Ubuntu Base rootfs (~80 MiB used) plus
+	// typical apt-installed tooling and workload scratch. Resize is
+	// an ext4 metadata-only operation on a sparse file — the host
+	// only pays for blocks the guest actually writes, regardless of
+	// this default.
+	defaultRootfsDiskMiB = int64(4096)
+
 	// defaultGuestMAC is a locally-administered address. Deterministic
 	// across runs so tcpdump output stays predictable.
 	defaultGuestMAC = "06:00:AC:10:00:02"
@@ -230,6 +239,12 @@ type MicroVM struct {
 	// GuestMAC is the guest virtio-net MAC address. Locally-administered
 	// by default; deterministic for predictable tcpdump output.
 	GuestMAC string `mapstructure:"guest-mac"`
+
+	// DefaultRootfsDiskMiB is the root disk size applied to sandboxes
+	// whose Resources.disk_mib is unset (0). The daemon truncates the
+	// per-VM rootfs.ext4 copy up to this size and runs resize2fs
+	// before firecracker starts. Defaults to 4096 MiB.
+	DefaultRootfsDiskMiB int64 `mapstructure:"default-rootfs-disk-mib"`
 }
 
 // NodeAgent configures the node agent.
@@ -297,6 +312,7 @@ func applyDefaults(v *viper.Viper) {
 	v.SetDefault("microvm.agent-vsock-port", defaultAgentVsockPort)
 	v.SetDefault("microvm.guest-cid", defaultGuestCID)
 	v.SetDefault("microvm.guest-mac", defaultGuestMAC)
+	v.SetDefault("microvm.default-rootfs-disk-mib", defaultRootfsDiskMiB)
 
 	v.SetDefault("controller.session-id-file", defaultSessionIDFile)
 	v.SetDefault("controller.max-retries", defaultControllerMaxRetries)

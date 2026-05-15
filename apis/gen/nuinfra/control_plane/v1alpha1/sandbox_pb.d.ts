@@ -156,6 +156,19 @@ export declare type Resources = Message<"nuinfra.control_plane.v1alpha1.Resource
    * @generated from field: uint64 memory_mib = 2;
    */
   memoryMib: bigint;
+
+  /**
+   * Root disk size in MiB. Optional: 0 means "use the daemon's
+   * configured default". When set, the daemon resizes the per-VM
+   * copy of the base rootfs image up to this size at provision time
+   * (ext4 grow on a sparse file — metadata-only, no eager allocation).
+   * Lower bound is the base image size; the upper bound is generous
+   * (1 TiB) on the spec side, with hosts further constrained by
+   * their advertised disk_capacity_bytes.
+   *
+   * @generated from field: uint64 disk_mib = 3;
+   */
+  diskMib: bigint;
 };
 
 /**

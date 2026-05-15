@@ -105,6 +105,38 @@ func TestCreate(t *testing.T) {
 			wantErr: `invalid memory "1KB"`,
 		},
 		{
+			name: "parses --disk in MiB",
+			args: "--disk 8192MiB",
+			capture: func(t *testing.T, req *controlplanev1alpha1.CreateSandboxRequest) (*controlplanev1alpha1.CreateSandboxResponse, error) {
+				assert.Equal(t, uint64(8192), req.GetSandbox().GetResources().GetDiskMib())
+				return echo(req), nil
+			},
+			wantStdout: "disk=8192MiB",
+		},
+		{
+			name: "parses --disk in GiB and converts to MiB",
+			args: "--disk 4GiB",
+			capture: func(t *testing.T, req *controlplanev1alpha1.CreateSandboxRequest) (*controlplanev1alpha1.CreateSandboxResponse, error) {
+				assert.Equal(t, uint64(4096), req.GetSandbox().GetResources().GetDiskMib())
+				return echo(req), nil
+			},
+			wantStdout: "disk=4096MiB",
+		},
+		{
+			name: "omitted --disk leaves disk_mib at zero so the daemon picks its default",
+			args: "",
+			capture: func(t *testing.T, req *controlplanev1alpha1.CreateSandboxRequest) (*controlplanev1alpha1.CreateSandboxResponse, error) {
+				assert.EqualValues(t, 0, req.GetSandbox().GetResources().GetDiskMib())
+				return echo(req), nil
+			},
+			wantStdout: "disk=default",
+		},
+		{
+			name:    "rejects --disk with unknown unit",
+			args:    "--disk 1KB",
+			wantErr: `invalid disk "1KB"`,
+		},
+		{
 			name:    "rejects memory missing the unit",
 			args:    "--memory 256",
 			wantErr: `invalid memory "256"`,
@@ -144,17 +176,17 @@ func TestCreate(t *testing.T) {
 		{
 			name:    "rejects --source snapshot together with explicit --vcpu",
 			args:    "--source snapshot:snap-1 --vcpu 2",
-			wantErr: "--vcpu/--memory cannot be set when --source is a snapshot",
+			wantErr: "--vcpu/--memory/--disk cannot be set when --source is a snapshot",
 		},
 		{
 			name:    "rejects --source snapshot together with explicit --memory",
 			args:    "--source snapshot:snap-1 --memory 2GiB",
-			wantErr: "--vcpu/--memory cannot be set when --source is a snapshot",
+			wantErr: "--vcpu/--memory/--disk cannot be set when --source is a snapshot",
 		},
 		{
 			name:    "rejects --source snapshot together with shorthand -v",
 			args:    "-s snapshot:snap-1 -v 4",
-			wantErr: "--vcpu/--memory cannot be set when --source is a snapshot",
+			wantErr: "--vcpu/--memory/--disk cannot be set when --source is a snapshot",
 		},
 		{
 			name: "--source image:<id> populates Metadata.Source.ImageId and keeps Resources",

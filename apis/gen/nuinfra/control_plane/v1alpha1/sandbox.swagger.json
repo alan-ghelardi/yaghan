@@ -455,6 +455,11 @@
           "type": "string",
           "format": "uint64",
           "description": "Memory in MiB. Lower bound matches the smallest useful\nFirecracker VM; upper bound leaves room for 128 GiB sandboxes."
+        },
+        "diskMib": {
+          "type": "string",
+          "format": "uint64",
+          "description": "Root disk size in MiB. Optional: 0 means \"use the daemon's\nconfigured default\". When set, the daemon resizes the per-VM\ncopy of the base rootfs image up to this size at provision time\n(ext4 grow on a sparse file — metadata-only, no eager allocation).\nLower bound is the base image size; the upper bound is generous\n(1 TiB) on the spec side, with hosts further constrained by\ntheir advertised disk_capacity_bytes."
         }
       }
     },

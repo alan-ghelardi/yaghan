@@ -113,7 +113,8 @@ The maximum allowed value is 1000.
       },
       "resources": {
         "vcpuCount": 0,
-        "memoryMib": "string"
+        "memoryMib": "string",
+        "diskMib": "string"
       },
       "node": {
         "id": "string"
@@ -188,7 +189,8 @@ This operation does not require authentication
     },
     "resources": {
       "vcpuCount": 0,
-      "memoryMib": "string"
+      "memoryMib": "string",
+      "diskMib": "string"
     },
     "node": {
       "id": "string"
@@ -252,7 +254,8 @@ This operation does not require authentication
     },
     "resources": {
       "vcpuCount": 0,
-      "memoryMib": "string"
+      "memoryMib": "string",
+      "diskMib": "string"
     },
     "node": {
       "id": "string"
@@ -333,7 +336,8 @@ This operation does not require authentication
     },
     "resources": {
       "vcpuCount": 0,
-      "memoryMib": "string"
+      "memoryMib": "string",
+      "diskMib": "string"
     },
     "node": {
       "id": "string"
@@ -415,7 +419,8 @@ This operation does not require authentication
     },
     "resources": {
       "vcpuCount": 0,
-      "memoryMib": "string"
+      "memoryMib": "string",
+      "diskMib": "string"
     },
     "node": {
       "id": "string"
@@ -497,7 +502,8 @@ This operation does not require authentication
     },
     "resources": {
       "vcpuCount": 0,
-      "memoryMib": "string"
+      "memoryMib": "string",
+      "diskMib": "string"
     },
     "node": {
       "id": "string"
@@ -579,7 +585,8 @@ This operation does not require authentication
     },
     "resources": {
       "vcpuCount": 0,
-      "memoryMib": "string"
+      "memoryMib": "string",
+      "diskMib": "string"
     },
     "node": {
       "id": "string"
@@ -670,7 +677,8 @@ This operation does not require authentication
     },
     "resources": {
       "vcpuCount": 0,
-      "memoryMib": "string"
+      "memoryMib": "string",
+      "diskMib": "string"
     },
     "node": {
       "id": "string"
@@ -913,7 +921,8 @@ You can find out more about this error model and how to work with it in the
     },
     "resources": {
       "vcpuCount": 0,
-      "memoryMib": "string"
+      "memoryMib": "string",
+      "diskMib": "string"
     },
     "node": {
       "id": "string"
@@ -981,7 +990,8 @@ You can find out more about this error model and how to work with it in the
     },
     "resources": {
       "vcpuCount": 0,
-      "memoryMib": "string"
+      "memoryMib": "string",
+      "diskMib": "string"
     },
     "node": {
       "id": "string"
@@ -1049,7 +1059,8 @@ You can find out more about this error model and how to work with it in the
     },
     "resources": {
       "vcpuCount": 0,
-      "memoryMib": "string"
+      "memoryMib": "string",
+      "diskMib": "string"
     },
     "node": {
       "id": "string"
@@ -1117,7 +1128,8 @@ You can find out more about this error model and how to work with it in the
     },
     "resources": {
       "vcpuCount": 0,
-      "memoryMib": "string"
+      "memoryMib": "string",
+      "diskMib": "string"
     },
     "node": {
       "id": "string"
@@ -1241,7 +1253,8 @@ Controls how results are ordered by last modification time.
       },
       "resources": {
         "vcpuCount": 0,
-        "memoryMib": "string"
+        "memoryMib": "string",
+        "diskMib": "string"
       },
       "node": {
         "id": "string"
@@ -1334,7 +1347,8 @@ Response message containing a page of sandboxes.
     },
     "resources": {
       "vcpuCount": 0,
-      "memoryMib": "string"
+      "memoryMib": "string",
+      "diskMib": "string"
     },
     "node": {
       "id": "string"
@@ -1385,7 +1399,8 @@ Response message containing a page of sandboxes.
 ```json
 {
   "vcpuCount": 0,
-  "memoryMib": "string"
+  "memoryMib": "string",
+  "diskMib": "string"
 }
 
 ```
@@ -1396,6 +1411,7 @@ Response message containing a page of sandboxes.
 |---|---|---|---|---|
 |vcpuCount|integer(int64)|false|none|none|
 |memoryMib|string(uint64)|false|none|Memory in MiB. Lower bound matches the smallest useful<br>Firecracker VM; upper bound leaves room for 128 GiB sandboxes.|
+|diskMib|string(uint64)|false|none|Root disk size in MiB. Optional: 0 means "use the daemon's<br>configured default". When set, the daemon resizes the per-VM<br>copy of the base rootfs image up to this size at provision time<br>(ext4 grow on a sparse file — metadata-only, no eager allocation).<br>Lower bound is the base image size; the upper bound is generous<br>(1 TiB) on the spec side, with hosts further constrained by<br>their advertised disk_capacity_bytes.|
 
 <h2 id="tocS_v1alpha1ResumeSandboxResponse">v1alpha1ResumeSandboxResponse</h2>
 <!-- backwards compatibility -->
@@ -1424,7 +1440,8 @@ Response message containing a page of sandboxes.
     },
     "resources": {
       "vcpuCount": 0,
-      "memoryMib": "string"
+      "memoryMib": "string",
+      "diskMib": "string"
     },
     "node": {
       "id": "string"
@@ -1491,7 +1508,8 @@ Response message containing a page of sandboxes.
   },
   "resources": {
     "vcpuCount": 0,
-    "memoryMib": "string"
+    "memoryMib": "string",
+    "diskMib": "string"
   },
   "node": {
     "id": "string"
@@ -1733,7 +1751,8 @@ Response message containing a page of sandboxes.
     },
     "resources": {
       "vcpuCount": 0,
-      "memoryMib": "string"
+      "memoryMib": "string",
+      "diskMib": "string"
     },
     "node": {
       "id": "string"

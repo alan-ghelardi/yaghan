@@ -421,7 +421,15 @@ type Resources struct {
 	VcpuCount uint32                 `protobuf:"varint,1,opt,name=vcpu_count,json=vcpuCount,proto3" json:"vcpu_count,omitempty"`
 	// Memory in MiB. Lower bound matches the smallest useful
 	// Firecracker VM; upper bound leaves room for 128 GiB sandboxes.
-	MemoryMib     uint64 `protobuf:"varint,2,opt,name=memory_mib,json=memoryMib,proto3" json:"memory_mib,omitempty"`
+	MemoryMib uint64 `protobuf:"varint,2,opt,name=memory_mib,json=memoryMib,proto3" json:"memory_mib,omitempty"`
+	// Root disk size in MiB. Optional: 0 means "use the daemon's
+	// configured default". When set, the daemon resizes the per-VM
+	// copy of the base rootfs image up to this size at provision time
+	// (ext4 grow on a sparse file — metadata-only, no eager allocation).
+	// Lower bound is the base image size; the upper bound is generous
+	// (1 TiB) on the spec side, with hosts further constrained by
+	// their advertised disk_capacity_bytes.
+	DiskMib       uint64 `protobuf:"varint,3,opt,name=disk_mib,json=diskMib,proto3" json:"disk_mib,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -466,6 +474,13 @@ func (x *Resources) GetVcpuCount() uint32 {
 func (x *Resources) GetMemoryMib() uint64 {
 	if x != nil {
 		return x.MemoryMib
+	}
+	return 0
+}
+
+func (x *Resources) GetDiskMib() uint64 {
+	if x != nil {
+		return x.DiskMib
 	}
 	return 0
 }
@@ -1477,12 +1492,14 @@ const file_nuinfra_control_plane_v1alpha1_sandbox_proto_rawDesc = "" +
 	"\vsnapshot_id\x18\x01 \x01(\tH\x00R\n" +
 	"snapshotId\x12\x1b\n" +
 	"\bimage_id\x18\x02 \x01(\tH\x00R\aimageIdB\v\n" +
-	"\treference\"b\n" +
+	"\treference\"\x9d\x02\n" +
 	"\tResources\x12(\n" +
 	"\n" +
 	"vcpu_count\x18\x01 \x01(\rB\t\xbaH\x06*\x04\x18 (\x01R\tvcpuCount\x12+\n" +
 	"\n" +
-	"memory_mib\x18\x02 \x01(\x04B\f\xbaH\t2\a\x18\x80\x80\b(\x80\x01R\tmemoryMib\"!\n" +
+	"memory_mib\x18\x02 \x01(\x04B\f\xbaH\t2\a\x18\x80\x80\b(\x80\x01R\tmemoryMib\x12\xb8\x01\n" +
+	"\bdisk_mib\x18\x03 \x01(\x04B\x9c\x01\xbaH\x98\x01\xba\x01\x94\x01\n" +
+	"\x18resources.disk_mib.range\x12Fdisk_mib must be 0 (use daemon default) or between 256 and 1048576 MiB\x1a0this == 0u || (this >= 256u && this <= 1048576u)R\adiskMib\"!\n" +
 	"\aNodeRef\x12\x16\n" +
 	"\x02id\x18\x01 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x02id\"\xb4\x01\n" +
 	"\x06Intent\x12I\n" +

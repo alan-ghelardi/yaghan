@@ -21,6 +21,7 @@ const (
 	flagNamespace = "namespace"
 	flagVCPU      = "vcpu"
 	flagMemory    = "memory"
+	flagDisk      = "disk"
 	flagSource    = "source"
 
 	defaultNamespace = "default"
@@ -33,10 +34,10 @@ const (
 	sourceTypeImage    = "image"
 )
 
-// memoryPattern accepts "<integer><unit>" where unit is MiB or GiB. The
+// sizePattern accepts "<integer><unit>" where unit is MiB or GiB. The
 // integer is captured in group 1 and the unit in group 2; whitespace is
-// not permitted.
-var memoryPattern = regexp.MustCompile(`^(\d+)(MiB|GiB)$`)
+// not permitted. Shared by --memory and --disk.
+var sizePattern = regexp.MustCompile(`^(\d+)(MiB|GiB)$`)
 
 // New constructs the `sandbox create` command. ctx is threaded through so
 // tests can swap the gRPC clients and I/O streams via
@@ -80,6 +81,9 @@ client-side and printed back.`,
 		"Number of virtual CPUs assigned to the sandbox.")
 	cmd.Flags().StringP(flagMemory, "m", defaultMemory,
 		"Memory size as <integer><unit>, where unit is MiB or GiB (e.g. 512MiB, 2GiB).")
+	cmd.Flags().StringP(flagDisk, "d", "",
+		"Root disk size as <integer><unit>, where unit is MiB or GiB (e.g. 4GiB, 8192MiB). "+
+			"Unset means the daemon's configured default.")
 	cmd.Flags().StringP(flagSource, "s", "",
 		"Seed the sandbox from a referenced artifact. Format: <type>:<id> where type is one of (snapshot, image). "+
 			"Example: --source snapshot:abc123. Image sources are forward-compatible — the api-server returns "+
@@ -103,9 +107,19 @@ func run(ctx *cli.Context, cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	memoryMiB, err := parseMemory(memoryStr)
+	memoryMiB, err := parseSize(flagMemory, memoryStr)
 	if err != nil {
 		return err
+	}
+	diskStr, err := cmd.Flags().GetString(flagDisk)
+	if err != nil {
+		return err
+	}
+	var diskMiB uint64
+	if diskStr != "" {
+		if diskMiB, err = parseSize(flagDisk, diskStr); err != nil {
+			return err
+		}
 	}
 	sourceStr, err := cmd.Flags().GetString(flagSource)
 	if err != nil {
@@ -116,24 +130,27 @@ func run(ctx *cli.Context, cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	// Snapshot-sourced sandboxes inherit vCPU and memory from the
-	// snapshot: Firecracker bakes them into the snapshot state and
-	// forbids changing them on restore. Refuse the request early when
-	// the user explicitly passed -v / -m alongside --source snapshot,
-	// and otherwise omit Resources from the request so the api-server
-	// stamps the snapshot's values onto the sandbox.
+	// Snapshot-sourced sandboxes inherit vCPU, memory AND disk size
+	// from the snapshot: Firecracker bakes vCPU/memory into the
+	// snapshot state and the disk geometry is baked into the drive
+	// file the snapshot references. Refuse the request early when
+	// the user explicitly passed -v / -m / -d alongside --source
+	// snapshot, and otherwise omit Resources from the request so the
+	// api-server stamps the snapshot's values onto the sandbox.
 	vcpuSet := cmd.Flags().Changed(flagVCPU)
 	memorySet := cmd.Flags().Changed(flagMemory)
+	diskSet := cmd.Flags().Changed(flagDisk)
 	isSnapshotSource := source.GetSnapshotId() != ""
-	if isSnapshotSource && (vcpuSet || memorySet) {
+	if isSnapshotSource && (vcpuSet || memorySet || diskSet) {
 		return fmt.Errorf(
-			"--%s/--%s cannot be set when --%s is a snapshot: the snapshot's vCPU and memory are immutable on restore",
-			flagVCPU, flagMemory, flagSource)
+			"--%s/--%s/--%s cannot be set when --%s is a snapshot: the snapshot's vCPU, memory and disk are immutable on restore",
+			flagVCPU, flagMemory, flagDisk, flagSource)
 	}
 
 	resources := &controlplanev1alpha1.Resources{
 		VcpuCount: uint32(vcpu),
 		MemoryMib: memoryMiB,
+		DiskMib:   diskMiB,
 	}
 	if isSnapshotSource {
 		resources = nil
@@ -141,7 +158,7 @@ func run(ctx *cli.Context, cmd *cobra.Command, args []string) error {
 
 	fmt.Fprintf(ctx.IOStreams.Stdout,
 		"Creating sandbox %q in namespace %q (%s%s)...\n",
-		id, namespace, resourceStatusFragment(resources, vcpu, memoryMiB), sourceStatusSuffix(sourceStr))
+		id, namespace, resourceStatusFragment(resources, vcpu, memoryMiB, diskMiB), sourceStatusSuffix(sourceStr))
 
 	resp, err := ctx.ClientSet.SandboxService.CreateSandbox(cmd.Context(),
 		&controlplanev1alpha1.CreateSandboxRequest{
@@ -169,12 +186,16 @@ func run(ctx *cli.Context, cmd *cobra.Command, args []string) error {
 // sandbox..." status line. For snapshot-sourced sandboxes (where the
 // CLI does not attach Resources to the request) it surfaces the
 // inherited intent rather than the flag defaults, so the user sees that
-// vCPU/memory will be supplied by the snapshot.
-func resourceStatusFragment(resources *controlplanev1alpha1.Resources, vcpu int32, memoryMiB uint64) string {
+// vCPU/memory/disk will be supplied by the snapshot.
+func resourceStatusFragment(resources *controlplanev1alpha1.Resources, vcpu int32, memoryMiB, diskMiB uint64) string {
 	if resources == nil {
 		return "resources inherited from snapshot"
 	}
-	return fmt.Sprintf("vcpu=%d, memory=%dMiB", vcpu, memoryMiB)
+	base := fmt.Sprintf("vcpu=%d, memory=%dMiB", vcpu, memoryMiB)
+	if diskMiB > 0 {
+		return base + fmt.Sprintf(", disk=%dMiB", diskMiB)
+	}
+	return base + ", disk=default"
 }
 
 // resolveID returns args[0] when supplied; otherwise generates a UUID.
@@ -237,16 +258,18 @@ func sourceStatusSuffix(raw string) string {
 	return ", source=" + raw
 }
 
-// parseMemory converts "<integer><unit>" (unit ∈ {MiB, GiB}) into MiB,
-// the unit the Sandbox proto expects.
-func parseMemory(s string) (uint64, error) {
-	matches := memoryPattern.FindStringSubmatch(s)
+// parseSize converts "<integer><unit>" (unit ∈ {MiB, GiB}) into MiB,
+// the unit the Sandbox proto's size fields all use. label appears in
+// error messages so the caller can keep flag-specific phrasing
+// ("invalid memory ...", "invalid disk ...").
+func parseSize(label, s string) (uint64, error) {
+	matches := sizePattern.FindStringSubmatch(s)
 	if matches == nil {
-		return 0, fmt.Errorf("invalid memory %q: expected format <integer><unit>, unit one of MiB or GiB", s)
+		return 0, fmt.Errorf("invalid %s %q: expected format <integer><unit>, unit one of MiB or GiB", label, s)
 	}
 	n, err := strconv.ParseUint(matches[1], 10, 64)
 	if err != nil {
-		return 0, fmt.Errorf("invalid memory %q: %w", s, err)
+		return 0, fmt.Errorf("invalid %s %q: %w", label, s, err)
 	}
 	switch matches[2] {
 	case "MiB":
@@ -255,6 +278,6 @@ func parseMemory(s string) (uint64, error) {
 		return n * 1024, nil
 	default:
 		// Unreachable: the regex already constrains the unit.
-		return 0, fmt.Errorf("invalid memory %q: unknown unit %q", s, matches[2])
+		return 0, fmt.Errorf("invalid %s %q: unknown unit %q", label, s, matches[2])
 	}
 }

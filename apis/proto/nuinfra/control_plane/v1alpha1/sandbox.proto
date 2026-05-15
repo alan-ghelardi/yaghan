@@ -77,6 +77,19 @@ message Resources {
     (buf.validate.field).uint64.gte = 128,
     (buf.validate.field).uint64.lte = 131072
   ];
+
+  // Root disk size in MiB. Optional: 0 means "use the daemon's
+  // configured default". When set, the daemon resizes the per-VM
+  // copy of the base rootfs image up to this size at provision time
+  // (ext4 grow on a sparse file — metadata-only, no eager allocation).
+  // Lower bound is the base image size; the upper bound is generous
+  // (1 TiB) on the spec side, with hosts further constrained by
+  // their advertised disk_capacity_bytes.
+  uint64 disk_mib = 3 [(buf.validate.field).cel = {
+    id: "resources.disk_mib.range"
+    message: "disk_mib must be 0 (use daemon default) or between 256 and 1048576 MiB"
+    expression: "this == 0u || (this >= 256u && this <= 1048576u)"
+  }];
 }
 
 message NodeRef {

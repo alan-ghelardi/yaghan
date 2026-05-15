@@ -149,6 +149,18 @@ type CreateMicroVMInput struct {
 	// [MicroVM.VSock] CONNECTs to this port through
 	// Config.Vsock.UDSPath. Ignored when Config.Vsock is nil.
 	AgentVsockPort uint32
+
+	// RootfsDiskMiB, when non-zero, sizes the per-VM rootfs file
+	// after staging and before firecracker starts. The daemon
+	// `truncate`s the staged file up to this size and runs
+	// `resize2fs` to grow the ext4 filesystem to match. Resizes
+	// down are refused. Zero means "leave the staged file at its
+	// natural (base image) size."
+	//
+	// Applied only to drives marked IsRootDevice=true; an asset
+	// list with no rootfs drive is a misconfiguration and the
+	// resize step is a no-op.
+	RootfsDiskMiB int64
 }
 
 // Asset stages a single host file into a VM's chroot.

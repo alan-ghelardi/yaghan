@@ -206,6 +206,17 @@ func (f *firecracker) CreateMicroVM(ctx context.Context, input *CreateMicroVMInp
 		}
 	}
 
+	// Grow the per-VM rootfs file (and its ext4 superblock) up to the
+	// requested size before firecracker opens it as a virtio-blk
+	// device. Pre-boot resize is metadata-only on a sparse file —
+	// negligible time, zero on-disk cost until the guest writes.
+	// Snapshot restore goes through LoadSnapshot and does NOT take
+	// this path: a snapshot's saved state references a specific disk
+	// geometry, so resizing under it is intentionally disallowed.
+	if err := resizeRootfsForInput(jailRoot, input); err != nil {
+		return nil, fmt.Errorf("resize rootfs: %w", err)
+	}
+
 	cmd := f.buildJailerCommand(ctx, input.ID, input.Network, []string{
 		"--api-sock", "/" + apiSocketFile,
 		"--config-file", "/" + vmConfigFile,
@@ -698,6 +709,15 @@ func stageAsset(jailRoot string, a Asset) error {
 	if a.Writable {
 		if err := copyFile(a.SourcePath, dst); err != nil {
 			return err
+		}
+		// Restore sparseness lost by io.Copy. The base rootfs is a
+		// largely-empty 256 MiB ext4 image; without this the dst
+		// would consume its full apparent size per VM. Failure to
+		// dig holes is non-fatal — bytes are correct, only host
+		// footprint suffers — but we surface the error so an
+		// operator notices a misconfigured host.
+		if err := digHoles(dst); err != nil {
+			return fmt.Errorf("dig holes in %s: %w", dst, err)
 		}
 	} else if err := os.Link(a.SourcePath, dst); err != nil {
 		var linkErr *os.LinkError

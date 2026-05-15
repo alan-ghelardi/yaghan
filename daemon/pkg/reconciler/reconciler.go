@@ -463,6 +463,7 @@ func (r *Reconciler) buildCreateInput(sandbox *controlplanev1alpha1.Sandbox, nsh
 		Network:        nsh,
 		Config:         fcConfig,
 		AgentVsockPort: tmpl.AgentVsockPort,
+		RootfsDiskMiB:  resolveRootfsDiskMiB(sandbox, tmpl),
 		Assets: []firecracker.Asset{
 			{SourcePath: filepath.Join(r.config.AssetsDir, tmpl.KernelFile), JailPath: kernelJail},
 			// Writable because the rootfs drive is mounted rw — the
@@ -471,6 +472,24 @@ func (r *Reconciler) buildCreateInput(sandbox *controlplanev1alpha1.Sandbox, nsh
 			{SourcePath: filepath.Join(r.config.AssetsDir, tmpl.RootfsFile), JailPath: rootfsJail, Writable: true},
 		},
 	}
+}
+
+// resolveRootfsDiskMiB picks the rootfs disk size for the fresh-boot
+// path. Order of precedence:
+//
+//  1. sandbox.Resources.disk_mib when the spec sets it (proto bounds
+//     keep this safe — proto-level validation rejects values out of
+//     [256, 1048576] before we see them).
+//  2. tmpl.DefaultRootfsDiskMiB when the spec leaves disk_mib at 0.
+//
+// Returns 0 if both are zero, which the firecracker layer treats as
+// "no resize, leave the staged file at base image size" — useful for
+// tests and migrations rather than a production happy path.
+func resolveRootfsDiskMiB(sandbox *controlplanev1alpha1.Sandbox, tmpl *config.MicroVM) int64 {
+	if v := sandbox.GetResources().GetDiskMib(); v > 0 {
+		return int64(v)
+	}
+	return tmpl.DefaultRootfsDiskMiB
 }
 
 // buildLoadSnapshotInput composes a LoadSnapshotInput for restoring a

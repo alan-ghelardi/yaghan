@@ -381,6 +381,7 @@ Response message containing a page of sandboxes.
 | ----- | ---- | ----- | ----------- |
 | vcpu_count | [uint32](#uint32) |  |  |
 | memory_mib | [uint64](#uint64) |  | Memory in MiB. Lower bound matches the smallest useful Firecracker VM; upper bound leaves room for 128 GiB sandboxes. |
+| disk_mib | [uint64](#uint64) |  | Root disk size in MiB. Optional: 0 means &#34;use the daemon&#39;s configured default&#34;. When set, the daemon resizes the per-VM copy of the base rootfs image up to this size at provision time (ext4 grow on a sparse file — metadata-only, no eager allocation). Lower bound is the base image size; the upper bound is generous (1 TiB) on the spec side, with hosts further constrained by their advertised disk_capacity_bytes. |
 
 
 

@@ -70,6 +70,27 @@ private static final long serialVersionUID = 0L;
     return memoryMib_;
   }
 
+  public static final int DISK_MIB_FIELD_NUMBER = 3;
+  private long diskMib_ = 0L;
+  /**
+   * <pre>
+   * Root disk size in MiB. Optional: 0 means "use the daemon's
+   * configured default". When set, the daemon resizes the per-VM
+   * copy of the base rootfs image up to this size at provision time
+   * (ext4 grow on a sparse file — metadata-only, no eager allocation).
+   * Lower bound is the base image size; the upper bound is generous
+   * (1 TiB) on the spec side, with hosts further constrained by
+   * their advertised disk_capacity_bytes.
+   * </pre>
+   *
+   * <code>uint64 disk_mib = 3 [json_name = "diskMib", (.buf.validate.field) = { ... }</code>
+   * @return The diskMib.
+   */
+  @java.lang.Override
+  public long getDiskMib() {
+    return diskMib_;
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -90,6 +111,9 @@ private static final long serialVersionUID = 0L;
     if (memoryMib_ != 0L) {
       output.writeUInt64(2, memoryMib_);
     }
+    if (diskMib_ != 0L) {
+      output.writeUInt64(3, diskMib_);
+    }
     getUnknownFields().writeTo(output);
   }
 
@@ -106,6 +130,10 @@ private static final long serialVersionUID = 0L;
     if (memoryMib_ != 0L) {
       size += com.google.protobuf.CodedOutputStream
         .computeUInt64Size(2, memoryMib_);
+    }
+    if (diskMib_ != 0L) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeUInt64Size(3, diskMib_);
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -126,6 +154,8 @@ private static final long serialVersionUID = 0L;
         != other.getVcpuCount()) return false;
     if (getMemoryMib()
         != other.getMemoryMib()) return false;
+    if (getDiskMib()
+        != other.getDiskMib()) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -142,6 +172,9 @@ private static final long serialVersionUID = 0L;
     hash = (37 * hash) + MEMORY_MIB_FIELD_NUMBER;
     hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
         getMemoryMib());
+    hash = (37 * hash) + DISK_MIB_FIELD_NUMBER;
+    hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+        getDiskMib());
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -275,6 +308,7 @@ private static final long serialVersionUID = 0L;
       bitField0_ = 0;
       vcpuCount_ = 0;
       memoryMib_ = 0L;
+      diskMib_ = 0L;
       return this;
     }
 
@@ -314,6 +348,9 @@ private static final long serialVersionUID = 0L;
       if (((from_bitField0_ & 0x00000002) != 0)) {
         result.memoryMib_ = memoryMib_;
       }
+      if (((from_bitField0_ & 0x00000004) != 0)) {
+        result.diskMib_ = diskMib_;
+      }
     }
 
     @java.lang.Override
@@ -333,6 +370,9 @@ private static final long serialVersionUID = 0L;
       }
       if (other.getMemoryMib() != 0L) {
         setMemoryMib(other.getMemoryMib());
+      }
+      if (other.getDiskMib() != 0L) {
+        setDiskMib(other.getDiskMib());
       }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
@@ -370,6 +410,11 @@ private static final long serialVersionUID = 0L;
               bitField0_ |= 0x00000002;
               break;
             } // case 16
+            case 24: {
+              diskMib_ = input.readUInt64();
+              bitField0_ |= 0x00000004;
+              break;
+            } // case 24
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -462,6 +507,68 @@ private static final long serialVersionUID = 0L;
     public Builder clearMemoryMib() {
       bitField0_ = (bitField0_ & ~0x00000002);
       memoryMib_ = 0L;
+      onChanged();
+      return this;
+    }
+
+    private long diskMib_ ;
+    /**
+     * <pre>
+     * Root disk size in MiB. Optional: 0 means "use the daemon's
+     * configured default". When set, the daemon resizes the per-VM
+     * copy of the base rootfs image up to this size at provision time
+     * (ext4 grow on a sparse file — metadata-only, no eager allocation).
+     * Lower bound is the base image size; the upper bound is generous
+     * (1 TiB) on the spec side, with hosts further constrained by
+     * their advertised disk_capacity_bytes.
+     * </pre>
+     *
+     * <code>uint64 disk_mib = 3 [json_name = "diskMib", (.buf.validate.field) = { ... }</code>
+     * @return The diskMib.
+     */
+    @java.lang.Override
+    public long getDiskMib() {
+      return diskMib_;
+    }
+    /**
+     * <pre>
+     * Root disk size in MiB. Optional: 0 means "use the daemon's
+     * configured default". When set, the daemon resizes the per-VM
+     * copy of the base rootfs image up to this size at provision time
+     * (ext4 grow on a sparse file — metadata-only, no eager allocation).
+     * Lower bound is the base image size; the upper bound is generous
+     * (1 TiB) on the spec side, with hosts further constrained by
+     * their advertised disk_capacity_bytes.
+     * </pre>
+     *
+     * <code>uint64 disk_mib = 3 [json_name = "diskMib", (.buf.validate.field) = { ... }</code>
+     * @param value The diskMib to set.
+     * @return This builder for chaining.
+     */
+    public Builder setDiskMib(long value) {
+
+      diskMib_ = value;
+      bitField0_ |= 0x00000004;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * Root disk size in MiB. Optional: 0 means "use the daemon's
+     * configured default". When set, the daemon resizes the per-VM
+     * copy of the base rootfs image up to this size at provision time
+     * (ext4 grow on a sparse file — metadata-only, no eager allocation).
+     * Lower bound is the base image size; the upper bound is generous
+     * (1 TiB) on the spec side, with hosts further constrained by
+     * their advertised disk_capacity_bytes.
+     * </pre>
+     *
+     * <code>uint64 disk_mib = 3 [json_name = "diskMib", (.buf.validate.field) = { ... }</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearDiskMib() {
+      bitField0_ = (bitField0_ & ~0x00000004);
+      diskMib_ = 0L;
       onChanged();
       return this;
     }
