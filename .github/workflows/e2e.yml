@@ -57,7 +57,7 @@ jobs:
 
       - uses: golangci/golangci-lint-action@v6
         with:
-          version: 2.11.4
+          version: v2.11.4
           working-directory: e2e
 
       # `sudo -E env "PATH=$PATH"` is the same incantation README.md
