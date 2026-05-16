@@ -74,6 +74,13 @@ controller:
   max-retries: 10
   reconnect-max-interval: 2m
 
+# Local-runtime node identity. The daemon writes a UUID here on first
+# run and re-reads it on every restart so the api-server sees the same
+# node across daemon crashes. Delete the file to force a fresh
+# identity.
+node-agent:
+  node-id-file: /var/lib/yaghan/daemon/node.id
+
 # Snapshot durable storage. Points at the local MinIO brought up by
 # daemon/dev/docker-compose.yml. use-path-style is required for MinIO
 # (it doesn't serve virtual-hosted bucket URLs). The bucket is created

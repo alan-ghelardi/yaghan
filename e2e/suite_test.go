@@ -164,6 +164,7 @@ var _ = BeforeSuite(func() {
 		"AssetsDir":     suite.AssetsDir,
 		"ChrootDir":     chrootDir,
 		"SessionIDFile": filepath.Join(suite.RunDir, "session.id"),
+		"NodeIDFile":    filepath.Join(suite.RunDir, "node.id"),
 		"EgressEnabled": suite.EgressEnabled,
 	})
 

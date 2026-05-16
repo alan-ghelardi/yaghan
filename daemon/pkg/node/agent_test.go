@@ -3,6 +3,7 @@ package node
 import (
 	"context"
 	"errors"
+	"path/filepath"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -51,6 +52,7 @@ func newAgentFixture(t *testing.T, runtime config.NodeRuntime) *agentFixture {
 	cfg := &config.Bundle{
 		NodeAgent: &config.NodeAgent{
 			Runtime:               runtime,
+			NodeIDFile:            filepath.Join(t.TempDir(), "node.id"),
 			MetricsReportInterval: 5 * time.Millisecond,
 			HealthReportInterval:  5 * time.Millisecond,
 		},
@@ -105,7 +107,12 @@ func TestAgent_BuildNode_LocalRuntime(t *testing.T) {
 	assert.Nil(t, got.ProviderMetadata, "local runtime must not set provider metadata")
 }
 
-func TestAgent_BuildNode_LocalRuntime_UniqueIDs(t *testing.T) {
+// TestAgent_BuildNode_LocalRuntime_StableAcrossCalls verifies that
+// repeated BuildNode invocations on the same Agent return the same
+// node id — the persisted file is the source of truth after the first
+// call. This is the inverted assertion of the previous "unique ids"
+// test, which encoded the bug we are now fixing.
+func TestAgent_BuildNode_LocalRuntime_StableAcrossCalls(t *testing.T) {
 	f := newAgentFixture(t, config.NodeRuntimeLocal)
 	f.metrics.EXPECT().Collect(gomock.Any()).Return(sampleMetrics(), nil).Times(2)
 	f.provider.EXPECT().Len().Return(0).Times(2)
@@ -114,7 +121,43 @@ func TestAgent_BuildNode_LocalRuntime_UniqueIDs(t *testing.T) {
 	require.NoError(t, err)
 	second, err := f.agent.BuildNode(t.Context())
 	require.NoError(t, err)
-	assert.NotEqual(t, first.Metadata.Id, second.Metadata.Id)
+	assert.Equal(t, first.Metadata.Id, second.Metadata.Id,
+		"node id must survive across BuildNode calls (file persistence)")
+}
+
+// TestAgent_BuildNode_LocalRuntime_StableAcrossAgentInstances covers
+// the daemon-restart scenario: a fresh Agent constructed against the
+// same NodeIDFile path must adopt the previously-persisted id rather
+// than minting a new one.
+func TestAgent_BuildNode_LocalRuntime_StableAcrossAgentInstances(t *testing.T) {
+	nodeIDFile := filepath.Join(t.TempDir(), "node.id")
+
+	buildOnce := func() string {
+		ctrl := gomock.NewController(t)
+		metricsMock := metricsmocks.NewMockCollector(ctrl)
+		reporterMock := nodemocks.NewMockReporter(ctrl)
+		providerMock := fcmocks.NewMockProvider(ctrl)
+		metricsMock.EXPECT().Collect(gomock.Any()).Return(sampleMetrics(), nil)
+		providerMock.EXPECT().Len().Return(0)
+
+		cfg := &config.Bundle{
+			NodeAgent: &config.NodeAgent{
+				Runtime:               config.NodeRuntimeLocal,
+				NodeIDFile:            nodeIDFile,
+				MetricsReportInterval: 5 * time.Millisecond,
+				HealthReportInterval:  5 * time.Millisecond,
+			},
+		}
+		agent := NewAgent(t.Context(), cfg, providerMock, metricsMock, reporterMock)
+		got, err := agent.BuildNode(t.Context())
+		require.NoError(t, err)
+		return got.Metadata.Id
+	}
+
+	first := buildOnce()
+	second := buildOnce()
+	assert.Equal(t, first, second,
+		"daemon restart must re-register under the persisted node id")
 }
 
 func TestAgent_BuildNode_CollectError(t *testing.T) {

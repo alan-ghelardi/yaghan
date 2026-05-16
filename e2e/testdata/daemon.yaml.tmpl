@@ -1,6 +1,6 @@
 ---
 # Rendered into the per-run config directory by suite_test.go.
-# Derived from daemon/dev/config.yaml with three placeholders:
+# Derived from daemon/dev/config.yaml with these placeholders:
 #
 #   {{.AssetsDir}}       absolute path to <repo>/assets
 #   {{.ChrootDir}}       per-run, user-owned chroot tempdir (so the
@@ -8,6 +8,12 @@
 #   {{.SessionIDFile}}   per-run path the controller persists its
 #                        session_id to (default /var/lib/yaghan/...
 #                        requires root)
+#   {{.NodeIDFile}}      per-run path the node agent persists the
+#                        local-runtime node id to. Per-run keeps the
+#                        suite hermetic — each `make test` invocation
+#                        registers under a fresh node id while a
+#                        single suite run's daemon restarts re-adopt
+#                        the same id.
 #   {{.EgressEnabled}}   true when running under sudo (sandbox-launching
 #                        scenarios), false otherwise. setupEgress
 #                        writes to /proc/sys/net/ipv4/ip_forward and
@@ -80,6 +86,9 @@ controller:
   session-id-file: {{.SessionIDFile}}
   max-retries: 10
   reconnect-max-interval: 2m
+
+node-agent:
+  node-id-file: {{.NodeIDFile}}
 
 snapshots:
   s3:

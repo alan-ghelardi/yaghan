@@ -52,6 +52,7 @@ const (
 	defaultResyncInterval       = 5 * time.Minute
 
 	defaultNodeRuntime               NodeRuntime = NodeRuntimeLocal
+	defaultNodeIDFile                            = "/var/lib/yaghan/daemon/node.id"
 	defaultNodeMetricsReportInterval             = 30 * time.Second
 	defaultNodeHealthReportInterval              = 30 * time.Second
 
@@ -256,6 +257,14 @@ type NodeAgent struct {
 	//   - aws-ec2: running inside an AWS EC2 instance
 	Runtime NodeRuntime `mapstructure:"runtime" validate:"oneof=local aws-ec2"`
 
+	// NodeIDFile is the host path where the daemon persists the node
+	// identifier reported to the api-server in local runtime. Read at
+	// startup; populated with a fresh UUID on first run so subsequent
+	// restarts re-register under the same identity. Ignored in EC2
+	// runtime, where the instance id from IMDS is authoritative.
+	// Defaults to "/var/lib/yaghan/daemon/node.id".
+	NodeIDFile string `mapstructure:"node-id-file"`
+
 	// MetricsReportInterval is the cadence at which the node agent collects
 	// node metrics and reports them to the API server.
 	MetricsReportInterval time.Duration `mapstructure:"metrics-report-interval"`
@@ -320,6 +329,7 @@ func applyDefaults(v *viper.Viper) {
 	v.SetDefault("controller.resync-interval", defaultResyncInterval)
 
 	v.SetDefault("node-agent.runtime", defaultNodeRuntime)
+	v.SetDefault("node-agent.node-id-file", defaultNodeIDFile)
 	v.SetDefault("node-agent.metrics-report-interval", defaultNodeMetricsReportInterval)
 	v.SetDefault("node-agent.health-report-interval", defaultNodeHealthReportInterval)
 

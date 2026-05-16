@@ -83,7 +83,11 @@ func (a *Agent) BuildNode(ctx context.Context) (*controlplanev1alpha1.Node, erro
 		phase, message := a.statusPhaseAndMessage(ctx, ec2Meta.InstanceId)
 		node.Status = &controlplanev1alpha1.NodeStatus{Phase: phase, Message: message}
 	} else {
-		node.Metadata = &controlplanev1alpha1.NodeMeta{Id: uuid.NewString()}
+		id, err := a.loadOrAssignNodeID()
+		if err != nil {
+			return nil, fmt.Errorf("failed to resolve local node id: %w", err)
+		}
+		node.Metadata = &controlplanev1alpha1.NodeMeta{Id: id}
 		node.Status = &controlplanev1alpha1.NodeStatus{
 			Phase:   controlplanev1alpha1.NodeStatus_PHASE_HEALTHY,
 			Message: "local runtime: no provider health source",
@@ -119,6 +123,26 @@ func (a *Agent) ReportPeriodically(ctx context.Context, nodeID string) {
 
 func (a *Agent) runtimeIsEC2() bool {
 	return a.config.NodeAgent != nil && a.config.NodeAgent.Runtime == config.NodeRuntimeEC2
+}
+
+// loadOrAssignNodeID returns the persisted local-runtime node id,
+// generating a fresh UUID and writing it back on first run. Callers
+// hit this exactly once per daemon process (BuildNode is one-shot),
+// so the per-call store allocation is irrelevant.
+func (a *Agent) loadOrAssignNodeID() (string, error) {
+	store := newNodeIDStore(a.config.NodeAgent.NodeIDFile)
+	id, err := store.Load()
+	if err != nil {
+		return "", err
+	}
+	if id != "" {
+		return id, nil
+	}
+	id = uuid.NewString()
+	if err := store.Save(id); err != nil {
+		return "", err
+	}
+	return id, nil
 }
 
 func (a *Agent) metricsLoop(ctx context.Context) {
