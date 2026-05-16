@@ -1,3 +1,5 @@
+GO := $(shell command -v go || echo /usr/local/go/bin/go)
+
 # The help target prints out all targets with their descriptions organized
 # beneath their categories. The categories are represented by '##@' and the
 # target descriptions by '##'. The awk command is responsible for reading the
@@ -21,11 +23,11 @@ lint: ## Run golangci-lint linter
 
 .PHONY: fmt
 fmt: ## Run go fmt against code.
-	go fmt ./...
+	$(GO) fmt ./...
 
 .PHONY: vet
 vet: ## Run go vet against code.
-	go vet ./...
+	$(GO) vet ./...
 
 .PHONY: binaries
 binaries: ## Build api-server, daemon, and yag into ./bin/.
@@ -39,7 +41,7 @@ test: fmt vet binaries ## Run the e2e suite. Brings up docker compose stacks, st
 	# Coverage is intentionally not collected here — the code under
 	# test runs in child processes, so `go test -cover` would only
 	# report on e2e/internal/*, not on api-server/daemon/yag.
-	go test -count=1 $$(go list ./... )
+	$(GO) test -count=1 $$($(GO) list ./... | grep _test) -v -ginkgo.v
 
 ##@ Operational escape hatches
 
