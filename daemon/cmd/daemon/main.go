@@ -114,7 +114,7 @@ func main() {
 	sandboxClient := controlplanev1alpha1.NewSandboxServiceClient(conn)
 	snapshotClient := controlplanev1alpha1.NewSnapshotServiceClient(conn)
 
-	server.Start(ctx, service.New(provider, netDrv, clusterClient, sandboxClient, snapshotClient, bundle))
+	server.Start(ctx, service.New(bundle, provider, netDrv, clusterClient, sandboxClient, snapshotClient))
 }
 
 // setupEgress wires up host-side egress connectivity: enables IPv4

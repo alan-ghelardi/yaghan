@@ -87,7 +87,13 @@ func (a *apiServer) EstablishSession(stream cpv1.ClusterService_EstablishSession
 	errCh := make(chan error, 2)
 	go func() { errCh <- forwardEvents(ctx, watcher, send) }()
 	go func() { errCh <- a.receiveRequests(ctx, nodeID, stream, send) }()
-	return <-errCh
+
+	select {
+	case <-a.closedChan:
+		return status.Error(codes.Unavailable, "api-server terminated")
+	case err := <-errCh:
+		return err
+	}
 }
 
 // awaitConnectionRequest reads the first message from the stream and validates

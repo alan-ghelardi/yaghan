@@ -26,6 +26,9 @@ type daemon struct {
 	server.BaseService
 	dataplanepb.UnimplementedDaemonServiceServer
 
+	// config is a bundle containing the server configurations.
+	config *config.Bundle
+
 	firecracker firecracker.Provider
 
 	networkDriver network.Driver
@@ -34,34 +37,40 @@ type daemon struct {
 	sandboxServiceClient  controlplanev1alpha1.SandboxServiceClient
 	snapshotServiceClient controlplanev1alpha1.SnapshotServiceClient
 
-	// config is a bundle containing the server configurations.
-	config *config.Bundle
+	// closedChan is a channel that closes when the gRPC server is shutting down.
+	closedChan chan struct{}
 }
 
 var _ server.Service = (*daemon)(nil)
 
 // New returns a new [server.Service] instance.
 func New(
+	config *config.Bundle,
 	firecracker firecracker.Provider,
 	networkDriver network.Driver,
 	clusterServiceClient controlplanev1alpha1.ClusterServiceClient,
 	sandboxServiceClient controlplanev1alpha1.SandboxServiceClient,
 	snapshotServiceClient controlplanev1alpha1.SnapshotServiceClient,
-	config *config.Bundle,
 ) server.Service {
 	return &daemon{
+		config:                config,
 		firecracker:           firecracker,
 		networkDriver:         networkDriver,
 		clusterServiceClient:  clusterServiceClient,
 		sandboxServiceClient:  sandboxServiceClient,
 		snapshotServiceClient: snapshotServiceClient,
-		config:                config,
+		closedChan:            make(chan struct{}),
 	}
 }
 
 // GetConfig implements [server.Service].
 func (d *daemon) GetConfig() commonsconfig.Base {
 	return d.config.Base
+}
+
+// BeforeShutdown implements [server.Service].
+func (d *daemon) BeforeShutdown(context.Context) {
+	close(d.closedChan)
 }
 
 // RegisterGRPC implements [server.Service].

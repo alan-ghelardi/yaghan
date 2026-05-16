@@ -8,7 +8,7 @@ import (
 	nodedb "github.com/alan-ghelardi/yaghan/api-server/pkg/db/node"
 	nodedynamodb "github.com/alan-ghelardi/yaghan/api-server/pkg/db/node/dynamodb"
 	sandboxdb "github.com/alan-ghelardi/yaghan/api-server/pkg/db/sandbox"
-	"github.com/alan-ghelardi/yaghan/api-server/pkg/db/sandbox/dynamodb"
+	sandboxdynamodb "github.com/alan-ghelardi/yaghan/api-server/pkg/db/sandbox/dynamodb"
 	snapshotdb "github.com/alan-ghelardi/yaghan/api-server/pkg/db/snapshot"
 	snapshotdynamodb "github.com/alan-ghelardi/yaghan/api-server/pkg/db/snapshot/dynamodb"
 	"github.com/alan-ghelardi/yaghan/api-server/pkg/scheduler"
@@ -56,18 +56,29 @@ type apiServer struct {
 	// against. Reads of past events go through the redis stream's last-event-id
 	// machinery; new events are published via the *WatchableDB above.
 	eventStream watch.WatchableStream[*cpv1.Event]
+
+	// closedChan is a channel that closes when the gRPC server is shutting down.
+	closedChan chan struct{}
 }
 
 var _ server.Service = (*apiServer)(nil)
 
 // New returns a new [server.Service] instance.
 func New(config *config.Bundle) server.Service {
-	return &apiServer{config: config}
+	return &apiServer{
+		config:     config,
+		closedChan: make(chan struct{}),
+	}
 }
 
 // GetConfig implements [server.Service].
 func (a *apiServer) GetConfig() commonsconfig.Base {
 	return a.config.Base
+}
+
+// BeforeShutdown implements [server.Service].
+func (a *apiServer) BeforeShutdown(context.Context) {
+	close(a.closedChan)
 }
 
 // RegisterGRPC implements [server.Service].
@@ -91,7 +102,7 @@ func (a *apiServer) RegisterRESTGateway(ctx context.Context, mux *runtime.ServeM
 
 // Setup implements [server.Service].
 func (a *apiServer) Setup(ctx context.Context) error {
-	rawDB := dynamodb.New(ctx, a.config)
+	rawSandboxDB := sandboxdynamodb.New(ctx, a.config)
 
 	stream, err := factory.NewEventStream(ctx, a.config, setSandboxEventID)
 	if err != nil {
@@ -99,7 +110,7 @@ func (a *apiServer) Setup(ctx context.Context) error {
 	}
 
 	a.eventStream = stream
-	a.db = NewWatchableDB(rawDB, stream)
+	a.db = NewWatchableDB(rawSandboxDB, stream)
 	a.nodeDB = nodedynamodb.New(ctx, a.config)
 	a.snapshotDB = snapshotdynamodb.New(ctx, a.config)
 	a.scheduler = random.New(a.nodeDB)

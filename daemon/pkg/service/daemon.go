@@ -128,6 +128,8 @@ func (d *daemon) forwardExecResponses(
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
+		case <-d.closedChan:
+			return status.Error(codes.Unavailable, "daemon terminated")
 		case resp, ok := <-conv.Recv():
 			if !ok {
 				return status.Error(codes.Unavailable, "agent transport closed")
