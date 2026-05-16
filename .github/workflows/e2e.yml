@@ -55,7 +55,7 @@ jobs:
         if: steps.cache-assets.outputs.cache-hit != 'true'
         run: ./hack/setup-dev.sh
 
-      - uses: golangci/golangci-lint-action@v6
+      - uses: golangci/golangci-lint-action@v7
         with:
           version: v2.11.4
           working-directory: e2e
