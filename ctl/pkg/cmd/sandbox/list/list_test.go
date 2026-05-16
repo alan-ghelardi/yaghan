@@ -76,8 +76,8 @@ func TestList(t *testing.T) {
 				}, nil
 			},
 			wantStdoutHas: []string{
-				"Sandbox ID", "Namespace", "Node ID", "Phase", "vCPU", "Memory (MiB)",
-				"sb-1", "team-alpha", "node-7", "Running",
+				"Sandbox ID", "Namespace", "Phase", "Created at", "Last modified at",
+				"sb-1", "team-alpha", "Running",
 			},
 		},
 		{

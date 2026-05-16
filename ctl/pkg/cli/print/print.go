@@ -41,20 +41,14 @@ func SandboxesTable(getSandboxes GetItemsFunc[*cpv1alpha1.Sandbox]) *Table[*cpv1
 			NewColumn("Namespace", func(s *cpv1alpha1.Sandbox) any {
 				return s.GetMetadata().GetNamespace()
 			}),
-			NewColumn("Node ID", func(s *cpv1alpha1.Sandbox) any {
-				return s.GetNode().GetId()
-			}),
 			NewColumn("Phase", func(s *cpv1alpha1.Sandbox) any {
 				return humanFriendlyString(s.GetStatus().GetPhase().String())
 			}),
-			NewColumn("vCPU", func(s *cpv1alpha1.Sandbox) any {
-				return s.GetResources().GetVcpuCount()
-			}),
-			NewColumn("Memory (MiB)", func(s *cpv1alpha1.Sandbox) any {
-				return s.GetResources().GetMemoryMib()
-			}),
 			NewColumn("Created at", func(s *cpv1alpha1.Sandbox) any {
 				return s.GetMetadata().GetCreatedAt()
+			}, DurationFormatter),
+			NewColumn("Last modified at", func(s *cpv1alpha1.Sandbox) any {
+				return s.GetMetadata().GetLastModifiedAt()
 			}, DurationFormatter),
 		},
 	}
