@@ -376,6 +376,10 @@ func withImageSource(id string) func(*cpv1.Sandbox) {
 	}
 }
 
+func withEgressPolicy(p *cpv1.EgressPolicy) func(*cpv1.Sandbox) {
+	return func(sb *cpv1.Sandbox) { sb.EgressPolicy = p }
+}
+
 // seedSnapshot persists a snapshot via the public RPC so the DB row
 // looks identical to one the daemon would have produced. namespace
 // must satisfy SnapshotMeta's pattern; sandboxID is the ref id the
@@ -844,6 +848,97 @@ func TestCreateSandbox_Source_IdempotentRetry(t *testing.T) {
 	assert.True(t,
 		firstLMT.Equal(got.GetSandbox().GetMetadata().GetLastModifiedAt().AsTime()),
 		"idempotent retry with the same source must not advance LastModifiedAt")
+}
+
+// TestCreateSandbox_EgressPolicy_PersistsAndRoundTrips exercises both
+// EgressPolicy oneof arms end-to-end: a sandbox carrying a populated
+// allow- (or deny-) list of IPs, CIDRs, and domain names is accepted,
+// echoed in the CreateSandbox response, and returned unchanged by a
+// subsequent GetSandbox. Doubles as the happy-path proof that the CEL
+// constraints on EgressTargets accept realistic good inputs.
+func TestCreateSandbox_EgressPolicy_PersistsAndRoundTrips(t *testing.T) {
+	h := startService(t)
+	ctx := t.Context()
+
+	targets := &cpv1.EgressTargets{
+		IpAddresses: []string{"8.8.8.8"},
+		CidrBlocks:  []string{"10.0.0.0/24"},
+		DomainNames: []string{"example.com", "*.internal.corp"},
+	}
+	cases := []struct {
+		name   string
+		id     string
+		policy *cpv1.EgressPolicy
+	}{
+		{
+			name:   "allow list",
+			id:     "sb-egress-allow",
+			policy: &cpv1.EgressPolicy{Rules: &cpv1.EgressPolicy_Allow{Allow: targets}},
+		},
+		{
+			name:   "deny list",
+			id:     "sb-egress-deny",
+			policy: &cpv1.EgressPolicy{Rules: &cpv1.EgressPolicy_Deny{Deny: targets}},
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			resp, err := h.client.CreateSandbox(ctx, newCreateRequest(
+				withID(tc.id),
+				withEgressPolicy(tc.policy),
+			))
+			require.NoError(t, err)
+			assert.True(t, proto.Equal(tc.policy, resp.GetSandbox().GetEgressPolicy()),
+				"response must echo the EgressPolicy the client sent")
+
+			got, err := h.client.GetSandbox(ctx, &cpv1.GetSandboxRequest{SandboxId: tc.id})
+			require.NoError(t, err)
+			assert.True(t, proto.Equal(tc.policy, got.GetSandbox().GetEgressPolicy()),
+				"GetSandbox must round-trip the EgressPolicy from the persisted row")
+		})
+	}
+}
+
+// TestCreateSandbox_EgressPolicy_ValidatesTargets covers one rejection
+// per CEL constraint on EgressTargets — bad IP, bad CIDR, bad domain.
+// The Allow arm is used uniformly because oneof routing is irrelevant
+// to which field-level validator fires; we only need to confirm each
+// validator does fire.
+func TestCreateSandbox_EgressPolicy_ValidatesTargets(t *testing.T) {
+	h := startService(t)
+	ctx := t.Context()
+
+	cases := []struct {
+		name    string
+		id      string
+		targets *cpv1.EgressTargets
+	}{
+		{
+			name:    "invalid ip address",
+			id:      "sb-egress-bad-ip",
+			targets: &cpv1.EgressTargets{IpAddresses: []string{"not-an-ip"}},
+		},
+		{
+			name:    "invalid cidr block",
+			id:      "sb-egress-bad-cidr",
+			targets: &cpv1.EgressTargets{CidrBlocks: []string{"10.0.0.0/99"}},
+		},
+		{
+			name:    "invalid domain name",
+			id:      "sb-egress-bad-domain",
+			targets: &cpv1.EgressTargets{DomainNames: []string{"bad_domain!"}},
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			policy := &cpv1.EgressPolicy{Rules: &cpv1.EgressPolicy_Allow{Allow: tc.targets}}
+			_, err := h.client.CreateSandbox(ctx, newCreateRequest(
+				withID(tc.id),
+				withEgressPolicy(policy),
+			))
+			assertCode(t, err, codes.InvalidArgument)
+		})
+	}
 }
 
 func TestGetSandbox_HappyPath(t *testing.T) {
