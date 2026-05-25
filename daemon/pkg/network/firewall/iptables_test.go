@@ -117,6 +117,108 @@ func TestConfigureNamespaceRejectsBadInput(t *testing.T) {
 	}))
 }
 
+func TestConfigureNamespace_AllowPolicy(t *testing.T) {
+	r := newRecorder()
+	fw := &iptablesFirewall{ipt: r}
+	cfg := NamespaceConfig{
+		NamespaceVethName: "vm-veth0",
+		GuestSubnet:       netip.MustParsePrefix("172.16.0.0/30"),
+		Egress: &EgressPolicy{
+			Mode: EgressAllow,
+			IPs: []netip.Addr{
+				netip.MustParseAddr("8.8.8.8"),
+			},
+			CIDRs: []netip.Prefix{
+				netip.MustParsePrefix("10.0.0.0/24"),
+			},
+		},
+	}
+
+	require.NoError(t, fw.ConfigureNamespace(cfg))
+
+	// Each per-IP/per-CIDR ACCEPT must be installed, terminated by a
+	// REJECT --reject-with icmp-admin-prohibited fall-through. The
+	// generic ACCEPT used by unrestricted policies must NOT appear.
+	want := []string{
+		"filter/FORWARD | -s 172.16.0.0/30 -o vm-veth0 -d 8.8.8.8 -m comment --comment yaghan -j ACCEPT",
+		"filter/FORWARD | -s 172.16.0.0/30 -o vm-veth0 -d 10.0.0.0/24 -m comment --comment yaghan -j ACCEPT",
+		"filter/FORWARD | -s 172.16.0.0/30 -o vm-veth0 -m comment --comment yaghan -j REJECT --reject-with icmp-admin-prohibited",
+		// MASQUERADE is independent of policy and must still be present.
+		"nat/POSTROUTING | -s 172.16.0.0/30 -o vm-veth0",
+	}
+	for _, fragment := range want {
+		assert.True(t, containsAny(r.appends, fragment),
+			"missing allow-policy rule %q in %v", fragment, r.appends)
+	}
+
+	// Confirm the unrestricted fall-through ACCEPT did NOT slip in.
+	for _, append := range r.appends {
+		assert.NotContains(t, append,
+			"-s 172.16.0.0/30 -o vm-veth0 -m comment --comment yaghan -j ACCEPT",
+			"unrestricted fall-through ACCEPT must not appear under allow policy")
+	}
+
+	// Rule order: the terminal REJECT must come after each ACCEPT, or
+	// the policy would block its own allow-list entries.
+	rejectIdx := indexOf(r.appends, "-j REJECT --reject-with icmp-admin-prohibited")
+	acceptIdx := indexOf(r.appends, "-d 8.8.8.8 -m comment --comment yaghan -j ACCEPT")
+	require.GreaterOrEqual(t, rejectIdx, 0, "REJECT rule must be installed")
+	require.GreaterOrEqual(t, acceptIdx, 0, "ACCEPT rule must be installed")
+	assert.Less(t, acceptIdx, rejectIdx, "ACCEPT must precede terminal REJECT")
+}
+
+func TestConfigureNamespace_DenyPolicy(t *testing.T) {
+	r := newRecorder()
+	fw := &iptablesFirewall{ipt: r}
+	cfg := NamespaceConfig{
+		NamespaceVethName: "vm-veth0",
+		GuestSubnet:       netip.MustParsePrefix("172.16.0.0/30"),
+		Egress: &EgressPolicy{
+			Mode: EgressDeny,
+			IPs: []netip.Addr{
+				netip.MustParseAddr("1.1.1.1"),
+			},
+			CIDRs: []netip.Prefix{
+				netip.MustParsePrefix("192.168.0.0/16"),
+			},
+		},
+	}
+
+	require.NoError(t, fw.ConfigureNamespace(cfg))
+
+	want := []string{
+		"filter/FORWARD | -s 172.16.0.0/30 -o vm-veth0 -d 1.1.1.1 -m comment --comment yaghan -j REJECT --reject-with icmp-admin-prohibited",
+		"filter/FORWARD | -s 172.16.0.0/30 -o vm-veth0 -d 192.168.0.0/16 -m comment --comment yaghan -j REJECT --reject-with icmp-admin-prohibited",
+		// Generic egress ACCEPT remains the fall-through under deny.
+		"filter/FORWARD | -s 172.16.0.0/30 -o vm-veth0 -m comment --comment yaghan -j ACCEPT",
+		"nat/POSTROUTING | -s 172.16.0.0/30 -o vm-veth0",
+	}
+	for _, fragment := range want {
+		assert.True(t, containsAny(r.appends, fragment),
+			"missing deny-policy rule %q in %v", fragment, r.appends)
+	}
+
+	// Rule order: each REJECT must come BEFORE the fall-through ACCEPT,
+	// otherwise the ACCEPT would short-circuit the deny and let traffic
+	// through.
+	denyIdx := indexOf(r.appends, "-d 1.1.1.1 -m comment --comment yaghan -j REJECT")
+	acceptIdx := indexOf(r.appends, "-o vm-veth0 -m comment --comment yaghan -j ACCEPT")
+	require.GreaterOrEqual(t, denyIdx, 0, "REJECT rule must be installed")
+	require.GreaterOrEqual(t, acceptIdx, 0, "fall-through ACCEPT must be installed")
+	assert.Less(t, denyIdx, acceptIdx, "deny REJECTs must precede fall-through ACCEPT")
+}
+
+// indexOf returns the position of the first entry in haystack
+// containing needle, or -1 when no entry matches.
+func indexOf(haystack []string, needle string) int {
+	for i, h := range haystack {
+		if strings.Contains(h, needle) {
+			return i
+		}
+	}
+	return -1
+}
+
 func containsAny(haystack []string, needle string) bool {
 	for _, h := range haystack {
 		if strings.Contains(h, needle) {

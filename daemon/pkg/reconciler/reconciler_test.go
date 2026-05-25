@@ -18,9 +18,13 @@ import (
 	netmocks "github.com/alan-ghelardi/yaghan/daemon/pkg/network/mocks"
 	"github.com/alan-ghelardi/yaghan/daemon/pkg/snapshot"
 	snapmocks "github.com/alan-ghelardi/yaghan/daemon/pkg/snapshot/mocks"
+	"github.com/grpc-ecosystem/go-grpc-middleware/logging/zap/ctxzap"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
+	"go.uber.org/zap/zaptest/observer"
 	"google.golang.org/grpc"
 )
 
@@ -188,7 +192,7 @@ func TestReconcile_BootCreatesMicroVMAndUpdatesStatus(t *testing.T) {
 	gomock.InOrder(
 		provider.EXPECT().GetMicroVM("sb-boot").Return(nil),
 		provider.EXPECT().NextNetNSIndex().Return(0),
-		driver.EXPECT().Provision(0).Return(nsh, nil),
+		driver.EXPECT().Provision(0, gomock.Any()).Return(nsh, nil),
 		provider.EXPECT().
 			CreateMicroVM(ctx, gomock.Any()).
 			DoAndReturn(func(_ context.Context, input *firecracker.CreateMicroVMInput) (firecracker.MicroVM, error) {
@@ -224,7 +228,7 @@ func TestReconcile_BootIsIdempotentWhenVMAlreadyIndexed(t *testing.T) {
 
 	provider.EXPECT().GetMicroVM("sb-already").Return(vm)
 	// No network/provision calls — idempotent fast path.
-	driver.EXPECT().Provision(gomock.Any()).Times(0)
+	driver.EXPECT().Provision(gomock.Any(), gomock.Any()).Times(0)
 	provider.EXPECT().CreateMicroVM(gomock.Any(), gomock.Any()).Times(0)
 
 	require.NoError(t, r.Reconcile(ctx, sandbox))
@@ -244,7 +248,7 @@ func TestReconcile_BootRollsBackNetworkOnCreateFailure(t *testing.T) {
 	gomock.InOrder(
 		provider.EXPECT().GetMicroVM("sb-rollback").Return(nil),
 		provider.EXPECT().NextNetNSIndex().Return(0),
-		driver.EXPECT().Provision(0).Return(nsh, nil),
+		driver.EXPECT().Provision(0, gomock.Any()).Return(nsh, nil),
 		provider.EXPECT().CreateMicroVM(ctx, gomock.Any()).Return(nil, bootErr),
 		driver.EXPECT().Deprovision(0).Return(nil),
 	)
@@ -270,7 +274,7 @@ func TestReconcile_BootSurfacesNetworkProvisionFailure(t *testing.T) {
 	gomock.InOrder(
 		provider.EXPECT().GetMicroVM("sb-netfail").Return(nil),
 		provider.EXPECT().NextNetNSIndex().Return(0),
-		driver.EXPECT().Provision(0).Return(network.NamespaceHandle{}, provErr),
+		driver.EXPECT().Provision(0, gomock.Any()).Return(network.NamespaceHandle{}, provErr),
 	)
 	provider.EXPECT().CreateMicroVM(gomock.Any(), gomock.Any()).Times(0)
 
@@ -304,8 +308,8 @@ func TestReconcile_BootAfterDeleteUsesFreshIndex(t *testing.T) {
 		provider.EXPECT().GetMicroVM("sb-post-delete").Return(nil),
 		provider.EXPECT().NextNetNSIndex().Return(freshIndex),
 		driver.EXPECT().
-			Provision(freshIndex).
-			DoAndReturn(func(idx int) (network.NamespaceHandle, error) {
+			Provision(freshIndex, gomock.Any()).
+			DoAndReturn(func(idx int, _ *network.EgressPolicy) (network.NamespaceHandle, error) {
 				assert.Equal(t, freshIndex, idx,
 					"reconciler must hand the driver the fresh index returned by NextNetNSIndex, not Len")
 				return nsh, nil
@@ -348,7 +352,7 @@ func TestReconcile_BootFromSnapshot_HappyPath(t *testing.T) {
 		provider.EXPECT().GetMicroVM("sb-from-snap").Return(nil),
 		expectSnapshotDownload(durableStore, "snap-A", []byte("mem"), []byte("state")),
 		provider.EXPECT().NextNetNSIndex().Return(0),
-		driver.EXPECT().Provision(0).Return(nsh, nil),
+		driver.EXPECT().Provision(0, gomock.Any()).Return(nsh, nil),
 		provider.EXPECT().
 			LoadSnapshot(ctx, gomock.Any()).
 			DoAndReturn(func(_ context.Context, input *firecracker.LoadSnapshotInput) (firecracker.MicroVM, error) {
@@ -419,7 +423,7 @@ func TestReconcile_BootFromSnapshot_DurableStoreFailureLeavesNetworkUntouched(t 
 			Get(gomock.Any(), "snap-missing", gomock.Any()).
 			Return(downloadErr),
 	)
-	driver.EXPECT().Provision(gomock.Any()).Times(0)
+	driver.EXPECT().Provision(gomock.Any(), gomock.Any()).Times(0)
 	provider.EXPECT().LoadSnapshot(gomock.Any(), gomock.Any()).Times(0)
 
 	err := r.Reconcile(ctx, sandbox)
@@ -446,7 +450,7 @@ func TestReconcile_BootFromSnapshot_LoadFailureRollsBackNetwork(t *testing.T) {
 		provider.EXPECT().GetMicroVM("sb-load-fail").Return(nil),
 		expectSnapshotDownload(durableStore, "snap-D", []byte("mem"), []byte("state")),
 		provider.EXPECT().NextNetNSIndex().Return(0),
-		driver.EXPECT().Provision(0).Return(fixtureNamespaceHandle(0), nil),
+		driver.EXPECT().Provision(0, gomock.Any()).Return(fixtureNamespaceHandle(0), nil),
 		provider.EXPECT().LoadSnapshot(ctx, gomock.Any()).Return(nil, loadErr),
 		driver.EXPECT().Deprovision(0).Return(nil),
 	)
@@ -478,7 +482,7 @@ func TestReconcile_BootFromSnapshot_FailsWithoutSnapshotStore(t *testing.T) {
 	sandbox.Intent = &cpv1.Intent{Phase: cpv1.SandboxStatus_PHASE_RUNNING}
 
 	provider.EXPECT().GetMicroVM("sb-no-store").Return(nil)
-	driver.EXPECT().Provision(gomock.Any()).Times(0)
+	driver.EXPECT().Provision(gomock.Any(), gomock.Any()).Times(0)
 	provider.EXPECT().LoadSnapshot(gomock.Any(), gomock.Any()).Times(0)
 
 	err := r.Reconcile(ctx, sandbox)
@@ -735,7 +739,7 @@ func TestReconcile_BootIntentRunsCreateMicroVMAndClearsIntent(t *testing.T) {
 	gomock.InOrder(
 		provider.EXPECT().GetMicroVM("sb-combined").Return(nil),
 		provider.EXPECT().NextNetNSIndex().Return(0),
-		driver.EXPECT().Provision(0).Return(nsh, nil),
+		driver.EXPECT().Provision(0, gomock.Any()).Return(nsh, nil),
 		provider.EXPECT().CreateMicroVM(ctx, gomock.Any()).Return(nil, nil),
 	)
 
@@ -759,7 +763,7 @@ func TestReconcile_PhaseFailureReturnsError(t *testing.T) {
 	gomock.InOrder(
 		provider.EXPECT().GetMicroVM("sb-phase-bad").Return(nil),
 		provider.EXPECT().NextNetNSIndex().Return(0),
-		driver.EXPECT().Provision(0).Return(fixtureNamespaceHandle(0), nil),
+		driver.EXPECT().Provision(0, gomock.Any()).Return(fixtureNamespaceHandle(0), nil),
 		provider.EXPECT().CreateMicroVM(ctx, gomock.Any()).Return(nil, bootErr),
 		driver.EXPECT().Deprovision(0).Return(nil),
 	)
@@ -805,7 +809,7 @@ func TestReconcile_FailedSandboxIsTerminalAndClearsIntent(t *testing.T) {
 	provider.EXPECT().CreateMicroVM(gomock.Any(), gomock.Any()).Times(0)
 	provider.EXPECT().LoadSnapshot(gomock.Any(), gomock.Any()).Times(0)
 	provider.EXPECT().DeleteMicroVM(gomock.Any(), gomock.Any()).Times(0)
-	driver.EXPECT().Provision(gomock.Any()).Times(0)
+	driver.EXPECT().Provision(gomock.Any(), gomock.Any()).Times(0)
 	driver.EXPECT().Deprovision(gomock.Any()).Times(0)
 	vm.EXPECT().Pause(gomock.Any()).Times(0)
 	vm.EXPECT().Resume(gomock.Any()).Times(0)
@@ -835,7 +839,7 @@ func TestReconcile_DeletedSandboxWithStaleIntentClearsIntent(t *testing.T) {
 	provider.EXPECT().CreateMicroVM(gomock.Any(), gomock.Any()).Times(0)
 	provider.EXPECT().LoadSnapshot(gomock.Any(), gomock.Any()).Times(0)
 	provider.EXPECT().DeleteMicroVM(gomock.Any(), gomock.Any()).Times(0)
-	driver.EXPECT().Provision(gomock.Any()).Times(0)
+	driver.EXPECT().Provision(gomock.Any(), gomock.Any()).Times(0)
 	driver.EXPECT().Deprovision(gomock.Any()).Times(0)
 	vm.EXPECT().Pause(gomock.Any()).Times(0)
 	vm.EXPECT().Resume(gomock.Any()).Times(0)
@@ -844,4 +848,95 @@ func TestReconcile_DeletedSandboxWithStaleIntentClearsIntent(t *testing.T) {
 
 	assert.Nil(t, sandbox.Intent)
 	assert.Equal(t, cpv1.SandboxStatus_PHASE_DELETED, sandbox.GetStatus().GetPhase())
+}
+
+// TestTranslateEgressPolicy covers the proto → network.EgressPolicy
+// projection: nil round-trips, allow and deny populate the matching
+// mode and target slices, and domain_names trigger a single WARN log
+// without blocking IP/CIDR enforcement.
+func TestTranslateEgressPolicy(t *testing.T) {
+	t.Run("nil policy returns nil", func(t *testing.T) {
+		got := translateEgressPolicy(context.Background(),
+			&cpv1.Sandbox{Metadata: &cpv1.SandboxMeta{Id: "sb"}})
+		assert.Nil(t, got)
+	})
+
+	t.Run("allow rule projects mode, ips, and cidrs", func(t *testing.T) {
+		sandbox := &cpv1.Sandbox{
+			Metadata: &cpv1.SandboxMeta{Id: "sb-allow"},
+			EgressPolicy: &cpv1.EgressPolicy{
+				Rules: &cpv1.EgressPolicy_Allow{
+					Allow: &cpv1.EgressTargets{
+						IpAddresses: []string{"8.8.8.8"},
+						CidrBlocks:  []string{"10.0.0.0/24"},
+					},
+				},
+			},
+		}
+		got := translateEgressPolicy(context.Background(), sandbox)
+		require.NotNil(t, got)
+		assert.Equal(t, network.EgressAllow, got.Mode)
+		assert.Equal(t, []netip.Addr{netip.MustParseAddr("8.8.8.8")}, got.IPs)
+		assert.Equal(t, []netip.Prefix{netip.MustParsePrefix("10.0.0.0/24")}, got.CIDRs)
+	})
+
+	t.Run("deny rule projects mode, ips, and cidrs", func(t *testing.T) {
+		sandbox := &cpv1.Sandbox{
+			Metadata: &cpv1.SandboxMeta{Id: "sb-deny"},
+			EgressPolicy: &cpv1.EgressPolicy{
+				Rules: &cpv1.EgressPolicy_Deny{
+					Deny: &cpv1.EgressTargets{
+						IpAddresses: []string{"1.1.1.1"},
+						CidrBlocks:  []string{"192.168.0.0/16"},
+					},
+				},
+			},
+		}
+		got := translateEgressPolicy(context.Background(), sandbox)
+		require.NotNil(t, got)
+		assert.Equal(t, network.EgressDeny, got.Mode)
+		assert.Equal(t, []netip.Addr{netip.MustParseAddr("1.1.1.1")}, got.IPs)
+		assert.Equal(t, []netip.Prefix{netip.MustParsePrefix("192.168.0.0/16")}, got.CIDRs)
+	})
+
+	t.Run("domain_names log a warning but ips/cidrs are still applied", func(t *testing.T) {
+		core, observed := observer.New(zapcore.WarnLevel)
+		ctx := ctxzap.ToContext(context.Background(), zap.New(core))
+
+		sandbox := &cpv1.Sandbox{
+			Metadata: &cpv1.SandboxMeta{Id: "sb-domains"},
+			EgressPolicy: &cpv1.EgressPolicy{
+				Rules: &cpv1.EgressPolicy_Allow{
+					Allow: &cpv1.EgressTargets{
+						IpAddresses: []string{"8.8.8.8"},
+						DomainNames: []string{"example.com", "*.foo.test"},
+					},
+				},
+			},
+		}
+		got := translateEgressPolicy(ctx, sandbox)
+		require.NotNil(t, got)
+		assert.Equal(t, network.EgressAllow, got.Mode)
+		assert.Equal(t, []netip.Addr{netip.MustParseAddr("8.8.8.8")}, got.IPs)
+		assert.Empty(t, got.CIDRs)
+
+		warnings := observed.FilterMessageSnippet("domain_names").All()
+		require.Len(t, warnings, 1, "exactly one warning per reconcile when domains are present")
+		assert.Equal(t, zapcore.WarnLevel, warnings[0].Level)
+		fields := warnings[0].ContextMap()
+		assert.Equal(t, "sb-domains", fields["sandbox.id"])
+		assert.Equal(t, int64(2), fields["domain_names.count"])
+	})
+
+	t.Run("oneof unset returns nil", func(t *testing.T) {
+		// EgressPolicy is non-nil but neither allow nor deny is set —
+		// shouldn't happen in practice (CEL validators enforce one of
+		// them) but defensive coverage keeps the path honest.
+		sandbox := &cpv1.Sandbox{
+			Metadata:     &cpv1.SandboxMeta{Id: "sb"},
+			EgressPolicy: &cpv1.EgressPolicy{},
+		}
+		got := translateEgressPolicy(context.Background(), sandbox)
+		assert.Nil(t, got)
+	})
 }

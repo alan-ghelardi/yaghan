@@ -1400,12 +1400,30 @@ You can find out more about this error model and how to work with it in the
 
 ```
 
+EgressPolicy constrains the external destinations a sandbox can
+reach from inside its guest. It is enforced by the data-plane daemon
+at sandbox-boot time as netfilter rules in the VM's network
+namespace; the api-server only validates syntax.
+
+Semantics:
+  - Unset (the default): no restriction. The sandbox can reach any
+    external target reachable from the host.
+  - `allow` set: only destinations matching one of the listed targets
+    are reachable. Everything else is rejected with ICMP admin-
+    prohibited (TCP fails fast with EHOSTUNREACH-class errors).
+  - `deny` set: every destination is reachable except those matching
+    one of the listed targets, which are rejected as above.
+
+There is intentionally no implicit DNS pass-through: under an
+`allow` policy a sandbox cannot reach its resolver unless the
+resolver's IP is listed.
+
 ### Properties
 
 |Name|Type|Required|Restrictions|Description|
 |---|---|---|---|---|
-|allow|[v1alpha1EgressTargets](#schemav1alpha1egresstargets)|false|none|none|
-|deny|[v1alpha1EgressTargets](#schemav1alpha1egresstargets)|false|none|none|
+|allow|[v1alpha1EgressTargets](#schemav1alpha1egresstargets)|false|none|EgressTargets is the union of destinations referenced by an<br>EgressPolicy allow- or deny-rule.<br><br>Rule precedence is `ip_addresses` → `cidr_blocks` → `domain_names`:<br>a destination that matches an `ip_addresses` entry takes effect<br>before any overlapping `cidr_blocks` entry, which in turn takes<br>effect before any overlapping `domain_names` entry. Within a single<br>policy arm (`allow` or `deny`) the verdict is the same across all<br>three, so precedence is currently observable only in logs; it<br>becomes load-bearing once future iterations let policies mix<br>verdicts.<br><br>Note: `domain_names` is accepted and validated for syntax today but<br>is **not yet enforced** by the data plane — DNS resolution + cache<br>lifecycle is a separate iteration. The daemon logs a warning when a<br>sandbox boots with non-empty `domain_names` so the gap is not<br>silent.|
+|deny|[v1alpha1EgressTargets](#schemav1alpha1egresstargets)|false|none|EgressTargets is the union of destinations referenced by an<br>EgressPolicy allow- or deny-rule.<br><br>Rule precedence is `ip_addresses` → `cidr_blocks` → `domain_names`:<br>a destination that matches an `ip_addresses` entry takes effect<br>before any overlapping `cidr_blocks` entry, which in turn takes<br>effect before any overlapping `domain_names` entry. Within a single<br>policy arm (`allow` or `deny`) the verdict is the same across all<br>three, so precedence is currently observable only in logs; it<br>becomes load-bearing once future iterations let policies mix<br>verdicts.<br><br>Note: `domain_names` is accepted and validated for syntax today but<br>is **not yet enforced** by the data plane — DNS resolution + cache<br>lifecycle is a separate iteration. The daemon logs a warning when a<br>sandbox boots with non-empty `domain_names` so the gap is not<br>silent.|
 
 <h2 id="tocS_v1alpha1EgressTargets">v1alpha1EgressTargets</h2>
 <!-- backwards compatibility -->
@@ -1428,6 +1446,24 @@ You can find out more about this error model and how to work with it in the
 }
 
 ```
+
+EgressTargets is the union of destinations referenced by an
+EgressPolicy allow- or deny-rule.
+
+Rule precedence is `ip_addresses` → `cidr_blocks` → `domain_names`:
+a destination that matches an `ip_addresses` entry takes effect
+before any overlapping `cidr_blocks` entry, which in turn takes
+effect before any overlapping `domain_names` entry. Within a single
+policy arm (`allow` or `deny`) the verdict is the same across all
+three, so precedence is currently observable only in logs; it
+becomes load-bearing once future iterations let policies mix
+verdicts.
+
+Note: `domain_names` is accepted and validated for syntax today but
+is **not yet enforced** by the data plane — DNS resolution + cache
+lifecycle is a separate iteration. The daemon logs a warning when a
+sandbox boots with non-empty `domain_names` so the gap is not
+silent.
 
 ### Properties
 
@@ -2004,7 +2040,7 @@ Response message containing a page of sandboxes.
 |Name|Type|Required|Restrictions|Description|
 |---|---|---|---|---|
 |metadata|[v1alpha1SandboxMeta](#schemav1alpha1sandboxmeta)|false|none|none|
-|egressPolicy|[v1alpha1EgressPolicy](#schemav1alpha1egresspolicy)|false|none|none|
+|egressPolicy|[v1alpha1EgressPolicy](#schemav1alpha1egresspolicy)|false|none|EgressPolicy constrains the external destinations a sandbox can<br>reach from inside its guest. It is enforced by the data-plane daemon<br>at sandbox-boot time as netfilter rules in the VM's network<br>namespace; the api-server only validates syntax.<br><br>Semantics:<br>  - Unset (the default): no restriction. The sandbox can reach any<br>    external target reachable from the host.<br>  - `allow` set: only destinations matching one of the listed targets<br>    are reachable. Everything else is rejected with ICMP admin-<br>    prohibited (TCP fails fast with EHOSTUNREACH-class errors).<br>  - `deny` set: every destination is reachable except those matching<br>    one of the listed targets, which are rejected as above.<br><br>There is intentionally no implicit DNS pass-through: under an<br>`allow` policy a sandbox cannot reach its resolver unless the<br>resolver's IP is listed.|
 |resources|[v1alpha1Resources](#schemav1alpha1resources)|false|none|none|
 |node|[v1alpha1NodeRef](#schemav1alpha1noderef)|false|none|none|
 |intent|[v1alpha1Intent](#schemav1alpha1intent)|false|none|none|

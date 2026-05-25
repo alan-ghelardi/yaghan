@@ -1,6 +1,26 @@
 package network
 
-import "net/netip"
+import (
+	"net/netip"
+
+	"github.com/alan-ghelardi/yaghan/daemon/pkg/network/firewall"
+)
+
+// EgressPolicy re-exports [firewall.EgressPolicy] so callers of the
+// network driver do not need to import the firewall package directly.
+// A nil pointer signals "no restriction" (the legacy behavior).
+type EgressPolicy = firewall.EgressPolicy
+
+// EgressMode re-exports [firewall.EgressMode].
+type EgressMode = firewall.EgressMode
+
+const (
+	// EgressAllow re-exports [firewall.EgressAllow].
+	EgressAllow = firewall.EgressAllow
+
+	// EgressDeny re-exports [firewall.EgressDeny].
+	EgressDeny = firewall.EgressDeny
+)
 
 // Driver provisions isolated per-VM network topologies. Each Provision call
 // yields a fully-configured network namespace: a TAP device for Firecracker
@@ -8,10 +28,12 @@ import "net/netip"
 // namespace pointing at the host side.
 type Driver interface {
 	// Provision sets up the network infrastructure for the VM identified by
-	// index. The caller must ensure index is unique on this host. On any
-	// error Provision rolls back its partial state before returning, so the
-	// zero-value handle never corresponds to live kernel state.
-	Provision(index int) (NamespaceHandle, error)
+	// index. The caller must ensure index is unique on this host. When
+	// egress is non-nil the per-VM firewall enforces it; nil preserves the
+	// legacy unrestricted behavior. On any error Provision rolls back its
+	// partial state before returning, so the zero-value handle never
+	// corresponds to live kernel state.
+	Provision(index int, egress *EgressPolicy) (NamespaceHandle, error)
 
 	// Deprovision tears down everything Provision(index) created. It is
 	// idempotent — unknown or already-removed indexes are not an error.

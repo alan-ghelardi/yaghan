@@ -213,7 +213,8 @@
         "deny": {
           "$ref": "#/definitions/v1alpha1EgressTargets"
         }
-      }
+      },
+      "description": "EgressPolicy constrains the external destinations a sandbox can\nreach from inside its guest. It is enforced by the data-plane daemon\nat sandbox-boot time as netfilter rules in the VM's network\nnamespace; the api-server only validates syntax.\n\nSemantics:\n  - Unset (the default): no restriction. The sandbox can reach any\n    external target reachable from the host.\n  - `allow` set: only destinations matching one of the listed targets\n    are reachable. Everything else is rejected with ICMP admin-\n    prohibited (TCP fails fast with EHOSTUNREACH-class errors).\n  - `deny` set: every destination is reachable except those matching\n    one of the listed targets, which are rejected as above.\n\nThere is intentionally no implicit DNS pass-through: under an\n`allow` policy a sandbox cannot reach its resolver unless the\nresolver's IP is listed."
     },
     "v1alpha1EgressTargets": {
       "type": "object",
@@ -236,7 +237,8 @@
             "type": "string"
           }
         }
-      }
+      },
+      "description": "EgressTargets is the union of destinations referenced by an\nEgressPolicy allow- or deny-rule.\n\nRule precedence is `ip_addresses` → `cidr_blocks` → `domain_names`:\na destination that matches an `ip_addresses` entry takes effect\nbefore any overlapping `cidr_blocks` entry, which in turn takes\neffect before any overlapping `domain_names` entry. Within a single\npolicy arm (`allow` or `deny`) the verdict is the same across all\nthree, so precedence is currently observable only in logs; it\nbecomes load-bearing once future iterations let policies mix\nverdicts.\n\nNote: `domain_names` is accepted and validated for syntax today but\nis **not yet enforced** by the data plane — DNS resolution + cache\nlifecycle is a separate iteration. The daemon logs a warning when a\nsandbox boots with non-empty `domain_names` so the gap is not\nsilent."
     },
     "v1alpha1EstablishSessionResponse": {
       "type": "object",

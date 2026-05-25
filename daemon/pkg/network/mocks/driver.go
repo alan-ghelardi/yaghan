@@ -55,16 +55,16 @@ func (mr *MockDriverMockRecorder) Deprovision(index any) *gomock.Call {
 }
 
 // Provision mocks base method.
-func (m *MockDriver) Provision(index int) (network.NamespaceHandle, error) {
+func (m *MockDriver) Provision(index int, egress *network.EgressPolicy) (network.NamespaceHandle, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Provision", index)
+	ret := m.ctrl.Call(m, "Provision", index, egress)
 	ret0, _ := ret[0].(network.NamespaceHandle)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Provision indicates an expected call of Provision.
-func (mr *MockDriverMockRecorder) Provision(index any) *gomock.Call {
+func (mr *MockDriverMockRecorder) Provision(index, egress any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Provision", reflect.TypeOf((*MockDriver)(nil).Provision), index)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Provision", reflect.TypeOf((*MockDriver)(nil).Provision), index, egress)
 }

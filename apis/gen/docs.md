@@ -248,7 +248,23 @@ InsufficientScopes provides further details on unauthorized errors.
 <a name="yaghan-control_plane-v1alpha1-EgressPolicy"></a>
 
 ### EgressPolicy
+EgressPolicy constrains the external destinations a sandbox can
+reach from inside its guest. It is enforced by the data-plane daemon
+at sandbox-boot time as netfilter rules in the VM&#39;s network
+namespace; the api-server only validates syntax.
 
+Semantics:
+  - Unset (the default): no restriction. The sandbox can reach any
+    external target reachable from the host.
+  - `allow` set: only destinations matching one of the listed targets
+    are reachable. Everything else is rejected with ICMP admin-
+    prohibited (TCP fails fast with EHOSTUNREACH-class errors).
+  - `deny` set: every destination is reachable except those matching
+    one of the listed targets, which are rejected as above.
+
+There is intentionally no implicit DNS pass-through: under an
+`allow` policy a sandbox cannot reach its resolver unless the
+resolver&#39;s IP is listed.
 
 
 | Field | Type | Label | Description |
@@ -264,7 +280,23 @@ InsufficientScopes provides further details on unauthorized errors.
 <a name="yaghan-control_plane-v1alpha1-EgressTargets"></a>
 
 ### EgressTargets
+EgressTargets is the union of destinations referenced by an
+EgressPolicy allow- or deny-rule.
 
+Rule precedence is `ip_addresses` → `cidr_blocks` → `domain_names`:
+a destination that matches an `ip_addresses` entry takes effect
+before any overlapping `cidr_blocks` entry, which in turn takes
+effect before any overlapping `domain_names` entry. Within a single
+policy arm (`allow` or `deny`) the verdict is the same across all
+three, so precedence is currently observable only in logs; it
+becomes load-bearing once future iterations let policies mix
+verdicts.
+
+Note: `domain_names` is accepted and validated for syntax today but
+is **not yet enforced** by the data plane — DNS resolution &#43; cache
+lifecycle is a separate iteration. The daemon logs a warning when a
+sandbox boots with non-empty `domain_names` so the gap is not
+silent.
 
 
 | Field | Type | Label | Description |

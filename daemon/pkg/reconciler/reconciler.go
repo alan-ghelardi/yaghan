@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/netip"
 	"path/filepath"
 	"strings"
 
@@ -211,7 +212,7 @@ func (r *Reconciler) bootFresh(ctx context.Context, sandbox *controlplanev1alpha
 	}
 
 	index := r.provider.NextNetNSIndex()
-	nsh, err := r.driver.Provision(index)
+	nsh, err := r.driver.Provision(index, translateEgressPolicy(ctx, sandbox))
 	if err != nil {
 		return fmt.Errorf("provision network: %w", err)
 	}
@@ -275,7 +276,7 @@ func (r *Reconciler) bootFromSnapshot(ctx context.Context, sandbox *controlplane
 	}
 
 	index := r.provider.NextNetNSIndex()
-	nsh, err := r.driver.Provision(index)
+	nsh, err := r.driver.Provision(index, translateEgressPolicy(ctx, sandbox))
 	if err != nil {
 		return fmt.Errorf("provision network: %w", err)
 	}
@@ -515,6 +516,74 @@ func (r *Reconciler) buildLoadSnapshotInput(sandbox *controlplanev1alpha1.Sandbo
 			{SourcePath: filepath.Join(r.config.AssetsDir, tmpl.RootfsFile), JailPath: tmpl.RootfsJailPath, Writable: true},
 		},
 	}
+}
+
+// translateEgressPolicy projects the control-plane EgressPolicy proto
+// onto the driver-internal [network.EgressPolicy] shape the network
+// driver consumes. Returns nil when the sandbox carries no policy —
+// the driver interprets nil as unrestricted egress.
+//
+// Domain names are validated by the api-server but not yet enforced
+// by the data plane (see the EgressTargets docstring in sandbox.proto).
+// When non-empty we log a single WARN entry per reconcile so the gap is
+// observable in daemon logs; IPs and CIDRs from the same policy arm
+// are still enforced.
+//
+// IP/CIDR parse errors are bugs: the api-server's buf.validate rejects
+// malformed entries before they reach the persistence layer, so a
+// failure here means the proto wire was tampered with or validation
+// drifted. We log and skip the offending entry rather than failing the
+// whole boot, so a single corrupt value does not strand a sandbox.
+func translateEgressPolicy(ctx context.Context, sandbox *controlplanev1alpha1.Sandbox) *network.EgressPolicy {
+	p := sandbox.GetEgressPolicy()
+	if p == nil {
+		return nil
+	}
+
+	var (
+		mode    network.EgressMode
+		targets *controlplanev1alpha1.EgressTargets
+	)
+	switch {
+	case p.GetAllow() != nil:
+		mode, targets = network.EgressAllow, p.GetAllow()
+	case p.GetDeny() != nil:
+		mode, targets = network.EgressDeny, p.GetDeny()
+	default:
+		// oneof unset — treat as no policy.
+		return nil
+	}
+
+	logger := ctxzap.Extract(ctx).With(
+		zap.String("sandbox.id", sandbox.GetMetadata().GetId()),
+	)
+
+	if domains := targets.GetDomainNames(); len(domains) > 0 {
+		logger.Warn("reconciler: egress policy references domain_names; not yet enforced by data plane, only ip_addresses and cidr_blocks will be applied",
+			zap.Int("domain_names.count", len(domains)),
+		)
+	}
+
+	policy := &network.EgressPolicy{Mode: mode}
+	for _, raw := range targets.GetIpAddresses() {
+		addr, err := netip.ParseAddr(raw)
+		if err != nil {
+			logger.Warn("reconciler: skipping malformed egress ip_address",
+				zap.String("value", raw), zap.Error(err))
+			continue
+		}
+		policy.IPs = append(policy.IPs, addr)
+	}
+	for _, raw := range targets.GetCidrBlocks() {
+		prefix, err := netip.ParsePrefix(raw)
+		if err != nil {
+			logger.Warn("reconciler: skipping malformed egress cidr_block",
+				zap.String("value", raw), zap.Error(err))
+			continue
+		}
+		policy.CIDRs = append(policy.CIDRs, prefix)
+	}
+	return policy
 }
 
 // buildBootArgs assembles the kernel command line. The ip= parameter

@@ -110,6 +110,11 @@ func (f *iptablesFirewall) EnsureHost(upstream string, vmSubnet netip.Prefix) er
 // chains rather than into our own chain, because the namespace is owned
 // entirely by one VM and is destroyed on Deprovision; there is no
 // foreign-rule contamination risk to worry about.
+//
+// Rule ordering matters: the egress filter (when an [EgressPolicy] is
+// supplied) must precede any fall-through ACCEPT for the policy
+// verdict to take effect. AppendUnique preserves insertion order, so
+// we just issue the rules in the order we want them evaluated.
 func (f *iptablesFirewall) ConfigureNamespace(c NamespaceConfig) error {
 	if c.NamespaceVethName == "" {
 		return fmt.Errorf("namespace veth name must be non-empty")
@@ -119,27 +124,37 @@ func (f *iptablesFirewall) ConfigureNamespace(c NamespaceConfig) error {
 	}
 	subnet := c.GuestSubnet.String()
 
-	// Forward guest traffic out the veth, and conntrack return traffic
-	// back. Two explicit ACCEPT rules sidestep any non-default FORWARD
-	// policy a security-hardened kernel might ship with.
-	if err := f.ipt.AppendUnique("filter", "FORWARD",
-		"-s", subnet, "-o", c.NamespaceVethName,
-		"-m", "comment", "--comment", ruleComment,
-		"-j", "ACCEPT",
-	); err != nil {
-		return fmt.Errorf("allow ns forward egress: %w", err)
+	// Conntrack return path is always permitted, regardless of policy:
+	// without it the guest would never see the replies to its own
+	// outbound connections.
+	if err := f.appendReturnAccept(subnet, c.NamespaceVethName); err != nil {
+		return err
 	}
-	if err := f.ipt.AppendUnique("filter", "FORWARD",
-		"-i", c.NamespaceVethName, "-d", subnet,
-		"-m", "conntrack", "--ctstate", "RELATED,ESTABLISHED",
-		"-m", "comment", "--comment", ruleComment,
-		"-j", "ACCEPT",
-	); err != nil {
-		return fmt.Errorf("allow ns forward return: %w", err)
+
+	// Egress filter — order-sensitive. The dispatch table is small
+	// enough to inline; one branch per supported policy mode plus the
+	// nil case (legacy unrestricted egress).
+	switch {
+	case c.Egress == nil:
+		if err := f.appendEgressAccept(subnet, c.NamespaceVethName); err != nil {
+			return err
+		}
+	case c.Egress.Mode == EgressAllow:
+		if err := f.appendEgressAllow(subnet, c.NamespaceVethName, c.Egress); err != nil {
+			return err
+		}
+	case c.Egress.Mode == EgressDeny:
+		if err := f.appendEgressDeny(subnet, c.NamespaceVethName, c.Egress); err != nil {
+			return err
+		}
+	default:
+		return fmt.Errorf("unsupported egress mode %d", c.Egress.Mode)
 	}
 
 	// MASQUERADE: rewrite the (per-VM-duplicated) guest source IP to
 	// the namespace-side veth address so the host sees a unique src.
+	// Installed after the filter so packets the policy rejects never
+	// consume a conntrack slot.
 	if err := f.ipt.AppendUnique("nat", "POSTROUTING",
 		"-s", subnet, "-o", c.NamespaceVethName,
 		"-m", "comment", "--comment", ruleComment,
@@ -148,6 +163,98 @@ func (f *iptablesFirewall) ConfigureNamespace(c NamespaceConfig) error {
 		return fmt.Errorf("masquerade ns egress: %w", err)
 	}
 	return nil
+}
+
+// appendReturnAccept opens the conntrack return path: replies to the
+// guest's own outbound connections enter back through the veth and
+// must reach the guest subnet.
+func (f *iptablesFirewall) appendReturnAccept(subnet, veth string) error {
+	if err := f.ipt.AppendUnique("filter", "FORWARD",
+		"-i", veth, "-d", subnet,
+		"-m", "conntrack", "--ctstate", "RELATED,ESTABLISHED",
+		"-m", "comment", "--comment", ruleComment,
+		"-j", "ACCEPT",
+	); err != nil {
+		return fmt.Errorf("allow ns forward return: %w", err)
+	}
+	return nil
+}
+
+// appendEgressAccept installs the unrestricted egress ACCEPT — the
+// legacy behavior used when no [EgressPolicy] is supplied.
+func (f *iptablesFirewall) appendEgressAccept(subnet, veth string) error {
+	if err := f.ipt.AppendUnique("filter", "FORWARD",
+		"-s", subnet, "-o", veth,
+		"-m", "comment", "--comment", ruleComment,
+		"-j", "ACCEPT",
+	); err != nil {
+		return fmt.Errorf("allow ns forward egress: %w", err)
+	}
+	return nil
+}
+
+// appendEgressAllow installs an allow-list egress filter: one ACCEPT
+// per listed IP and CIDR, followed by a terminal REJECT that fires
+// for every destination not on the list. The REJECT uses
+// icmp-admin-prohibited so guest clients see a fast EHOSTUNREACH-class
+// failure rather than hanging until their own timeout.
+//
+// Rule order mirrors the precedence documented on EgressTargets:
+// ip_addresses before cidr_blocks. With a single verdict in play the
+// order is observable only in logs today, but keeping it consistent
+// makes future mixed-verdict policies behave predictably.
+func (f *iptablesFirewall) appendEgressAllow(subnet, veth string, policy *EgressPolicy) error {
+	for _, ip := range policy.IPs {
+		if err := f.ipt.AppendUnique("filter", "FORWARD",
+			"-s", subnet, "-o", veth, "-d", ip.String(),
+			"-m", "comment", "--comment", ruleComment,
+			"-j", "ACCEPT",
+		); err != nil {
+			return fmt.Errorf("allow ns egress to %s: %w", ip, err)
+		}
+	}
+	for _, cidr := range policy.CIDRs {
+		if err := f.ipt.AppendUnique("filter", "FORWARD",
+			"-s", subnet, "-o", veth, "-d", cidr.String(),
+			"-m", "comment", "--comment", ruleComment,
+			"-j", "ACCEPT",
+		); err != nil {
+			return fmt.Errorf("allow ns egress to %s: %w", cidr, err)
+		}
+	}
+	if err := f.ipt.AppendUnique("filter", "FORWARD",
+		"-s", subnet, "-o", veth,
+		"-m", "comment", "--comment", ruleComment,
+		"-j", "REJECT", "--reject-with", "icmp-admin-prohibited",
+	); err != nil {
+		return fmt.Errorf("reject ns egress fallthrough: %w", err)
+	}
+	return nil
+}
+
+// appendEgressDeny installs a deny-list egress filter: one REJECT per
+// listed IP and CIDR, followed by the generic ACCEPT for everything
+// else.
+func (f *iptablesFirewall) appendEgressDeny(subnet, veth string, policy *EgressPolicy) error {
+	for _, ip := range policy.IPs {
+		if err := f.ipt.AppendUnique("filter", "FORWARD",
+			"-s", subnet, "-o", veth, "-d", ip.String(),
+			"-m", "comment", "--comment", ruleComment,
+			"-j", "REJECT", "--reject-with", "icmp-admin-prohibited",
+		); err != nil {
+			return fmt.Errorf("deny ns egress to %s: %w", ip, err)
+		}
+	}
+	for _, cidr := range policy.CIDRs {
+		if err := f.ipt.AppendUnique("filter", "FORWARD",
+			"-s", subnet, "-o", veth, "-d", cidr.String(),
+			"-m", "comment", "--comment", ruleComment,
+			"-j", "REJECT", "--reject-with", "icmp-admin-prohibited",
+		); err != nil {
+			return fmt.Errorf("deny ns egress to %s: %w", cidr, err)
+		}
+	}
+	return f.appendEgressAccept(subnet, veth)
 }
 
 // ensureChain creates chain in table if and only if it does not already

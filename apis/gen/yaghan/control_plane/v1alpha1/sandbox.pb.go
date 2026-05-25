@@ -424,6 +424,23 @@ func (*SandboxSource_SnapshotId) isSandboxSource_Reference() {}
 
 func (*SandboxSource_ImageId) isSandboxSource_Reference() {}
 
+// EgressPolicy constrains the external destinations a sandbox can
+// reach from inside its guest. It is enforced by the data-plane daemon
+// at sandbox-boot time as netfilter rules in the VM's network
+// namespace; the api-server only validates syntax.
+//
+// Semantics:
+//   - Unset (the default): no restriction. The sandbox can reach any
+//     external target reachable from the host.
+//   - `allow` set: only destinations matching one of the listed targets
+//     are reachable. Everything else is rejected with ICMP admin-
+//     prohibited (TCP fails fast with EHOSTUNREACH-class errors).
+//   - `deny` set: every destination is reachable except those matching
+//     one of the listed targets, which are rejected as above.
+//
+// There is intentionally no implicit DNS pass-through: under an
+// `allow` policy a sandbox cannot reach its resolver unless the
+// resolver's IP is listed.
 type EgressPolicy struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Types that are valid to be assigned to Rules:
@@ -506,6 +523,23 @@ func (*EgressPolicy_Allow) isEgressPolicy_Rules() {}
 
 func (*EgressPolicy_Deny) isEgressPolicy_Rules() {}
 
+// EgressTargets is the union of destinations referenced by an
+// EgressPolicy allow- or deny-rule.
+//
+// Rule precedence is `ip_addresses` → `cidr_blocks` → `domain_names`:
+// a destination that matches an `ip_addresses` entry takes effect
+// before any overlapping `cidr_blocks` entry, which in turn takes
+// effect before any overlapping `domain_names` entry. Within a single
+// policy arm (`allow` or `deny`) the verdict is the same across all
+// three, so precedence is currently observable only in logs; it
+// becomes load-bearing once future iterations let policies mix
+// verdicts.
+//
+// Note: `domain_names` is accepted and validated for syntax today but
+// is **not yet enforced** by the data plane — DNS resolution + cache
+// lifecycle is a separate iteration. The daemon logs a warning when a
+// sandbox boots with non-empty `domain_names` so the gap is not
+// silent.
 type EgressTargets struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	IpAddresses   []string               `protobuf:"bytes,1,rep,name=ip_addresses,json=ipAddresses,proto3" json:"ip_addresses,omitempty"`

@@ -63,7 +63,7 @@ type linuxDriver struct {
 var _ Driver = (*linuxDriver)(nil)
 
 // Provision implements [Driver].
-func (d *linuxDriver) Provision(index int) (NamespaceHandle, error) {
+func (d *linuxDriver) Provision(index int, egress *EgressPolicy) (NamespaceHandle, error) {
 	if err := validateIndex(index); err != nil {
 		return NamespaceHandle{}, err
 	}
@@ -111,7 +111,7 @@ func (d *linuxDriver) Provision(index int) (NamespaceHandle, error) {
 		return NamespaceHandle{}, rollback(fmt.Errorf("install default route: %w", err))
 	}
 	if d.options.Firewall != nil {
-		if err := configureEgress(nsFd, d.options.Firewall); err != nil {
+		if err := configureEgress(nsFd, d.options.Firewall, egress); err != nil {
 			return NamespaceHandle{}, rollback(fmt.Errorf("configure egress: %w", err))
 		}
 	}
@@ -322,7 +322,7 @@ func setupVethPair(nsFd netns.NsHandle, meta NamespaceHandle) error {
 // The sysctl write must come before the firewall rules: without
 // forwarding enabled the FORWARD chain never fires, and any test
 // using the rules would silently fail.
-func configureEgress(nsFd netns.NsHandle, fw firewall.Firewall) error {
+func configureEgress(nsFd netns.NsHandle, fw firewall.Firewall, egress *EgressPolicy) error {
 	runtime.LockOSThread()
 	origin, err := netns.Get()
 	if err != nil {
@@ -344,6 +344,7 @@ func configureEgress(nsFd netns.NsHandle, fw firewall.Firewall) error {
 	if err := fw.ConfigureNamespace(firewall.NamespaceConfig{
 		NamespaceVethName: namespaceVethName,
 		GuestSubnet:       GuestSubnet(),
+		Egress:            egress,
 	}); err != nil {
 		return fmt.Errorf("install firewall rules in netns: %w", err)
 	}

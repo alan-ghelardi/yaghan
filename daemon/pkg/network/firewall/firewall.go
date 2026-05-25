@@ -53,4 +53,34 @@ type NamespaceConfig struct {
 	// occupies (e.g. 172.16.0.0/30). Both directions of MASQUERADE
 	// and FORWARD use it as the match key.
 	GuestSubnet netip.Prefix
+
+	// Egress optionally constrains the destinations the guest can
+	// reach. A nil value preserves the legacy behavior (unrestricted
+	// egress). See [EgressPolicy] for the semantics.
+	Egress *EgressPolicy
+}
+
+// EgressMode discriminates between the two policy verdicts an
+// [EgressPolicy] can carry.
+type EgressMode int
+
+const (
+	// EgressAllow means only destinations listed in the policy are
+	// reachable; everything else is rejected.
+	EgressAllow EgressMode = iota + 1
+
+	// EgressDeny means every destination is reachable except those
+	// listed in the policy.
+	EgressDeny
+)
+
+// EgressPolicy is the firewall-internal projection of a sandbox's
+// egress policy. It carries only the destination shapes the data
+// plane can enforce today (IPs and CIDRs). Domain names live in the
+// control-plane proto but are not yet translated to rules — see the
+// sandbox.proto docstring on EgressTargets.
+type EgressPolicy struct {
+	Mode  EgressMode
+	IPs   []netip.Addr
+	CIDRs []netip.Prefix
 }
