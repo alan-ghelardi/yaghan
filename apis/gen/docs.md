@@ -14,6 +14,8 @@
     - [CreateSandboxResponse](#yaghan-control_plane-v1alpha1-CreateSandboxResponse)
     - [DeleteSandboxRequest](#yaghan-control_plane-v1alpha1-DeleteSandboxRequest)
     - [DeleteSandboxResponse](#yaghan-control_plane-v1alpha1-DeleteSandboxResponse)
+    - [EgressPolicy](#yaghan-control_plane-v1alpha1-EgressPolicy)
+    - [EgressTargets](#yaghan-control_plane-v1alpha1-EgressTargets)
     - [GetSandboxRequest](#yaghan-control_plane-v1alpha1-GetSandboxRequest)
     - [GetSandboxResponse](#yaghan-control_plane-v1alpha1-GetSandboxResponse)
     - [Intent](#yaghan-control_plane-v1alpha1-Intent)
@@ -243,6 +245,39 @@ InsufficientScopes provides further details on unauthorized errors.
 
 
 
+<a name="yaghan-control_plane-v1alpha1-EgressPolicy"></a>
+
+### EgressPolicy
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| allow | [EgressTargets](#yaghan-control_plane-v1alpha1-EgressTargets) |  |  |
+| deny | [EgressTargets](#yaghan-control_plane-v1alpha1-EgressTargets) |  |  |
+
+
+
+
+
+
+<a name="yaghan-control_plane-v1alpha1-EgressTargets"></a>
+
+### EgressTargets
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| ip_addresses | [string](#string) | repeated |  |
+| cidr_blocks | [string](#string) | repeated |  |
+| domain_names | [string](#string) | repeated |  |
+
+
+
+
+
+
 <a name="yaghan-control_plane-v1alpha1-GetSandboxRequest"></a>
 
 ### GetSandboxRequest
@@ -428,6 +463,7 @@ Response message containing a page of sandboxes.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | metadata | [SandboxMeta](#yaghan-control_plane-v1alpha1-SandboxMeta) |  |  |
+| egress_policy | [EgressPolicy](#yaghan-control_plane-v1alpha1-EgressPolicy) |  |  |
 | resources | [Resources](#yaghan-control_plane-v1alpha1-Resources) |  | Sandbox.resources is required on the wire only for image-sourced sandboxes; snapshot-sourced sandboxes inherit their resources from the snapshot record and MUST leave this field unset on CreateSandbox. The api-server validates the conditional rule and stamps the inherited values before persistence — so every persisted row carries a populated Resources regardless of how it was created. |
 | node | [NodeRef](#yaghan-control_plane-v1alpha1-NodeRef) |  |  |
 | intent | [Intent](#yaghan-control_plane-v1alpha1-Intent) |  |  |

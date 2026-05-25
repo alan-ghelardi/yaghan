@@ -10,21 +10,23 @@ import "google/rpc/status.proto";
 message Sandbox {
   SandboxMeta metadata = 1 [(buf.validate.field).required = true];
 
+  EgressPolicy egress_policy = 2;
+
   // Sandbox.resources is required on the wire only for image-sourced
   // sandboxes; snapshot-sourced sandboxes inherit their resources from
   // the snapshot record and MUST leave this field unset on
   // CreateSandbox. The api-server validates the conditional rule and
   // stamps the inherited values before persistence — so every persisted
   // row carries a populated Resources regardless of how it was created.
-  Resources resources = 2;
+  Resources resources = 3;
 
-  NodeRef node = 3;
+  NodeRef node = 4;
 
-  Intent intent = 4;
+  Intent intent = 5;
 
-  SnapshotOutput last_snapshot = 5;
+  SnapshotOutput last_snapshot = 6;
 
-  SandboxStatus status = 6;
+  SandboxStatus status = 7;
 }
 
 message SandboxMeta {
@@ -65,6 +67,39 @@ message SandboxSource {
   }
 }
 
+message EgressPolicy {
+  oneof rules {
+    EgressTargets allow = 1;
+    EgressTargets deny = 2;
+  }
+}
+
+message EgressTargets {
+  repeated string ip_addresses = 1 [(buf.validate.field).cel = {
+    id: "ip_addresses.valid_ip"
+    message: "all ip_addresses entries must be valid IP addresses"
+    expression: "this.all(ip, ip.isIp())"
+  }];
+
+  repeated string cidr_blocks = 2 [(buf.validate.field).cel = {
+    id: "cidr_blocks.valid_cidr"
+    message: "all cidr_blocks entries must be valid CIDR blocks"
+    expression: "this.all(cidr, cidr.isIpPrefix())"
+  }];
+
+  repeated string domain_names = 3 [(buf.validate.field).repeated = {
+    items: {
+      cel: [
+        {
+          id: "domain_name.syntax"
+          message: "must be a hostname like example.net or a wildcard like *.example.net"
+          expression: "this.matches('^((\\\\*\\\\.)?[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\\\\.)+[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?$')"
+        }
+      ]
+    }
+  }];
+}
+
 message Resources {
   uint32 vcpu_count = 1 [
     (buf.validate.field).uint32.gte = 1,
@@ -97,15 +132,8 @@ message NodeRef {
 }
 
 message Intent {
-  // Field 2 previously carried `Resources resources` — a live-resize
-  // intent. Firecracker's PATCH /machine-config is pre-boot only, so
-  // in-place vCPU/memory updates are not supported and the field has
-  // been removed. The number is reserved so a future reuse cannot
-  // accidentally collide on the wire with stale clients.
-  reserved 2;
-
   SandboxStatus.Phase phase = 1;
-  StartSnapshotInput start_snapshot = 3;
+  StartSnapshotInput start_snapshot = 2;
 }
 
 message StartSnapshotInput {

@@ -25,13 +25,5 @@ plugins:
     opt: [paths=source_relative]
   - remote: buf.build/grpc-ecosystem/openapiv2:v2.22.0
     out: gen
-  - remote: buf.build/bufbuild/es:v2.11.0
-    out: gen
-    opt: target=js+dts
-    include_imports: true
-  - remote: buf.build/protocolbuffers/java:v33.2
-    out: gen
-  - remote: buf.build/grpc/java:v1.78.0
-    out: gen
 inputs:
   - directory: proto

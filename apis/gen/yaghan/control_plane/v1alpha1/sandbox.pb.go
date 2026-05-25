@@ -92,7 +92,7 @@ func (x SandboxStatus_Phase) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use SandboxStatus_Phase.Descriptor instead.
 func (SandboxStatus_Phase) EnumDescriptor() ([]byte, []int) {
-	return file_yaghan_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{8, 0}
+	return file_yaghan_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{10, 0}
 }
 
 // Controls how results are ordered by last modification time.
@@ -144,23 +144,24 @@ func (x ListSandboxesRequest_Order) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ListSandboxesRequest_Order.Descriptor instead.
 func (ListSandboxesRequest_Order) EnumDescriptor() ([]byte, []int) {
-	return file_yaghan_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{13, 0}
+	return file_yaghan_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{15, 0}
 }
 
 type Sandbox struct {
-	state    protoimpl.MessageState `protogen:"open.v1"`
-	Metadata *SandboxMeta           `protobuf:"bytes,1,opt,name=metadata,proto3" json:"metadata,omitempty"`
+	state        protoimpl.MessageState `protogen:"open.v1"`
+	Metadata     *SandboxMeta           `protobuf:"bytes,1,opt,name=metadata,proto3" json:"metadata,omitempty"`
+	EgressPolicy *EgressPolicy          `protobuf:"bytes,2,opt,name=egress_policy,json=egressPolicy,proto3" json:"egress_policy,omitempty"`
 	// Sandbox.resources is required on the wire only for image-sourced
 	// sandboxes; snapshot-sourced sandboxes inherit their resources from
 	// the snapshot record and MUST leave this field unset on
 	// CreateSandbox. The api-server validates the conditional rule and
 	// stamps the inherited values before persistence — so every persisted
 	// row carries a populated Resources regardless of how it was created.
-	Resources     *Resources      `protobuf:"bytes,2,opt,name=resources,proto3" json:"resources,omitempty"`
-	Node          *NodeRef        `protobuf:"bytes,3,opt,name=node,proto3" json:"node,omitempty"`
-	Intent        *Intent         `protobuf:"bytes,4,opt,name=intent,proto3" json:"intent,omitempty"`
-	LastSnapshot  *SnapshotOutput `protobuf:"bytes,5,opt,name=last_snapshot,json=lastSnapshot,proto3" json:"last_snapshot,omitempty"`
-	Status        *SandboxStatus  `protobuf:"bytes,6,opt,name=status,proto3" json:"status,omitempty"`
+	Resources     *Resources      `protobuf:"bytes,3,opt,name=resources,proto3" json:"resources,omitempty"`
+	Node          *NodeRef        `protobuf:"bytes,4,opt,name=node,proto3" json:"node,omitempty"`
+	Intent        *Intent         `protobuf:"bytes,5,opt,name=intent,proto3" json:"intent,omitempty"`
+	LastSnapshot  *SnapshotOutput `protobuf:"bytes,6,opt,name=last_snapshot,json=lastSnapshot,proto3" json:"last_snapshot,omitempty"`
+	Status        *SandboxStatus  `protobuf:"bytes,7,opt,name=status,proto3" json:"status,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -198,6 +199,13 @@ func (*Sandbox) Descriptor() ([]byte, []int) {
 func (x *Sandbox) GetMetadata() *SandboxMeta {
 	if x != nil {
 		return x.Metadata
+	}
+	return nil
+}
+
+func (x *Sandbox) GetEgressPolicy() *EgressPolicy {
+	if x != nil {
+		return x.EgressPolicy
 	}
 	return nil
 }
@@ -416,6 +424,148 @@ func (*SandboxSource_SnapshotId) isSandboxSource_Reference() {}
 
 func (*SandboxSource_ImageId) isSandboxSource_Reference() {}
 
+type EgressPolicy struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Types that are valid to be assigned to Rules:
+	//
+	//	*EgressPolicy_Allow
+	//	*EgressPolicy_Deny
+	Rules         isEgressPolicy_Rules `protobuf_oneof:"rules"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *EgressPolicy) Reset() {
+	*x = EgressPolicy{}
+	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *EgressPolicy) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EgressPolicy) ProtoMessage() {}
+
+func (x *EgressPolicy) ProtoReflect() protoreflect.Message {
+	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use EgressPolicy.ProtoReflect.Descriptor instead.
+func (*EgressPolicy) Descriptor() ([]byte, []int) {
+	return file_yaghan_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *EgressPolicy) GetRules() isEgressPolicy_Rules {
+	if x != nil {
+		return x.Rules
+	}
+	return nil
+}
+
+func (x *EgressPolicy) GetAllow() *EgressTargets {
+	if x != nil {
+		if x, ok := x.Rules.(*EgressPolicy_Allow); ok {
+			return x.Allow
+		}
+	}
+	return nil
+}
+
+func (x *EgressPolicy) GetDeny() *EgressTargets {
+	if x != nil {
+		if x, ok := x.Rules.(*EgressPolicy_Deny); ok {
+			return x.Deny
+		}
+	}
+	return nil
+}
+
+type isEgressPolicy_Rules interface {
+	isEgressPolicy_Rules()
+}
+
+type EgressPolicy_Allow struct {
+	Allow *EgressTargets `protobuf:"bytes,1,opt,name=allow,proto3,oneof"`
+}
+
+type EgressPolicy_Deny struct {
+	Deny *EgressTargets `protobuf:"bytes,2,opt,name=deny,proto3,oneof"`
+}
+
+func (*EgressPolicy_Allow) isEgressPolicy_Rules() {}
+
+func (*EgressPolicy_Deny) isEgressPolicy_Rules() {}
+
+type EgressTargets struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	IpAddresses   []string               `protobuf:"bytes,1,rep,name=ip_addresses,json=ipAddresses,proto3" json:"ip_addresses,omitempty"`
+	CidrBlocks    []string               `protobuf:"bytes,2,rep,name=cidr_blocks,json=cidrBlocks,proto3" json:"cidr_blocks,omitempty"`
+	DomainNames   []string               `protobuf:"bytes,3,rep,name=domain_names,json=domainNames,proto3" json:"domain_names,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *EgressTargets) Reset() {
+	*x = EgressTargets{}
+	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *EgressTargets) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EgressTargets) ProtoMessage() {}
+
+func (x *EgressTargets) ProtoReflect() protoreflect.Message {
+	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use EgressTargets.ProtoReflect.Descriptor instead.
+func (*EgressTargets) Descriptor() ([]byte, []int) {
+	return file_yaghan_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *EgressTargets) GetIpAddresses() []string {
+	if x != nil {
+		return x.IpAddresses
+	}
+	return nil
+}
+
+func (x *EgressTargets) GetCidrBlocks() []string {
+	if x != nil {
+		return x.CidrBlocks
+	}
+	return nil
+}
+
+func (x *EgressTargets) GetDomainNames() []string {
+	if x != nil {
+		return x.DomainNames
+	}
+	return nil
+}
+
 type Resources struct {
 	state     protoimpl.MessageState `protogen:"open.v1"`
 	VcpuCount uint32                 `protobuf:"varint,1,opt,name=vcpu_count,json=vcpuCount,proto3" json:"vcpu_count,omitempty"`
@@ -436,7 +586,7 @@ type Resources struct {
 
 func (x *Resources) Reset() {
 	*x = Resources{}
-	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[3]
+	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -448,7 +598,7 @@ func (x *Resources) String() string {
 func (*Resources) ProtoMessage() {}
 
 func (x *Resources) ProtoReflect() protoreflect.Message {
-	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[3]
+	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -461,7 +611,7 @@ func (x *Resources) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Resources.ProtoReflect.Descriptor instead.
 func (*Resources) Descriptor() ([]byte, []int) {
-	return file_yaghan_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{3}
+	return file_yaghan_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *Resources) GetVcpuCount() uint32 {
@@ -494,7 +644,7 @@ type NodeRef struct {
 
 func (x *NodeRef) Reset() {
 	*x = NodeRef{}
-	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[4]
+	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -506,7 +656,7 @@ func (x *NodeRef) String() string {
 func (*NodeRef) ProtoMessage() {}
 
 func (x *NodeRef) ProtoReflect() protoreflect.Message {
-	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[4]
+	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -519,7 +669,7 @@ func (x *NodeRef) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use NodeRef.ProtoReflect.Descriptor instead.
 func (*NodeRef) Descriptor() ([]byte, []int) {
-	return file_yaghan_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{4}
+	return file_yaghan_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *NodeRef) GetId() string {
@@ -532,14 +682,14 @@ func (x *NodeRef) GetId() string {
 type Intent struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Phase         SandboxStatus_Phase    `protobuf:"varint,1,opt,name=phase,proto3,enum=yaghan.control_plane.v1alpha1.SandboxStatus_Phase" json:"phase,omitempty"`
-	StartSnapshot *StartSnapshotInput    `protobuf:"bytes,3,opt,name=start_snapshot,json=startSnapshot,proto3" json:"start_snapshot,omitempty"`
+	StartSnapshot *StartSnapshotInput    `protobuf:"bytes,2,opt,name=start_snapshot,json=startSnapshot,proto3" json:"start_snapshot,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Intent) Reset() {
 	*x = Intent{}
-	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[5]
+	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -551,7 +701,7 @@ func (x *Intent) String() string {
 func (*Intent) ProtoMessage() {}
 
 func (x *Intent) ProtoReflect() protoreflect.Message {
-	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[5]
+	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -564,7 +714,7 @@ func (x *Intent) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Intent.ProtoReflect.Descriptor instead.
 func (*Intent) Descriptor() ([]byte, []int) {
-	return file_yaghan_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{5}
+	return file_yaghan_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *Intent) GetPhase() SandboxStatus_Phase {
@@ -590,7 +740,7 @@ type StartSnapshotInput struct {
 
 func (x *StartSnapshotInput) Reset() {
 	*x = StartSnapshotInput{}
-	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[6]
+	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -602,7 +752,7 @@ func (x *StartSnapshotInput) String() string {
 func (*StartSnapshotInput) ProtoMessage() {}
 
 func (x *StartSnapshotInput) ProtoReflect() protoreflect.Message {
-	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[6]
+	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -615,7 +765,7 @@ func (x *StartSnapshotInput) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StartSnapshotInput.ProtoReflect.Descriptor instead.
 func (*StartSnapshotInput) Descriptor() ([]byte, []int) {
-	return file_yaghan_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{6}
+	return file_yaghan_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *StartSnapshotInput) GetDescription() string {
@@ -636,7 +786,7 @@ type SnapshotOutput struct {
 
 func (x *SnapshotOutput) Reset() {
 	*x = SnapshotOutput{}
-	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[7]
+	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -648,7 +798,7 @@ func (x *SnapshotOutput) String() string {
 func (*SnapshotOutput) ProtoMessage() {}
 
 func (x *SnapshotOutput) ProtoReflect() protoreflect.Message {
-	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[7]
+	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -661,7 +811,7 @@ func (x *SnapshotOutput) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SnapshotOutput.ProtoReflect.Descriptor instead.
 func (*SnapshotOutput) Descriptor() ([]byte, []int) {
-	return file_yaghan_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{7}
+	return file_yaghan_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *SnapshotOutput) GetSnapshotId() string {
@@ -695,7 +845,7 @@ type SandboxStatus struct {
 
 func (x *SandboxStatus) Reset() {
 	*x = SandboxStatus{}
-	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[8]
+	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -707,7 +857,7 @@ func (x *SandboxStatus) String() string {
 func (*SandboxStatus) ProtoMessage() {}
 
 func (x *SandboxStatus) ProtoReflect() protoreflect.Message {
-	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[8]
+	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -720,7 +870,7 @@ func (x *SandboxStatus) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SandboxStatus.ProtoReflect.Descriptor instead.
 func (*SandboxStatus) Descriptor() ([]byte, []int) {
-	return file_yaghan_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{8}
+	return file_yaghan_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *SandboxStatus) GetPhase() SandboxStatus_Phase {
@@ -746,7 +896,7 @@ type CreateSandboxRequest struct {
 
 func (x *CreateSandboxRequest) Reset() {
 	*x = CreateSandboxRequest{}
-	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[9]
+	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -758,7 +908,7 @@ func (x *CreateSandboxRequest) String() string {
 func (*CreateSandboxRequest) ProtoMessage() {}
 
 func (x *CreateSandboxRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[9]
+	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -771,7 +921,7 @@ func (x *CreateSandboxRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateSandboxRequest.ProtoReflect.Descriptor instead.
 func (*CreateSandboxRequest) Descriptor() ([]byte, []int) {
-	return file_yaghan_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{9}
+	return file_yaghan_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *CreateSandboxRequest) GetSandbox() *Sandbox {
@@ -790,7 +940,7 @@ type CreateSandboxResponse struct {
 
 func (x *CreateSandboxResponse) Reset() {
 	*x = CreateSandboxResponse{}
-	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[10]
+	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -802,7 +952,7 @@ func (x *CreateSandboxResponse) String() string {
 func (*CreateSandboxResponse) ProtoMessage() {}
 
 func (x *CreateSandboxResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[10]
+	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -815,7 +965,7 @@ func (x *CreateSandboxResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateSandboxResponse.ProtoReflect.Descriptor instead.
 func (*CreateSandboxResponse) Descriptor() ([]byte, []int) {
-	return file_yaghan_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{10}
+	return file_yaghan_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *CreateSandboxResponse) GetSandbox() *Sandbox {
@@ -834,7 +984,7 @@ type GetSandboxRequest struct {
 
 func (x *GetSandboxRequest) Reset() {
 	*x = GetSandboxRequest{}
-	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[11]
+	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -846,7 +996,7 @@ func (x *GetSandboxRequest) String() string {
 func (*GetSandboxRequest) ProtoMessage() {}
 
 func (x *GetSandboxRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[11]
+	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -859,7 +1009,7 @@ func (x *GetSandboxRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSandboxRequest.ProtoReflect.Descriptor instead.
 func (*GetSandboxRequest) Descriptor() ([]byte, []int) {
-	return file_yaghan_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{11}
+	return file_yaghan_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *GetSandboxRequest) GetSandboxId() string {
@@ -878,7 +1028,7 @@ type GetSandboxResponse struct {
 
 func (x *GetSandboxResponse) Reset() {
 	*x = GetSandboxResponse{}
-	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[12]
+	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -890,7 +1040,7 @@ func (x *GetSandboxResponse) String() string {
 func (*GetSandboxResponse) ProtoMessage() {}
 
 func (x *GetSandboxResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[12]
+	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -903,7 +1053,7 @@ func (x *GetSandboxResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSandboxResponse.ProtoReflect.Descriptor instead.
 func (*GetSandboxResponse) Descriptor() ([]byte, []int) {
-	return file_yaghan_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{12}
+	return file_yaghan_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *GetSandboxResponse) GetSandbox() *Sandbox {
@@ -946,7 +1096,7 @@ type ListSandboxesRequest struct {
 
 func (x *ListSandboxesRequest) Reset() {
 	*x = ListSandboxesRequest{}
-	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[13]
+	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -958,7 +1108,7 @@ func (x *ListSandboxesRequest) String() string {
 func (*ListSandboxesRequest) ProtoMessage() {}
 
 func (x *ListSandboxesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[13]
+	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -971,7 +1121,7 @@ func (x *ListSandboxesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSandboxesRequest.ProtoReflect.Descriptor instead.
 func (*ListSandboxesRequest) Descriptor() ([]byte, []int) {
-	return file_yaghan_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{13}
+	return file_yaghan_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *ListSandboxesRequest) GetNamespace() string {
@@ -1030,7 +1180,7 @@ type ListSandboxesResponse struct {
 
 func (x *ListSandboxesResponse) Reset() {
 	*x = ListSandboxesResponse{}
-	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[14]
+	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1042,7 +1192,7 @@ func (x *ListSandboxesResponse) String() string {
 func (*ListSandboxesResponse) ProtoMessage() {}
 
 func (x *ListSandboxesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[14]
+	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1055,7 +1205,7 @@ func (x *ListSandboxesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSandboxesResponse.ProtoReflect.Descriptor instead.
 func (*ListSandboxesResponse) Descriptor() ([]byte, []int) {
-	return file_yaghan_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{14}
+	return file_yaghan_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *ListSandboxesResponse) GetSandboxes() []*Sandbox {
@@ -1082,7 +1232,7 @@ type PauseSandboxRequest struct {
 
 func (x *PauseSandboxRequest) Reset() {
 	*x = PauseSandboxRequest{}
-	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[15]
+	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1094,7 +1244,7 @@ func (x *PauseSandboxRequest) String() string {
 func (*PauseSandboxRequest) ProtoMessage() {}
 
 func (x *PauseSandboxRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[15]
+	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1107,7 +1257,7 @@ func (x *PauseSandboxRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PauseSandboxRequest.ProtoReflect.Descriptor instead.
 func (*PauseSandboxRequest) Descriptor() ([]byte, []int) {
-	return file_yaghan_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{15}
+	return file_yaghan_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *PauseSandboxRequest) GetSandboxId() string {
@@ -1133,7 +1283,7 @@ type PauseSandboxResponse struct {
 
 func (x *PauseSandboxResponse) Reset() {
 	*x = PauseSandboxResponse{}
-	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[16]
+	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1145,7 +1295,7 @@ func (x *PauseSandboxResponse) String() string {
 func (*PauseSandboxResponse) ProtoMessage() {}
 
 func (x *PauseSandboxResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[16]
+	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1158,7 +1308,7 @@ func (x *PauseSandboxResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PauseSandboxResponse.ProtoReflect.Descriptor instead.
 func (*PauseSandboxResponse) Descriptor() ([]byte, []int) {
-	return file_yaghan_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{16}
+	return file_yaghan_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *PauseSandboxResponse) GetSandbox() *Sandbox {
@@ -1178,7 +1328,7 @@ type ResumeSandboxRequest struct {
 
 func (x *ResumeSandboxRequest) Reset() {
 	*x = ResumeSandboxRequest{}
-	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[17]
+	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1190,7 +1340,7 @@ func (x *ResumeSandboxRequest) String() string {
 func (*ResumeSandboxRequest) ProtoMessage() {}
 
 func (x *ResumeSandboxRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[17]
+	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1203,7 +1353,7 @@ func (x *ResumeSandboxRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResumeSandboxRequest.ProtoReflect.Descriptor instead.
 func (*ResumeSandboxRequest) Descriptor() ([]byte, []int) {
-	return file_yaghan_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{17}
+	return file_yaghan_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *ResumeSandboxRequest) GetSandboxId() string {
@@ -1229,7 +1379,7 @@ type ResumeSandboxResponse struct {
 
 func (x *ResumeSandboxResponse) Reset() {
 	*x = ResumeSandboxResponse{}
-	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[18]
+	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1241,7 +1391,7 @@ func (x *ResumeSandboxResponse) String() string {
 func (*ResumeSandboxResponse) ProtoMessage() {}
 
 func (x *ResumeSandboxResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[18]
+	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1254,7 +1404,7 @@ func (x *ResumeSandboxResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResumeSandboxResponse.ProtoReflect.Descriptor instead.
 func (*ResumeSandboxResponse) Descriptor() ([]byte, []int) {
-	return file_yaghan_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{18}
+	return file_yaghan_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *ResumeSandboxResponse) GetSandbox() *Sandbox {
@@ -1274,7 +1424,7 @@ type DeleteSandboxRequest struct {
 
 func (x *DeleteSandboxRequest) Reset() {
 	*x = DeleteSandboxRequest{}
-	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[19]
+	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1286,7 +1436,7 @@ func (x *DeleteSandboxRequest) String() string {
 func (*DeleteSandboxRequest) ProtoMessage() {}
 
 func (x *DeleteSandboxRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[19]
+	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1299,7 +1449,7 @@ func (x *DeleteSandboxRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteSandboxRequest.ProtoReflect.Descriptor instead.
 func (*DeleteSandboxRequest) Descriptor() ([]byte, []int) {
-	return file_yaghan_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{19}
+	return file_yaghan_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *DeleteSandboxRequest) GetSandboxId() string {
@@ -1325,7 +1475,7 @@ type DeleteSandboxResponse struct {
 
 func (x *DeleteSandboxResponse) Reset() {
 	*x = DeleteSandboxResponse{}
-	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[20]
+	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1337,7 +1487,7 @@ func (x *DeleteSandboxResponse) String() string {
 func (*DeleteSandboxResponse) ProtoMessage() {}
 
 func (x *DeleteSandboxResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[20]
+	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1350,7 +1500,7 @@ func (x *DeleteSandboxResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteSandboxResponse.ProtoReflect.Descriptor instead.
 func (*DeleteSandboxResponse) Descriptor() ([]byte, []int) {
-	return file_yaghan_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{20}
+	return file_yaghan_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *DeleteSandboxResponse) GetSandbox() *Sandbox {
@@ -1371,7 +1521,7 @@ type StartSnapshotRequest struct {
 
 func (x *StartSnapshotRequest) Reset() {
 	*x = StartSnapshotRequest{}
-	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[21]
+	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1383,7 +1533,7 @@ func (x *StartSnapshotRequest) String() string {
 func (*StartSnapshotRequest) ProtoMessage() {}
 
 func (x *StartSnapshotRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[21]
+	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1396,7 +1546,7 @@ func (x *StartSnapshotRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StartSnapshotRequest.ProtoReflect.Descriptor instead.
 func (*StartSnapshotRequest) Descriptor() ([]byte, []int) {
-	return file_yaghan_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{21}
+	return file_yaghan_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *StartSnapshotRequest) GetSandboxId() string {
@@ -1429,7 +1579,7 @@ type StartSnapshotResponse struct {
 
 func (x *StartSnapshotResponse) Reset() {
 	*x = StartSnapshotResponse{}
-	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[22]
+	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1441,7 +1591,7 @@ func (x *StartSnapshotResponse) String() string {
 func (*StartSnapshotResponse) ProtoMessage() {}
 
 func (x *StartSnapshotResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[22]
+	mi := &file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1454,7 +1604,7 @@ func (x *StartSnapshotResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StartSnapshotResponse.ProtoReflect.Descriptor instead.
 func (*StartSnapshotResponse) Descriptor() ([]byte, []int) {
-	return file_yaghan_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{22}
+	return file_yaghan_control_plane_v1alpha1_sandbox_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *StartSnapshotResponse) GetSandbox() *Sandbox {
@@ -1468,14 +1618,15 @@ var File_yaghan_control_plane_v1alpha1_sandbox_proto protoreflect.FileDescriptor
 
 const file_yaghan_control_plane_v1alpha1_sandbox_proto_rawDesc = "" +
 	"\n" +
-	"+yaghan/control_plane/v1alpha1/sandbox.proto\x12\x1dyaghan.control_plane.v1alpha1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x17google/rpc/status.proto\"\xb6\x03\n" +
+	"+yaghan/control_plane/v1alpha1/sandbox.proto\x12\x1dyaghan.control_plane.v1alpha1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x17google/rpc/status.proto\"\x88\x04\n" +
 	"\aSandbox\x12N\n" +
-	"\bmetadata\x18\x01 \x01(\v2*.yaghan.control_plane.v1alpha1.SandboxMetaB\x06\xbaH\x03\xc8\x01\x01R\bmetadata\x12F\n" +
-	"\tresources\x18\x02 \x01(\v2(.yaghan.control_plane.v1alpha1.ResourcesR\tresources\x12:\n" +
-	"\x04node\x18\x03 \x01(\v2&.yaghan.control_plane.v1alpha1.NodeRefR\x04node\x12=\n" +
-	"\x06intent\x18\x04 \x01(\v2%.yaghan.control_plane.v1alpha1.IntentR\x06intent\x12R\n" +
-	"\rlast_snapshot\x18\x05 \x01(\v2-.yaghan.control_plane.v1alpha1.SnapshotOutputR\flastSnapshot\x12D\n" +
-	"\x06status\x18\x06 \x01(\v2,.yaghan.control_plane.v1alpha1.SandboxStatusR\x06status\"\xc6\x04\n" +
+	"\bmetadata\x18\x01 \x01(\v2*.yaghan.control_plane.v1alpha1.SandboxMetaB\x06\xbaH\x03\xc8\x01\x01R\bmetadata\x12P\n" +
+	"\regress_policy\x18\x02 \x01(\v2+.yaghan.control_plane.v1alpha1.EgressPolicyR\fegressPolicy\x12F\n" +
+	"\tresources\x18\x03 \x01(\v2(.yaghan.control_plane.v1alpha1.ResourcesR\tresources\x12:\n" +
+	"\x04node\x18\x04 \x01(\v2&.yaghan.control_plane.v1alpha1.NodeRefR\x04node\x12=\n" +
+	"\x06intent\x18\x05 \x01(\v2%.yaghan.control_plane.v1alpha1.IntentR\x06intent\x12R\n" +
+	"\rlast_snapshot\x18\x06 \x01(\v2-.yaghan.control_plane.v1alpha1.SnapshotOutputR\flastSnapshot\x12D\n" +
+	"\x06status\x18\a \x01(\v2,.yaghan.control_plane.v1alpha1.SandboxStatusR\x06status\"\xc6\x04\n" +
 	"\vSandboxMeta\x12\x16\n" +
 	"\x02id\x18\x01 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x02id\x12F\n" +
 	"\tnamespace\x18\x02 \x01(\tB(\xbaH%\xc8\x01\x01r 2\x1e^[a-z][a-z0-9-]{0,61}[a-z0-9]$R\tnamespace\x12D\n" +
@@ -1492,7 +1643,19 @@ const file_yaghan_control_plane_v1alpha1_sandbox_proto_rawDesc = "" +
 	"\vsnapshot_id\x18\x01 \x01(\tH\x00R\n" +
 	"snapshotId\x12\x1b\n" +
 	"\bimage_id\x18\x02 \x01(\tH\x00R\aimageIdB\v\n" +
-	"\treference\"\x9d\x02\n" +
+	"\treference\"\xa1\x01\n" +
+	"\fEgressPolicy\x12D\n" +
+	"\x05allow\x18\x01 \x01(\v2,.yaghan.control_plane.v1alpha1.EgressTargetsH\x00R\x05allow\x12B\n" +
+	"\x04deny\x18\x02 \x01(\v2,.yaghan.control_plane.v1alpha1.EgressTargetsH\x00R\x04denyB\a\n" +
+	"\x05rules\"\xc5\x04\n" +
+	"\rEgressTargets\x12\x8e\x01\n" +
+	"\fip_addresses\x18\x01 \x03(\tBk\xbaHh\xba\x01e\n" +
+	"\x15ip_addresses.valid_ip\x123all ip_addresses entries must be valid IP addresses\x1a\x17this.all(ip, ip.isIp())R\vipAddresses\x12\x95\x01\n" +
+	"\vcidr_blocks\x18\x02 \x03(\tBt\xbaHq\xba\x01n\n" +
+	"\x16cidr_blocks.valid_cidr\x121all cidr_blocks entries must be valid CIDR blocks\x1a!this.all(cidr, cidr.isIpPrefix())R\n" +
+	"cidrBlocks\x12\x8a\x02\n" +
+	"\fdomain_names\x18\x03 \x03(\tB\xe6\x01\xbaH\xe2\x01\x92\x01\xde\x01\"\xdb\x01\xba\x01\xd7\x01\n" +
+	"\x12domain_name.syntax\x12Dmust be a hostname like example.net or a wildcard like *.example.net\x1a{this.matches('^((\\\\*\\\\.)?[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\\\\.)+[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?$')R\vdomainNames\"\x9d\x02\n" +
 	"\tResources\x12(\n" +
 	"\n" +
 	"vcpu_count\x18\x01 \x01(\rB\t\xbaH\x06*\x04\x18 (\x01R\tvcpuCount\x12+\n" +
@@ -1501,10 +1664,10 @@ const file_yaghan_control_plane_v1alpha1_sandbox_proto_rawDesc = "" +
 	"\bdisk_mib\x18\x03 \x01(\x04B\x9c\x01\xbaH\x98\x01\xba\x01\x94\x01\n" +
 	"\x18resources.disk_mib.range\x12Fdisk_mib must be 0 (use daemon default) or between 256 and 1048576 MiB\x1a0this == 0u || (this >= 256u && this <= 1048576u)R\adiskMib\"!\n" +
 	"\aNodeRef\x12\x16\n" +
-	"\x02id\x18\x01 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x02id\"\xb2\x01\n" +
+	"\x02id\x18\x01 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x02id\"\xac\x01\n" +
 	"\x06Intent\x12H\n" +
 	"\x05phase\x18\x01 \x01(\x0e22.yaghan.control_plane.v1alpha1.SandboxStatus.PhaseR\x05phase\x12X\n" +
-	"\x0estart_snapshot\x18\x03 \x01(\v21.yaghan.control_plane.v1alpha1.StartSnapshotInputR\rstartSnapshotJ\x04\b\x02\x10\x03\"@\n" +
+	"\x0estart_snapshot\x18\x02 \x01(\v21.yaghan.control_plane.v1alpha1.StartSnapshotInputR\rstartSnapshot\"@\n" +
 	"\x12StartSnapshotInput\x12*\n" +
 	"\vdescription\x18\x01 \x01(\tB\b\xbaH\x05r\x03\x18\x80\x02R\vdescription\"\x96\x01\n" +
 	"\x0eSnapshotOutput\x12\x1f\n" +
@@ -1603,82 +1766,87 @@ func file_yaghan_control_plane_v1alpha1_sandbox_proto_rawDescGZIP() []byte {
 }
 
 var file_yaghan_control_plane_v1alpha1_sandbox_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes = make([]protoimpl.MessageInfo, 24)
+var file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes = make([]protoimpl.MessageInfo, 26)
 var file_yaghan_control_plane_v1alpha1_sandbox_proto_goTypes = []any{
 	(SandboxStatus_Phase)(0),        // 0: yaghan.control_plane.v1alpha1.SandboxStatus.Phase
 	(ListSandboxesRequest_Order)(0), // 1: yaghan.control_plane.v1alpha1.ListSandboxesRequest.Order
 	(*Sandbox)(nil),                 // 2: yaghan.control_plane.v1alpha1.Sandbox
 	(*SandboxMeta)(nil),             // 3: yaghan.control_plane.v1alpha1.SandboxMeta
 	(*SandboxSource)(nil),           // 4: yaghan.control_plane.v1alpha1.SandboxSource
-	(*Resources)(nil),               // 5: yaghan.control_plane.v1alpha1.Resources
-	(*NodeRef)(nil),                 // 6: yaghan.control_plane.v1alpha1.NodeRef
-	(*Intent)(nil),                  // 7: yaghan.control_plane.v1alpha1.Intent
-	(*StartSnapshotInput)(nil),      // 8: yaghan.control_plane.v1alpha1.StartSnapshotInput
-	(*SnapshotOutput)(nil),          // 9: yaghan.control_plane.v1alpha1.SnapshotOutput
-	(*SandboxStatus)(nil),           // 10: yaghan.control_plane.v1alpha1.SandboxStatus
-	(*CreateSandboxRequest)(nil),    // 11: yaghan.control_plane.v1alpha1.CreateSandboxRequest
-	(*CreateSandboxResponse)(nil),   // 12: yaghan.control_plane.v1alpha1.CreateSandboxResponse
-	(*GetSandboxRequest)(nil),       // 13: yaghan.control_plane.v1alpha1.GetSandboxRequest
-	(*GetSandboxResponse)(nil),      // 14: yaghan.control_plane.v1alpha1.GetSandboxResponse
-	(*ListSandboxesRequest)(nil),    // 15: yaghan.control_plane.v1alpha1.ListSandboxesRequest
-	(*ListSandboxesResponse)(nil),   // 16: yaghan.control_plane.v1alpha1.ListSandboxesResponse
-	(*PauseSandboxRequest)(nil),     // 17: yaghan.control_plane.v1alpha1.PauseSandboxRequest
-	(*PauseSandboxResponse)(nil),    // 18: yaghan.control_plane.v1alpha1.PauseSandboxResponse
-	(*ResumeSandboxRequest)(nil),    // 19: yaghan.control_plane.v1alpha1.ResumeSandboxRequest
-	(*ResumeSandboxResponse)(nil),   // 20: yaghan.control_plane.v1alpha1.ResumeSandboxResponse
-	(*DeleteSandboxRequest)(nil),    // 21: yaghan.control_plane.v1alpha1.DeleteSandboxRequest
-	(*DeleteSandboxResponse)(nil),   // 22: yaghan.control_plane.v1alpha1.DeleteSandboxResponse
-	(*StartSnapshotRequest)(nil),    // 23: yaghan.control_plane.v1alpha1.StartSnapshotRequest
-	(*StartSnapshotResponse)(nil),   // 24: yaghan.control_plane.v1alpha1.StartSnapshotResponse
-	nil,                             // 25: yaghan.control_plane.v1alpha1.SandboxMeta.LabelsEntry
-	(*timestamppb.Timestamp)(nil),   // 26: google.protobuf.Timestamp
-	(*status.Status)(nil),           // 27: google.rpc.Status
+	(*EgressPolicy)(nil),            // 5: yaghan.control_plane.v1alpha1.EgressPolicy
+	(*EgressTargets)(nil),           // 6: yaghan.control_plane.v1alpha1.EgressTargets
+	(*Resources)(nil),               // 7: yaghan.control_plane.v1alpha1.Resources
+	(*NodeRef)(nil),                 // 8: yaghan.control_plane.v1alpha1.NodeRef
+	(*Intent)(nil),                  // 9: yaghan.control_plane.v1alpha1.Intent
+	(*StartSnapshotInput)(nil),      // 10: yaghan.control_plane.v1alpha1.StartSnapshotInput
+	(*SnapshotOutput)(nil),          // 11: yaghan.control_plane.v1alpha1.SnapshotOutput
+	(*SandboxStatus)(nil),           // 12: yaghan.control_plane.v1alpha1.SandboxStatus
+	(*CreateSandboxRequest)(nil),    // 13: yaghan.control_plane.v1alpha1.CreateSandboxRequest
+	(*CreateSandboxResponse)(nil),   // 14: yaghan.control_plane.v1alpha1.CreateSandboxResponse
+	(*GetSandboxRequest)(nil),       // 15: yaghan.control_plane.v1alpha1.GetSandboxRequest
+	(*GetSandboxResponse)(nil),      // 16: yaghan.control_plane.v1alpha1.GetSandboxResponse
+	(*ListSandboxesRequest)(nil),    // 17: yaghan.control_plane.v1alpha1.ListSandboxesRequest
+	(*ListSandboxesResponse)(nil),   // 18: yaghan.control_plane.v1alpha1.ListSandboxesResponse
+	(*PauseSandboxRequest)(nil),     // 19: yaghan.control_plane.v1alpha1.PauseSandboxRequest
+	(*PauseSandboxResponse)(nil),    // 20: yaghan.control_plane.v1alpha1.PauseSandboxResponse
+	(*ResumeSandboxRequest)(nil),    // 21: yaghan.control_plane.v1alpha1.ResumeSandboxRequest
+	(*ResumeSandboxResponse)(nil),   // 22: yaghan.control_plane.v1alpha1.ResumeSandboxResponse
+	(*DeleteSandboxRequest)(nil),    // 23: yaghan.control_plane.v1alpha1.DeleteSandboxRequest
+	(*DeleteSandboxResponse)(nil),   // 24: yaghan.control_plane.v1alpha1.DeleteSandboxResponse
+	(*StartSnapshotRequest)(nil),    // 25: yaghan.control_plane.v1alpha1.StartSnapshotRequest
+	(*StartSnapshotResponse)(nil),   // 26: yaghan.control_plane.v1alpha1.StartSnapshotResponse
+	nil,                             // 27: yaghan.control_plane.v1alpha1.SandboxMeta.LabelsEntry
+	(*timestamppb.Timestamp)(nil),   // 28: google.protobuf.Timestamp
+	(*status.Status)(nil),           // 29: google.rpc.Status
 }
 var file_yaghan_control_plane_v1alpha1_sandbox_proto_depIdxs = []int32{
 	3,  // 0: yaghan.control_plane.v1alpha1.Sandbox.metadata:type_name -> yaghan.control_plane.v1alpha1.SandboxMeta
-	5,  // 1: yaghan.control_plane.v1alpha1.Sandbox.resources:type_name -> yaghan.control_plane.v1alpha1.Resources
-	6,  // 2: yaghan.control_plane.v1alpha1.Sandbox.node:type_name -> yaghan.control_plane.v1alpha1.NodeRef
-	7,  // 3: yaghan.control_plane.v1alpha1.Sandbox.intent:type_name -> yaghan.control_plane.v1alpha1.Intent
-	9,  // 4: yaghan.control_plane.v1alpha1.Sandbox.last_snapshot:type_name -> yaghan.control_plane.v1alpha1.SnapshotOutput
-	10, // 5: yaghan.control_plane.v1alpha1.Sandbox.status:type_name -> yaghan.control_plane.v1alpha1.SandboxStatus
-	4,  // 6: yaghan.control_plane.v1alpha1.SandboxMeta.source:type_name -> yaghan.control_plane.v1alpha1.SandboxSource
-	26, // 7: yaghan.control_plane.v1alpha1.SandboxMeta.created_at:type_name -> google.protobuf.Timestamp
-	26, // 8: yaghan.control_plane.v1alpha1.SandboxMeta.last_modified_at:type_name -> google.protobuf.Timestamp
-	25, // 9: yaghan.control_plane.v1alpha1.SandboxMeta.labels:type_name -> yaghan.control_plane.v1alpha1.SandboxMeta.LabelsEntry
-	0,  // 10: yaghan.control_plane.v1alpha1.Intent.phase:type_name -> yaghan.control_plane.v1alpha1.SandboxStatus.Phase
-	8,  // 11: yaghan.control_plane.v1alpha1.Intent.start_snapshot:type_name -> yaghan.control_plane.v1alpha1.StartSnapshotInput
-	26, // 12: yaghan.control_plane.v1alpha1.SnapshotOutput.created_at:type_name -> google.protobuf.Timestamp
-	27, // 13: yaghan.control_plane.v1alpha1.SnapshotOutput.error:type_name -> google.rpc.Status
-	0,  // 14: yaghan.control_plane.v1alpha1.SandboxStatus.phase:type_name -> yaghan.control_plane.v1alpha1.SandboxStatus.Phase
-	2,  // 15: yaghan.control_plane.v1alpha1.CreateSandboxRequest.sandbox:type_name -> yaghan.control_plane.v1alpha1.Sandbox
-	2,  // 16: yaghan.control_plane.v1alpha1.CreateSandboxResponse.sandbox:type_name -> yaghan.control_plane.v1alpha1.Sandbox
-	2,  // 17: yaghan.control_plane.v1alpha1.GetSandboxResponse.sandbox:type_name -> yaghan.control_plane.v1alpha1.Sandbox
-	0,  // 18: yaghan.control_plane.v1alpha1.ListSandboxesRequest.status_phase:type_name -> yaghan.control_plane.v1alpha1.SandboxStatus.Phase
-	1,  // 19: yaghan.control_plane.v1alpha1.ListSandboxesRequest.sort_order:type_name -> yaghan.control_plane.v1alpha1.ListSandboxesRequest.Order
-	2,  // 20: yaghan.control_plane.v1alpha1.ListSandboxesResponse.sandboxes:type_name -> yaghan.control_plane.v1alpha1.Sandbox
-	2,  // 21: yaghan.control_plane.v1alpha1.PauseSandboxResponse.sandbox:type_name -> yaghan.control_plane.v1alpha1.Sandbox
-	2,  // 22: yaghan.control_plane.v1alpha1.ResumeSandboxResponse.sandbox:type_name -> yaghan.control_plane.v1alpha1.Sandbox
-	2,  // 23: yaghan.control_plane.v1alpha1.DeleteSandboxResponse.sandbox:type_name -> yaghan.control_plane.v1alpha1.Sandbox
-	2,  // 24: yaghan.control_plane.v1alpha1.StartSnapshotResponse.sandbox:type_name -> yaghan.control_plane.v1alpha1.Sandbox
-	11, // 25: yaghan.control_plane.v1alpha1.SandboxService.CreateSandbox:input_type -> yaghan.control_plane.v1alpha1.CreateSandboxRequest
-	13, // 26: yaghan.control_plane.v1alpha1.SandboxService.GetSandbox:input_type -> yaghan.control_plane.v1alpha1.GetSandboxRequest
-	15, // 27: yaghan.control_plane.v1alpha1.SandboxService.ListSandboxes:input_type -> yaghan.control_plane.v1alpha1.ListSandboxesRequest
-	17, // 28: yaghan.control_plane.v1alpha1.SandboxService.PauseSandbox:input_type -> yaghan.control_plane.v1alpha1.PauseSandboxRequest
-	19, // 29: yaghan.control_plane.v1alpha1.SandboxService.ResumeSandbox:input_type -> yaghan.control_plane.v1alpha1.ResumeSandboxRequest
-	21, // 30: yaghan.control_plane.v1alpha1.SandboxService.DeleteSandbox:input_type -> yaghan.control_plane.v1alpha1.DeleteSandboxRequest
-	23, // 31: yaghan.control_plane.v1alpha1.SandboxService.StartSnapshot:input_type -> yaghan.control_plane.v1alpha1.StartSnapshotRequest
-	12, // 32: yaghan.control_plane.v1alpha1.SandboxService.CreateSandbox:output_type -> yaghan.control_plane.v1alpha1.CreateSandboxResponse
-	14, // 33: yaghan.control_plane.v1alpha1.SandboxService.GetSandbox:output_type -> yaghan.control_plane.v1alpha1.GetSandboxResponse
-	16, // 34: yaghan.control_plane.v1alpha1.SandboxService.ListSandboxes:output_type -> yaghan.control_plane.v1alpha1.ListSandboxesResponse
-	18, // 35: yaghan.control_plane.v1alpha1.SandboxService.PauseSandbox:output_type -> yaghan.control_plane.v1alpha1.PauseSandboxResponse
-	20, // 36: yaghan.control_plane.v1alpha1.SandboxService.ResumeSandbox:output_type -> yaghan.control_plane.v1alpha1.ResumeSandboxResponse
-	22, // 37: yaghan.control_plane.v1alpha1.SandboxService.DeleteSandbox:output_type -> yaghan.control_plane.v1alpha1.DeleteSandboxResponse
-	24, // 38: yaghan.control_plane.v1alpha1.SandboxService.StartSnapshot:output_type -> yaghan.control_plane.v1alpha1.StartSnapshotResponse
-	32, // [32:39] is the sub-list for method output_type
-	25, // [25:32] is the sub-list for method input_type
-	25, // [25:25] is the sub-list for extension type_name
-	25, // [25:25] is the sub-list for extension extendee
-	0,  // [0:25] is the sub-list for field type_name
+	5,  // 1: yaghan.control_plane.v1alpha1.Sandbox.egress_policy:type_name -> yaghan.control_plane.v1alpha1.EgressPolicy
+	7,  // 2: yaghan.control_plane.v1alpha1.Sandbox.resources:type_name -> yaghan.control_plane.v1alpha1.Resources
+	8,  // 3: yaghan.control_plane.v1alpha1.Sandbox.node:type_name -> yaghan.control_plane.v1alpha1.NodeRef
+	9,  // 4: yaghan.control_plane.v1alpha1.Sandbox.intent:type_name -> yaghan.control_plane.v1alpha1.Intent
+	11, // 5: yaghan.control_plane.v1alpha1.Sandbox.last_snapshot:type_name -> yaghan.control_plane.v1alpha1.SnapshotOutput
+	12, // 6: yaghan.control_plane.v1alpha1.Sandbox.status:type_name -> yaghan.control_plane.v1alpha1.SandboxStatus
+	4,  // 7: yaghan.control_plane.v1alpha1.SandboxMeta.source:type_name -> yaghan.control_plane.v1alpha1.SandboxSource
+	28, // 8: yaghan.control_plane.v1alpha1.SandboxMeta.created_at:type_name -> google.protobuf.Timestamp
+	28, // 9: yaghan.control_plane.v1alpha1.SandboxMeta.last_modified_at:type_name -> google.protobuf.Timestamp
+	27, // 10: yaghan.control_plane.v1alpha1.SandboxMeta.labels:type_name -> yaghan.control_plane.v1alpha1.SandboxMeta.LabelsEntry
+	6,  // 11: yaghan.control_plane.v1alpha1.EgressPolicy.allow:type_name -> yaghan.control_plane.v1alpha1.EgressTargets
+	6,  // 12: yaghan.control_plane.v1alpha1.EgressPolicy.deny:type_name -> yaghan.control_plane.v1alpha1.EgressTargets
+	0,  // 13: yaghan.control_plane.v1alpha1.Intent.phase:type_name -> yaghan.control_plane.v1alpha1.SandboxStatus.Phase
+	10, // 14: yaghan.control_plane.v1alpha1.Intent.start_snapshot:type_name -> yaghan.control_plane.v1alpha1.StartSnapshotInput
+	28, // 15: yaghan.control_plane.v1alpha1.SnapshotOutput.created_at:type_name -> google.protobuf.Timestamp
+	29, // 16: yaghan.control_plane.v1alpha1.SnapshotOutput.error:type_name -> google.rpc.Status
+	0,  // 17: yaghan.control_plane.v1alpha1.SandboxStatus.phase:type_name -> yaghan.control_plane.v1alpha1.SandboxStatus.Phase
+	2,  // 18: yaghan.control_plane.v1alpha1.CreateSandboxRequest.sandbox:type_name -> yaghan.control_plane.v1alpha1.Sandbox
+	2,  // 19: yaghan.control_plane.v1alpha1.CreateSandboxResponse.sandbox:type_name -> yaghan.control_plane.v1alpha1.Sandbox
+	2,  // 20: yaghan.control_plane.v1alpha1.GetSandboxResponse.sandbox:type_name -> yaghan.control_plane.v1alpha1.Sandbox
+	0,  // 21: yaghan.control_plane.v1alpha1.ListSandboxesRequest.status_phase:type_name -> yaghan.control_plane.v1alpha1.SandboxStatus.Phase
+	1,  // 22: yaghan.control_plane.v1alpha1.ListSandboxesRequest.sort_order:type_name -> yaghan.control_plane.v1alpha1.ListSandboxesRequest.Order
+	2,  // 23: yaghan.control_plane.v1alpha1.ListSandboxesResponse.sandboxes:type_name -> yaghan.control_plane.v1alpha1.Sandbox
+	2,  // 24: yaghan.control_plane.v1alpha1.PauseSandboxResponse.sandbox:type_name -> yaghan.control_plane.v1alpha1.Sandbox
+	2,  // 25: yaghan.control_plane.v1alpha1.ResumeSandboxResponse.sandbox:type_name -> yaghan.control_plane.v1alpha1.Sandbox
+	2,  // 26: yaghan.control_plane.v1alpha1.DeleteSandboxResponse.sandbox:type_name -> yaghan.control_plane.v1alpha1.Sandbox
+	2,  // 27: yaghan.control_plane.v1alpha1.StartSnapshotResponse.sandbox:type_name -> yaghan.control_plane.v1alpha1.Sandbox
+	13, // 28: yaghan.control_plane.v1alpha1.SandboxService.CreateSandbox:input_type -> yaghan.control_plane.v1alpha1.CreateSandboxRequest
+	15, // 29: yaghan.control_plane.v1alpha1.SandboxService.GetSandbox:input_type -> yaghan.control_plane.v1alpha1.GetSandboxRequest
+	17, // 30: yaghan.control_plane.v1alpha1.SandboxService.ListSandboxes:input_type -> yaghan.control_plane.v1alpha1.ListSandboxesRequest
+	19, // 31: yaghan.control_plane.v1alpha1.SandboxService.PauseSandbox:input_type -> yaghan.control_plane.v1alpha1.PauseSandboxRequest
+	21, // 32: yaghan.control_plane.v1alpha1.SandboxService.ResumeSandbox:input_type -> yaghan.control_plane.v1alpha1.ResumeSandboxRequest
+	23, // 33: yaghan.control_plane.v1alpha1.SandboxService.DeleteSandbox:input_type -> yaghan.control_plane.v1alpha1.DeleteSandboxRequest
+	25, // 34: yaghan.control_plane.v1alpha1.SandboxService.StartSnapshot:input_type -> yaghan.control_plane.v1alpha1.StartSnapshotRequest
+	14, // 35: yaghan.control_plane.v1alpha1.SandboxService.CreateSandbox:output_type -> yaghan.control_plane.v1alpha1.CreateSandboxResponse
+	16, // 36: yaghan.control_plane.v1alpha1.SandboxService.GetSandbox:output_type -> yaghan.control_plane.v1alpha1.GetSandboxResponse
+	18, // 37: yaghan.control_plane.v1alpha1.SandboxService.ListSandboxes:output_type -> yaghan.control_plane.v1alpha1.ListSandboxesResponse
+	20, // 38: yaghan.control_plane.v1alpha1.SandboxService.PauseSandbox:output_type -> yaghan.control_plane.v1alpha1.PauseSandboxResponse
+	22, // 39: yaghan.control_plane.v1alpha1.SandboxService.ResumeSandbox:output_type -> yaghan.control_plane.v1alpha1.ResumeSandboxResponse
+	24, // 40: yaghan.control_plane.v1alpha1.SandboxService.DeleteSandbox:output_type -> yaghan.control_plane.v1alpha1.DeleteSandboxResponse
+	26, // 41: yaghan.control_plane.v1alpha1.SandboxService.StartSnapshot:output_type -> yaghan.control_plane.v1alpha1.StartSnapshotResponse
+	35, // [35:42] is the sub-list for method output_type
+	28, // [28:35] is the sub-list for method input_type
+	28, // [28:28] is the sub-list for extension type_name
+	28, // [28:28] is the sub-list for extension extendee
+	0,  // [0:28] is the sub-list for field type_name
 }
 
 func init() { file_yaghan_control_plane_v1alpha1_sandbox_proto_init() }
@@ -1690,13 +1858,17 @@ func file_yaghan_control_plane_v1alpha1_sandbox_proto_init() {
 		(*SandboxSource_SnapshotId)(nil),
 		(*SandboxSource_ImageId)(nil),
 	}
+	file_yaghan_control_plane_v1alpha1_sandbox_proto_msgTypes[3].OneofWrappers = []any{
+		(*EgressPolicy_Allow)(nil),
+		(*EgressPolicy_Deny)(nil),
+	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_yaghan_control_plane_v1alpha1_sandbox_proto_rawDesc), len(file_yaghan_control_plane_v1alpha1_sandbox_proto_rawDesc)),
 			NumEnums:      2,
-			NumMessages:   24,
+			NumMessages:   26,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

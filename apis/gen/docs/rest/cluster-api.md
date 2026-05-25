@@ -465,6 +465,78 @@ You can find out more about this error model and how to work with it in the
 |kernelId|string|false|none|none|
 |architecture|string|false|none|none|
 
+<h2 id="tocS_v1alpha1EgressPolicy">v1alpha1EgressPolicy</h2>
+<!-- backwards compatibility -->
+<a id="schemav1alpha1egresspolicy"></a>
+<a id="schema_v1alpha1EgressPolicy"></a>
+<a id="tocSv1alpha1egresspolicy"></a>
+<a id="tocsv1alpha1egresspolicy"></a>
+
+```json
+{
+  "allow": {
+    "ipAddresses": [
+      "string"
+    ],
+    "cidrBlocks": [
+      "string"
+    ],
+    "domainNames": [
+      "string"
+    ]
+  },
+  "deny": {
+    "ipAddresses": [
+      "string"
+    ],
+    "cidrBlocks": [
+      "string"
+    ],
+    "domainNames": [
+      "string"
+    ]
+  }
+}
+
+```
+
+### Properties
+
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|allow|[v1alpha1EgressTargets](#schemav1alpha1egresstargets)|false|none|none|
+|deny|[v1alpha1EgressTargets](#schemav1alpha1egresstargets)|false|none|none|
+
+<h2 id="tocS_v1alpha1EgressTargets">v1alpha1EgressTargets</h2>
+<!-- backwards compatibility -->
+<a id="schemav1alpha1egresstargets"></a>
+<a id="schema_v1alpha1EgressTargets"></a>
+<a id="tocSv1alpha1egresstargets"></a>
+<a id="tocsv1alpha1egresstargets"></a>
+
+```json
+{
+  "ipAddresses": [
+    "string"
+  ],
+  "cidrBlocks": [
+    "string"
+  ],
+  "domainNames": [
+    "string"
+  ]
+}
+
+```
+
+### Properties
+
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|ipAddresses|[string]|false|none|none|
+|cidrBlocks|[string]|false|none|none|
+|domainNames|[string]|false|none|none|
+
 <h2 id="tocS_v1alpha1EstablishSessionResponse">v1alpha1EstablishSessionResponse</h2>
 <!-- backwards compatibility -->
 <a id="schemav1alpha1establishsessionresponse"></a>
@@ -494,6 +566,30 @@ You can find out more about this error model and how to work with it in the
         "labels": {
           "property1": "string",
           "property2": "string"
+        }
+      },
+      "egressPolicy": {
+        "allow": {
+          "ipAddresses": [
+            "string"
+          ],
+          "cidrBlocks": [
+            "string"
+          ],
+          "domainNames": [
+            "string"
+          ]
+        },
+        "deny": {
+          "ipAddresses": [
+            "string"
+          ],
+          "cidrBlocks": [
+            "string"
+          ],
+          "domainNames": [
+            "string"
+          ]
         }
       },
       "resources": {
@@ -579,6 +675,30 @@ You can find out more about this error model and how to work with it in the
       "labels": {
         "property1": "string",
         "property2": "string"
+      }
+    },
+    "egressPolicy": {
+      "allow": {
+        "ipAddresses": [
+          "string"
+        ],
+        "cidrBlocks": [
+          "string"
+        ],
+        "domainNames": [
+          "string"
+        ]
+      },
+      "deny": {
+        "ipAddresses": [
+          "string"
+        ],
+        "cidrBlocks": [
+          "string"
+        ],
+        "domainNames": [
+          "string"
+        ]
       }
     },
     "resources": {
@@ -1089,6 +1209,30 @@ Response message containing a page of nodes.
       "property2": "string"
     }
   },
+  "egressPolicy": {
+    "allow": {
+      "ipAddresses": [
+        "string"
+      ],
+      "cidrBlocks": [
+        "string"
+      ],
+      "domainNames": [
+        "string"
+      ]
+    },
+    "deny": {
+      "ipAddresses": [
+        "string"
+      ],
+      "cidrBlocks": [
+        "string"
+      ],
+      "domainNames": [
+        "string"
+      ]
+    }
+  },
   "resources": {
     "vcpuCount": 0,
     "memoryMib": "string",
@@ -1131,6 +1275,7 @@ Response message containing a page of nodes.
 |Name|Type|Required|Restrictions|Description|
 |---|---|---|---|---|
 |metadata|[v1alpha1SandboxMeta](#schemav1alpha1sandboxmeta)|false|none|none|
+|egressPolicy|[v1alpha1EgressPolicy](#schemav1alpha1egresspolicy)|false|none|none|
 |resources|[v1alpha1Resources](#schemav1alpha1resources)|false|none|none|
 |node|[v1alpha1NodeRef](#schemav1alpha1noderef)|false|none|none|
 |intent|[v1alpha1Intent](#schemav1alpha1intent)|false|none|none|
@@ -1330,6 +1475,30 @@ Response message containing a page of nodes.
       "labels": {
         "property1": "string",
         "property2": "string"
+      }
+    },
+    "egressPolicy": {
+      "allow": {
+        "ipAddresses": [
+          "string"
+        ],
+        "cidrBlocks": [
+          "string"
+        ],
+        "domainNames": [
+          "string"
+        ]
+      },
+      "deny": {
+        "ipAddresses": [
+          "string"
+        ],
+        "cidrBlocks": [
+          "string"
+        ],
+        "domainNames": [
+          "string"
+        ]
       }
     },
     "resources": {

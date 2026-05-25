@@ -204,6 +204,40 @@
         }
       }
     },
+    "v1alpha1EgressPolicy": {
+      "type": "object",
+      "properties": {
+        "allow": {
+          "$ref": "#/definitions/v1alpha1EgressTargets"
+        },
+        "deny": {
+          "$ref": "#/definitions/v1alpha1EgressTargets"
+        }
+      }
+    },
+    "v1alpha1EgressTargets": {
+      "type": "object",
+      "properties": {
+        "ipAddresses": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "cidrBlocks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "domainNames": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
     "v1alpha1EstablishSessionResponse": {
       "type": "object",
       "properties": {
@@ -444,6 +478,9 @@
       "properties": {
         "metadata": {
           "$ref": "#/definitions/v1alpha1SandboxMeta"
+        },
+        "egressPolicy": {
+          "$ref": "#/definitions/v1alpha1EgressPolicy"
         },
         "resources": {
           "$ref": "#/definitions/v1alpha1Resources",
