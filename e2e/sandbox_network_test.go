@@ -31,14 +31,44 @@ const (
 // pseudo-device opens a TCP connection and closes it, which is
 // enough to exercise both the FORWARD filter and the NAT/MASQUERADE
 // path without pulling in netcat or curl.
+//
+// The 10s wall covers one full Linux SYN-retransmit cycle (kernel
+// retries at +1s and +3s) before the timeout binary kills bash —
+// enough headroom to absorb a single dropped SYN to a public DNS
+// resolver without false-flagging the policy.
 func runProbe(ctx context.Context, sandboxID, ip string) (*yag.Result, error) {
 	return yag.Run(ctx,
 		"sandbox", "exec", sandboxID, "--",
-		"/usr/bin/timeout", "5",
+		"/usr/bin/timeout", "10",
 		"/bin/bash", "-c",
 		fmt.Sprintf("exec 3<>/dev/tcp/%s/%s && exec 3<&- 3>&-", ip, probeTCPPort),
 	)
 }
+
+// runProbeExpectSuccess retries the TCP probe up to maxProbeAttempts
+// times when the connect did not succeed. Used for the "should be
+// reachable" leg of allow/deny policy specs, where a transient SYN
+// drop to a public resolver would otherwise look indistinguishable
+// from a real policy regression. The fail-by-design leg of each spec
+// stays single-shot so a broken policy cannot hide behind retries.
+func runProbeExpectSuccess(ctx context.Context, sandboxID, ip string) (*yag.Result, error) {
+	var (
+		res *yag.Result
+		err error
+	)
+	for attempt := 1; attempt <= maxProbeAttempts; attempt++ {
+		res, err = runProbe(ctx, sandboxID, ip)
+		if err != nil {
+			return res, err
+		}
+		if res.ExitCode == 0 {
+			return res, nil
+		}
+	}
+	return res, nil
+}
+
+const maxProbeAttempts = 2
 
 var _ = Describe("Sandbox network connectivity", Ordered, func() {
 	BeforeAll(func() {
@@ -125,15 +155,17 @@ var _ = Describe("Sandbox network connectivity", Ordered, func() {
 				controlplanev1alpha1.SandboxStatus_PHASE_RUNNING)).To(Succeed())
 
 			// Allowed target: the on-list IP must be reachable.
-			res, err := runProbe(ctx, sandboxID, allowedProbeIP)
+			res, err := runProbeExpectSuccess(ctx, sandboxID, allowedProbeIP)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(res.ExitCode).To(Equal(0),
-				"expected probe to %s to succeed under allow-list\nstdout:\n%s\nstderr:\n%s",
-				allowedProbeIP, res.Stdout, res.Stderr)
+				"expected probe to %s to succeed under allow-list after %d attempts\nstdout:\n%s\nstderr:\n%s",
+				allowedProbeIP, maxProbeAttempts, res.Stdout, res.Stderr)
 
 			// Off-list target: the kernel REJECT must surface as a
 			// non-zero exit. bash's /dev/tcp returns 1 on ICMP
-			// unreachable; do not over-pin the exact code.
+			// unreachable; do not over-pin the exact code. No retry —
+			// retrying a "should fail" probe would let a broken
+			// policy slip through if any single attempt succeeded.
 			res, err = runProbe(ctx, sandboxID, blockedProbeIP)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(res.ExitCode).NotTo(Equal(0),
@@ -162,13 +194,14 @@ var _ = Describe("Sandbox network connectivity", Ordered, func() {
 
 			// Off-list target: must still be reachable (deny only
 			// removes the listed destinations).
-			res, err := runProbe(ctx, sandboxID, allowedProbeIP)
+			res, err := runProbeExpectSuccess(ctx, sandboxID, allowedProbeIP)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(res.ExitCode).To(Equal(0),
-				"expected probe to %s to succeed under deny-list\nstdout:\n%s\nstderr:\n%s",
-				allowedProbeIP, res.Stdout, res.Stderr)
+				"expected probe to %s to succeed under deny-list after %d attempts\nstdout:\n%s\nstderr:\n%s",
+				allowedProbeIP, maxProbeAttempts, res.Stdout, res.Stderr)
 
-			// On-list target: must be blocked.
+			// On-list target: must be blocked. Single-shot — see the
+			// allow spec for the rationale on not retrying this leg.
 			res, err = runProbe(ctx, sandboxID, blockedProbeIP)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(res.ExitCode).NotTo(Equal(0),
