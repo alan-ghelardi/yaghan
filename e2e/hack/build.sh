@@ -9,6 +9,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+go_bin=$(command -v go || echo /usr/local/go/bin/go)
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
 e2e_dir="$(cd "${here}/.." >/dev/null && pwd)"
 repo_root="$(cd "${e2e_dir}/.." >/dev/null && pwd)"
@@ -43,7 +44,7 @@ for entry in "${targets[@]}"; do
     continue
   fi
   echo "[e2e/build] building ${name}"
-  (cd "${module_dir}" && go build -o "${out}" "${pkg}")
+  (cd "${module_dir}" && $go_bin build -o "${out}" "${pkg}")
 done
 
 echo "[e2e/build] binaries ready under ${bin_dir}"
