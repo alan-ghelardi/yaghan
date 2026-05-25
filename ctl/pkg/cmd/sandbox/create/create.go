@@ -24,6 +24,13 @@ const (
 	flagDisk      = "disk"
 	flagSource    = "source"
 
+	flagAllowIP     = "allow-ip"
+	flagAllowCIDR   = "allow-cidr"
+	flagAllowDomain = "allow-domain"
+	flagDenyIP      = "deny-ip"
+	flagDenyCIDR    = "deny-cidr"
+	flagDenyDomain  = "deny-domain"
+
 	defaultNamespace = "default"
 	defaultVCPU      = int32(1)
 	// 128 MiB matches the proto's lower bound for memory_mib — the
@@ -68,7 +75,10 @@ client-side and printed back.`,
   yag sandbox create --namespace tenant-a --memory 512MiB
 
   # Restore a sandbox from a snapshot (the snapshot must live in the same namespace).
-  yag sandbox create --source snapshot:my-snapshot-id`,
+  yag sandbox create --source snapshot:my-snapshot-id
+
+  # Restrict egress to a small allow-list (IP, CIDR, and a wildcard domain).
+  yag sandbox create --allow-ip 8.8.8.8 --allow-cidr 10.0.0.0/24 --allow-domain "*.internal.corp"`,
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return run(ctx, cmd, args)
@@ -88,6 +98,21 @@ client-side and printed back.`,
 		"Seed the sandbox from a referenced artifact. Format: <type>:<id> where type is one of (snapshot, image). "+
 			"Example: --source snapshot:abc123. Image sources are forward-compatible — the api-server returns "+
 			"Unimplemented today. Empty (default) creates a fresh sandbox.")
+
+	cmd.Flags().StringSlice(flagAllowIP, nil,
+		"IP address allowed for sandbox egress. May be repeated. Mutually exclusive with --deny-* flags.")
+	cmd.Flags().StringSlice(flagAllowCIDR, nil,
+		"CIDR block allowed for sandbox egress. May be repeated. Mutually exclusive with --deny-* flags.")
+	cmd.Flags().StringSlice(flagAllowDomain, nil,
+		"Domain name allowed for sandbox egress (literal hostname or wildcard like *.example.com). "+
+			"May be repeated. Mutually exclusive with --deny-* flags.")
+	cmd.Flags().StringSlice(flagDenyIP, nil,
+		"IP address denied for sandbox egress. May be repeated. Mutually exclusive with --allow-* flags.")
+	cmd.Flags().StringSlice(flagDenyCIDR, nil,
+		"CIDR block denied for sandbox egress. May be repeated. Mutually exclusive with --allow-* flags.")
+	cmd.Flags().StringSlice(flagDenyDomain, nil,
+		"Domain name denied for sandbox egress (literal hostname or wildcard like *.example.com). "+
+			"May be repeated. Mutually exclusive with --allow-* flags.")
 
 	return cmd
 }
@@ -126,6 +151,10 @@ func run(ctx *cli.Context, cmd *cobra.Command, args []string) error {
 		return err
 	}
 	source, err := parseSource(sourceStr)
+	if err != nil {
+		return err
+	}
+	egressPolicy, err := parseEgressPolicy(cmd)
 	if err != nil {
 		return err
 	}
@@ -168,7 +197,8 @@ func run(ctx *cli.Context, cmd *cobra.Command, args []string) error {
 					Namespace: namespace,
 					Source:    source,
 				},
-				Resources: resources,
+				Resources:    resources,
+				EgressPolicy: egressPolicy,
 			},
 		})
 	if err != nil {
@@ -256,6 +286,75 @@ func sourceStatusSuffix(raw string) string {
 		return ""
 	}
 	return ", source=" + raw
+}
+
+// parseEgressPolicy folds the six --allow-*/--deny-* flag groups into
+// an EgressPolicy. Returns (nil, nil) when no egress flag was supplied
+// — the proto's default of an unconstrained egress is conveyed by an
+// absent field. Returns an error when both an allow-* and a deny-*
+// flag are set; the proto's oneof admits only one arm and surfacing
+// the conflict client-side gives a clearer message than the
+// api-server's generic InvalidArgument.
+//
+// No syntax checks on individual values — buf.validate at the
+// api-server is the source of truth.
+func parseEgressPolicy(cmd *cobra.Command) (*controlplanev1alpha1.EgressPolicy, error) {
+	slice := func(name string) ([]string, error) { return cmd.Flags().GetStringSlice(name) }
+
+	allowIP, err := slice(flagAllowIP)
+	if err != nil {
+		return nil, err
+	}
+	allowCIDR, err := slice(flagAllowCIDR)
+	if err != nil {
+		return nil, err
+	}
+	allowDomain, err := slice(flagAllowDomain)
+	if err != nil {
+		return nil, err
+	}
+	denyIP, err := slice(flagDenyIP)
+	if err != nil {
+		return nil, err
+	}
+	denyCIDR, err := slice(flagDenyCIDR)
+	if err != nil {
+		return nil, err
+	}
+	denyDomain, err := slice(flagDenyDomain)
+	if err != nil {
+		return nil, err
+	}
+
+	hasAllow := len(allowIP) > 0 || len(allowCIDR) > 0 || len(allowDomain) > 0
+	hasDeny := len(denyIP) > 0 || len(denyCIDR) > 0 || len(denyDomain) > 0
+
+	switch {
+	case !hasAllow && !hasDeny:
+		return nil, nil
+	case hasAllow && hasDeny:
+		return nil, fmt.Errorf("--allow-* and --deny-* flags are mutually exclusive")
+	case hasAllow:
+		return &controlplanev1alpha1.EgressPolicy{
+			Rules: &controlplanev1alpha1.EgressPolicy_Allow{
+				Allow: &controlplanev1alpha1.EgressTargets{
+					IpAddresses: allowIP,
+					CidrBlocks:  allowCIDR,
+					DomainNames: allowDomain,
+				},
+			},
+		}, nil
+	default:
+		return &controlplanev1alpha1.EgressPolicy{
+			Rules: &controlplanev1alpha1.EgressPolicy_Deny{
+				Deny: &controlplanev1alpha1.EgressTargets{
+					IpAddresses: denyIP,
+					CidrBlocks:  denyCIDR,
+					DomainNames: denyDomain,
+				},
+			},
+		}, nil
+	}
 }
 
 // parseSize converts "<integer><unit>" (unit ∈ {MiB, GiB}) into MiB,

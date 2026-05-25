@@ -45,6 +45,8 @@ func TestCreate(t *testing.T) {
 				assert.Equal(t, "default", meta.GetNamespace())
 				assert.Equal(t, uint32(1), resources.GetVcpuCount())
 				assert.Equal(t, uint64(128), resources.GetMemoryMib())
+				assert.Nil(t, req.GetSandbox().GetEgressPolicy(),
+					"EgressPolicy must be nil when no --allow-*/--deny-* flag is supplied")
 				_, err := uuid.Parse(meta.GetId())
 				assert.NoError(t, err, "id must be a generated UUID, got %q", meta.GetId())
 				return echo(req), nil
@@ -246,6 +248,51 @@ func TestCreate(t *testing.T) {
 			name:    "rejects --source with unknown type",
 			args:    "--source bogus:abc",
 			wantErr: `unknown type "bogus"`,
+		},
+		{
+			name: "--allow-ip + --allow-cidr + --allow-domain combine into one allow EgressTargets",
+			args: "--allow-ip 8.8.8.8 --allow-cidr 10.0.0.0/24 --allow-domain *.internal.corp",
+			capture: func(t *testing.T, req *controlplanev1alpha1.CreateSandboxRequest) (*controlplanev1alpha1.CreateSandboxResponse, error) {
+				policy := req.GetSandbox().GetEgressPolicy()
+				require.NotNil(t, policy, "EgressPolicy must be set when --allow-* flags are supplied")
+				allow := policy.GetAllow()
+				require.NotNil(t, allow, "allow arm must be populated")
+				assert.Nil(t, policy.GetDeny(), "deny arm must be unset when only --allow-* flags are supplied")
+				assert.Equal(t, []string{"8.8.8.8"}, allow.GetIpAddresses())
+				assert.Equal(t, []string{"10.0.0.0/24"}, allow.GetCidrBlocks())
+				assert.Equal(t, []string{"*.internal.corp"}, allow.GetDomainNames())
+				return echo(req), nil
+			},
+		},
+		{
+			name: "repeated --allow-ip values accumulate",
+			args: "--allow-ip 8.8.8.8 --allow-ip 1.1.1.1",
+			capture: func(t *testing.T, req *controlplanev1alpha1.CreateSandboxRequest) (*controlplanev1alpha1.CreateSandboxResponse, error) {
+				allow := req.GetSandbox().GetEgressPolicy().GetAllow()
+				require.NotNil(t, allow)
+				assert.Equal(t, []string{"8.8.8.8", "1.1.1.1"}, allow.GetIpAddresses())
+				return echo(req), nil
+			},
+		},
+		{
+			name: "--deny-domain alone populates a deny EgressTargets",
+			args: "--deny-domain example.com",
+			capture: func(t *testing.T, req *controlplanev1alpha1.CreateSandboxRequest) (*controlplanev1alpha1.CreateSandboxResponse, error) {
+				policy := req.GetSandbox().GetEgressPolicy()
+				require.NotNil(t, policy)
+				deny := policy.GetDeny()
+				require.NotNil(t, deny, "deny arm must be populated")
+				assert.Nil(t, policy.GetAllow(), "allow arm must be unset when only --deny-* flags are supplied")
+				assert.Equal(t, []string{"example.com"}, deny.GetDomainNames())
+				assert.Empty(t, deny.GetIpAddresses())
+				assert.Empty(t, deny.GetCidrBlocks())
+				return echo(req), nil
+			},
+		},
+		{
+			name:    "--allow-* and --deny-* together are rejected client-side",
+			args:    "--allow-ip 8.8.8.8 --deny-cidr 0.0.0.0/0",
+			wantErr: "--allow-* and --deny-* flags are mutually exclusive",
 		},
 	}
 
