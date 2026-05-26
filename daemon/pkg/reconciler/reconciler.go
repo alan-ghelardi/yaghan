@@ -13,6 +13,7 @@ import (
 
 	controlplanev1alpha1 "github.com/alan-ghelardi/yaghan/apis/gen/yaghan/control_plane/v1alpha1"
 	"github.com/alan-ghelardi/yaghan/daemon/pkg/config"
+	"github.com/alan-ghelardi/yaghan/daemon/pkg/dns"
 	"github.com/alan-ghelardi/yaghan/daemon/pkg/firecracker"
 	"github.com/alan-ghelardi/yaghan/daemon/pkg/network"
 	"github.com/alan-ghelardi/yaghan/daemon/pkg/snapshot"
@@ -32,6 +33,7 @@ type Reconciler struct {
 	config         *config.Bundle
 	provider       firecracker.Provider
 	driver         network.Driver
+	dnsPolicies    *dns.PolicyStore
 	snapshotStore  *snapshot.Store
 	snapshotClient controlplanev1alpha1.SnapshotServiceClient
 }
@@ -43,10 +45,15 @@ type Reconciler struct {
 // used to register a Snapshot row in the api-server as the final stage
 // of the snapshot reconcile path; a nil value disables that registration
 // (acceptable when the daemon is configured without snapshot support).
+// dnsPolicies, when non-nil, receives per-sandbox domain_names
+// policies at Provision and is cleared at Deprovision; a nil value
+// disables the in-daemon DNS responder integration (acceptable in
+// tests and on daemons configured without the dns server).
 func New(
 	config *config.Bundle,
 	provider firecracker.Provider,
 	driver network.Driver,
+	dnsPolicies *dns.PolicyStore,
 	snapshotStore *snapshot.Store,
 	snapshotClient controlplanev1alpha1.SnapshotServiceClient,
 ) *Reconciler {
@@ -54,6 +61,7 @@ func New(
 		config:         config,
 		provider:       provider,
 		driver:         driver,
+		dnsPolicies:    dnsPolicies,
 		snapshotStore:  snapshotStore,
 		snapshotClient: snapshotClient,
 	}
@@ -210,17 +218,22 @@ func (r *Reconciler) bootFresh(ctx context.Context, sandbox *controlplanev1alpha
 	if vm := r.provider.GetMicroVM(id); vm != nil {
 		return nil
 	}
+	if err := r.checkDNSPrereq(sandbox); err != nil {
+		return err
+	}
 
 	index := r.provider.NextNetNSIndex()
 	nsh, err := r.driver.Provision(index, translateEgressPolicy(ctx, sandbox))
 	if err != nil {
 		return fmt.Errorf("provision network: %w", err)
 	}
+	r.registerDNSPolicy(ctx, sandbox, nsh)
 
 	input := r.buildCreateInput(sandbox, nsh)
 	if _, err := r.provider.CreateMicroVM(ctx, input); err != nil {
 		// Roll the network back so we don't leak an orphaned namespace
 		// if the VM never came up.
+		r.removeDNSPolicy(nsh.NamespaceVethIP)
 		_ = r.driver.Deprovision(index)
 		return fmt.Errorf("create microvm: %w", err)
 	}
@@ -268,6 +281,9 @@ func (r *Reconciler) bootFromSnapshot(ctx context.Context, sandbox *controlplane
 			"sandbox %q references snapshot %q but this daemon was started without snapshot storage configured",
 			id, snapshotID)
 	}
+	if err := r.checkDNSPrereq(sandbox); err != nil {
+		return err
+	}
 
 	stagingDir := filepath.Join(r.config.Firecracker.ChrootBaseDir, snapshotCacheDirName)
 	localRef, err := r.snapshotStore.Load(ctx, stagingDir, snapshotID)
@@ -280,9 +296,11 @@ func (r *Reconciler) bootFromSnapshot(ctx context.Context, sandbox *controlplane
 	if err != nil {
 		return fmt.Errorf("provision network: %w", err)
 	}
+	r.registerDNSPolicy(ctx, sandbox, nsh)
 
 	input := r.buildLoadSnapshotInput(sandbox, nsh, localRef)
 	if _, err := r.provider.LoadSnapshot(ctx, input); err != nil {
+		r.removeDNSPolicy(nsh.NamespaceVethIP)
 		_ = r.driver.Deprovision(index)
 		return fmt.Errorf("restore microvm from snapshot %q: %w", snapshotID, err)
 	}
@@ -338,6 +356,13 @@ func (r *Reconciler) delete(ctx context.Context, sandbox *controlplanev1alpha1.S
 	}
 
 	if hasIndex {
+		// Evict the DNS policy before tearing the namespace down so
+		// any in-flight resolver query lands on an empty store and
+		// gets REFUSED rather than racing against a half-deleted
+		// firewall set.
+		if srcIP, ipErr := network.NamespaceVethIPFor(networkIndex); ipErr == nil {
+			r.removeDNSPolicy(srcIP)
+		}
 		if err := r.driver.Deprovision(networkIndex); err != nil {
 			return fmt.Errorf("deprovision network: %w", err)
 		}
@@ -428,7 +453,7 @@ func (r *Reconciler) buildCreateInput(sandbox *controlplanev1alpha1.Sandbox, nsh
 	fcConfig := &firecracker.Config{
 		BootSource: &models.BootSource{
 			KernelImagePath: &kernelJail,
-			BootArgs:        buildBootArgs(tmpl, nsh, r.config.Network),
+			BootArgs:        buildBootArgs(tmpl, sandbox, nsh, r.config.Network),
 		},
 		Drives: []*models.Drive{
 			{
@@ -523,11 +548,13 @@ func (r *Reconciler) buildLoadSnapshotInput(sandbox *controlplanev1alpha1.Sandbo
 // driver consumes. Returns nil when the sandbox carries no policy —
 // the driver interprets nil as unrestricted egress.
 //
-// Domain names are validated by the api-server but not yet enforced
-// by the data plane (see the EgressTargets docstring in sandbox.proto).
-// When non-empty we log a single WARN entry per reconcile so the gap is
-// observable in daemon logs; IPs and CIDRs from the same policy arm
-// are still enforced.
+// All three target shapes (ip_addresses, cidr_blocks, domain_names)
+// are passed through. The firewall consumes IPs/CIDRs immediately as
+// static rules; domain_names sit on the firewall struct only as a
+// signal that the per-sandbox dynamic infrastructure (ipset, resolver
+// carve-out) should be provisioned. The actual domain matching
+// happens later, per query, in the dns handler — see
+// [Reconciler.registerDNSPolicy].
 //
 // IP/CIDR parse errors are bugs: the api-server's buf.validate rejects
 // malformed entries before they reach the persistence layer, so a
@@ -558,12 +585,6 @@ func translateEgressPolicy(ctx context.Context, sandbox *controlplanev1alpha1.Sa
 		zap.String("sandbox.id", sandbox.GetMetadata().GetId()),
 	)
 
-	if domains := targets.GetDomainNames(); len(domains) > 0 {
-		logger.Warn("reconciler: egress policy references domain_names; not yet enforced by data plane, only ip_addresses and cidr_blocks will be applied",
-			zap.Int("domain_names.count", len(domains)),
-		)
-	}
-
 	policy := &network.EgressPolicy{Mode: mode}
 	for _, raw := range targets.GetIpAddresses() {
 		addr, err := netip.ParseAddr(raw)
@@ -583,7 +604,114 @@ func translateEgressPolicy(ctx context.Context, sandbox *controlplanev1alpha1.Sa
 		}
 		policy.CIDRs = append(policy.CIDRs, prefix)
 	}
+	policy.Domains = append(policy.Domains, targets.GetDomainNames()...)
 	return policy
+}
+
+// registerDNSPolicy compiles the sandbox's domain_names matchers and
+// hands the result to the in-daemon DNS responder so it can apply the
+// per-sandbox verdict to incoming queries. No-ops in three cases:
+//
+//   - The reconciler was constructed without a PolicyStore (tests, or
+//     a daemon without the dns server enabled).
+//   - The sandbox carries no EgressPolicy at all.
+//   - The policy carries IPs/CIDRs but no domain_names — there is
+//     nothing for the responder to do, and skipping the registration
+//     keeps the per-source-IP table small.
+//
+// A matcher-compile error is treated as a bug (the api-server's CEL
+// validator rejects malformed entries upstream) and logged loudly,
+// but the sandbox still boots — the firewall will enforce whatever
+// IPs/CIDRs it received, and the worst case is the domain rules are
+// silently ignored on this host.
+func (r *Reconciler) registerDNSPolicy(ctx context.Context, sandbox *controlplanev1alpha1.Sandbox, nsh network.NamespaceHandle) {
+	if r.dnsPolicies == nil {
+		return
+	}
+	p := sandbox.GetEgressPolicy()
+	if p == nil {
+		return
+	}
+
+	var (
+		mode    dns.EgressMode
+		targets *controlplanev1alpha1.EgressTargets
+	)
+	switch {
+	case p.GetAllow() != nil:
+		mode, targets = dns.ModeAllow, p.GetAllow()
+	case p.GetDeny() != nil:
+		mode, targets = dns.ModeDeny, p.GetDeny()
+	default:
+		return
+	}
+	domains := targets.GetDomainNames()
+	if len(domains) == 0 {
+		return
+	}
+
+	logger := ctxzap.Extract(ctx).With(
+		zap.String("sandbox.id", sandbox.GetMetadata().GetId()),
+		zap.Int("sandbox.index", nsh.Index),
+	)
+	matchers, err := dns.CompileMatchers(domains)
+	if err != nil {
+		logger.Error("reconciler: compile dns matchers (api-server validation drifted?); domain_names will be unenforced for this sandbox",
+			zap.Error(err))
+		return
+	}
+	r.dnsPolicies.Upsert(nsh.NamespaceVethIP, dns.SandboxDNSPolicy{
+		Index:         nsh.Index,
+		NamespaceName: nsh.NamespaceName,
+		Mode:          mode,
+		Matchers:      matchers,
+	})
+}
+
+// removeDNSPolicy clears the per-sandbox entry from the policy store.
+// No-op when the reconciler is running without a store (see
+// [Reconciler.registerDNSPolicy]) or when srcIP is the zero value
+// (e.g. the index lookup failed in the caller).
+func (r *Reconciler) removeDNSPolicy(srcIP netip.Addr) {
+	if r.dnsPolicies == nil || !srcIP.IsValid() {
+		return
+	}
+	r.dnsPolicies.Remove(srcIP)
+}
+
+// checkDNSPrereq refuses to boot a sandbox whose policy references
+// domain_names when the daemon is running without the in-process DNS
+// responder. Silently dropping the domain_names rules would be a
+// security regression — the api-server accepted the policy expecting
+// the daemon to enforce it.
+func (r *Reconciler) checkDNSPrereq(sandbox *controlplanev1alpha1.Sandbox) error {
+	if !hasDomainPolicy(sandbox) {
+		return nil
+	}
+	if r.dnsPolicies == nil {
+		return fmt.Errorf(
+			"sandbox %q egress policy references domain_names but this daemon was started without the DNS responder enabled",
+			sandbox.GetMetadata().GetId())
+	}
+	return nil
+}
+
+// hasDomainPolicy reports whether the sandbox's egress policy
+// references domain_names. Used by buildBootArgs to decide whether
+// the guest's /etc/resolv.conf should point at the in-daemon resolver
+// or at the daemon-wide default.
+func hasDomainPolicy(sandbox *controlplanev1alpha1.Sandbox) bool {
+	p := sandbox.GetEgressPolicy()
+	if p == nil {
+		return false
+	}
+	if a := p.GetAllow(); a != nil && len(a.GetDomainNames()) > 0 {
+		return true
+	}
+	if d := p.GetDeny(); d != nil && len(d.GetDomainNames()) > 0 {
+		return true
+	}
+	return false
 }
 
 // buildBootArgs assembles the kernel command line. The ip= parameter
@@ -592,12 +720,25 @@ func translateEgressPolicy(ctx context.Context, sandbox *controlplanev1alpha1.Sa
 // as PID 1; agent.port= tells the agent which vsock port to listen on.
 // agent.dns=, when present, is a comma-separated resolver list the
 // agent writes into /etc/resolv.conf early in PID-1 init.
-func buildBootArgs(tmpl *config.MicroVM, nsh network.NamespaceHandle, netCfg *config.Network) string {
+//
+// When the sandbox's policy references domain_names, agent.dns is
+// overridden to the daemon-wide responder address
+// (network.dns.listen-ip) so DNS traffic terminates at the
+// in-daemon responder. The override unconditionally wins over the
+// daemon-wide network.guest-dns config — the policy would otherwise
+// be unenforceable. The override is skipped when the responder is
+// not configured (DNS section absent or disabled); the reconciler
+// rejects domain-bearing sandboxes earlier in that case so we never
+// hit this path with hasDomainPolicy=true.
+func buildBootArgs(tmpl *config.MicroVM, sandbox *controlplanev1alpha1.Sandbox, nsh network.NamespaceHandle, netCfg *config.Network) string {
 	base := fmt.Sprintf(
 		"console=ttyS0 reboot=k panic=1 pci=off ip=%s::%s:255.255.255.252::eth0:off init=%s agent.port=%d",
 		nsh.GuestIP, nsh.TapIP, tmpl.AgentInitPath, tmpl.AgentVsockPort,
 	)
-	if netCfg != nil && len(netCfg.GuestDNS) > 0 {
+	switch {
+	case hasDomainPolicy(sandbox) && netCfg != nil && netCfg.DNS != nil && netCfg.DNS.ListenIP != "":
+		base += " agent.dns=" + netCfg.DNS.ListenIP
+	case netCfg != nil && len(netCfg.GuestDNS) > 0:
 		base += " agent.dns=" + strings.Join(netCfg.GuestDNS, ",")
 	}
 	return base

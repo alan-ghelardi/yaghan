@@ -114,7 +114,7 @@ func newReconcilerFixture(t *testing.T) (*Reconciler, *fcmocks.MockProvider, *ne
 	// the host's /srv/jailer.
 	bundle := testBundle()
 	bundle.Firecracker.ChrootBaseDir = t.TempDir()
-	r := New(bundle, provider, driver, snapshot.NewStore(durableStore), snapshotClient)
+	r := New(bundle, provider, driver, nil, snapshot.NewStore(durableStore), snapshotClient)
 	return r, provider, driver, vm, durableStore, snapshotClient
 }
 
@@ -474,7 +474,7 @@ func TestReconcile_BootFromSnapshot_FailsWithoutSnapshotStore(t *testing.T) {
 	bundle.Firecracker.ChrootBaseDir = t.TempDir()
 	// Explicitly nil snapshot store — simulates a daemon configured
 	// without Snapshots.S3.
-	r := New(bundle, provider, driver, nil, snapshotClient)
+	r := New(bundle, provider, driver, nil, nil, snapshotClient)
 	ctx := context.Background()
 
 	sandbox := fixtureSandbox("sb-no-store")
@@ -899,7 +899,11 @@ func TestTranslateEgressPolicy(t *testing.T) {
 		assert.Equal(t, []netip.Prefix{netip.MustParsePrefix("192.168.0.0/16")}, got.CIDRs)
 	})
 
-	t.Run("domain_names log a warning but ips/cidrs are still applied", func(t *testing.T) {
+	t.Run("domain_names are passed through alongside ips/cidrs", func(t *testing.T) {
+		// domain_names used to be dropped with a WARN; the daemon now
+		// enforces them via the in-process dns responder, so they
+		// reach the firewall struct verbatim and no warning is
+		// emitted.
 		core, observed := observer.New(zapcore.WarnLevel)
 		ctx := ctxzap.ToContext(context.Background(), zap.New(core))
 
@@ -919,13 +923,10 @@ func TestTranslateEgressPolicy(t *testing.T) {
 		assert.Equal(t, network.EgressAllow, got.Mode)
 		assert.Equal(t, []netip.Addr{netip.MustParseAddr("8.8.8.8")}, got.IPs)
 		assert.Empty(t, got.CIDRs)
+		assert.Equal(t, []string{"example.com", "*.foo.test"}, got.Domains)
 
 		warnings := observed.FilterMessageSnippet("domain_names").All()
-		require.Len(t, warnings, 1, "exactly one warning per reconcile when domains are present")
-		assert.Equal(t, zapcore.WarnLevel, warnings[0].Level)
-		fields := warnings[0].ContextMap()
-		assert.Equal(t, "sb-domains", fields["sandbox.id"])
-		assert.Equal(t, int64(2), fields["domain_names.count"])
+		assert.Empty(t, warnings, "no WARN — domain_names are enforced, not dropped")
 	})
 
 	t.Run("oneof unset returns nil", func(t *testing.T) {

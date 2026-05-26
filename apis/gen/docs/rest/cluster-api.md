@@ -522,8 +522,8 @@ resolver's IP is listed.
 
 |Name|Type|Required|Restrictions|Description|
 |---|---|---|---|---|
-|allow|[v1alpha1EgressTargets](#schemav1alpha1egresstargets)|false|none|EgressTargets is the union of destinations referenced by an<br>EgressPolicy allow- or deny-rule.<br><br>Rule precedence is `ip_addresses` → `cidr_blocks` → `domain_names`:<br>a destination that matches an `ip_addresses` entry takes effect<br>before any overlapping `cidr_blocks` entry, which in turn takes<br>effect before any overlapping `domain_names` entry. Within a single<br>policy arm (`allow` or `deny`) the verdict is the same across all<br>three, so precedence is currently observable only in logs; it<br>becomes load-bearing once future iterations let policies mix<br>verdicts.<br><br>Note: `domain_names` is accepted and validated for syntax today but<br>is **not yet enforced** by the data plane — DNS resolution + cache<br>lifecycle is a separate iteration. The daemon logs a warning when a<br>sandbox boots with non-empty `domain_names` so the gap is not<br>silent.|
-|deny|[v1alpha1EgressTargets](#schemav1alpha1egresstargets)|false|none|EgressTargets is the union of destinations referenced by an<br>EgressPolicy allow- or deny-rule.<br><br>Rule precedence is `ip_addresses` → `cidr_blocks` → `domain_names`:<br>a destination that matches an `ip_addresses` entry takes effect<br>before any overlapping `cidr_blocks` entry, which in turn takes<br>effect before any overlapping `domain_names` entry. Within a single<br>policy arm (`allow` or `deny`) the verdict is the same across all<br>three, so precedence is currently observable only in logs; it<br>becomes load-bearing once future iterations let policies mix<br>verdicts.<br><br>Note: `domain_names` is accepted and validated for syntax today but<br>is **not yet enforced** by the data plane — DNS resolution + cache<br>lifecycle is a separate iteration. The daemon logs a warning when a<br>sandbox boots with non-empty `domain_names` so the gap is not<br>silent.|
+|allow|[v1alpha1EgressTargets](#schemav1alpha1egresstargets)|false|none|EgressTargets is the union of destinations referenced by an<br>EgressPolicy allow- or deny-rule.<br><br>Rule precedence is `ip_addresses` → `cidr_blocks` → `domain_names`:<br>a destination that matches an `ip_addresses` entry takes effect<br>before any overlapping `cidr_blocks` entry, which in turn takes<br>effect before any overlapping `domain_names` entry. Within a single<br>policy arm (`allow` or `deny`) the verdict is the same across all<br>three, so precedence is currently observable only in logs; it<br>becomes load-bearing once future iterations let policies mix<br>verdicts.<br><br>Domain-name enforcement model<br>-----------------------------<br>`domain_names` is enforced via an in-daemon DNS responder. When a<br>sandbox has at least one `domain_names` entry the daemon points the<br>guest's /etc/resolv.conf at the sandbox's own host-side veth IP and<br>answers queries from an embedded handler:<br><br>  * Queries whose name matches an `allow` entry are forwarded<br>    upstream and each answer's A/AAAA records are written into a<br>    per-sandbox ipset that the FORWARD chain `--match-set` ACCEPTs.<br>    Ipset entries expire with the answer TTL (floored at the<br>    daemon's `min_ttl_seconds` to bound rule-churn under short-TTL<br>    CDNs).<br>  * Queries matching a `deny` entry return REFUSED.<br>  * Queries matching neither follow the mode's default verdict:<br>    REFUSED under `allow`, forwarded under `deny`.<br><br>The daemon always permits guest → resolver:53/{udp,tcp} when<br>`domain_names` is non-empty, so domain-only allow rules remain<br>reachable regardless of mode.<br><br>Wildcards: `*.example.com` matches `example.com` itself plus any<br>subdomain (`foo.example.com`, `a.b.example.com`).<br><br>Known limitation (deny mode only): a sandbox that already holds an<br>IP for a denied domain can connect to it directly without going<br>through DNS. Allow mode does not have this leak — IPs become<br>reachable only after the resolver vouches for them. Use allow mode<br>for hard guarantees.|
+|deny|[v1alpha1EgressTargets](#schemav1alpha1egresstargets)|false|none|EgressTargets is the union of destinations referenced by an<br>EgressPolicy allow- or deny-rule.<br><br>Rule precedence is `ip_addresses` → `cidr_blocks` → `domain_names`:<br>a destination that matches an `ip_addresses` entry takes effect<br>before any overlapping `cidr_blocks` entry, which in turn takes<br>effect before any overlapping `domain_names` entry. Within a single<br>policy arm (`allow` or `deny`) the verdict is the same across all<br>three, so precedence is currently observable only in logs; it<br>becomes load-bearing once future iterations let policies mix<br>verdicts.<br><br>Domain-name enforcement model<br>-----------------------------<br>`domain_names` is enforced via an in-daemon DNS responder. When a<br>sandbox has at least one `domain_names` entry the daemon points the<br>guest's /etc/resolv.conf at the sandbox's own host-side veth IP and<br>answers queries from an embedded handler:<br><br>  * Queries whose name matches an `allow` entry are forwarded<br>    upstream and each answer's A/AAAA records are written into a<br>    per-sandbox ipset that the FORWARD chain `--match-set` ACCEPTs.<br>    Ipset entries expire with the answer TTL (floored at the<br>    daemon's `min_ttl_seconds` to bound rule-churn under short-TTL<br>    CDNs).<br>  * Queries matching a `deny` entry return REFUSED.<br>  * Queries matching neither follow the mode's default verdict:<br>    REFUSED under `allow`, forwarded under `deny`.<br><br>The daemon always permits guest → resolver:53/{udp,tcp} when<br>`domain_names` is non-empty, so domain-only allow rules remain<br>reachable regardless of mode.<br><br>Wildcards: `*.example.com` matches `example.com` itself plus any<br>subdomain (`foo.example.com`, `a.b.example.com`).<br><br>Known limitation (deny mode only): a sandbox that already holds an<br>IP for a denied domain can connect to it directly without going<br>through DNS. Allow mode does not have this leak — IPs become<br>reachable only after the resolver vouches for them. Use allow mode<br>for hard guarantees.|
 
 <h2 id="tocS_v1alpha1EgressTargets">v1alpha1EgressTargets</h2>
 <!-- backwards compatibility -->
@@ -559,11 +559,35 @@ three, so precedence is currently observable only in logs; it
 becomes load-bearing once future iterations let policies mix
 verdicts.
 
-Note: `domain_names` is accepted and validated for syntax today but
-is **not yet enforced** by the data plane — DNS resolution + cache
-lifecycle is a separate iteration. The daemon logs a warning when a
-sandbox boots with non-empty `domain_names` so the gap is not
-silent.
+Domain-name enforcement model
+-----------------------------
+`domain_names` is enforced via an in-daemon DNS responder. When a
+sandbox has at least one `domain_names` entry the daemon points the
+guest's /etc/resolv.conf at the sandbox's own host-side veth IP and
+answers queries from an embedded handler:
+
+  * Queries whose name matches an `allow` entry are forwarded
+    upstream and each answer's A/AAAA records are written into a
+    per-sandbox ipset that the FORWARD chain `--match-set` ACCEPTs.
+    Ipset entries expire with the answer TTL (floored at the
+    daemon's `min_ttl_seconds` to bound rule-churn under short-TTL
+    CDNs).
+  * Queries matching a `deny` entry return REFUSED.
+  * Queries matching neither follow the mode's default verdict:
+    REFUSED under `allow`, forwarded under `deny`.
+
+The daemon always permits guest → resolver:53/{udp,tcp} when
+`domain_names` is non-empty, so domain-only allow rules remain
+reachable regardless of mode.
+
+Wildcards: `*.example.com` matches `example.com` itself plus any
+subdomain (`foo.example.com`, `a.b.example.com`).
+
+Known limitation (deny mode only): a sandbox that already holds an
+IP for a denied domain can connect to it directly without going
+through DNS. Allow mode does not have this leak — IPs become
+reachable only after the resolver vouches for them. Use allow mode
+for hard guarantees.
 
 ### Properties
 

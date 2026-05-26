@@ -67,4 +67,10 @@ type NamespaceHandle struct {
 	// HostVethIP is the host-side veth address. The namespace's default
 	// route points here.
 	HostVethIP netip.Addr
+
+	// NamespaceVethIP is the namespace-side veth address. After the
+	// per-namespace MASQUERADE, this is the source IP the host
+	// observes on packets the guest sends out — and thus the key
+	// the DNS handler uses to look up the sandbox's policy.
+	NamespaceVethIP netip.Addr
 }

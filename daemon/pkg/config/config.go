@@ -68,6 +68,50 @@ const (
 // Override in config for environments that require an internal DNS.
 var defaultGuestDNS = []string{"8.8.8.8", "1.1.1.1"}
 
+const (
+	// defaultDNSEnabled controls whether the daemon starts its
+	// in-process DNS responder. The responder is required for
+	// domain_names egress enforcement; opting out is supported for
+	// dev hosts that already bind tcp/udp 53 (systemd-resolved
+	// stub, dnsmasq, …). Sandboxes with domain_names fail to boot
+	// when the responder is disabled — silent no-ops would be a
+	// security regression.
+	defaultDNSEnabled = true
+
+	// defaultDNSListenIP is the daemon-owned address the responder
+	// binds to. The daemon assigns it to a dummy interface at
+	// startup so the bind never collides with the host's resolver
+	// stack (typically systemd-resolved on 127.0.0.53). Picked
+	// inside the IANA TEST-NET-2 block (198.51.100.0/24) so it
+	// cannot be confused with real internet traffic or a sandbox
+	// veth subnet; operators with a host-routing reason to avoid
+	// this range can override the value.
+	defaultDNSListenIP = "198.51.100.53"
+
+	// defaultDNSPort is the UDP/TCP port the responder listens on
+	// and the port the guest's stub resolver targets. 53 is the
+	// well-known DNS port; non-standard values require guest-side
+	// changes the agent does not support today, so the field is
+	// exposed but rarely changed.
+	defaultDNSPort = 53
+
+	// defaultDNSDummyInterface is the host-side dummy interface
+	// name the daemon owns. Predictable so an operator can
+	// `ip addr show yaghan-dns0` and confirm the responder is
+	// reachable without consulting the daemon's config.
+	defaultDNSDummyInterface = "yaghan-dns0"
+
+	defaultDNSForwardTimeout = 5 * time.Second
+	defaultDNSMinEntryTTL    = 30 * time.Second
+	defaultDNSMaxEntryTTL    = 5 * time.Minute
+)
+
+// defaultDNSUpstream is the recursive resolver list the in-process
+// responder forwards to. Matches [defaultGuestDNS] so domain-name
+// enforcement uses the same upstream as legacy direct-resolution
+// guests by default.
+var defaultDNSUpstream = []string{"8.8.8.8:53", "1.1.1.1:53"}
+
 // Bundle is the daemon's top-level configuration. It embeds the gRPC
 // server base shared with the api-server via [config.Base] and adds
 // daemon-specific sections for the Firecracker provider and per-VM
@@ -129,7 +173,72 @@ type Network struct {
 	// GuestDNS is the list of resolver IPs the agent writes into
 	// /etc/resolv.conf at boot. Order is preserved. Empty means
 	// "use the daemon-wide default" (public no-auth resolvers).
+	// Sandboxes that reference domain_names egress targets ignore
+	// this list — their resolv.conf is pinned to the in-process
+	// responder so the policy can be enforced.
 	GuestDNS []string `mapstructure:"guest-dns"`
+
+	// DNS configures the in-daemon DNS responder used to enforce
+	// per-sandbox domain_names egress policies. The responder is on
+	// by default; operators with a pre-existing port-53 listener
+	// can disable it, with the caveat that any sandbox referencing
+	// domain_names will then fail to boot.
+	DNS *DNS `mapstructure:"dns"`
+}
+
+// DNS configures the in-daemon DNS responder.
+type DNS struct {
+	// Enabled toggles the responder. When false, the daemon does
+	// not bind any DNS port and the per-sandbox PolicyStore is nil
+	// — any sandbox that needs domain_names enforcement will be
+	// refused at reconcile time. Defaults to true.
+	Enabled bool `mapstructure:"enabled"`
+
+	// ListenIP is the daemon-owned address the responder binds to.
+	// The daemon assigns it to a dummy interface
+	// ([DummyInterface]) at startup so the bind never collides
+	// with the host's resolver stack. This is also the address
+	// every sandbox's /etc/resolv.conf is pinned to under
+	// domain-bearing policies, so it has to be reachable from
+	// inside the sandbox namespace via the default route.
+	// Defaults to "198.51.100.53" (IANA TEST-NET-2).
+	ListenIP string `mapstructure:"listen-ip"`
+
+	// Port is the UDP/TCP port the responder listens on. Defaults
+	// to 53. Non-standard values require coordinated guest-side
+	// changes the agent does not support today, so this is
+	// effectively a future-proofing knob rather than a routinely
+	// tunable setting.
+	Port int `mapstructure:"port"`
+
+	// DummyInterface is the host-side dummy interface name the
+	// daemon creates to carry [ListenIP]. Visible via `ip link
+	// show` for operators that want to confirm the responder is
+	// reachable. Defaults to "yaghan-dns0".
+	DummyInterface string `mapstructure:"dummy-interface"`
+
+	// Upstream is the list of recursive resolvers the responder
+	// forwards allow-matched (or non-deny-matched) queries to. Each
+	// entry is "host:port"; callers passing bare IPs should append
+	// ":53". Defaults to the public no-auth resolvers, matching the
+	// legacy GuestDNS default.
+	Upstream []string `mapstructure:"upstream"`
+
+	// ForwardTimeout bounds a single upstream Exchange. Defaults to
+	// 5s — short enough to fail fast on a dead resolver, long
+	// enough to absorb routine internet jitter.
+	ForwardTimeout time.Duration `mapstructure:"forward-timeout"`
+
+	// MinEntryTTL is the floor applied to per-answer TTLs before
+	// they become ipset entry lifetimes. Without a floor,
+	// very-short-TTL CDNs would cause near-constant rule churn.
+	// Defaults to 30s.
+	MinEntryTTL time.Duration `mapstructure:"min-entry-ttl"`
+
+	// MaxEntryTTL is the ceiling applied to per-answer TTLs. Caps
+	// how long a stale answer can keep a destination open after
+	// the resolution stops being valid. Defaults to 5 minutes.
+	MaxEntryTTL time.Duration `mapstructure:"max-entry-ttl"`
 }
 
 // APIServer points the daemon at its control plane.
@@ -335,4 +444,12 @@ func applyDefaults(v *viper.Viper) {
 
 	v.SetDefault("network.egress-enabled", defaultEgressEnabled)
 	v.SetDefault("network.guest-dns", defaultGuestDNS)
+	v.SetDefault("network.dns.enabled", defaultDNSEnabled)
+	v.SetDefault("network.dns.listen-ip", defaultDNSListenIP)
+	v.SetDefault("network.dns.port", defaultDNSPort)
+	v.SetDefault("network.dns.dummy-interface", defaultDNSDummyInterface)
+	v.SetDefault("network.dns.upstream", defaultDNSUpstream)
+	v.SetDefault("network.dns.forward-timeout", defaultDNSForwardTimeout)
+	v.SetDefault("network.dns.min-entry-ttl", defaultDNSMinEntryTTL)
+	v.SetDefault("network.dns.max-entry-ttl", defaultDNSMaxEntryTTL)
 }

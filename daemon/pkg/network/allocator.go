@@ -109,14 +109,27 @@ func vethSubnetFor(index int) (host, namespace netip.Addr, prefix netip.Prefix) 
 // It's the canonical source of truth for the names and IPs a provisioned
 // namespace will expose.
 func buildHandle(index int) NamespaceHandle {
-	hostIP, _, _ := vethSubnetFor(index)
+	hostIP, nsIP, _ := vethSubnetFor(index)
 	return NamespaceHandle{
-		Index:         index,
-		NamespaceName: namespaceName(index),
-		TapDeviceName: tapDeviceName,
-		TapIP:         tapIP,
-		GuestIP:       guestIP,
-		HostVethName:  hostVethName(index),
-		HostVethIP:    hostIP,
+		Index:           index,
+		NamespaceName:   namespaceName(index),
+		TapDeviceName:   tapDeviceName,
+		TapIP:           tapIP,
+		GuestIP:         guestIP,
+		HostVethName:    hostVethName(index),
+		HostVethIP:      hostIP,
+		NamespaceVethIP: nsIP,
 	}
+}
+
+// NamespaceVethIPFor returns the namespace-side veth IP for the
+// given index. Pure function — no kernel state is touched. Used by
+// the reconciler's delete path, where only the index is known and
+// the NamespaceHandle is no longer available.
+func NamespaceVethIPFor(index int) (netip.Addr, error) {
+	if err := validateIndex(index); err != nil {
+		return netip.Addr{}, err
+	}
+	_, nsIP, _ := vethSubnetFor(index)
+	return nsIP, nil
 }

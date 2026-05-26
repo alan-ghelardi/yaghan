@@ -33,9 +33,27 @@ func (r *recordingAdder) AppendUnique(table, chain string, rulespec ...string) e
 	return nil
 }
 
+// recordingSets satisfies [setMaker] for tests, recording the indexes
+// the firewall asked it to ensure so coverage can confirm the
+// per-sandbox set was created exactly when domain rules required it.
+type recordingSets struct {
+	ensured []int
+}
+
+func (r *recordingSets) EnsureSandboxSet(index int) error {
+	r.ensured = append(r.ensured, index)
+	return nil
+}
+
+// newFirewall is a small constructor that wires both fakes together.
+// Keeps every test case from having to spell the struct literal out.
+func newFirewall() (*iptablesFirewall, *recordingAdder, *recordingSets) {
+	r, s := newRecorder(), &recordingSets{}
+	return &iptablesFirewall{ipt: r, sets: s}, r, s
+}
+
 func TestEnsureHost(t *testing.T) {
-	r := newRecorder()
-	fw := &iptablesFirewall{ipt: r}
+	fw, r, _ := newFirewall()
 	subnet := netip.MustParsePrefix("10.0.0.0/16")
 
 	require.NoError(t, fw.EnsureHost("eth0", subnet))
@@ -60,8 +78,7 @@ func TestEnsureHost(t *testing.T) {
 }
 
 func TestEnsureHostIsIdempotent(t *testing.T) {
-	r := newRecorder()
-	fw := &iptablesFirewall{ipt: r}
+	fw, r, _ := newFirewall()
 	subnet := netip.MustParsePrefix("10.0.0.0/16")
 
 	require.NoError(t, fw.EnsureHost("eth0", subnet))
@@ -81,14 +98,13 @@ func TestEnsureHostIsIdempotent(t *testing.T) {
 }
 
 func TestEnsureHostRejectsBadInput(t *testing.T) {
-	fw := &iptablesFirewall{ipt: newRecorder()}
+	fw, _, _ := newFirewall()
 	assert.Error(t, fw.EnsureHost("", netip.MustParsePrefix("10.0.0.0/16")))
 	assert.Error(t, fw.EnsureHost("eth0", netip.Prefix{}))
 }
 
 func TestConfigureNamespace(t *testing.T) {
-	r := newRecorder()
-	fw := &iptablesFirewall{ipt: r}
+	fw, r, _ := newFirewall()
 	cfg := NamespaceConfig{
 		NamespaceVethName: "vm-veth0",
 		GuestSubnet:       netip.MustParsePrefix("172.16.0.0/30"),
@@ -108,7 +124,7 @@ func TestConfigureNamespace(t *testing.T) {
 }
 
 func TestConfigureNamespaceRejectsBadInput(t *testing.T) {
-	fw := &iptablesFirewall{ipt: newRecorder()}
+	fw, _, _ := newFirewall()
 	assert.Error(t, fw.ConfigureNamespace(NamespaceConfig{
 		GuestSubnet: netip.MustParsePrefix("172.16.0.0/30"),
 	}))
@@ -118,8 +134,7 @@ func TestConfigureNamespaceRejectsBadInput(t *testing.T) {
 }
 
 func TestConfigureNamespace_AllowPolicy(t *testing.T) {
-	r := newRecorder()
-	fw := &iptablesFirewall{ipt: r}
+	fw, r, _ := newFirewall()
 	cfg := NamespaceConfig{
 		NamespaceVethName: "vm-veth0",
 		GuestSubnet:       netip.MustParsePrefix("172.16.0.0/30"),
@@ -168,8 +183,7 @@ func TestConfigureNamespace_AllowPolicy(t *testing.T) {
 }
 
 func TestConfigureNamespace_DenyPolicy(t *testing.T) {
-	r := newRecorder()
-	fw := &iptablesFirewall{ipt: r}
+	fw, r, _ := newFirewall()
 	cfg := NamespaceConfig{
 		NamespaceVethName: "vm-veth0",
 		GuestSubnet:       netip.MustParsePrefix("172.16.0.0/30"),
@@ -206,6 +220,90 @@ func TestConfigureNamespace_DenyPolicy(t *testing.T) {
 	require.GreaterOrEqual(t, denyIdx, 0, "REJECT rule must be installed")
 	require.GreaterOrEqual(t, acceptIdx, 0, "fall-through ACCEPT must be installed")
 	assert.Less(t, denyIdx, acceptIdx, "deny REJECTs must precede fall-through ACCEPT")
+}
+
+func TestConfigureNamespace_AllowPolicy_WithDomains(t *testing.T) {
+	fw, r, s := newFirewall()
+	cfg := NamespaceConfig{
+		NamespaceVethName: "vm-veth0",
+		GuestSubnet:       netip.MustParsePrefix("172.16.0.0/30"),
+		SandboxIndex:      7,
+		ResolverIP:        netip.MustParseAddr("10.0.0.29"),
+		Egress: &EgressPolicy{
+			Mode:    EgressAllow,
+			IPs:     []netip.Addr{netip.MustParseAddr("8.8.8.8")},
+			Domains: []string{"example.com", "*.internal.corp"},
+		},
+	}
+
+	require.NoError(t, fw.ConfigureNamespace(cfg))
+
+	// The per-sandbox set must have been created exactly once.
+	assert.Equal(t, []int{7}, s.ensured)
+
+	// Resolver carve-out + ipset match must both be present and the
+	// ipset match must precede the terminal REJECT — otherwise the
+	// FORWARD chain would drop traffic to dynamically-allowed IPs
+	// before the match-set rule ever fired.
+	want := []string{
+		"filter/FORWARD | -s 172.16.0.0/30 -o vm-veth0 -d 10.0.0.29 -p udp --dport 53 -m comment --comment yaghan -j ACCEPT",
+		"filter/FORWARD | -s 172.16.0.0/30 -o vm-veth0 -d 10.0.0.29 -p tcp --dport 53 -m comment --comment yaghan -j ACCEPT",
+		"filter/FORWARD | -s 172.16.0.0/30 -o vm-veth0 -m set --match-set yaghan-egress-7 dst -m comment --comment yaghan -j ACCEPT",
+	}
+	for _, fragment := range want {
+		assert.True(t, containsAny(r.appends, fragment),
+			"missing rule %q in %v", fragment, r.appends)
+	}
+
+	rejectIdx := indexOf(r.appends, "-j REJECT --reject-with icmp-admin-prohibited")
+	setIdx := indexOf(r.appends, "--match-set yaghan-egress-7 dst")
+	resolverIdx := indexOf(r.appends, "-d 10.0.0.29 -p udp --dport 53")
+	require.GreaterOrEqual(t, rejectIdx, 0)
+	require.GreaterOrEqual(t, setIdx, 0)
+	require.GreaterOrEqual(t, resolverIdx, 0)
+	assert.Less(t, setIdx, rejectIdx, "match-set ACCEPT must precede terminal REJECT")
+	assert.Less(t, resolverIdx, rejectIdx, "resolver carve-out must precede terminal REJECT")
+	assert.Less(t, resolverIdx, setIdx, "resolver carve-out must precede match-set so DNS works before the first answer lands")
+}
+
+func TestConfigureNamespace_AllowPolicy_DomainsRequireResolverIP(t *testing.T) {
+	fw, _, _ := newFirewall()
+	cfg := NamespaceConfig{
+		NamespaceVethName: "vm-veth0",
+		GuestSubnet:       netip.MustParsePrefix("172.16.0.0/30"),
+		SandboxIndex:      0,
+		// ResolverIP intentionally zero.
+		Egress: &EgressPolicy{
+			Mode:    EgressAllow,
+			Domains: []string{"example.com"},
+		},
+	}
+
+	err := fw.ConfigureNamespace(cfg)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "ResolverIP")
+}
+
+func TestConfigureNamespace_DomainsOmittedSkipsSetAndCarveOut(t *testing.T) {
+	fw, r, s := newFirewall()
+	cfg := NamespaceConfig{
+		NamespaceVethName: "vm-veth0",
+		GuestSubnet:       netip.MustParsePrefix("172.16.0.0/30"),
+		SandboxIndex:      3,
+		ResolverIP:        netip.MustParseAddr("10.0.0.13"),
+		Egress: &EgressPolicy{
+			Mode: EgressAllow,
+			IPs:  []netip.Addr{netip.MustParseAddr("8.8.8.8")},
+		},
+	}
+
+	require.NoError(t, fw.ConfigureNamespace(cfg))
+
+	assert.Empty(t, s.ensured, "no Domains -> no ipset")
+	for _, a := range r.appends {
+		assert.NotContains(t, a, "--match-set", "no Domains -> no match-set rule")
+		assert.NotContains(t, a, "--dport 53", "no Domains -> no resolver carve-out")
+	}
 }
 
 // indexOf returns the position of the first entry in haystack

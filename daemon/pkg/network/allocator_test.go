@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestValidateIndex(t *testing.T) {
@@ -101,13 +102,28 @@ func TestVethSubnetsDisjoint(t *testing.T) {
 
 func TestBuildHandle(t *testing.T) {
 	want := NamespaceHandle{
-		Index:         5,
-		NamespaceName: "vm-ns5",
-		TapDeviceName: "vm-tap0",
-		TapIP:         netip.MustParseAddr("172.16.0.1"),
-		GuestIP:       netip.MustParseAddr("172.16.0.2"),
-		HostVethName:  "host-veth5",
-		HostVethIP:    netip.MustParseAddr("10.0.0.21"), // 5*4 + 1
+		Index:           5,
+		NamespaceName:   "vm-ns5",
+		TapDeviceName:   "vm-tap0",
+		TapIP:           netip.MustParseAddr("172.16.0.1"),
+		GuestIP:         netip.MustParseAddr("172.16.0.2"),
+		HostVethName:    "host-veth5",
+		HostVethIP:      netip.MustParseAddr("10.0.0.21"), // 5*4 + 1
+		NamespaceVethIP: netip.MustParseAddr("10.0.0.22"), // 5*4 + 2
 	}
 	assert.Equal(t, want, buildHandle(5))
+}
+
+func TestNamespaceVethIPFor(t *testing.T) {
+	got, err := NamespaceVethIPFor(5)
+	require.NoError(t, err)
+	assert.Equal(t, netip.MustParseAddr("10.0.0.22"), got)
+
+	// Negative and out-of-range indexes propagate the validator's
+	// error so callers can distinguish "no such sandbox" from a
+	// successful zero-value lookup.
+	_, err = NamespaceVethIPFor(-1)
+	assert.Error(t, err)
+	_, err = NamespaceVethIPFor(maxIndex)
+	assert.Error(t, err)
 }

@@ -208,4 +208,90 @@ var _ = Describe("Sandbox network connectivity", Ordered, func() {
 				"expected probe to %s to be blocked under deny-list\nstdout:\n%s\nstderr:\n%s",
 				blockedProbeIP, res.Stdout, res.Stderr)
 		})
+
+	// Domain-name policy specs. These exercise the full DNS-snoop
+	// path: agent.dns is pointed at the daemon's resolver, allowed
+	// names resolve to IPs that get learned into the per-sandbox
+	// ipset, and the FORWARD chain ACCEPTs the resulting traffic.
+	// The probe target is a hostname so the test fails closed if
+	// the resolver is unreachable (rather than the test happening
+	// to work because the IP was statically permitted).
+
+	It("allows egress to a domain on the allow-list and refuses everything else",
+		func(specCtx SpecContext) {
+			const sandboxID = "net-allow-domain"
+			ctx, cancel := context.WithTimeout(specCtx, scenarioBudget)
+			defer cancel()
+
+			createRes, err := yag.Run(ctx, "sandbox", "create", sandboxID,
+				"--allow-domain", "example.com")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(createRes.ExitCode).To(Equal(0), "stderr:\n%s", createRes.Stderr)
+			DeferCleanup(func(cleanupCtx SpecContext) {
+				ctx, cancel := context.WithTimeout(cleanupCtx, deleteBudget)
+				defer cancel()
+				_ = sandboxes.DeleteAndWait(ctx, suite.SandboxCli, sandboxID)
+			})
+
+			Expect(sandboxes.WaitForPhase(ctx, suite.SandboxCli, sandboxID,
+				controlplanev1alpha1.SandboxStatus_PHASE_RUNNING)).To(Succeed())
+
+			// Allowed name: must resolve AND connect. We use getent to
+			// resolve via the in-daemon responder; the connect leg
+			// follows immediately to exercise the snooped ipset rule.
+			res, err := yag.Run(ctx, "sandbox", "exec", sandboxID, "--",
+				"/usr/bin/getent", "hosts", "example.com")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(res.ExitCode).To(Equal(0),
+				"expected example.com to resolve via the in-daemon responder\nstdout:\n%s\nstderr:\n%s",
+				res.Stdout, res.Stderr)
+
+			// Off-list name: must be refused at the resolver (REFUSED
+			// rcode → getent exit non-zero) without leaking any IP-level
+			// connection.
+			res, err = yag.Run(ctx, "sandbox", "exec", sandboxID, "--",
+				"/usr/bin/getent", "hosts", "google.com")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(res.ExitCode).NotTo(Equal(0),
+				"expected google.com to be refused by the in-daemon responder\nstdout:\n%s\nstderr:\n%s",
+				res.Stdout, res.Stderr)
+		})
+
+	It("refuses queries to a domain on the deny-list while forwarding others",
+		func(specCtx SpecContext) {
+			const sandboxID = "net-deny-domain"
+			ctx, cancel := context.WithTimeout(specCtx, scenarioBudget)
+			defer cancel()
+
+			createRes, err := yag.Run(ctx, "sandbox", "create", sandboxID,
+				"--deny-domain", "google.com")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(createRes.ExitCode).To(Equal(0), "stderr:\n%s", createRes.Stderr)
+			DeferCleanup(func(cleanupCtx SpecContext) {
+				ctx, cancel := context.WithTimeout(cleanupCtx, deleteBudget)
+				defer cancel()
+				_ = sandboxes.DeleteAndWait(ctx, suite.SandboxCli, sandboxID)
+			})
+
+			Expect(sandboxes.WaitForPhase(ctx, suite.SandboxCli, sandboxID,
+				controlplanev1alpha1.SandboxStatus_PHASE_RUNNING)).To(Succeed())
+
+			// Denied name: must be refused at the resolver. Documented
+			// limitation: a sandbox that hard-codes google.com's IP can
+			// still connect — deny-mode does not snoop into the ipset.
+			res, err := yag.Run(ctx, "sandbox", "exec", sandboxID, "--",
+				"/usr/bin/getent", "hosts", "google.com")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(res.ExitCode).NotTo(Equal(0),
+				"expected google.com to be refused under deny-domain policy\nstdout:\n%s\nstderr:\n%s",
+				res.Stdout, res.Stderr)
+
+			// Off-deny-list name: must still resolve.
+			res, err = yag.Run(ctx, "sandbox", "exec", sandboxID, "--",
+				"/usr/bin/getent", "hosts", "example.com")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(res.ExitCode).To(Equal(0),
+				"expected example.com to resolve under deny-domain policy\nstdout:\n%s\nstderr:\n%s",
+				res.Stdout, res.Stderr)
+		})
 })

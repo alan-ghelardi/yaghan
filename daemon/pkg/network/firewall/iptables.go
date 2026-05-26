@@ -22,6 +22,12 @@ const (
 	ruleComment = "yaghan"
 )
 
+// dnsPort is the destination port the resolver carve-out unblocks.
+// Only port 53 — sandboxes have no reason to speak other protocols
+// to the daemon's loopback-equivalent address, and a narrow carve-out
+// keeps the security boundary tight under allow-mode policies.
+const dnsPort = "53"
+
 // adder is the small subset of iptables.IPTables the firewall uses,
 // extracted so tests can substitute a recording fake.
 type adder interface {
@@ -30,17 +36,26 @@ type adder interface {
 	AppendUnique(table, chain string, rulespec ...string) error
 }
 
-// NewIPTables returns a [Firewall] backed by go-iptables.
+// setMaker is the small subset of [IPSet] ConfigureNamespace
+// consumes. Extracted as an interface so tests can substitute a
+// recording fake (mirrors the `adder` pattern above).
+type setMaker interface {
+	EnsureSandboxSet(index int) error
+}
+
+// NewIPTables returns a [Firewall] backed by go-iptables and the
+// default shell-out ipset client.
 func NewIPTables() (Firewall, error) {
 	ipt, err := iptables.New(iptables.IPFamily(iptables.ProtocolIPv4))
 	if err != nil {
 		return nil, fmt.Errorf("init iptables: %w", err)
 	}
-	return &iptablesFirewall{ipt: ipt}, nil
+	return &iptablesFirewall{ipt: ipt, sets: NewIPSet()}, nil
 }
 
 type iptablesFirewall struct {
-	ipt adder
+	ipt  adder
+	sets setMaker
 }
 
 // EnsureHost implements [Firewall].
@@ -103,6 +118,36 @@ func (f *iptablesFirewall) EnsureHost(upstream string, vmSubnet netip.Prefix) er
 	return nil
 }
 
+// EnsureDNSAccess implements [Firewall]. Adds two INPUT rules
+// (udp + tcp on port 53) that permit traffic from the VM subnet
+// destined to the in-daemon resolver address. We anchor the rules
+// on -s vmSubnet rather than -i <dummy> because the kernel routes
+// the packet locally based on the destination IP — the input
+// interface is the host-veth the sandbox traffic arrives on, not
+// the dummy that owns the resolver IP, so a -i match would never
+// fire.
+func (f *iptablesFirewall) EnsureDNSAccess(resolverIP netip.Addr, vmSubnet netip.Prefix) error {
+	if !resolverIP.IsValid() {
+		return fmt.Errorf("resolver ip is invalid")
+	}
+	if !vmSubnet.IsValid() {
+		return fmt.Errorf("vm subnet %q is invalid", vmSubnet)
+	}
+	subnet := vmSubnet.String()
+	dst := resolverIP.String()
+	for _, proto := range [...]string{"udp", "tcp"} {
+		if err := f.ipt.AppendUnique("filter", "INPUT",
+			"-s", subnet, "-d", dst,
+			"-p", proto, "--dport", dnsPort,
+			"-m", "comment", "--comment", ruleComment,
+			"-j", "ACCEPT",
+		); err != nil {
+			return fmt.Errorf("allow host input %s to %s: %w", proto, dst, err)
+		}
+	}
+	return nil
+}
+
 // ConfigureNamespace implements [Firewall]. The thread must already
 // be in the target network namespace — see the package docstring.
 //
@@ -140,7 +185,7 @@ func (f *iptablesFirewall) ConfigureNamespace(c NamespaceConfig) error {
 			return err
 		}
 	case c.Egress.Mode == EgressAllow:
-		if err := f.appendEgressAllow(subnet, c.NamespaceVethName, c.Egress); err != nil {
+		if err := f.appendEgressAllow(subnet, c); err != nil {
 			return err
 		}
 	case c.Egress.Mode == EgressDeny:
@@ -194,16 +239,28 @@ func (f *iptablesFirewall) appendEgressAccept(subnet, veth string) error {
 }
 
 // appendEgressAllow installs an allow-list egress filter: one ACCEPT
-// per listed IP and CIDR, followed by a terminal REJECT that fires
-// for every destination not on the list. The REJECT uses
-// icmp-admin-prohibited so guest clients see a fast EHOSTUNREACH-class
-// failure rather than hanging until their own timeout.
+// per listed IP and CIDR, optional dynamic infrastructure for
+// Domains, followed by a terminal REJECT that fires for every
+// destination not on the list. The REJECT uses icmp-admin-prohibited
+// so guest clients see a fast EHOSTUNREACH-class failure rather than
+// hanging until their own timeout.
 //
 // Rule order mirrors the precedence documented on EgressTargets:
-// ip_addresses before cidr_blocks. With a single verdict in play the
-// order is observable only in logs today, but keeping it consistent
-// makes future mixed-verdict policies behave predictably.
-func (f *iptablesFirewall) appendEgressAllow(subnet, veth string, policy *EgressPolicy) error {
+// ip_addresses before cidr_blocks before domain_names (the ipset
+// match). With a single verdict in play the order is observable only
+// in logs today, but keeping it consistent makes future mixed-verdict
+// policies behave predictably.
+//
+// When policy.Domains is non-empty the function also creates the
+// per-sandbox ipset and adds a resolver carve-out so the guest can
+// reach the in-daemon DNS handler (`resolverIP:53/{udp,tcp}`).
+// Without the carve-out a domain-only allow policy would block its
+// own resolver, breaking name resolution entirely. The carve-out is
+// installed before the ipset match so it doesn't depend on a
+// successful prior resolution to take effect.
+func (f *iptablesFirewall) appendEgressAllow(subnet string, c NamespaceConfig) error {
+	policy := c.Egress
+	veth := c.NamespaceVethName
 	for _, ip := range policy.IPs {
 		if err := f.ipt.AppendUnique("filter", "FORWARD",
 			"-s", subnet, "-o", veth, "-d", ip.String(),
@@ -222,12 +279,50 @@ func (f *iptablesFirewall) appendEgressAllow(subnet, veth string, policy *Egress
 			return fmt.Errorf("allow ns egress to %s: %w", cidr, err)
 		}
 	}
+	if len(policy.Domains) > 0 {
+		if !c.ResolverIP.IsValid() {
+			return fmt.Errorf("domain_names policy requires a valid ResolverIP")
+		}
+		if err := f.sets.EnsureSandboxSet(c.SandboxIndex); err != nil {
+			return fmt.Errorf("ensure sandbox ipset: %w", err)
+		}
+		if err := f.appendResolverCarveOut(subnet, veth, c.ResolverIP); err != nil {
+			return err
+		}
+		if err := f.ipt.AppendUnique("filter", "FORWARD",
+			"-s", subnet, "-o", veth,
+			"-m", "set", "--match-set", SandboxIPSetName(c.SandboxIndex), "dst",
+			"-m", "comment", "--comment", ruleComment,
+			"-j", "ACCEPT",
+		); err != nil {
+			return fmt.Errorf("allow ns egress via ipset: %w", err)
+		}
+	}
 	if err := f.ipt.AppendUnique("filter", "FORWARD",
 		"-s", subnet, "-o", veth,
 		"-m", "comment", "--comment", ruleComment,
 		"-j", "REJECT", "--reject-with", "icmp-admin-prohibited",
 	); err != nil {
 		return fmt.Errorf("reject ns egress fallthrough: %w", err)
+	}
+	return nil
+}
+
+// appendResolverCarveOut installs the udp/tcp ACCEPT pair that keeps
+// the guest's DNS path open to the in-daemon resolver when an
+// allow-mode policy carries domain_names but does not list the
+// resolver's IP. Without it the terminal REJECT would catch DNS
+// traffic and the domain-only policy would never resolve anything.
+func (f *iptablesFirewall) appendResolverCarveOut(subnet, veth string, resolverIP netip.Addr) error {
+	for _, proto := range [...]string{"udp", "tcp"} {
+		if err := f.ipt.AppendUnique("filter", "FORWARD",
+			"-s", subnet, "-o", veth, "-d", resolverIP.String(),
+			"-p", proto, "--dport", dnsPort,
+			"-m", "comment", "--comment", ruleComment,
+			"-j", "ACCEPT",
+		); err != nil {
+			return fmt.Errorf("allow ns resolver %s %s: %w", proto, resolverIP, err)
+		}
 	}
 	return nil
 }

@@ -1,6 +1,10 @@
 package network
 
-import "github.com/alan-ghelardi/yaghan/daemon/pkg/network/firewall"
+import (
+	"net/netip"
+
+	"github.com/alan-ghelardi/yaghan/daemon/pkg/network/firewall"
+)
 
 // Options controls the behavior of a [Driver]. Construct an Options value
 // implicitly by passing [Option] values to [NewLinuxDriver].
@@ -21,6 +25,19 @@ type Options struct {
 	// topology but the guest will not reach anything beyond the
 	// host-side of its own veth (the pre-egress behaviour).
 	Firewall firewall.Firewall
+
+	// ResolverIP is the daemon-wide DNS responder address. It is
+	// reachable from inside every sandbox via the namespace's
+	// default route (the host-side veth) and surfaces as a local
+	// IP on the host (typically pinned to a dummy interface). The
+	// per-namespace firewall installs a resolver carve-out for
+	// this address under domain-bearing allow policies.
+	//
+	// Zero (the default) signals "no in-daemon responder
+	// configured" and disables the carve-out. Sandboxes whose
+	// policies reference domain_names are rejected before they
+	// reach the driver in that case (see Reconciler.checkDNSPrereq).
+	ResolverIP netip.Addr
 }
 
 // Option represents a single override applied to [Options].
@@ -57,5 +74,18 @@ func WithTAPGroup(gid uint32) Option {
 func WithFirewall(fw firewall.Firewall) Option {
 	return OptionAdapter(func(opts *Options) {
 		opts.Firewall = fw
+	})
+}
+
+// WithResolverIP records the daemon-wide DNS responder address.
+// The driver propagates it into [firewall.NamespaceConfig.ResolverIP]
+// when configuring per-namespace egress, so domain-bearing policies
+// get a resolver carve-out at this address. Omitting the option (or
+// passing the zero value) leaves the carve-out disabled, which is
+// safe when the responder is not running — sandboxes that reference
+// domain_names are rejected before reaching the driver in that case.
+func WithResolverIP(ip netip.Addr) Option {
+	return OptionAdapter(func(opts *Options) {
+		opts.ResolverIP = ip
 	})
 }

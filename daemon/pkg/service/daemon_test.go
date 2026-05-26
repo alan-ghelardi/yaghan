@@ -128,7 +128,7 @@ func newHarness(t *testing.T) *harness {
 	ctx = ec2imdsclient.With(ctx, ec2imdsmocks.NewMockClient(ctrl))
 
 	ctx = commonsserver.WithListener(ctx, listener)
-	servertesting.StartServer(ctx, t, service.New(bundle, provider, driver, clusterClient, nil, nil))
+	servertesting.StartServer(ctx, t, service.New(bundle, provider, driver, nil, clusterClient, nil, nil))
 
 	conn, err := grpc.NewClient(
 		fmt.Sprintf("127.0.0.1:%d", port),

@@ -10,6 +10,7 @@ import (
 	"github.com/alan-ghelardi/yaghan/commons/pkg/server"
 	"github.com/alan-ghelardi/yaghan/daemon/pkg/config"
 	"github.com/alan-ghelardi/yaghan/daemon/pkg/controller"
+	"github.com/alan-ghelardi/yaghan/daemon/pkg/dns"
 	"github.com/alan-ghelardi/yaghan/daemon/pkg/firecracker"
 	"github.com/alan-ghelardi/yaghan/daemon/pkg/network"
 	"github.com/alan-ghelardi/yaghan/daemon/pkg/node"
@@ -33,6 +34,11 @@ type daemon struct {
 
 	networkDriver network.Driver
 
+	// dnsPolicies holds per-sandbox domain_names policies that the
+	// in-daemon resolver consults. Nil disables the dns integration
+	// path (e.g. when the daemon was started without bind.dns).
+	dnsPolicies *dns.PolicyStore
+
 	clusterServiceClient  controlplanev1alpha1.ClusterServiceClient
 	sandboxServiceClient  controlplanev1alpha1.SandboxServiceClient
 	snapshotServiceClient controlplanev1alpha1.SnapshotServiceClient
@@ -48,6 +54,7 @@ func New(
 	config *config.Bundle,
 	firecracker firecracker.Provider,
 	networkDriver network.Driver,
+	dnsPolicies *dns.PolicyStore,
 	clusterServiceClient controlplanev1alpha1.ClusterServiceClient,
 	sandboxServiceClient controlplanev1alpha1.SandboxServiceClient,
 	snapshotServiceClient controlplanev1alpha1.SnapshotServiceClient,
@@ -56,6 +63,7 @@ func New(
 		config:                config,
 		firecracker:           firecracker,
 		networkDriver:         networkDriver,
+		dnsPolicies:           dnsPolicies,
 		clusterServiceClient:  clusterServiceClient,
 		sandboxServiceClient:  sandboxServiceClient,
 		snapshotServiceClient: snapshotServiceClient,
@@ -103,7 +111,7 @@ func (d *daemon) Setup(ctx context.Context) error {
 		snapshotStore = snapshot.NewStore(durableStore)
 	}
 
-	reconciler := reconciler.New(d.config, d.firecracker, d.networkDriver, snapshotStore, d.snapshotServiceClient)
+	reconciler := reconciler.New(d.config, d.firecracker, d.networkDriver, d.dnsPolicies, snapshotStore, d.snapshotServiceClient)
 
 	// The controller and node Agent share a circular dependency: the
 	// Agent needs the controller as its node.Reporter, while the

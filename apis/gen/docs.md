@@ -292,11 +292,35 @@ three, so precedence is currently observable only in logs; it
 becomes load-bearing once future iterations let policies mix
 verdicts.
 
-Note: `domain_names` is accepted and validated for syntax today but
-is **not yet enforced** by the data plane — DNS resolution &#43; cache
-lifecycle is a separate iteration. The daemon logs a warning when a
-sandbox boots with non-empty `domain_names` so the gap is not
-silent.
+Domain-name enforcement model
+-----------------------------
+`domain_names` is enforced via an in-daemon DNS responder. When a
+sandbox has at least one `domain_names` entry the daemon points the
+guest&#39;s /etc/resolv.conf at the sandbox&#39;s own host-side veth IP and
+answers queries from an embedded handler:
+
+  * Queries whose name matches an `allow` entry are forwarded
+    upstream and each answer&#39;s A/AAAA records are written into a
+    per-sandbox ipset that the FORWARD chain `--match-set` ACCEPTs.
+    Ipset entries expire with the answer TTL (floored at the
+    daemon&#39;s `min_ttl_seconds` to bound rule-churn under short-TTL
+    CDNs).
+  * Queries matching a `deny` entry return REFUSED.
+  * Queries matching neither follow the mode&#39;s default verdict:
+    REFUSED under `allow`, forwarded under `deny`.
+
+The daemon always permits guest → resolver:53/{udp,tcp} when
+`domain_names` is non-empty, so domain-only allow rules remain
+reachable regardless of mode.
+
+Wildcards: `*.example.com` matches `example.com` itself plus any
+subdomain (`foo.example.com`, `a.b.example.com`).
+
+Known limitation (deny mode only): a sandbox that already holds an
+IP for a denied domain can connect to it directly without going
+through DNS. Allow mode does not have this leak — IPs become
+reachable only after the resolver vouches for them. Use allow mode
+for hard guarantees.
 
 
 | Field | Type | Label | Description |
